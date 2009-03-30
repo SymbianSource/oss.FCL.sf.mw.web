@@ -1,0 +1,67 @@
+/*
+* Copyright (c) 1997-2001 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
+
+TARGET          RbBrowser.lib
+TARGETTYPE      lib
+
+CAPABILITY CAP_GENERAL_DLL
+VENDORID        VID_DEFAULT
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER 1
+
+SOURCEPATH      ../../src/browser/src/
+
+
+//SOURCE	Epoc32BrowserMimeTable.c
+SOURCE	xhtml_1_0_dict.c
+SOURCE	wml_1_3_dict.c
+
+
+
+
+USERINCLUDE  ../../src/adt/include
+USERINCLUDE  ../../src/css/include
+USERINCLUDE  ../../src/evt/include
+USERINCLUDE  ../../src/fbox/include
+USERINCLUDE  ../../src/gdi/include
+USERINCLUDE  ../../src/hed/include
+USERINCLUDE  ../../src/image/include
+USERINCLUDE  ../../src/imagech/include
+USERINCLUDE  ../../src/lmgr/include
+USERINCLUDE  ../../src/markup/include
+USERINCLUDE  ../../src/Msg/include
+USERINCLUDE  ../../src/mvc/include
+USERINCLUDE  ../../src/object/include
+USERINCLUDE  ../../src/text/include
+USERINCLUDE  ../../src/system/include
+USERINCLUDE  ../../src/wml1x/include
+USERINCLUDE  ../../src/browser/include
+USERINCLUDE  ../../src/wmlscriptch/include
+USERINCLUDE  ../../src/xhtml/include
+USERINCLUDE  ../../src/wml/src
+
+
+MW_LAYER_SYSTEMINCLUDE
+SYSTEMINCLUDE  ../../src/wml/include
+SYSTEMINCLUDE  ../../src/utils/include
+MW_LAYER_LIBC_SYSTEMINCLUDE
+
+

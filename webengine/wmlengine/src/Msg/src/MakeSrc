@@ -1,0 +1,20 @@
+#----------------------------------------------------------------------------
+# 
+# Copyright (c) 2001,2002. Nokia Mobile Phones
+#
+#----------------------------------------------------------------------------
+
+MAKEFILE    = MakeSrc
+TARGET      = rbTempest_msg_src_lib.a
+
+SUBDIRS   = 
+
+SUBMAKES  = 
+
+SRCS      = IMessageListener.c Message.c MessageDispatcher.c
+            
+
+
+################################################################################
+
+include $(CORESW_MAKE_TEMPLATE)

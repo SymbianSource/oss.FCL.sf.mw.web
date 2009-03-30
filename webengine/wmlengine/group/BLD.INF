@@ -1,0 +1,60 @@
+/*
+* Copyright (c) 1999-2005 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+
+#include <platform_paths.hrh>
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+
+PRJ_PLATFORMS
+DEFAULT 
+
+PRJ_EXPORTS
+
+PRJ_MMPFILES
+
+// Sub-components Required for S60 webengine
+#ifndef BRDO_WML_DISABLED_FF
+
+#include "adt/bld.inf"
+#include "css/bld.inf"
+#include "evt/bld.inf"
+#include "fbox/bld.inf"
+#include "gdi/bld.inf"
+#include "hed/bld.inf"
+#include "htmlp/bld.inf"
+#include "image/bld.inf"
+#include "imagech/bld.inf"
+#include "lmgr/bld.inf"
+#include "object/bld.inf"
+#include "markup/bld.inf"
+#include "Msg/bld.inf"
+#include "system/bld.inf"
+#include "text/bld.inf"
+#include "Unicode/bld.inf"
+#include "wml1x/bld.inf"
+#include "wmlscriptch/bld.inf"
+#include "xhtml/bld.inf"
+#include "script/bld.inf"
+#include "wml/bld.inf"
+#include "fileloader/bld.inf"
+#include "urlloader/bld.inf"
+#include "browser/bld.inf"
+#include "wmlengine/bld.inf"
+
+#endif 
+
+PRJ_TESTMMPFILES

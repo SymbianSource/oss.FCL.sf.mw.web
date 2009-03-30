@@ -1,0 +1,49 @@
+/*
+* Copyright (c) 2005 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  
+*
+*/
+
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
+
+TARGET          Plugin.lib
+TARGETTYPE      lib
+
+VENDORID	VID_DEFAULT
+
+SOURCEPATH      ../Plugin/src
+SOURCE	        PluginHandler.cpp
+SOURCE          PluginWin.cpp
+SOURCE          PluginLoader.cpp
+SOURCE          PluginSkin.cpp
+SOURCE          NpnImplementation.cpp
+
+USERINCLUDE     ../Plugin/Inc
+USERINCLUDE     ../BrowserView/Inc
+USERINCLUDE     ../BrowserControl/Inc
+USERINCLUDE     ../BrowserCore/Misc/Inc
+USERINCLUDE     ../BrowserCore/Renderers/Inc
+USERINCLUDE     ../ResourceLoader/Inc
+USERINCLUDE     ../PageScaler/Inc
+USERINCLUDE     ../../WEBCORE/bridge
+
+SYSTEMINCLUDE		../../MemoryManager/Inc
+MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_LIBC_SYSTEMINCLUDE
+
+
+
+
+

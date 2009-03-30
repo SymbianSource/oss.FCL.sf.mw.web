@@ -1,0 +1,102 @@
+/*
+* Copyright (c) 2008 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  ?Description
+*
+*/
+
+#include <domain/osextensions/platform_paths.hrh>
+#include <data_caging_paths.hrh>
+#include "/../../../../WebEngine/OssWebEngine/WebKit/s60/group/common.mmpi"
+
+TARGET          WebViewApiTest.dll
+TARGETTYPE      dll
+UID             0x1000008D 0x101FB3E3
+
+CAPABILITY      ALL -TCB
+/* Remove comments and replace 0x00000000 with correct vendor id */
+// VENDORID     0x00000000
+/* Remove comments and replace 0x00000000 with correct secure id */
+// SECUREID     0x00000000
+
+DEFFILE         WebView.def
+
+USERINCLUDE .
+//USERINCLUDE ../inc
+//USERINCLUDE ../../inc
+USERINCLUDE ../../../../WebEngine/PageScaler/inc
+USERINCLUDE ../mock/inc
+
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/wtf
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/kjs
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/pcre
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/bindings
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/bindings/c
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/wtf/unicode
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/wtf/unicode/symbian
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/wtf/symbian
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/icu
+USERINCLUDE ../../../../WebEngine/OssWebEngine/JavaScriptCore/ForwardingHeaders
+
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/platform
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/platform/symbian
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/platform/network
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/platform/network/symbian
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/platform/graphics
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/history
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/icu
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/bindings/js
+
+USERINCLUDE ../../../../WebEngine/OssWebEngine/MemoryManager/Inc 
+USERINCLUDE ../../../../WebEngine/OssWebEngine/DerivedSources/WebCore
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/Misc
+USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/WebView
+USERINCLUDE /S60/mw/web/inc
+USERINCLUDE ../../../../WebEngine/Device/inc
+
+SYSTEMINCLUDE ../../../../WebEngine/OssWebEngine/DerivedSources/JavaScriptCore
+
+APP_LAYER_SYSTEMINCLUDE
+
+SYSTEMINCLUDE   . 
+SYSTEMINCLUDE /epoc32/include/ecom
+SYSTEMINCLUDE /epoc32/include/http
+//SYSTEMINCLUDE /epoc32/include/libc
+SYSTEMINCLUDE /epoc32/include/libc/sys
+SYSTEMINCLUDE /epoc32/include/stdapis
+//SYSTEMINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/platform/symbian/Libxml2
+
+
+SOURCEPATH      ../src
+SOURCEPATH      ../mock/src
+SOURCE          WebViewApiTest.cpp WebViewApiTestBlocks.cpp
+SOURCE			    WebViewApiTestContainer.cpp BrCtlApiTestContainer.cpp
+SOURCE			    BrCtlApiTestDialogsProvider.cpp BrCtlApiTestObserver.cpp BrCtlApiTestStateChangeObserver.cpp
+
+SOURCEPATH      ../mock/src
+SOURCE					BrCtlTest.cpp
+
+LIBRARY         euser.lib cone.lib eikcore.lib apparc.lib avkon.lib 
+LIBRARY         flogger.lib apmime.lib apgrfx.lib efsrv.lib eikcoctl.lib 
+LIBRARY         commonui.lib ecom.lib eikdlg.lib aknnotify.lib
+
+// stif framework
+LIBRARY         stiftestinterface.lib stiftestengine.lib
+
+// component under test
+LIBRARY     browserengine.lib
+
+LANG            SC
+
+// End of File

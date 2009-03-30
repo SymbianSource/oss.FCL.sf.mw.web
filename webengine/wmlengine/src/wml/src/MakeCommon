@@ -1,0 +1,25 @@
+#----------------------------------------------------------------------------
+# 
+# Copyright (c) 2001,2002. Nokia Mobile Phones
+#
+#----------------------------------------------------------------------------
+
+MAKEFILE    = MakeCommon
+TARGET      = rbWae_src_wml_common_lib.a
+
+SUBDIRS   = 
+
+SUBMAKES  = 
+
+OBJS      = 
+
+SRCS      =  nw_evlog_api.c wml_bind.c wml_core.c wml_deck.c wml_deck_iter.c wml_decoder.c \
+             wml_event.c wml_head.c wml_history.c wml_input_validation.c wml_intrinsic_event.c \
+             wml_list.c wml_msgs.c wml_option_event.c wml_query_service.c wml_ref_model.c \
+             wml_script_message.c wml_scrproxy.c wml_select_ui_state.c wml_select_validation.c \
+             wml_timer.c wml_transaction.c wml_ui.c wml_url_navigation.c wml_url_utils.c \
+             wml_var.c wml_wae.c wml_wae_reader.c
+
+################################################################################
+
+include $(CORESW_MAKE_TEMPLATE)

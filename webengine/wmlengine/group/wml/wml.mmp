@@ -1,0 +1,95 @@
+/*
+* Copyright (c) 1997-2001 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
+
+TARGET          wml.lib
+TARGETTYPE      lib
+
+CAPABILITY CAP_GENERAL_DLL
+VENDORID        VID_DEFAULT
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER 1
+
+SOURCEPATH      ../../src/wml/src
+
+
+SOURCE	nw_evlog_api.c
+SOURCE	wml_bind.c
+SOURCE	wml_core.c
+SOURCE  wml_deck.c
+SOURCE  wml_deck_iter.c
+SOURCE	wml_decoder.c
+SOURCE	wml_event.c
+SOURCE	wml_head.c
+SOURCE	WMLHistory.cpp
+SOURCE	wml_input_validation.c
+SOURCE	wml_intrinsic_event.c
+SOURCE	wml_list.c
+SOURCE	wml_msgs.c
+SOURCE	wml_option_event.c
+SOURCE	wml_query_service.c
+SOURCE	wml_ref_model.c
+SOURCE	wml_script_message.c
+SOURCE	wml_scrproxy.c
+SOURCE	wml_select_ui_state.c
+SOURCE	wml_select_validation.c
+SOURCE	wml_timer.c
+SOURCE	wml_ui.c
+SOURCE	WMLUrlNavigation.cpp
+SOURCE	wml_url_utils.c
+SOURCE	wml_var.c
+SOURCE	WMLWae.cpp
+SOURCE	wml_wae_reader.c
+
+#include  "../webkitcommon.mmpi"
+
+USERINCLUDE   ../../src/wml/src
+USERINCLUDE   ../../src/Wml/include
+USERINCLUDE   ../../src/urlloader/include
+USERINCLUDE   ../../src/script/include
+USERINCLUDE   ../../src/utils/include
+USERINCLUDE   ../../src/image/include
+USERINCLUDE   ../../src/adt/include
+USERINCLUDE   ../../src/mvc/include
+USERINCLUDE   ../../src/htmlp/include
+USERINCLUDE   ../../src/evt/include
+USERINCLUDE   ../../src/fbox/include
+USERINCLUDE   ../../src/gdi/include
+
+USERINCLUDE   ../../src/hed/include
+USERINCLUDE   ../../src/lmgr/include
+USERINCLUDE   ../../src/markup/include
+USERINCLUDE   ../../src/msg/include
+USERINCLUDE   ../../src/object/include
+USERINCLUDE   ../../src/system/include
+USERINCLUDE   ../../src/text/include
+USERINCLUDE   ../../src/Unicode/include
+USERINCLUDE   ../../src/wml1x/include
+USERINCLUDE   ../../src/wmlscriptch/include
+USERINCLUDE   ../../src/wmlcontrol/include
+
+
+SYSTEMINCLUDE   ../../src/utils/include
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE   ../../src/Wml/include
+SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
+MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_LIBC_SYSTEMINCLUDE
+

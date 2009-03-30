@@ -1,0 +1,33 @@
+#----------------------------------------------------------------------------
+# 
+# Copyright (c) 2001,2002. Nokia Mobile Phones
+#
+#----------------------------------------------------------------------------
+
+MAKEFILE    = MakeSrc
+TARGET      = rbTempest_xhtml_src_lib.a
+
+SUBDIRS   =  . Base BasicForms BasicTables Hypertext Image isa Link MetaInformation \
+             Structure Style Text
+
+SUBMAKES  =  MakeSrc2 MakeBase MakeBasicforms MakeBasictables MakeHypertext MakeImage MakeIsa MakeLink \
+             MakeMetainformation MakeStructure MakeStyle MakeText
+
+OBJS      =                  rbTempest_xhtml_src2_lib.a \
+                        Base/rbTempest_xhtml_src_base_lib.a \
+                  BasicForms/rbTempest_xhtml_src_basicforms_lib.a \
+                 BasicTables/rbTempest_xhtml_src_basictables_lib.a \
+                   Hypertext/rbTempest_xhtml_src_hypertext_lib.a \
+                       Image/rbTempest_xhtml_src_image_lib.a \
+                         isa/rbTempest_xhtml_src_isa_lib.a \
+                        Link/rbTempest_xhtml_src_link_lib.a \
+             MetaInformation/rbTempest_xhtml_src_metainformation_lib.a \
+                   Structure/rbTempest_xhtml_src_structure_lib.a \
+                       Style/rbTempest_xhtml_src_style_lib.a \
+                        Text/rbTempest_xhtml_src_text_lib.a
+
+SRCS      = 
+
+################################################################################
+
+include $(CORESW_MAKE_TEMPLATE_RECURSIVE)

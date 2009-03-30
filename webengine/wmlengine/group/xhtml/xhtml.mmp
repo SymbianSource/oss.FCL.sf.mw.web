@@ -1,0 +1,124 @@
+/*
+* Copyright (c) 1997-2001 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
+
+TARGET          xhtml.lib
+TARGETTYPE      lib
+
+CAPABILITY CAP_GENERAL_DLL
+VENDORID        VID_DEFAULT
+
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER 1
+
+SOURCEPATH      ../../src/xhtml/src/
+
+#include  "../webkitcommon.mmpi"
+
+SOURCE	structure/XHTMLHeadElementHandler.cpp
+SOURCE	structure/XHTMLStructureModule.cpp
+SOURCE	structure/XHTMLTitleElementHandler.cpp
+//SOURCE	structure/scriptElementHandler.cpp
+SOURCE	structure/noscriptElementHandler.cpp
+SOURCE	text/XHTMLBrElementHandler.cpp
+SOURCE	text/XHTMLCoreTextElementHandler.cpp
+SOURCE	text/XHTMLHrElementHandler.cpp
+SOURCE	text/XHTMLQElementHandler.cpp
+SOURCE	text/XHTMLTextModule1.cpp
+SOURCE	text/XHTMLTextModule2.cpp
+SOURCE	hypertext/XHTMLAElementHandler.cpp
+SOURCE	hypertext/XHTMLHypertextModule.cpp
+SOURCE	basicforms/XHTMLBasicFormsModule.cpp
+SOURCE	basicforms/XHTMLFormElementHandler.cpp
+SOURCE	basicforms/XHTMLInputElementHandler.cpp
+SOURCE	basicforms/XHTMLLabelElementHandler.cpp
+SOURCE	basicforms/XHTMLOptionElementHandler.cpp
+SOURCE	basicforms/XHTMLSelectElementHandler.cpp
+SOURCE	basicforms/XHTMLTextareaElementHandler.cpp
+SOURCE	basicforms/XHTMLControlSet.cpp
+SOURCE	basicforms/XHTMLFormLiaison.cpp
+SOURCE	basictables/XHTMLBasicTablesModule.cpp
+SOURCE	basictables/XHTMLCaptionElementHandler.cpp
+SOURCE  basictables/XHTMLCellElementHandler.cpp
+SOURCE  basictables/XHTMLRowgroupElementHandler.cpp
+SOURCE	basictables/XHTMLTableElementHandler.cpp
+SOURCE	basictables/XHTMLTableElementHandlerOOC.cpp
+SOURCE	basictables/XHTMLTrElementHandler.cpp
+SOURCE	image/areaElementHandler.cpp
+SOURCE	image/XHTMLImageModule.cpp
+SOURCE	image/imgElementHandler.cpp
+SOURCE	image/mapElementHandler.cpp
+SOURCE	image/MapElementList.cpp
+SOURCE  image/ImageMapPopup.cpp
+SOURCE	metainformation/XHTMLMetaElementHandler.cpp
+SOURCE	metainformation/XHTMLMetaInformationModule.cpp
+SOURCE	link/XHTMLLinkElementHandler.cpp
+SOURCE	link/XHTMLLinkModule.cpp
+SOURCE	base/XHTMLBASEElementHandler.cpp
+SOURCE	base/XHTMLBaseModule.cpp
+SOURCE	style/XHTMLStyleElementHandler.cpp
+SOURCE	style/XHTMLStyleModule.cpp
+SOURCE	XHTMLAttributePropertyTable.cpp
+SOURCE  XHTMLPiElementHandler.cpp
+SOURCE  SaveToPhoneBkEvent.c
+SOURCE  XHTMLTelephonyServices.cpp
+SOURCE	XHTMLTextElementHandler.cpp
+SOURCE	Variables.c
+SOURCE  XHTMLElementHandler.cpp
+SOURCE	XHTMLContentHandler.cpp
+SOURCE	XHTMLEpoc32ContentHandler.cpp
+SOURCE	XHTMLEntitySet.c
+SOURCE	frame/XHTMLFramesetElementHandler.cpp
+SOURCE  frame/XHTMLFrameModule.cpp
+SOURCE  frame/XHTMLFrameElementHandler.cpp
+SOURCE  ignore/XHTMLIgnoreElementHandler.cpp
+SOURCE  XHTMLMessageListener.cpp
+
+
+USERINCLUDE     .
+USERINCLUDE     ../../src/adt/include
+USERINCLUDE     ../../src/css/include
+USERINCLUDE     ../../src/Evt/include
+USERINCLUDE     ../../src/htmlp/include
+USERINCLUDE     ../../src/fbox/include
+USERINCLUDE     ../../src/gdi/include
+USERINCLUDE     ../../src/hed/include
+USERINCLUDE     ../../src/ImageCH/include
+USERINCLUDE     ../../src/image/include
+USERINCLUDE     ../../src/lmgr/include
+USERINCLUDE     ../../src/markup/include
+USERINCLUDE     ../../src/Msg/include
+USERINCLUDE     ../../src/mvc/include
+USERINCLUDE     ../../src/object/include
+USERINCLUDE     ../../src/scrolling/inc
+USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/text/include
+USERINCLUDE     ../../src/wmlscriptch/include
+USERINCLUDE     ../../src/xhtml/include
+USERINCLUDE     ../../src/wml/src
+USERINCLUDE     ../../src/wml/include
+USERINCLUDE     ../../src/wmlcontrol/include
+USERINCLUDE   	../../src/utils/include
+
+SYSTEMINCLUDE   ../../src/utils/include
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
+MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_LIBC_SYSTEMINCLUDE

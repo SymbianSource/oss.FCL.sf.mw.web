@@ -1,0 +1,110 @@
+/*
+* Copyright (c) 1997-2004 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
+
+TARGET          fbox.lib
+TARGETTYPE      lib
+
+CAPABILITY CAP_GENERAL_DLL
+VENDORID        VID_DEFAULT
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER 1
+
+SOURCEPATH      ../../src/fbox/src/
+
+LANGUAGE_IDS
+
+#include  "../webkitcommon.mmpi"
+
+SOURCE	FBOXButtonBox.cpp
+SOURCE	FBOXButtonBoxSkin.cpp
+SOURCE	FBOXCheckBox.cpp
+SOURCE	FBOXCheckBoxSkin.cpp
+SOURCE	FBOXFileSelectionBox.cpp
+SOURCE	FBOXFileSelectionBoxSkin.cpp
+SOURCE	FBOXFormBox.cpp
+SOURCE	FBOXFormBoxUtils.cpp
+SOURCE	FBOXFormLiaison.cpp
+SOURCE	FBOXImageButtonBox.cpp
+SOURCE	FBOXImageButtonBoxSkin.cpp
+SOURCE	FBOXInputBox.cpp
+SOURCE	FBOXInputInteractor.cpp
+SOURCE	FBOXInputSkin.cpp
+SOURCE	FBOXInteractor.cpp
+SOURCE	KeyBoardEvent.c
+SOURCE	FBOXOptgrpBox.cpp
+SOURCE	FBOXOptGrpSkin.cpp
+SOURCE	FBOXOptionBox.cpp
+SOURCE	FBOXOptionBoxSkin.cpp
+SOURCE	FBOXPasswordBox.cpp
+SOURCE	FBOXRadioBox.cpp
+SOURCE	FBOXHiddenBox.cpp
+SOURCE	FBOXSelectBox.cpp
+SOURCE	FBOXSelectSkin.cpp
+SOURCE	FBOXSkin.cpp
+SOURCE  FBOXValidator.cpp
+
+SOURCE  Epoc32ButtonBoxSkin.cpp
+SOURCE  Epoc32ImageButtonBoxSkin.cpp
+SOURCE  Epoc32InlineFormImages.cpp
+SOURCE  Epoc32InputInteractor.cpp
+SOURCE  Epoc32FormImages.cpp
+SOURCE  Epoc32InputSkin.cpp
+SOURCE	Epoc32TextAreaBox.cpp
+SOURCE  FBOXWmlFormattedEditor.cpp
+SOURCE  FBOXWmlFormatHandler.cpp
+SOURCE  FBOXEpoc32OptGrpSkin.cpp
+SOURCE  FBOXEpoc32OptionSkin.cpp
+SOURCE  Epoc32SelectSkin.cpp
+SOURCE  FBOXCEpoc32InputBox.cpp
+SOURCE	FBOXEpoc32InlineCheckBoxSkin.cpp
+
+
+USERINCLUDE     .
+USERINCLUDE     ../../src/adt/include
+USERINCLUDE     ../../src/evt/include
+USERINCLUDE     ../../src/fbox/include
+USERINCLUDE     ../../src/gdi/include
+USERINCLUDE     ../../src/hed/include
+USERINCLUDE     ../../src/image/include
+USERINCLUDE     ../../src/ImageCH/include
+USERINCLUDE     ../../src/lmgr/include
+USERINCLUDE     ../../src/msg/include
+USERINCLUDE     ../../src/mvc/include
+USERINCLUDE     ../../src/object/include
+USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/text/include
+USERINCLUDE	    ../../src/Unicode/include
+USERINCLUDE     ../../src/urlloader/include
+USERINCLUDE     ../../src/fileloader/include
+USERINCLUDE     ../../src/utils/include
+USERINCLUDE     ../../src/wml/src
+USERINCLUDE     ../../src/wml/include
+USERINCLUDE     ../../src/wml1x/include
+USERINCLUDE     ../../src/wmlscriptch/include
+USERINCLUDE     ../../src/markup/include
+USERINCLUDE     ../../src/wmlcontrol/include
+
+MW_LAYER_SYSTEMINCLUDE
+SYSTEMINCLUDE   ../../src/browser/include
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE   ../../src/utils/include
+SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
+MW_LAYER_LIBC_SYSTEMINCLUDE

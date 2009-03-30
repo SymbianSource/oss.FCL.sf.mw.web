@@ -1,0 +1,90 @@
+/*
+* Copyright (c) 1997-2001 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
+
+#ifndef INCLUDE_UTILS_MMP
+
+TARGET          utils.lib
+TARGETTYPE      lib
+
+#endif // Not INCLUDE_UTILS_MMP
+
+SOURCEPATH      ../../src/utils/src
+
+SOURCE  TEncodingMapping.cpp
+SOURCE  ImageUtils.cpp
+SOURCE	nw_loadreq.cpp
+SOURCE	nw_nvpair.c
+SOURCE	nwx_buffer.c
+SOURCE	nwx_datastruct.c
+SOURCE	nwx_float.c
+SOURCE	nwx_format.c
+SOURCE	nwx_generic_dlg.c
+SOURCE	nwx_math.c
+SOURCE	nwx_psq.c
+SOURCE	nwx_sprintf.c
+SOURCE	nwx_ctx_epoc32.cpp
+SOURCE	nwx_logger_epoc32.cpp
+SOURCE  nwx_cleanup_epoc32.cpp
+SOURCE	nwx_mem_epoc32.c
+SOURCE	nwx_memseg_epoc32.c
+SOURCE	nwx_msg_epoc32.c
+SOURCE	nwx_msg_config_epoc32.c
+SOURCE	nwx_msg_dsp_epoc32.cpp
+SOURCE	nwx_multipart_generator.cpp
+SOURCE	nwx_osu_file_epoc32.cpp
+SOURCE	nwx_osu_epoc32.cpp
+SOURCE  nwx_statuscodeconvert.c
+SOURCE  nwx_assert.c
+
+SOURCE	nwx_string.c
+SOURCE	nwx_time_utils.c
+SOURCE	nwx_url_utils.c
+SOURCE	nwx_time_epoc32.c
+SOURCE  StringUtils.cpp
+SOURCE	util_CDispatcherEng.cpp
+SOURCE  ucs2_transformation_epoc32.c
+SOURCE  CReferrerHelper.cpp
+SOURCE  FileNameUtils.cpp
+
+USERINCLUDE	    ../../src/wml/include
+
+#ifndef INCLUDE_UTILS_MMP
+USERINCLUDE	.
+USERINCLUDE     ../../src/urlloader/include
+USERINCLUDE			../../src/script/include
+USERINCLUDE			../../src/utils/include
+USERINCLUDE			../../src/wml/src
+// The following are required ONLY because of epoc32/nwx_cleanup_epoc32.cpp
+USERINCLUDE			../../src/adt/include
+USERINCLUDE			../../src/evt/include
+USERINCLUDE			../../src/hed/include
+USERINCLUDE			../../src/gdi/include
+USERINCLUDE			../../src/image/include
+USERINCLUDE			../../src/imagech/include
+USERINCLUDE     ../../src/lmgr/include
+USERINCLUDE			../../src/object/include
+USERINCLUDE     ../../src/text/include
+// end of cleanup includes
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE   ../../src/utils/include
+MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_LIBC_SYSTEMINCLUDE
+
+#endif 

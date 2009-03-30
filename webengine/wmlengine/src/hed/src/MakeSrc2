@@ -1,0 +1,46 @@
+#----------------------------------------------------------------------------
+# 
+# Copyright (c) 2001,2002. Nokia Mobile Phones
+#
+#----------------------------------------------------------------------------
+
+MAKEFILE    = MakeSrc2
+TARGET      = rbTempest_hed_src_src2_lib.a
+
+
+SUBDIRS   =  
+
+SUBMAKES  =  
+
+OBJS      = 
+
+SRCS      =  	ChildIterator.c \
+		CompositeContentHandler.c \
+                CompositeNode.c \
+		ContentDispatcher.c \
+		ContentHandler.c \
+		Context.c \
+		ContextVisitor.c \
+		DocumentNode.c \
+		DocumentRoot.c \
+		DomHelper.c  \
+		DomTree.c \
+		EntitySet.c \
+		HEDEventHandler.c \
+		HistoryEntry.c  \
+		HistoryStack.c \
+                ICompositeNode.c \
+		IDispatchListener.c \
+		IDocumentListener.c  \
+		ILoadRecipient.c \
+		ILoaderListener.c \
+		INumberCollector.c \
+		Loader.c \
+		MimeTable.c \
+		TreeVisitor.c \
+		UrlRequest.c \
+		UrlResponse.c
+
+################################################################################
+
+include $(CORESW_MAKE_TEMPLATE)

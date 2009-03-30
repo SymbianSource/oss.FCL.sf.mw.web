@@ -1,0 +1,40 @@
+/*
+* Copyright (c) 1999 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include "../browserdialogsprovider/group/bld.inf"
+#include "../recenturlstore/group/bld.inf"
+#include "../xmlparser/group/bld.inf"
+#include "../cxmllibrary/group/bld.inf"
+#include "../downloadmgr/group/bld.inf"
+#include "../connectionmanager/group/bld.inf"
+#include "../browsertelservice/group/bld.inf"
+#include "../favouritesengine/group/bld.inf"
+#include "../feedsengine/group/bld.inf"
+#include "../multipartparser/group/bld.inf"
+#include "../schemehandler/group/bld.inf"
+#include "../webutils/group/bld.inf"
+#include "../aiwbrowserprovider/group/bld.inf"
+
+PRJ_PLATFORMS
+
+DEFAULT
+
+PRJ_EXPORTS
+
+PRJ_MMPFILES
+
+PRJ_TESTMMPFILES
