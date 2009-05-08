@@ -66,6 +66,8 @@ Default is WML support enabled
 // Defines WRT widgets feature to publish on homescreen
 #define BRDO_WRT_HS_FF
 
+// Gallery App is not present
+#undef BRDO_APP_GALLERY_SUPPORTED_FF
 /*
 * ===================
 *        S60 3.23
@@ -91,9 +93,11 @@ Default is WML support enabled
 
 #undef BRDO_WRT_HS_FF
 
+// Gallery App is present
+#define BRDO_APP_GALLERY_SUPPORTED_FF
 // Missing from ProductVariant.hrh
 #ifndef LANGUAGE_IDS
-#define LANGUAGE_IDS LANG sc 01 02 03 04 05 06 07 08 09 10 13 14 15 16 17 18 25 26 27 28 29 30 31 32 33 37 39 42 44 45 49 50 51 54 57 58 59 67 68 70 76 78 79 83 93 94 96 102 103 129 157 158 159 160 161 230 326 327
+#define LANGUAGE_IDS LANG sc
 #endif
 
 #define BRDO_APP_VERSION_MAJOR 7

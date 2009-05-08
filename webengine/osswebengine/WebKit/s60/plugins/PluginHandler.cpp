@@ -22,7 +22,8 @@
 #include <e32std.h>
 #include <e32uid.h>
 #include <sysutil.h>
-#include "../../bidi.h"
+#include "config.h"
+#include "..\..\bidi.h"
 
 // System includes
 #include <ecom/ecom.h>
@@ -398,6 +399,8 @@ PluginHandler::PluginHandler(TBool enablePlugins)
     : m_pluginInfoArray( KPluginGranularity )
       ,m_enablePlugins(enablePlugins)
       ,m_asyncLoading(ETrue)
+      ,m_pluginToActivate(NULL)
+      ,m_activePlugin(NULL)
 {
 }
 
@@ -440,6 +443,7 @@ PluginHandler::~PluginHandler()
 {
     m_pluginInfoArray.ResetAndDestroy();
     m_pluginInfoArray.Close();
+    m_pluginObjects.clear();
     if (m_idle) {
        m_idle->Cancel();
     }
@@ -885,4 +889,12 @@ TBool PluginHandler::isSupported(const TDesC& contentType, const TDesC8& url)
     return isSupported;
 }
 
+void PluginHandler::storePluginObject(PluginSkin* pluginObj)
+{
+    m_pluginObjects.add(pluginObj);    
+}
+void  PluginHandler::removePluginObject(PluginSkin* pluginObj)
+{
+    m_pluginObjects.remove(pluginObj);    
+}
 //  End of File

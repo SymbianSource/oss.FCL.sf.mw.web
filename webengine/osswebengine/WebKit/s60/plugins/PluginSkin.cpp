@@ -280,6 +280,10 @@ void PluginSkin::Close()
         PluginHandler* pluginhandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
         if ( pluginhandler) {
             pluginhandler->unloadPlugin( m_handle );
+            pluginhandler->removePluginObject(this);
+            if (this == pluginhandler->activePlugin()) {
+                pluginhandler->setActivePlugin(NULL);
+            }
         }
         m_handle = -1;
     }
@@ -427,6 +431,9 @@ void PluginSkin::deActivate()
         // Set right soft key
         m_frame->frameView()->topView()->brCtl()->updateDefaultSoftkeys();
         }
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+    pluginHandler->setPluginToActivate(NULL);
+    pluginHandler->setActivePlugin(NULL);
     }
 
 // ----------------------------------------------------------------------------
@@ -439,6 +446,7 @@ void PluginSkin::activate()
     if (m_pluginClosed)
         return;
 
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
     TBool consumed(EFalse);
     if(m_pluginwin)
     {
@@ -451,14 +459,17 @@ void PluginSkin::activate()
                 m_frame->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
                 // Set right soft key
                 m_frame->frameView()->topView()->brCtl()->updateDefaultSoftkeys();
+                pluginHandler->setActivePlugin(this);
                 }
             }
         else
             {
             m_active = ETrue;
+            pluginHandler->setActivePlugin(this);
             m_frame->frameView()->topView()->openPluginPlayer(m_pluginwin);
             consumed = ETrue;
             m_active = EFalse;
+            pluginHandler->setActivePlugin(NULL);
             }
     } else {
         if ( m_pluginSupported ) {
@@ -603,6 +614,7 @@ void PluginSkin::createPluginWinL(TDesC8& url, TDesC& mimetype)
     // Create the PluginWin, if it doesn't exist,
     m_pluginSupported = true;
     m_pluginwin = PluginWin::NewL(this, *m_frame->frameView()->topView());
+    pluginHandler->storePluginObject(this);
     m_frame->frameView()->invalidateRect(m_rect, EFalse);    
 }
 

@@ -1,30 +1,12 @@
 EXPORTS
-	_ZN16RT_GestureHelper14CGestureHelper11OfferEventLERK9TAlfEvent @ 1 NONAME
-	_ZN16RT_GestureHelper14CGestureHelper17SetHoldingEnabledEi @ 2 NONAME
-	_ZN16RT_GestureHelper14CGestureHelper19HandlePointerEventLERK13TPointerEvent @ 3 NONAME
-	_ZN16RT_GestureHelper14CGestureHelper19SetDoubleTapEnabledEi @ 4 NONAME
-	_ZN16RT_GestureHelper14CGestureHelper25InitAlfredPointerCaptureLER7CAlfEnvR11CAlfDisplayi @ 5 NONAME
-	_ZN16RT_GestureHelper14CGestureHelper4NewLERNS_16MGestureObserverE @ 6 NONAME
-	_ZN16RT_GestureHelper14CGestureHelper6CancelEv @ 7 NONAME
-	_ZN16RT_GestureHelper14CGestureHelperD0Ev @ 8 NONAME
-	_ZN16RT_GestureHelper14CGestureHelperD1Ev @ 9 NONAME
-	_ZN16RT_GestureHelper14CGestureHelperD2Ev @ 10 NONAME
-	_ZN16RT_GestureHelper15CGestureControl10ConstructLERNS_16MGestureObserverER7CAlfEnvR11CAlfDisplayi @ 11 NONAME
-	_ZN16RT_GestureHelper15CGestureControl11OfferEventLERK9TAlfEvent @ 12 NONAME
-	_ZN16RT_GestureHelper15CGestureControl17SetHoldingEnabledEi @ 13 NONAME
-	_ZN16RT_GestureHelper15CGestureControl19SetDoubleTapEnabledEi @ 14 NONAME
-	_ZN16RT_GestureHelper15CGestureControl5NewLCERNS_16MGestureObserverER7CAlfEnvR11CAlfDisplayi @ 15 NONAME
-	_ZN16RT_GestureHelper15CGestureControlC1Ev @ 16 NONAME
-	_ZN16RT_GestureHelper15CGestureControlC2Ev @ 17 NONAME
-	_ZN16RT_GestureHelper15CGestureControlD0Ev @ 18 NONAME
-	_ZN16RT_GestureHelper15CGestureControlD1Ev @ 19 NONAME
-	_ZN16RT_GestureHelper15CGestureControlD2Ev @ 20 NONAME
-	_ZN16RT_GestureHelper7HitTest19VisualByCoordinatesERK11CAlfControlRK6TPoint @ 21 NONAME
-	_ZNK16RT_GestureHelper14CGestureHelper16IsHoldingEnabledEv @ 22 NONAME
-	_ZNK16RT_GestureHelper14CGestureHelper18IsDoubleTapEnabledEv @ 23 NONAME
-	_ZNK16RT_GestureHelper15CGestureControl16IsHoldingEnabledEv @ 24 NONAME
-	_ZNK16RT_GestureHelper15CGestureControl18IsDoubleTapEnabledEv @ 25 NONAME
-	_ZTIN16RT_GestureHelper15CGestureControlE @ 26 NONAME ; #<TI>#
-	_ZTVN16RT_GestureHelper15CGestureControlE @ 27 NONAME ; #<VT>#
-	_ZThn32_N16RT_GestureHelper15CGestureControl11OfferEventLERK9TAlfEvent @ 28 NONAME ; #<thunk>#
+	_ZN16RT_GestureHelper14CGestureHelper17SetHoldingEnabledEi @ 1 NONAME
+	_ZN16RT_GestureHelper14CGestureHelper19HandlePointerEventLERK13TPointerEvent @ 2 NONAME
+	_ZN16RT_GestureHelper14CGestureHelper19SetDoubleTapEnabledEi @ 3 NONAME
+	_ZN16RT_GestureHelper14CGestureHelper4NewLERNS_16MGestureObserverE @ 4 NONAME
+	_ZN16RT_GestureHelper14CGestureHelper6CancelEv @ 5 NONAME
+	_ZN16RT_GestureHelper14CGestureHelperD0Ev @ 6 NONAME
+	_ZN16RT_GestureHelper14CGestureHelperD1Ev @ 7 NONAME
+	_ZN16RT_GestureHelper14CGestureHelperD2Ev @ 8 NONAME
+	_ZNK16RT_GestureHelper14CGestureHelper16IsHoldingEnabledEv @ 9 NONAME
+	_ZNK16RT_GestureHelper14CGestureHelper18IsDoubleTapEnabledEv @ 10 NONAME
 

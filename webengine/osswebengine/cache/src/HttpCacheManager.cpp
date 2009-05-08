@@ -137,7 +137,7 @@ TBool CHttpCacheManager::VSSRequestCheck( const RHTTPTransaction& aTrans,
                                           const TDesC8& aUrl )
     {
     TBool VSSTransaction ( EFalse );
-    if( iVSSCacheEnabled && HttpCacheUtil::VSSCacheContent( aUrl, iVSSWhiteList ) )
+    if ( iVSSCacheEnabled && HttpCacheUtil::VSSCacheContent( aUrl, iVSSWhiteList ) )
         {
         RStringPool strP = aTrans.Session().StringPool();
 
@@ -164,13 +164,13 @@ TBool CHttpCacheManager::VSSRequestCheck( const RHTTPTransaction& aTrans,
         CleanupClosePushL<RStringF>( VSSnameStr);
 
         THTTPHdrVal tempVal;
-        if( aHttpHeader.GetField( VSSnameStr, 0, tempVal ) == KErrNone )
+        if ( aHttpHeader.GetField( VSSnameStr, 0, tempVal ) == KErrNone )
             {
             TPtrC8 valueStr ( KVSSHeaderFileldValue() );
             RStringF VSSValueStr = strP.OpenFStringL( valueStr );
             CleanupClosePushL<RStringF>( VSSValueStr );
 
-            if( tempVal == VSSValueStr )
+            if ( tempVal == VSSValueStr )
                 {
                 VSSTransaction      = ETrue;
                 }
@@ -178,6 +178,7 @@ TBool CHttpCacheManager::VSSRequestCheck( const RHTTPTransaction& aTrans,
             }
         CleanupStack::PopAndDestroy(); // VSSnameStr
         } //end if( iVSSCacheEnabled && HttpCacheUtil::VSSCacheContent( aUrl, iVSSWhiteList ) )
+
     return VSSTransaction;
     }
 // -----------------------------------------------------------------------------
@@ -353,7 +354,7 @@ EXPORT_C TInt CHttpCacheManager::RemoveAllL()
         }
         
     //failure here is not mission critical
-    TRAPD( error, RemoveOrphanedFilesL() ); 
+    TRAP_IGNORE( RemoveOrphanedFilesL() ); 
     
     return numOfBytes;
     }

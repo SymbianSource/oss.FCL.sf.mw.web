@@ -331,4 +331,35 @@ class CDefaultMemoryPool : public CMemoryPool
         TUint iRescueBufferSize;
     };
 
+class RSymbianDLHeap;
+
+/**
+*  The memory pool using new symbian DLMalloc/Slab hybrid allocator for fast allocation
+*  @lib memman.lib
+*  @since 3.1
+*/
+NONSHARABLE_CLASS(CNewSymbianHeapPool) : public CMemoryPool
+    {
+    public:
+    	CNewSymbianHeapPool();
+    	~CNewSymbianHeapPool();
+    	
+        TBool Create();
+    	
+        TAny* Allocate( TUint aSize )   { return AllocFromPool( aSize ); }
+        TAny* ReAllocate( TAny* aPtr, TUint aSize );
+        void Free( TAny* aPtr );
+        TUint MemorySize( TAny* aPtr );
+        void SetRescueBufferSize( TInt aSize );
+        TAny* DoAlloc( TUint aSize );
+        TBool PreCheck( TUint aTotalSize, TUint aMaxBufSize, const TDesC8& aChecker );
+        TUint PostCheck();
+        TUint FreeMemory( TFreeMem& aFree );
+        void RestoreRescueBuffer();
+    private:
+    	void InitLocal();
+    	
+    	RSymbianDLHeap *iAlloc;
+    };
+
 #endif

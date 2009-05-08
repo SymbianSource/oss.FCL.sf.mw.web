@@ -18,6 +18,7 @@
 
 
 // INCLUDE FILES
+#include <platform/mw/Browser_platform_variant.hrh>
 #include    "HeaderField.h"
 #include    "HttpDownloadManagerServerEngine.h"
 #include    "HttpClientApp.h"
@@ -34,8 +35,12 @@
 #include    <HttpFilterCommonStringsExt.h>
 #include    <tinternetdate.h>
 #include    <SysUtil.h>
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MGXFileManagerFactory.h>
 #include    <CMGXFileManager.h>
+#endif
+
 #include    <DcfEntry.h>
 #include    <DcfRep.h>
 
@@ -614,8 +619,6 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
                 if( iClAppInstance )
                     {
                     SetDownloadStatus( EHttpProgNone, EHttpDlDeleting );
-                    //Deref Attach Download instance
-                    aClAppInstance->ClientApp()->UnregisterDownload( this ); 
                     return;
                     }
                 }
@@ -625,8 +628,6 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
                 if( iPDClAppInstance )
                     {
                     SetDownloadStatus( EHttpProgNone, EHttpDlDeleting );
-                    //Deref Master Client Instance
-                    aClAppInstance->ClientApp()->UnregisterDownload( this );                    
                     return;
                     }
                 }        
@@ -672,7 +673,7 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
 	        CLOG_WRITE("Keep file");
 	        closeOp = CHttpStorage::EKeepFile;
 	        }
-    
+	        
 	if( iStorage->RFileSetByClient())
 	    {
 	    TBool pausable;
@@ -682,6 +683,7 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
             CLOG_WRITE("Keep file");
 	        closeOp = CHttpStorage::EKeepFile;
             }
+		
 	    }
     if( iCodDlData )
 	    {
@@ -721,7 +723,7 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
     	iStorage->CloseDestinationFile( closeOp );
     	}
     // when delete there's no store -> no leave
-    aClAppInstance->ClientApp()->UnregisterDownload( this ); 
+    //  aClAppInstance->ClientApp()->UnregisterDownload( this ); 
     }
 
 
@@ -7025,6 +7027,9 @@ void CHttpDownload::NotifyMediaGalleryL( const TDesC& aFileName )
 
 	LOGGER_ENTERFN( "CHttpDownload::NotifyMediaGalleryL" );
     CLOG_WRITE_1(" notifying Gallery and DcfReposory about move for: %S",&aFileName);
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF    
+    
     //
     // Notify Media Gallery about new media file
     CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL(
@@ -7039,6 +7044,8 @@ void CHttpDownload::NotifyMediaGalleryL( const TDesC& aFileName )
         TRAP_IGNORE( mgFileManager->UpdateL() );
         }
     CleanupStack::PopAndDestroy( mgFileManager );
+    
+#endif    
     //
     // Notify DCF repository
     TRAP_IGNORE( UpdateDCFRepositoryL( aFileName ) );

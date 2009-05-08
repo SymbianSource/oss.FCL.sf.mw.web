@@ -18,6 +18,7 @@
 #include <domain/osextensions/platform_paths.hrh>
 #include <data_caging_paths.hrh>
 //#include "/../../../../WebEngine/OssWebEngine/WebKit/s60/group/common.mmpi"
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          WebViewApiTest.dll
 TARGETTYPE      dll
@@ -29,7 +30,7 @@ CAPABILITY      ALL -TCB
 /* Remove comments and replace 0x00000000 with correct secure id */
 // SECUREID     0x00000000
 
-LANG            SC
+LANGUAGE_IDS
 
 DEFFILE         WebViewApiTest.def
 

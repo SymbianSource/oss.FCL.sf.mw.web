@@ -17,7 +17,6 @@
 
 #include "gesturehelpereventsender.h"
 #include "gesture.h"
-#include "gestureevent.h"
 
 using namespace RT_GestureHelper;
 
@@ -39,11 +38,15 @@ CGestureEventSender::CGestureEventSender( MGestureObserver& aObserver ) :
 
 CGestureEventSender::~CGestureEventSender()
     {
+    if (IsActive()) 
+        {
+        Cancel();
+        }
+
     iEvents.Close();
-    iEvents.ResetAndDestroy();
     }
 
-TInt CGestureEventSender::AddEvent(const CGestureEvent* aGestureEvent)
+TInt CGestureEventSender::AddEvent(const TGestureEvent& aGestureEvent)
     {
     iEvents.Append(aGestureEvent);
     if (iState != EBusy)
@@ -65,7 +68,6 @@ void CGestureEventSender::Complete()
     SetActive();
     }
 
-
 void CGestureEventSender::RunL()
     {
     switch (iState)
@@ -77,9 +79,8 @@ void CGestureEventSender::RunL()
                 TInt count = iEvents.Count();
                 for (int i = 0;  i < count; i++)
                     {
-                    CGestureEvent* gst = iEvents[i];
-                    EmitEventL(*gst);
-                    delete gst;
+                    TGestureEvent& gst = iEvents[i];
+                    EmitEventL(gst);
                     }
                 }
             iEvents.Reset();
@@ -90,8 +91,7 @@ void CGestureEventSender::RunL()
         }
     }
 
-
-void CGestureEventSender::EmitEventL( const CGestureEvent& aGesture )
+void CGestureEventSender::EmitEventL( const TGestureEvent& aGesture )
     {
     iState = EBusy;
     iObserver.HandleGestureL(aGesture);
@@ -100,6 +100,7 @@ void CGestureEventSender::EmitEventL( const CGestureEvent& aGesture )
 
 TInt CGestureEventSender::RunError(TInt aError)
     {
+    iEvents.Reset();
     return aError;
     }
 

@@ -213,10 +213,16 @@ NONSHARABLE_CLASS( CDownloadsListArray ) : public CBase
         
 
         HBufC* iSavedToDownloadsFolderString;
+        
+        HBufC* iFileSavedString;
+        HBufC* iFilesSavedString;
 
         HBufC* iNullDesC; ///< Owned.
 
         CApaMaskedBitmap* iApaMaskedBitmap; ///< Temp storage. Owned.
+        
+        TBool                       iPlatformSupportsGallery;
+        
         
      
     };

@@ -97,7 +97,9 @@ CHttpCacheLookupTable* CHttpCacheLookupTable::NewL(
     return self;
     }
 
+// -----------------------------------------------------------------------------
 // Destructor
+// -----------------------------------------------------------------------------
 CHttpCacheLookupTable::~CHttpCacheLookupTable()
     {
     // do not call ResetAndDestroy on iEntries
@@ -150,17 +152,35 @@ CHttpCacheEntry* CHttpCacheLookupTable::InsertL(
 //
 // -----------------------------------------------------------------------------
 //
-CHttpCacheEntry* CHttpCacheLookupTable::Find(
-    const TDesC8& aUrl )
+CHttpCacheEntry* CHttpCacheLookupTable::Find( const TDesC8& aUrl )
     {
     CHttpCacheEntry* entry = NULL;
-  TInt pos( Probe( aUrl, EFalse ) );
-    //
-  if( Valid( pos ) )
+    TInt pos( Probe( aUrl, EFalse ) );
+
+    if ( Valid( pos ) )
         {
         entry = iEntries->At( pos );
+        
+        if ( entry )
+            {
+            if ( entry->BodySize() == 0 &&
+                 entry->State() == CHttpCacheEntry::ECacheComplete )
+                {
+
+#ifdef __CACHELOG__
+                HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheLookupTable::Find - Found ZERO size"),
+                                           entry->Filename(),
+                                           entry->Url(),
+                                           pos,
+                                           ELogLookupTablePos );
+#endif
+                return NULL;
+                }
+            }
         }
-  return entry;
+
+    return entry;
     }
 
 // -----------------------------------------------------------------------------
@@ -168,59 +188,68 @@ CHttpCacheEntry* CHttpCacheLookupTable::Find(
 //
 // -----------------------------------------------------------------------------
 //
-TInt CHttpCacheLookupTable::Remove(
-    const TDesC8& aUrl )
+TInt CHttpCacheLookupTable::Remove( const TDesC8& aUrl )
     {
     TInt status( KErrNotFound );
-  TInt pos( Probe( aUrl, EFalse ) );
-    //
-  if( Valid( pos ) )
+    TInt pos( Probe( aUrl, EFalse ) );
+
+    if( Valid( pos ) )
         {
         // remove only nonactive entry
         CHttpCacheEntry* entry = iEntries->At( pos );
-        if( entry->State() == CHttpCacheEntry::ECacheComplete )
+        if ( entry->State() == CHttpCacheEntry::ECacheComplete )
             {
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheLookupTable::Remove - ERASING item"),
+                                           entry->Filename(),
+                                           entry->Url(),
+                                           pos,
+                                           ELogLookupTablePos );
+#endif
             Erase( pos );
             status = KErrNone;
-            HttpCacheUtil::WriteLog( 0, _L( "remove item" ), pos );
             }
 #ifndef __CACHELOG__
         }
-#else // __CACHELOG__
+#else //__CACHELOG__
         else
             {
-            HttpCacheUtil::WriteLog( 0, _L( "item is active. cannot be removed" ), pos );
+            HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheLookupTable::Remove - can NOT remove item, is active state"),
+                                           entry->Filename(),
+                                           entry->Url(),
+                                           pos,
+                                           ELogLookupTablePos );
             }
         }
     else
         {
-        HttpCacheUtil::WriteLog( 0, _L( "item is not valid. cannot be removed" ), pos );
+        HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheLookupTable::Remove - item is not valid. cannot be removed" ), pos );
         }
 #endif // __CACHELOG__
+
     return status;
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheLookupTable::EraseCorruptEntry
+// CHttpCacheLookupTable::EraseCacheEntry
 //
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheLookupTable::EraseCorruptEntry(
-    const TDesC8& aUrl )
+void CHttpCacheLookupTable::EraseCacheEntry( const TDesC8& aUrl )
     {
-  TInt pos( Probe( aUrl, EFalse ) );
-    //
-  if( Valid( pos ) )
+    TInt pos( Probe( aUrl, EFalse ) );
+    
+    if ( Valid( pos ) )
         {
         Erase( pos );
-        HttpCacheUtil::WriteLog( 0, _L( "remove corrupt item" ), pos );
         }
 #ifdef __CACHELOG__
     else
         {
         // there must be a valid position for this entry
         __ASSERT_DEBUG( EFalse, User::Panic( _L("cacheHandler Panic"), KErrCorrupt ) );
-        HttpCacheUtil::WriteLog( 0, _L( "corrupt item is not valid" ), pos );
         }
 #endif // __CACHELOG__
     }
@@ -233,23 +262,28 @@ void CHttpCacheLookupTable::EraseCorruptEntry(
 TInt CHttpCacheLookupTable::RemoveAll()
     {
     TInt numberOfBytes( 0 );
-    HttpCacheUtil::WriteLog( 0, _L( "remove 'em all" ) );
-    //
-    for( TInt i = 0; i < iEntries->Count(); i++ )
+
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheLookupTable::RemoveAll - remove 'em all" ) );
+#endif
+
+    for ( TInt i = 0; i < iEntries->Count(); i++ )
         {
         CHttpCacheEntry* entry = iEntries->At( i );
-        // remove all nonactive entries
-        if( Valid( i ) && entry->State() == CHttpCacheEntry::ECacheComplete )
+        // Remove all nonactive entries
+        if ( Valid( i ) && entry->State() == CHttpCacheEntry::ECacheComplete )
             {
-            numberOfBytes+= ( entry->HeaderSize() + entry->Size() );
+            numberOfBytes += ( entry->HeaderSize() + entry->BodySize() );
             Erase( i );
             }
         }
+
 #ifdef __CACHELOG__
     HttpCacheUtil::WriteLog( 0, _L( "number of items left:" ), iCount );
     // check if there are pending items -should not be though
     __ASSERT_DEBUG( iCount == 0, User::Panic( _L("cacheHandler Panic"), KErrCorrupt ) );
 #endif // __CACHELOG__
+
     return numberOfBytes;
     }
 
@@ -294,7 +328,7 @@ TInt CHttpCacheLookupTable::ListFiles(RPointerArray<TDesC>& aFilenameList)
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheLookupTable::Internalize
+// CHttpCacheLookupTable::InternalizeL
 //
 // -----------------------------------------------------------------------------
 //
@@ -304,7 +338,7 @@ void CHttpCacheLookupTable::InternalizeL(
     {
     // get number of entries
     TInt version = 0;
-    TRAP_IGNORE( version = aReadStream.ReadInt32L() );
+    version = aReadStream.ReadInt32L();
     if( version == KCacheVersionNumber )
         {
         TInt count( aReadStream.ReadInt32L() );
@@ -321,27 +355,31 @@ void CHttpCacheLookupTable::InternalizeL(
                 {
                 // insert to the table
                 InsertL( entry );
-                contentSize+=entry->HeaderSize();
-                contentSize+=entry->Size();
+                contentSize += entry->HeaderSize();
+                contentSize += entry->BodySize();
                 }
-            else if( err == KErrNoMemory )
+            else if ( err == KErrNoMemory )
                 {
                 User::Leave( KErrNoMemory );
                 }
             else
                 {
-                // suggestions?
+                // suggestions
                 }
+
             // takes ownership
             CleanupStack::Pop(); // entry
             }
+
         // set startup cache size
+#ifdef __CACHELOG__
         HttpCacheUtil::WriteLog( 0, _L( "startup content size" ), contentSize );
-        iStreamHandler->SetStartupCacheSize( contentSize );
+#endif
+        iStreamHandler->SetSavedContentSize( contentSize );
         }
     else
         {
-        // cleanup index.dat?
+        // cleanup index.dat
         }
     }
 
@@ -384,10 +422,10 @@ TInt CHttpCacheLookupTable::InsertL(
     {
     __ASSERT_DEBUG( aCacheEntry != NULL,
         User::Panic( _L("cacheHandler Panic"), KErrCorrupt ) );
-    //
+
     TInt pos( -1 );
 
-    if( aCacheEntry )
+    if ( aCacheEntry )
         {
         pos = Probe( aCacheEntry->Url(), ETrue );
         // double check
@@ -403,14 +441,18 @@ TInt CHttpCacheLookupTable::InsertL(
                 pos = -1;
                 }
             }
+
         // insert
         if( pos != -1 )
             {
             iEntries->At( pos ) = aCacheEntry;
             iCount++;
+
+#ifdef __CACHELOG__
             HttpCacheUtil::WriteLog( 0, _L( "insert new item to the lookuptable" ), pos );
+#endif
             // check if the hashtable is full
-            if( iCount > ( iEntries->Count() >> 1 ) )
+            if ( iCount > ( iEntries->Count() >> 1 ) )
                 {
                 ReHashL();
                 }
@@ -525,12 +567,14 @@ TInt CHttpCacheLookupTable::HashUrl(
 //
 void CHttpCacheLookupTable::ReHashL()
     {
+#ifdef __CACHELOG__
     HttpCacheUtil::WriteLog( 1, _L( "Resize lookuptable!" ) );
     HttpCacheUtil::WriteLog( 1, _L( "count=" ), iCount );
     HttpCacheUtil::WriteLog( 1, _L( "Table size=" ), iEntries->Count() );
-    //
+#endif
+
     TUint newSize( NextPrime( iEntries->Count() * 2 ) );
-  CArrayPtrFlat<CHttpCacheEntry>* newEntries =
+    CArrayPtrFlat<CHttpCacheEntry>* newEntries =
         new( ELeave )CArrayPtrFlat<CHttpCacheEntry>( newSize );
     // hash must operate on the new table
     CArrayPtrFlat<CHttpCacheEntry>* oldEntries = iEntries;
@@ -608,24 +652,33 @@ TUint CHttpCacheLookupTable::NextPrime(
 //
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheLookupTable::Erase(
-    TInt aPos )
+void CHttpCacheLookupTable::Erase( TInt aPos )
     {
     // must be a valid pos
     __ASSERT_DEBUG( Valid( aPos ),  User::Panic( _L("cacheHandler Panic"), KErrCorrupt ) );
+
     CHttpCacheEntry* entry = iEntries->At( aPos );
 
     if( entry )
         {
         // delete file associated with this entry
         TBool attached( EFalse );
+        
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheLookupTable::Erase"),
+                                           entry->Filename(),
+                                           entry->Url(),
+                                           aPos,
+                                           ELogLookupTablePos );
+#endif        
         TRAPD( err, attached = iStreamHandler->AttachL( *entry ) );
-        if( err == KErrNone && attached )
+        if ( err == KErrNone && attached )
             {
-            iStreamHandler->Erase( *entry );
+            iStreamHandler->EraseCacheFile( *entry );
             iStreamHandler->Detach( *entry );
             }
-        //
+
         SetDeleted( aPos );
         delete entry;
         iCount--;

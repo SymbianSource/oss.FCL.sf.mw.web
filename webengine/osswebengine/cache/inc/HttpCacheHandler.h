@@ -304,7 +304,7 @@ class CHttpCacheHandler : public CBase
         * @param
         * @return
         */
-        void HandleCorruptEntry( CHttpCacheEntry& aStrayEntry, TBool aUpdate = ETrue );
+        void DeleteCacheEntry( CHttpCacheEntry& aEntry, TBool aUpdate = ETrue );
 
 
         /**
@@ -332,8 +332,8 @@ class CHttpCacheHandler : public CBase
         HBufC*                          iIndexFile; // owned
         // Observing changes in cache
         CHttpCacheObserver* iHttpCacheObserver; // owned
-	// An opened and configured file server session
-	RFs iRfs;
+    	// An opened and configured file server session
+    	RFs iRfs;
     };
 
 #endif      // CHTTPCACHEHANDLER_H

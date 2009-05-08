@@ -444,6 +444,7 @@ void CHttpConnHandler::Disconnect( TBool aAtOnce, CHttpDownload* aDownload )
             && iConnStage == KLinkLayerOpen )
             {
 			CLOG_WRITE_1( "ShutDown->Start: atOnce=%d", aAtOnce );
+			iConnStage = KConnectionStartingClose;
             iShutDown->Start( KShutDownTimer );
             }
         else

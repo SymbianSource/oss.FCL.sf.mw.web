@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:   Implemetation of CWebKiCursor
+* Description:   Implementation of CWebKiCursor
 *
 */
 
@@ -83,7 +83,7 @@ TInt TransparencyTimerCb(TAny* any)
 // ============================ MEMBER FUNCTIONS ===============================
 
 // -----------------------------------------------------------------------------
-// CWebKitCursor::NewL
+// WebCursor::NewL
 // Two-phased constructor.
 // -----------------------------------------------------------------------------
 WebCursor* WebCursor::NewL()
@@ -132,7 +132,7 @@ void WebCursor::ConstructL()
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::SetCurrentView
+// WebCursor::setCurrentView
 // -----------------------------------------------------------------------------
 void WebCursor::setCurrentView(WebView& view)
     {
@@ -147,7 +147,7 @@ void WebCursor::setCurrentView(WebView& view)
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::ConstructSprite
+// WebCursor::constructSprite
 // -----------------------------------------------------------------------------
 void WebCursor::constructSprite()
     {
@@ -194,13 +194,13 @@ void WebCursor::constructSprite()
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::CursorUpdate
+// WebCursor::setCursor
 // -----------------------------------------------------------------------------
 void WebCursor::setCursor(CursorTypes type)
 {
     m_sprite.SetPosition( m_pos );
     m_type = type;
-    if (m_visible) {
+    if (m_visible && !(m_view->brCtl()->settings()->getTabbedNavigation())) {
         TSpriteMember spriteMem;
         switch( type )
             {
@@ -257,7 +257,7 @@ void WebCursor::setCursor(CursorTypes type)
 }
 
 // -----------------------------------------------------------------------------
-// WebCursor::CursorUpdate
+// WebCursor::cursorUpdate
 // -----------------------------------------------------------------------------
 void WebCursor::cursorUpdate(bool visible)
 {
@@ -266,27 +266,32 @@ void WebCursor::cursorUpdate(bool visible)
     if ( m_view->showCursor() ) {
         m_visible = visible && (!m_view->brCtl()->settings()->getTabbedNavigation() || m_view->focusedElementType() == TBrCtlDefs::EElementSelectMultiBox); // check for tabbedNavigation here because it is called from so many places.
     }
-    
+
     resetTransparency();
     CursorTypes type = PointerCursor;
     TBrCtlDefs::TBrCtlElementType elType = m_view->focusedElementType();
+
     if (m_visible) {
-        if (elType == TBrCtlDefs::EElementNone || elType == TBrCtlDefs::EElementBrokenImage)
+        if      (    elType == TBrCtlDefs::EElementNone
+                  || elType == TBrCtlDefs::EElementImageBox
+                  || elType == TBrCtlDefs::EElementBrokenImage )
             type = PointerCursor;
-        else if (elType == TBrCtlDefs::EElementSmartLinkTel || elType == TBrCtlDefs::EElementSmartLinkEmail)
+        else if (    elType == TBrCtlDefs::EElementSmartLinkTel
+                  || elType == TBrCtlDefs::EElementSmartLinkEmail )
             type = IBeamCursor;
-        else if (m_view->brCtl()->settings()->getTabbedNavigation() && elType == TBrCtlDefs::EElementSelectMultiBox)
+        else if (    elType == TBrCtlDefs::EElementSelectMultiBox && m_view->brCtl()->settings()->getTabbedNavigation() )
             type = SelectMultiCursor;
         else
             type = HandCursor;
     }
+
     setCursor(type);
 }
 
 
 
 // -----------------------------------------------------------------------------
-// CWebKitCursor::getFrameAtPoint
+// WebCursor::getFrameAtPoint
 // -----------------------------------------------------------------------------
 WebFrame* WebCursor::getFrameAtPoint(const TPoint& viewPos_)
     {
@@ -299,7 +304,7 @@ WebFrame* WebCursor::getFrameAtPoint(const TPoint& viewPos_)
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::Reset
+// WebCursor::reset
 // -----------------------------------------------------------------------------
 void WebCursor::reset()
     {
@@ -309,7 +314,7 @@ void WebCursor::reset()
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::SetWaitCursor
+// WebCursor::setWaitCursor
 // -----------------------------------------------------------------------------
 void WebCursor::setWaitCursor(bool waiton)
     {
@@ -321,7 +326,7 @@ void WebCursor::setWaitCursor(bool waiton)
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::OffsetCursor
+// WebCursor::offsetCursor
 // -----------------------------------------------------------------------------
 void WebCursor::offsetCursor(const TPoint& offset)
     {
@@ -330,7 +335,7 @@ void WebCursor::offsetCursor(const TPoint& offset)
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::SetTransparent
+// WebCursor::setTransparent
 // -----------------------------------------------------------------------------
 void WebCursor::setTransparent(bool transparent)
 {
@@ -347,7 +352,7 @@ void WebCursor::setTransparent(bool transparent)
 }
 
 // -----------------------------------------------------------------------------
-// WebCursor::SetOpaqueUntil
+// WebCursor::setOpaqueUntil
 // -----------------------------------------------------------------------------
 void WebCursor::setOpaqueUntil(int microsecs)
     {
@@ -357,7 +362,7 @@ void WebCursor::setOpaqueUntil(int microsecs)
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::IncreaseTransparencyMoveCount
+// WebCursor::increaseTransparencyMoveCount
 // -----------------------------------------------------------------------------
 void WebCursor::increaseTransparencyMoveCount()
     {
@@ -365,7 +370,7 @@ void WebCursor::increaseTransparencyMoveCount()
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::ResetTransparency
+// WebCursor::resetTransparency
 // -----------------------------------------------------------------------------
 void WebCursor::resetTransparency()
     {
@@ -556,6 +561,8 @@ WebFrame* WebCursor::calculateScrollableFrameView(TPoint& pos, TPoint& delta, TR
 
 
 //-------------------------------------------------------------------------------
+// WebCursor::scrollAndMoveCursor
+//
 // Method that scrolls and moves the cursor based on the navigation algorithm
 // TODO: Investigate "autoscroll" and diagonal events from real HW and the
 //       diagonal event simulator wedge.
@@ -701,7 +708,7 @@ void WebCursor::scrollAndMoveCursor(int dir, int scrollRange, bool autoscroll)
 }
 
 // -----------------------------------------------------------------------------
-// WebCursor::setPosition
+// WebCursor::updatePositionAndElemType
 // -----------------------------------------------------------------------------
 void WebCursor::updatePositionAndElemType(const TPoint& pt)
 {
@@ -717,7 +724,7 @@ void WebCursor::updatePositionAndElemType(const TPoint& pt)
 }
 
 // -----------------------------------------------------------------------------
-// WebCursor::movecursor
+// WebCursor::moveCursor
 // -----------------------------------------------------------------------------
 void WebCursor::moveCursor(int lr,int tb, int scrollRange)
     {
@@ -819,6 +826,9 @@ void WebCursor::moveCursor(int lr,int tb, int scrollRange)
     }
 
 
+// -----------------------------------------------------------------------------
+// WebCursor::navigableNodeUnderCursor
+// -----------------------------------------------------------------------------
 bool WebCursor::navigableNodeUnderCursor(WebFrame& webFrame, TPoint& aPoint, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect) const
 {
     Frame* coreFrame = core(&webFrame);
@@ -834,6 +844,9 @@ bool WebCursor::navigableNodeUnderCursor(WebFrame& webFrame, TPoint& aPoint, TBr
     return false;
 }
 
+// -----------------------------------------------------------------------------
+// WebCursor::determineCursorPosition
+// -----------------------------------------------------------------------------
 bool WebCursor::determineCursorPosition( WebFrame& webFrame, TBrCtlDefs::TBrCtlElementType& aElType,
                                          TRect& aFocusRect, TRect& aSearchRect,
                                          TPoint &aCursorPosition, bool aInitialize)
@@ -868,6 +881,9 @@ bool WebCursor::determineCursorPosition( WebFrame& webFrame, TBrCtlDefs::TBrCtlE
 }
 
 
+// -----------------------------------------------------------------------------
+// WebCursor::calcSearchRect
+// -----------------------------------------------------------------------------
 TRect WebCursor::calcSearchRect(int lr, int tb, int scrollRange)
 {
     TRect searchRect;
@@ -898,6 +914,9 @@ TRect WebCursor::calcSearchRect(int lr, int tb, int scrollRange)
     return searchRect;
 }
 
+// -----------------------------------------------------------------------------
+// WebCursor::increaseSearchRect
+// -----------------------------------------------------------------------------
 void WebCursor::increaseSearchRect(int lr,int tb,TRect& aRect)
 {
     int width(aRect.Width());
@@ -918,6 +937,9 @@ void WebCursor::increaseSearchRect(int lr,int tb,TRect& aRect)
     m_flipCounter = 0;
 }
 
+// -----------------------------------------------------------------------------
+// WebCursor::decideCursorPosition
+// -----------------------------------------------------------------------------
 bool WebCursor::decideCursorPosition(WebFrame& webFrame, const IntRect& searchRect, IntPoint& cursorPosition)
 {
     int distance = -1;
@@ -963,6 +985,9 @@ bool WebCursor::decideCursorPosition(WebFrame& webFrame, const IntRect& searchRe
     return found;
 }
 
+// -----------------------------------------------------------------------------
+// WebCursor::getFrameUnderCursor
+// -----------------------------------------------------------------------------
 WebFrame* WebCursor::getFrameUnderCursor()
 {
   return getFrameAtPoint(m_pos);

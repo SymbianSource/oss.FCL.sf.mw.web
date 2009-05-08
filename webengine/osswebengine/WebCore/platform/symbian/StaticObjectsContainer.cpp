@@ -59,6 +59,7 @@ StaticObjectsContainer::StaticObjectsContainer() :
     ,m_capabilities(0)
     ,m_oomHandler(0)
     ,m_fullScreenMode(false)
+    ,m_pluginFullscreen(false)
 {
     // Check the device resolution
     CEikonEnv* eikEnv = CEikonEnv::Static();

@@ -146,20 +146,20 @@ CHttpCacheHandler* CHttpCacheHandler::NewL(
     return self;
     }
 
+// -----------------------------------------------------------------------------
 // Destructor
+// -----------------------------------------------------------------------------
+//
 CHttpCacheHandler::~CHttpCacheHandler()
     {
-   
-        TRAP_IGNORE( SaveLookupTableL() );
-   
+    TRAP_IGNORE( SaveLookupTableL() );
     //
     delete iHttpCacheObserver;
     //
-    if (iEvictionHandler)
+    if ( iEvictionHandler )
         {
         iEvictionHandler->RemoveAll();
         }
-
     //
     delete iLookupTable;
     //
@@ -184,8 +184,10 @@ TInt CHttpCacheHandler::RequestL(
     TBrCtlDefs::TBrCtlCacheMode aCacheMode,
     THttpCacheEntry& aCacheEntry )
     {
+#ifdef __CACHELOG__
     HttpCacheUtil::WriteUrlToLog( 0, _L( "request item" ), aTrans.Request().URI().UriDes() );
-    //
+#endif
+
     TInt status( KErrNotFound );
     CHttpCacheEntry* entry = NULL;
     // 0. check if we need to check cache at all (protected vs no cache mode)
@@ -193,9 +195,8 @@ TInt CHttpCacheHandler::RequestL(
     // 2. check if it is complete
     // 3. see if it is useable
 
-    // use protected item on reload???
-    // currently not
-    // and do not use cache for post
+    // use protected item on reload
+    // currently not and do not use cache for post
     if( aCacheMode != TBrCtlDefs::ECacheModeNoCache &&
         HttpCacheUtil::MethodFromStr( aTrans.Request().Method(), aTrans.Session().StringPool() ) != EMethodPost )
         {
@@ -242,7 +243,7 @@ TInt CHttpCacheHandler::RequestL(
             else
                 {
                 // cleanup on the corrupt entry
-                HandleCorruptEntry( *entry );
+                DeleteCacheEntry( *entry );
                 entry = NULL;
                 // item is not in cache
                 status = KErrNotFound;
@@ -346,39 +347,41 @@ void CHttpCacheHandler::RequestClosed(
     RHTTPTransaction* aTrans,
     THttpCacheEntry& aCacheEntry )
     {
-    if (aTrans)
-        HttpCacheUtil::WriteUrlToLog( 0, _L( "Request is closed" ), aTrans->Request().URI().UriDes() );
-    // fine
-    // make sure transaction is moved to the complete list
+#ifdef __CACHELOG__
+    if ( aTrans )
+        HttpCacheUtil::WriteUrlToLog( 0, _L( "CHttpCacheHandler::RequestClosed on url =" ), aTrans->Request().URI().UriDes() );
+#endif
+
+    // Fine, make sure transaction is moved to the complete list
     CHttpCacheEntry* entry = aCacheEntry.iCacheEntry;
 
-    if( entry )
+    if ( entry )
         {
         // normal close on a request - when the content is loaded from the cache
-        if( entry->State() == CHttpCacheEntry::ECacheRequesting )
+        if ( entry->State() == CHttpCacheEntry::ECacheRequesting )
             {
             entry->SetState( CHttpCacheEntry::ECacheComplete );
             iStreamHandler->Detach( *entry );
             }
         // transaction is closed without being completed
-        else if( entry->State() == CHttpCacheEntry::ECacheResponding ||
-            entry->State() == CHttpCacheEntry::ECacheDestroyed )
+        else if ( entry->State() == CHttpCacheEntry::ECacheResponding ||
+                  entry->State() == CHttpCacheEntry::ECacheDestroyed )
             {
             // remove uncompleted/destroyed entry
             iStreamHandler->Detach( *entry );
-            HandleCorruptEntry( *entry );
+            DeleteCacheEntry( *entry );
             entry = NULL;
             aCacheEntry.iCacheEntry = NULL;
 #ifdef __CACHELOG__
-            HttpCacheUtil::WriteLog( 0, _L( "uncompleted entry" ) );
+            HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheHandler::RequestClosed - uncompleted entry" ) );
 #endif
             }
-        else if( entry->State() == CHttpCacheEntry::ECacheComplete )
+        else if ( entry->State() == CHttpCacheEntry::ECacheComplete )
             {
-            // normal close on the request - when the contet is saved to the cache
+            // normal close on the request - when the content is saved to the cache
             // ResponseComplete has already been called
             // check if the stream is released
-            __ASSERT_DEBUG( !iStreamHandler->Find( *entry ) , PanicCacheHandler( KErrCorrupt ) );
+            // __ASSERT_DEBUG( !entry->CacheFilesOpened() ) , PanicCacheHandler( KErrCorrupt ) );
             }
         else
             {
@@ -386,7 +389,6 @@ void CHttpCacheHandler::RequestClosed(
             }
         }
     }
-
 
 // -----------------------------------------------------------------------------
 // CHttpCacheHandler::AdjustResponseTime
@@ -453,9 +455,10 @@ void CHttpCacheHandler::ReceivedResponseHeadersL(
     THttpCacheEntry& aCacheEntry )
     {
 #ifdef __CACHELOG__
-    HttpCacheUtil::WriteUrlToLog( 0, _L( "received http headers" ), aTrans.Request().URI().UriDes() );
+    HttpCacheUtil::WriteLog( 0, _L("---> CHttpCacheHandler::ReceivedResponseHeadersL"), 0);
+    HttpCacheUtil::WriteUrlToLog( 0, _L( "CHttpCacheHandler::ReceivedResponseHeadersL - received http headers" ), aTrans.Request().URI().UriDes() );
 #endif
-    //
+
     TBool protectedEntry( EFalse );
     // check if the item is cacheable
     // no item should be bigger than the 1/3 of the cache size
@@ -466,16 +469,25 @@ void CHttpCacheHandler::ReceivedResponseHeadersL(
         if( entry )
             {
 #ifdef __CACHELOG__
-            HttpCacheUtil::WriteUrlToLog( 0, _L( "item is already in the cache" ), entry->Url() );
-#endif            
-            //
+        	HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                       _L("CHttpCacheHandler::ReceivedResponseHeadersL"),
+                                       entry->Filename(),
+                                       entry->Url(),
+                                       entry->BodySize(), 
+                                       ELogEntrySize );
+#endif
+
             if( entry->State() != CHttpCacheEntry::ECacheComplete )
                 {
-                // multiple incoming entries? doh.
+                // multiple incoming entries doh.
 #ifdef __CACHELOG__
-                HttpCacheUtil::WriteLog( 0, _L( "MULTIPLE REQUEST!!!!!!!!!!!!!!!!!!!!!!!!!" ) );
-#endif                
-                // __ASSERT_DEBUG( EFalse, PanicCacheHandler( KErrCorrupt ) );
+        		HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                       _L("CHttpCacheHandler::ReceivedResponseHeadersL - ERROR MULTIPLE requests"),
+                                       entry->Filename(),
+                                       entry->Url(),
+                                       entry->BodySize(), 
+                                       ELogEntrySize );
+#endif
                 // ignore this one and the first will proceed.
                 entry = NULL;
                 }
@@ -483,7 +495,7 @@ void CHttpCacheHandler::ReceivedResponseHeadersL(
         else
             {
 #ifdef __CACHELOG__
-            HttpCacheUtil::WriteLog( 0, _L( "create new cache item" ) );
+            HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheHandler::ReceivedResponseHeadersL - create new cache item" ) );
 #endif
             //Check adjustment of response time is required or not.
             AdjustResponseTime( aTrans );
@@ -495,9 +507,13 @@ void CHttpCacheHandler::ReceivedResponseHeadersL(
                 if( protectedEntry )
                     {
 #ifdef __CACHELOG__
-                    HttpCacheUtil::WriteLog( 0, _L( "this item is protected" ) );
+        			HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                       _L("CHttpCacheHandler::ReceivedResponseHeadersL - this is protected item"),
+                                       entry->Filename(),
+                                       entry->Url(),
+                                       entry->BodySize(), 
+                                       ELogEntrySize );
 #endif
-                    //
                     entry->SetProtected();
                     RHTTPHeaders responseHeaders = aTrans.Response().GetHeaderCollection();
                     RStringPool strP = aTrans.Session().StringPool();
@@ -524,10 +540,10 @@ void CHttpCacheHandler::ReceivedResponseHeadersL(
                 // 3. update the headers anyway in case of notmodified (304)
                 // 4. remove the old body in case of bodyupdate
                 TInt httpStatus( aTrans.Response().StatusCode() );
+
 #ifdef __CACHELOG__
-                HttpCacheUtil::WriteLog( 0, _L( "status code: " ), httpStatus );
+                HttpCacheUtil::WriteLog( 0,  _L("CHttpCacheHandler::ReceivedResponseHeadersL - status code ="), httpStatus );
 #endif
-                //
                 TBool ok( EFalse );
                 if( httpStatus == HTTPStatus::EOk )
                     {
@@ -537,7 +553,7 @@ void CHttpCacheHandler::ReceivedResponseHeadersL(
                     {
                     ok = HandleResponseNotModifiedL( *entry, aTrans );
                     }
-                //
+
                 // entry could be corrupted at this point
                 if( ok )
                     {
@@ -549,13 +565,13 @@ void CHttpCacheHandler::ReceivedResponseHeadersL(
                 else
                     {
                     iStreamHandler->Detach( *entry );
-                    HandleCorruptEntry( *entry );
+                    DeleteCacheEntry( *entry );
                     entry = NULL;
                     }
                 }
             else
                 {
-                HandleCorruptEntry( *entry );
+                DeleteCacheEntry( *entry );
                 entry = NULL;
                 }
             }
@@ -572,24 +588,36 @@ void CHttpCacheHandler::ReceivedResponseBodyDataL(
     MHTTPDataSupplier& aBodyDataSupplier,
     THttpCacheEntry& aCacheEntry )
     {
-    HttpCacheUtil::WriteUrlToLog( 0, _L( "received body" ), aTrans.Request().URI().UriDes() );
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteUrlToLog( 0, _L( "CHttpCacheHandler::ReceivedResponseBodyDataL - received body from url =" ), aTrans.Request().URI().UriDes() );
+#endif
+
     // 1. check if we are caching this resource
     // 2. update the body data
     CHttpCacheEntry* entry = aCacheEntry.iCacheEntry;
 
-    if( entry && entry->State() == CHttpCacheEntry::ECacheResponding )
+    if ( entry && entry->State() == CHttpCacheEntry::ECacheResponding )
         {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteLog( 0, _L("---> CHttpCacheHandler::ReceivedResponseBodyDataL"), entry->BodySize() );
+#endif
         HBufC8* bodyStr = HttpCacheUtil::BodyToBufferL( aBodyDataSupplier );
-        if( bodyStr )
+        if ( bodyStr )
             {
+            // Do we have old body data to remove first
+            if ( entry->BodyFileDeleteNeeded() ) {
+                iStreamHandler->RemoveBodyData( *entry );
+                entry->SetBodyFileDeleteNeeded( EFalse );
+            	}
+            
             // erase entry if we are unable to save it (low disk space)
             if( !SaveBuffer( *entry, bodyStr->Des(), ETrue ) )
                 {
                 // detach it from the stream and erase it
                 iStreamHandler->Detach( *entry );
-                HandleCorruptEntry( *entry );
+                DeleteCacheEntry( *entry );
 #ifdef __CACHELOG__                
-                HttpCacheUtil::WriteLog( 0, _L( "body cannot be saved" ) );
+                HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheHandler::ReceivedResponseBodyDataL - body cannot be saved" ) );
 #endif                
                 entry = NULL;
                 // remove entry
@@ -598,7 +626,7 @@ void CHttpCacheHandler::ReceivedResponseBodyDataL(
 #ifdef __CACHELOG__
             else
                 {
-                HttpCacheUtil::WriteLog( 0, _L( "body is saved" ) );
+                HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheHandler::ReceivedResponseBodyDataL - body is saved" ) );
                 }
 #endif // __CACHELOG__
             //
@@ -621,32 +649,48 @@ void CHttpCacheHandler::ResponseComplete(
     // 2. mark the entry as complete
     CHttpCacheEntry* entry = aCacheEntry.iCacheEntry;
 
-    if( entry )
+    if ( entry )
         {
-        if( entry->State() == CHttpCacheEntry::ECacheResponding )
-            {
-            // flush the entry
-            if( !iStreamHandler->Flush( *entry ) )
-                {
-                iStreamHandler->Detach( *entry );
-                HandleCorruptEntry( *entry );
 #ifdef __CACHELOG__
-                HttpCacheUtil::WriteLog( 0, _L( "body cannot be saved" ) );
+        HttpCacheUtil::WriteLog( 0, _L("---> CHttpCacheHandler::ResponseComplete"), entry->BodySize() );
+        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheHandler::ResponseComplete"),
+                                           entry->Filename(),
+                                           entry->Url(),
+                                           entry->BodySize(),
+                                           ELogEntrySize );
 #endif
+
+        if ( entry->State() == CHttpCacheEntry::ECacheResponding )
+            {
+            // Flush the entry
+            if ( !iStreamHandler->Flush( *entry ) )
+                {
+                // We failed saving (flush), cleanup
+                iStreamHandler->Detach( *entry );
+
+                // Deleting the entry frees cache buffer
+                DeleteCacheEntry( *entry );
                 entry = NULL;
-                // remove entry
                 aCacheEntry.iCacheEntry = NULL;
                 }
             else
                 {
+                // We successfully saved (flush) body
                 entry->SetState( CHttpCacheEntry::ECacheComplete );
                 iStreamHandler->Detach( *entry );
+
+                // Clear the flushed cache buffer, we were using for incoming body
+                entry->SetCacheBufferL( KBufferSizeZero );
                 }
             }
         else if( entry->State() == CHttpCacheEntry::ECacheDestroyed )
             {
             iStreamHandler->Detach( *entry );
-            HandleCorruptEntry( *entry, EFalse );
+
+            // Deleting the entry frees cache buffer
+            DeleteCacheEntry( *entry, EFalse );
+            entry = NULL;
             aCacheEntry.iCacheEntry = NULL;
             }
         }
@@ -685,23 +729,22 @@ TInt CHttpCacheHandler::ListFiles(RPointerArray<TDesC>& aFilenameList)
 //
 // -----------------------------------------------------------------------------
 //
-TInt CHttpCacheHandler::RemoveL(
-    const TDesC8& aUrl )
+TInt CHttpCacheHandler::RemoveL( const TDesC8& aUrl )
     {
     TInt status( KErrNotFound );
     HttpCacheUtil::WriteUrlToLog( 0, _L( "remove item:" ), aUrl );
     CHttpCacheEntry* entry = iLookupTable->Find( aUrl );
 
-    if( entry )
+    if ( entry )
         {
-        if( entry->State() == CHttpCacheEntry::ECacheComplete )
+        if ( entry->State() == CHttpCacheEntry::ECacheComplete )
             {
-            // delete
+            // Delete from lookup table
             status = iLookupTable->Remove( aUrl );
             }
         else
             {
-            // mark it as deleted and erase it when the
+            // Mark it as deleted and erase it when the
             // trans is complete
             entry->SetState( CHttpCacheEntry::ECacheDestroyed );
             status = KErrNone;
@@ -715,8 +758,7 @@ TInt CHttpCacheHandler::RemoveL(
 //
 // -----------------------------------------------------------------------------
 //
-TBool CHttpCacheHandler::Find(
-    const TDesC8& aUrl )
+TBool CHttpCacheHandler::Find( const TDesC8& aUrl )
     {
     // find
     CHttpCacheEntry* entry = iLookupTable->Find( aUrl );
@@ -758,7 +800,7 @@ TBool CHttpCacheHandler::SaveL(
         // cleanup
         if( !saved && entry )
             {
-            HandleCorruptEntry( *entry );
+            DeleteCacheEntry( *entry );
             }
         }
     return saved;
@@ -806,7 +848,7 @@ TInt CHttpCacheHandler::AddHeaderL(
                         {
                         // sorry, we made this entry corrupt. remove it
                         iStreamHandler->Detach( *entry );
-                        HandleCorruptEntry( *entry );
+                        DeleteCacheEntry( *entry );
                         entry = NULL;
                         }
                     }
@@ -886,7 +928,6 @@ TBool CHttpCacheHandler::CacheNeedsValidationL(
                         HttpCacheUtil::WriteLog( 0, _L( "cache item is not fresh. needs revalidation" ) );
 #endif
                         // MKLE-7PRD27: Avoid removing cache entry here 
-                        
                         mustRevalidate = ETrue;
                         // add headers like EIfModifiedSince, EETag, EIfNoneMatch
                         HttpCacheUtil::AddValidationHeaders( responseHeaders, requestHeaders, strP );
@@ -915,7 +956,7 @@ TBool CHttpCacheHandler::CacheNeedsValidationL(
         }
     else
         {
-        HandleCorruptEntry( aCacheEntry );
+        DeleteCacheEntry( aCacheEntry );
         // needs validation
         mustRevalidate = ETrue;
         }
@@ -927,8 +968,7 @@ TBool CHttpCacheHandler::CacheNeedsValidationL(
 //
 // -----------------------------------------------------------------------------
 //
-TBool CHttpCacheHandler::CacheNeedsSpaceL(
-    TInt aSize )
+TBool CHttpCacheHandler::CacheNeedsSpaceL( TInt aSize )
     {
     TBool ok( ETrue );
 #ifdef __CACHELOG__
@@ -938,27 +978,30 @@ TBool CHttpCacheHandler::CacheNeedsSpaceL(
 #endif // __CACHELOG__
 
     // check if we need extra space
-    if( iStreamHandler->SavedContentSize() + aSize > iSize )
+    if ( iStreamHandler->SavedContentSize() + aSize > iSize )
         {
+
 #ifdef __CACHELOG__
         // items in the cache
         TInt size( 0 );
         HttpCacheUtil::WriteLog( 0, _L( "cached items" ) );
+
         const CArrayPtrFlat<CHttpCacheEntry>& entries = iLookupTable->Entries();
         for( TInt i = 0; i < entries.Count(); i++ )
             {
             CHttpCacheEntry* entry = entries.At( i );
             if( entry && entry != (CHttpCacheEntry*)0xffffffff )
                 {
-                HttpCacheUtil::WriteUrlToLog( 0, entry->Url(), entry->Size() );
-                size+=entry->Size();
-                size+=entry->HeaderSize();
+                HttpCacheUtil::WriteUrlToLog( 0, entry->Url(), entry->BodySize() );
+                size += entry->BodySize();
+                size += entry->HeaderSize();
                 }
             }
         HttpCacheUtil::WriteLog( 0, _L( "occupy with headers:" ), size );
 #endif // __CACHELOG__
+
         CArrayPtrFlat<CHttpCacheEntry>* evictedList = iEvictionHandler->EvictL( aSize );
-        if( evictedList && evictedList->Count() )
+        if ( evictedList && evictedList->Count() )
             {
             // destroy items
             CHttpCacheEntry* entry;
@@ -972,7 +1015,7 @@ TBool CHttpCacheHandler::CacheNeedsSpaceL(
                     iLookupTable->Remove( entry->Url() );
                     }
                 }
-            // __ASSERT_DEBUG( iStreamHandler->SavedContentSize() + aSize < iSize, PanicCacheHandler( KErrCorrupt ) );
+
             // ok = ETrue if there is enough space
             ok = ( iStreamHandler->SavedContentSize() + aSize < iSize );
             }
@@ -1004,49 +1047,56 @@ TBool CHttpCacheHandler::HandleResponseOkL(
     RHTTPHeaders responseHeader = aTrans.Response().GetHeaderCollection();
     RStringPool strP = aTrans.Session().StringPool();
     HBufC8* responseHeaderStr = HttpCacheUtil::HeadersToBufferLC( responseHeader, strP );
-    //
+
     TBool update( ETrue );
     // get cached headers to compare
     HBufC8* cachedHeaderStr = iStreamHandler->HeadersL( aEntry );
-    // we've got some headers to update,
-    // check if we really need to update them
-    if( cachedHeaderStr )
+    
+    // we've got some headers to update, check if we really need to update them
+    if ( cachedHeaderStr )
         {
         CleanupStack::PushL( cachedHeaderStr );
-        //
+
         update = HttpCacheUtil::CacheNeedsUpdateL( responseHeader, cachedHeaderStr->Des(), strP );
 
         CleanupStack::PopAndDestroy(); // cachedHeaderStr
         }
-    //
-    if( update )
+
+    if ( update )
         {
 #ifdef __CACHELOG__
-        HttpCacheUtil::WriteLog( 0, _L( "udpate headers" ) );
+        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                       _L("CHttpCacheHandler::HandleResponseOkL - cache UPDATE needed"),
+                                       aEntry.Filename(),
+                                       aEntry.Url(),
+                                       aEntry.BodySize(), 
+                                       ELogEntrySize );
 #endif
-        if( aEntry.HeaderSize() )
+        if ( aEntry.HeaderSize() )
             {
-            // remove it first
+            // remove headers from headerFile first
             iStreamHandler->RemoveHeaders( aEntry );
             }
-        // save
-        saveOk = SaveBuffer( aEntry, responseHeaderStr->Des() );
 
-        if( aEntry.Size() )
+        // save new headerFile
+        saveOk = SaveBuffer( aEntry, responseHeaderStr->Des() );
+        
+        if ( aEntry.BodySize() )
             {
-#ifdef __CACHELOG__
-            HttpCacheUtil::WriteLog( 0, _L( "remove body" ) );
-#endif            
-            //
-            iStreamHandler->RemoveBodyData( aEntry );
+            // We will remove this body data, after we confirm that we get new
+            // body data
+            aEntry.SetBodyFileDeleteNeeded( ETrue );
             }
+
+        // Setup a cache buffer to hold the incoming body
+        aEntry.SetCacheBufferL( KBufferSize32k );
         }
     else
         {
         // if neither the header nor the body need to be updated, then
         // detach entry to protect from being updated
 #ifdef __CACHELOG__
-        HttpCacheUtil::WriteLog( 0, _L( "no udpate needed, ignore response" ) );
+        HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheHandler::HandleResponseOkL - no update needed, ignore response" ) );
 #endif        
         //
         aEntry.SetState( CHttpCacheEntry::ECacheComplete );
@@ -1054,8 +1104,10 @@ TBool CHttpCacheHandler::HandleResponseOkL(
         // pretend that save was ok.
         saveOk = ETrue;
         }
-    // destroy corrupt entry by returning EFalse
+
     CleanupStack::PopAndDestroy(); // responseHeaderStr
+
+    // destroy corrupt entry by returning EFalse
     return saveOk;
     }
 
@@ -1163,7 +1215,7 @@ void CHttpCacheHandler::OpenLookupTableL(CHttpCacheLookupTable* aLookupTable)
             CleanupClosePushL( readStream );
             aLookupTable->InternalizeL( readStream, iDirectory->Des() );
             CleanupStack::PopAndDestroy(1); // readStream
-        }
+            }
     }
 
 // -----------------------------------------------------------------------------
@@ -1208,20 +1260,28 @@ void CHttpCacheHandler::SaveLookupTableL()
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheHandler::HandleCorruptEntry
+// CHttpCacheHandler::DeleteCacheEntry
 //
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheHandler::HandleCorruptEntry(
-    CHttpCacheEntry& aStrayEntry,
+void CHttpCacheHandler::DeleteCacheEntry(
+    CHttpCacheEntry& aEntry,
     TBool aUpdate )
     {
-    (void)aUpdate;//suppress compiler and PC-lint warnings
+    // suppress compiler and PC-lint warnings
+    (void)aUpdate;
+
 #ifdef __CACHELOG__
-    HttpCacheUtil::WriteLog( 0, _L( "delete this stray entry" ) );
+        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                       _L("CHttpCacheHandler::DeleteCacheEntry"),
+                                       aEntry.Filename(),
+                                       aEntry.Url(),
+                                       aEntry.BodySize(), 
+                                       ELogEntrySize );
 #endif
-    // remove from the lookuptable
-    iLookupTable->EraseCorruptEntry( aStrayEntry.Url() );
+
+    // Remove from the lookuptable
+    iLookupTable->EraseCacheEntry( aEntry.Url() );
     }
 
 // -----------------------------------------------------------------------------
@@ -1241,10 +1301,11 @@ TBool CHttpCacheHandler::SaveBuffer(
     TBool aBody )
     {
     TBool ok( EFalse );
+    
     TRAPD( err, ok = CacheNeedsSpaceL( aBuffer.Length() ) );
-    if( err == KErrNone && ok )
+    if ( err == KErrNone && ok )
         {
-        // safe save
+        // Did we have a safe save of the body or header
         ok = aBody ? iStreamHandler->SaveBodyData( aEntry, aBuffer ) : iStreamHandler->SaveHeaders( aEntry, aBuffer );
         }
 #ifdef __CACHELOG__

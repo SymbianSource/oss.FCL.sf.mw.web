@@ -93,6 +93,9 @@ LOCAL_C const TInt32 KFavouritesSkinContextId = 0x00000007;
 /// Context id for Music Shop music.
 LOCAL_C const TInt32 KFavouritesMusicContextId = 0x00000008;
 
+// Context id for Service.
+LOCAL_C const TInt32 KFavouritesServiceContextId = 0x00000009;
+
 /// Special context IDs for launching into these.
 LOCAL_C const TInt32 KFavouritesFeedsContextId = 0x00000000A;
 

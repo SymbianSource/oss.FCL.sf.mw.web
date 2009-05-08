@@ -18,6 +18,7 @@
 
 
 // INCLUDE FILES
+#include <platform/mw/Browser_platform_variant.hrh>
 #include    "CDownloadsListArray.h"
 #include    "ProgressInfoCreator.h"
 #include    "DMgrUiLibPanic.h"
@@ -32,7 +33,11 @@
 #include    <f32file.h>
 #include    <AknsUtils.h>
 #include    <DocumentHandler.h>
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MediaGalleryUid.h>
+#endif
+
 #include    "CDownloadUtils.h"
 #include    <HttpDownloadMgrCommon.h>
 #include    "CUserInteractionsUtils.h"
@@ -75,7 +80,8 @@ TDownloadUiData::TDownloadUiData()
 //
 CDownloadsListArray::CDownloadsListArray()
 :   iCoeEnv( *CCoeEnv::Static() ),
-    iOwnedExt( EFalse )
+    iOwnedExt( EFalse ),
+    iPlatformSupportsGallery ( EFalse )
     {
     }
 
@@ -103,10 +109,20 @@ void CDownloadsListArray::ConstructL()
     CLOG_WRITE(" iSavedToGalleryString OK");
 	iSavedToDownloadsFolderString=  iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_CONTENT_SAVED_TO_DOWNLOADS_FOLDER);
 	CLOG_WRITE(" iSavedToGalleryDownload OK");
+	iFileSavedString = iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_FILE_SAVED );
+	iFilesSavedString = iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_FILES_SAVED );
+
+	
     iNullDesC = KNullDesC().AllocL();
     CLOG_WRITE(" iNullDesC OK");
     User::LeaveIfError( iApaLsSess.Connect() );
     CLOG_WRITE(" iApaLsSess OK");
+    
+        
+    //whether the platform supports gallery app or not; defined in browser_platfrom_variant.hrh
+    #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
+    iPlatformSupportsGallery = ETrue;
+    #endif
     
 
     // Initialize the UiLib' mbm file name:
@@ -172,6 +188,10 @@ CDownloadsListArray::~CDownloadsListArray()
 	iSavedToGalleryString = 0;
 	delete iSavedToDownloadsFolderString;
 	iSavedToDownloadsFolderString=0;
+	delete iFileSavedString;
+	iFileSavedString = 0;
+	delete iFilesSavedString;
+	iFilesSavedString = 0;
     delete iNullDesC;
     iNullDesC = 0;
     iApaLsSess.Close();
@@ -369,30 +389,44 @@ TPtrC CDownloadsListArray::LBTextFromUiData( const TDownloadUiData& aDownloadUiD
             }
                     
         iProgressInfoRes.Zero();
-        TBool supported( EFalse );
-        TRAP_IGNORE(supported=IsSupportedL(aDownloadUiData));     
 
 		if ( aDownloadUiData.iDownloadState == EHttpDlMultipleMOCompleted ) 
-			{ 
- 		     if ( aDownloadUiData.iProgressState == EHttpProgContentFileMoved || aDownloadUiData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )
-				{
- 				if( supported )
-				   {
-				    iProgressInfoRes.Copy
-					        ( iSavedToGalleryString->Left( KMaxDownloadItemTextPartLength ) );				    
-				   }
-				else
-                   {
-                	iProgressInfoRes.Copy
-			                ( iSavedToDownloadsFolderString->Left( KMaxDownloadItemTextPartLength ) );                      
-                   }				    
-				}				
-	     else
-    	    {
- 
-          iProgressInfoRes.Copy
-		    	( iCompletedString->Left( KMaxDownloadItemTextPartLength ) );  	
-					
+		    { 
+ 		    if ( aDownloadUiData.iProgressState == EHttpProgContentFileMoved || aDownloadUiData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )
+			    {
+			    if ( iPlatformSupportsGallery )
+			        {
+			    	TBool supported( EFalse );
+                    TRAP_IGNORE(supported = IsSupportedL(aDownloadUiData)); 
+ 				    if( supported )
+				        {
+				        iProgressInfoRes.Copy
+					                    ( iSavedToGalleryString->Left( KMaxDownloadItemTextPartLength ) );				    
+				        }
+				    else
+                        {
+                	    iProgressInfoRes.Copy
+			                            ( iSavedToDownloadsFolderString->Left( KMaxDownloadItemTextPartLength ) );                      
+                        }
+			        }
+			    else
+			        {
+			        if (aDownloadUiData.iNumMediaObjects > 1)
+			            {
+			        	iProgressInfoRes.Copy
+			                            ( iFilesSavedString->Left( KMaxDownloadItemTextPartLength ) );                      
+			            }
+			        else
+			            {
+			        	iProgressInfoRes.Copy
+			                            ( iFileSavedString->Left( KMaxDownloadItemTextPartLength ) );                      
+			            }     
+                    }    
+			    }				
+	        else
+    	        {
+                iProgressInfoRes.Copy
+		    	        ( iCompletedString->Left( KMaxDownloadItemTextPartLength ) );  	
 				}
 			}
         else
@@ -457,31 +491,46 @@ TInt CDownloadsListArray::LBTextLength( const TDownloadUiData& aDownloadUiData )
         indexStr.Format( KIndexString, aDownloadUiData.iActiveMoIndex, aDownloadUiData.iNumMediaObjects );
         ret += indexStr.Length();
         }
-    
-    TBool supported( EFalse );
-    TRAP_IGNORE(supported=IsSupportedL(aDownloadUiData));     
        
     iProgressInfoRes.Zero();
 	if ( aDownloadUiData.iDownloadState == EHttpDlMultipleMOCompleted ) 
-		{ 
-		 if ( aDownloadUiData.iProgressState == EHttpProgContentFileMoved || aDownloadUiData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )
-			{
-		     if( supported )
+	    { 
+		if ( aDownloadUiData.iProgressState == EHttpProgContentFileMoved || aDownloadUiData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )
+		    {
+		    if ( iPlatformSupportsGallery )
 		        {
-		        iProgressInfoRes.Copy
-				        ( iSavedToGalleryString->Left( KMaxDownloadItemTextPartLength ) );
+		        TBool supported( EFalse );
+                TRAP_IGNORE(supported=IsSupportedL(aDownloadUiData));  
+		        if( supported )
+		            {
+		            iProgressInfoRes.Copy
+				                    ( iSavedToGalleryString->Left( KMaxDownloadItemTextPartLength ) );
+		            }
+		        else
+		            {
+            	    iProgressInfoRes.Copy
+			                        ( iSavedToDownloadsFolderString->Left( KMaxDownloadItemTextPartLength ) );  
+		            }
 		        }
-		     else
+		    else
 		        {
-            	iProgressInfoRes.Copy
-			            ( iSavedToDownloadsFolderString->Left( KMaxDownloadItemTextPartLength ) );  
-		        }
+		        if (aDownloadUiData.iNumMediaObjects > 1)
+			        {
+			        iProgressInfoRes.Copy
+			                        ( iFilesSavedString->Left( KMaxDownloadItemTextPartLength ) );                      
+			        }
+			    else
+			        {
+			       	iProgressInfoRes.Copy
+			                        ( iFileSavedString->Left( KMaxDownloadItemTextPartLength ) );                      
+			        }    
+		        }    
 			}
-		 else
-			{
-             iProgressInfoRes.Copy
-			       ( iCompletedString->Left( KMaxDownloadItemTextPartLength ) );  	
-			}
+		else
+		    {
+            iProgressInfoRes.Copy
+			                 ( iCompletedString->Left( KMaxDownloadItemTextPartLength ) );  	
+		    }
         }
      //finished  here   
     else
@@ -576,11 +625,16 @@ TInt CDownloadsListArray::AddHandlerAppIconL( const TDesC8& aContentType )
 
     // Use Media Gallery's icon instead of Image Viewer, because IV's icon 
     // does not support skins, but MG's icon does support it.
+    
+  
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF    
+
     if ( appFound && appUid == TUid::Uid(KImageViewerHandler) )
         {
         appUid = TUid::Uid(KMediaGalleryUID3);
         }
-        
+#endif
+
     // Load the proper icon.
     CFbsBitmap* bitmap = 0;
     CFbsBitmap* mask = 0;

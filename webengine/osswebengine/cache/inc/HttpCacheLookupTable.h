@@ -118,7 +118,7 @@ class CHttpCacheLookupTable : public CBase
         * @param
         * @return
         */
-        void EraseCorruptEntry( const TDesC8& aUrl );
+        void EraseCacheEntry( const TDesC8& aUrl );
         
         /**
         *

@@ -25,6 +25,7 @@
 #include <coecntrl.h>
 #include <PluginAdapterInterface.h>
 #include <npapi.h>
+#include <rt_gesturehelper.h>
 
 // FORWARD DECLARATIONS
 class PluginSkin;
@@ -354,7 +355,12 @@ class PluginWin :  public CCoeControl,
         * @return
         */
         void pluginDeactivate();        
-        
+        /**
+        * zoom on double tap on the plugin
+        * Sets the cursor poistion
+        * @return
+        */
+        void adaptiveZoom(const TPoint& aCurPosition);
 
 public: // Functions from MPluginAdapter
 
@@ -483,6 +489,9 @@ public: // Functions from MPluginAdapter
     
     
     void TogleScreenMode(bool aFullScreen);
+    void PlayPausePluginL ();
+    void HandlePointerEventFromPluginL(const TPointerEvent& aEvent);
+    TBool HandleGesture(const RT_GestureHelper::TGestureEvent& aEvent);    
     protected: // New functions
 
         /**

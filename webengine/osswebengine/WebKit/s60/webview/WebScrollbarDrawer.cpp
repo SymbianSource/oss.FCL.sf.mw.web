@@ -117,9 +117,14 @@ int WebScrollbarDrawer::fadeTime()
 
 void WebScrollbarDrawer::fadeScrollbar()
 {
+    fadeScrollbar(0);
+}
+
+void WebScrollbarDrawer::fadeScrollbar(TInt delay)
+{
   if (m_hasVScroll || m_hasHScroll) {
     if (!m_scrollBarFader->IsActive()) {
-      m_scrollBarFader->Start(0, KScrollBarFadeInterval, 
+      m_scrollBarFader->Start(delay, KScrollBarFadeInterval, 
                               TCallBack(&handleFadeScrollBar, this));
     }
   }
@@ -173,19 +178,26 @@ void WebScrollbarDrawer::fade()
 
 void WebScrollbarDrawer::redrawScrollbar()
 {
-    TInt err = KErrNone;
-    calculateBitmapRects();
-    removeBitmaps();
-    err = SetupBitmaps();
-    if (err == KErrNone) {
-        m_spriteV.SetPosition(m_rectVThum.iTl);
-        updateSprite(m_spriteV, m_scrollBarV, m_scrollBarVMask);
-        m_spriteH.SetPosition(m_rectHThum.iTl);
-        updateSprite(m_spriteH, m_scrollBarH, m_scrollBarHMask);
+    if (m_webView) {
+	    TInt err = KErrNone;
+	    calculateBitmapRects();
+	    removeBitmaps();
+	    err = SetupBitmaps();
+	    if (err == KErrNone) {
+	        m_spriteV.SetPosition(m_rectVThum.iTl);
+	        updateSprite(m_spriteV, m_scrollBarV, m_scrollBarVMask);
+	        m_spriteH.SetPosition(m_rectHThum.iTl);
+	        updateSprite(m_spriteH, m_scrollBarH, m_scrollBarHMask);
+	    }
+	    else {
+	        clearSprites();
+	    }
     }
-    else {
-        clearSprites();
-    }
+}
+void WebScrollbarDrawer::drawScrollbar(WebView* view)
+{
+    TPoint p = TPoint(1,1);
+    drawScrollbar(view, p);
 }
 
 void WebScrollbarDrawer::drawScrollbar(WebView* view, TPoint& scrollPos) 

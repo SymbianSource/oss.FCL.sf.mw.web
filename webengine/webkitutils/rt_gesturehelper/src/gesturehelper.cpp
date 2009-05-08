@@ -82,15 +82,8 @@ EXPORT_C TBool CGestureHelper::IsDoubleTapEnabled() const
     return iImpl->IsDoubleTapEnabled();
     }
     
-// ----------------------------------------------------------------------------
-// InitAlfredPointerEventCaptureL
-// ----------------------------------------------------------------------------
-//
-EXPORT_C void CGestureHelper::InitAlfredPointerCaptureL( CAlfEnv& aEnv, 
-        CAlfDisplay& aDisplay, TInt aFreeControlGroupId )
-    {
-    iImpl->InitAlfredPointerCaptureL( aEnv, aDisplay, aFreeControlGroupId );
-    }
+
+
 
 // ----------------------------------------------------------------------------
 // HandlePointerEventL
@@ -101,14 +94,9 @@ EXPORT_C TBool CGestureHelper::HandlePointerEventL( const TPointerEvent& aEvent 
     return iImpl->HandlePointerEventL( aEvent );
     }
 
-// ----------------------------------------------------------------------------
-// OfferEventL
-// ----------------------------------------------------------------------------
-//
-EXPORT_C TBool CGestureHelper::OfferEventL( const TAlfEvent& aEvent )
-    {
-    return iImpl->OfferEventL( aEvent );
-    }
+
+
+
 
 // ----------------------------------------------------------------------------
 // Cancel

@@ -31,6 +31,7 @@
 // Tooltip
 const TInt KDefaultTooltipDelay = 1;        // time in milliseconds
 const TInt KDefaultTooltipDuration = 2000;  // time in milliseconds
+const TInt KErrTooManyRedirects  = -20019;
 
 // FORWARD DECLARATIONS
 class CBrowserSelectElementDlg;
@@ -343,9 +344,7 @@ class CBrowserDialogsProvider : public  CBase,
         MBrowserDialogsProviderObserver* iObserver;         // not ownedCBrowserDialogsProvider
 
         RConeResourceLoader iResourceLoader;
-        TBool iResourceOpened;
-
-        RConeResourceLoader iErrResourceLoader;
+        TBool iResourceOpened;	  			  
         TBool iErrResourceOpened;
 
         // Reusable tooltip

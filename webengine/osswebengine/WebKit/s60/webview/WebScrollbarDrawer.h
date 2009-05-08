@@ -35,7 +35,9 @@ class WebScrollbarDrawer: public CBase
     virtual ~WebScrollbarDrawer();
 
     void drawScrollbar(WebView* view, TPoint& scrollPos);
+    void drawScrollbar(WebView* view);
     int  getTransparency() const {return m_scrollBarTransparency;}
+    void fadeScrollbar(TInt delay);
     void fadeScrollbar();
     void fade();   
     int fadeTime();

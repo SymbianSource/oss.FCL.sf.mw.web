@@ -158,9 +158,9 @@ class WebPageScrollHandler: public CBase
         static int pageOverviewScrollCallback( TAny* aPtr );
         //static int handleScrollTimerEventCallback( TAny* ptr);
         void scrollPageOverviewGH();
-        void handleScrollingGH(const RT_GestureHelper::MGestureEvent& aEvent);
-        void handleTouchDownGH(const RT_GestureHelper::MGestureEvent& aEvent);
-        void handleTouchUpGH(const RT_GestureHelper::MGestureEvent& aEvent);
+        void handleScrollingGH(const RT_GestureHelper::TGestureEvent& aEvent);
+        void handleTouchDownGH(const RT_GestureHelper::TGestureEvent& aEvent);
+        void handleTouchUpGH(const RT_GestureHelper::TGestureEvent& aEvent);
         void updateScrollbars(const TPoint& scrollPos, TPoint& newscrollDelta);
 
 public:
@@ -171,7 +171,7 @@ public:
         bool calculateScrollableElement(const TPoint& aNewPosition);
         
         void scrollPageOverview(const TPointerEvent& pointerEvent);
-        bool startDeceleration(const RT_GestureHelper::MGestureEvent& aEvent);
+        bool startDeceleration(const RT_GestureHelper::TGestureEvent& aEvent);
         
      private:  
         // Pointer to owning view

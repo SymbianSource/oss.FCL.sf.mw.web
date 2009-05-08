@@ -1216,13 +1216,18 @@ CGDIDeviceContext::DrawText (const NW_GDI_Point2D_t* aLocation,
     InitializeGraphicsContext();
     gc->UseFont(epocFont);
 
+    //Calculate Baseline offset
+    //Baseline is calculated as (Height + ascent in pixels - descent in pixels) /2
+    //iDisplayBounds and iOrigin are kept as it is to make sure drawing is respective to
+    //display bound
+    TInt heightInPixels = epocFont->HeightInPixels();
     TInt descentInPixels = epocFont->DescentInPixels();
-
+    TInt acsentInPixels = epocFont->FontMaxAscent();
+    TInt baseLineOffset = (iDisplayBounds.point.y) + (heightInPixels + acsentInPixels - descentInPixels ) / (2) - iOrigin.y; 
+    
     TPtrC ptrC(string);
-    TPoint point( aLocation->x - iOrigin.x + iDisplayBounds.point.x+1,
-                  aLocation->y + epocFont->HeightInPixels()
-                  - descentInPixels - iOrigin.y +
-                  iDisplayBounds.point.y +1);
+    TPoint point( aLocation->x - iOrigin.x + iDisplayBounds.point.x,
+                  aLocation->y + baseLineOffset);
 
     if (aDecoration & NW_GDI_TextDecoration_Underline) {
       gc->SetUnderlineStyle(EUnderlineOn);

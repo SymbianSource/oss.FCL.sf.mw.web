@@ -83,6 +83,9 @@ const size_t ALLOCATIONS_PER_COLLECTION = 4000;
 
 enum OperationInProgress { NoOperation, Allocation, Collection };
 
+//forward declaration
+static void freeBlock(CollectorBlock* block);
+
 struct CollectorHeap {
   CollectorBlock** blocks;
   size_t numBlocks;
@@ -94,6 +97,12 @@ struct CollectorHeap {
   size_t extraCost;
 
   OperationInProgress operationInProgress;
+
+  ~CollectorHeap() {
+      for(int i=0; i<usedBlocks; ++i) {
+          freeBlock(blocks[i]);
+      }
+  }
 };
 
 static CollectorHeap heap = { 0, 0, 0, 0, 0, 0, 0, NoOperation };

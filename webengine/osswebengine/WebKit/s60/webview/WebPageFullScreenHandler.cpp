@@ -28,7 +28,7 @@
 
 using namespace WebCore;
 
-const int KFullScreenButtonHight = 60;
+const int KFullScreenButtonHeight = 60;
 const int KFullScreenButtonWidth = 60;
 const int KFullScreenButtonBuff  = 5;
 
@@ -111,7 +111,9 @@ void WebPageFullScreenHandler::SizeChanged(void)
 {
     if (AknLayoutUtils::PenEnabled() && m_spriteVisible) {
         m_pos = m_webView->Rect().iBr;
-        m_pos -= TSize( KFullScreenButtonHight + KFullScreenButtonBuff, KFullScreenButtonWidth + KFullScreenButtonBuff);
+        TPoint point (m_webView->PositionRelativeToScreen());
+        m_pos -= TSize(  KFullScreenButtonWidth + KFullScreenButtonBuff, 
+        				 KFullScreenButtonHeight - point.iY + KFullScreenButtonBuff);
         m_sprite.SetPosition(m_pos);
     }
 }
@@ -134,7 +136,7 @@ bool WebPageFullScreenHandler::isFullScreenMode()
 
 TBool WebPageFullScreenHandler::HitRegionContains(const TPoint& aPoint)
 {
-    TRect spriteRect (m_pos, TSize(KFullScreenButtonHight, KFullScreenButtonWidth));
+    TRect spriteRect (m_pos, TSize(KFullScreenButtonHeight, KFullScreenButtonWidth));
     return spriteRect.Contains(aPoint);
 }
 
@@ -163,7 +165,7 @@ void WebPageFullScreenHandler::constructSprite()
 
 	TSpriteMember spriteMem;
 	spriteMem.iBitmap = cannedImage.m_img; 
-	spriteMem.iMaskBitmap = NULL; //masked bitmap still of the canned image need to be changed
+	spriteMem.iMaskBitmap = cannedImage.m_msk; //masked bitmap still of the canned image need to be changed
 
     m_sprite.AppendMember(spriteMem);
 	m_sprite.Activate();

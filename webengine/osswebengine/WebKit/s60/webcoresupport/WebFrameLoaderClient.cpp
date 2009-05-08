@@ -796,7 +796,7 @@ void WebFrameLoaderClient::setMainDocumentError(DocumentLoader* loader, const Re
     if (brctl(m_webFrame)->brCtlDialogsProvider()) {
         int err = mapHttpErrors(error.errorCode());
         if (err <= KBrowserHTTP100 && err > KBrowserFailure) {
-            if (total_bytes == 0) {
+            if (total_bytes == 0 || err == KBrowserHTTP502 ) {
                 HBufC* url = NULL;
                 url = HBufC::New(loader->originalURL().des().Length());
                 if (url) {

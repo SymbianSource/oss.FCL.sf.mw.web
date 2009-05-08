@@ -73,7 +73,7 @@ namespace
      * @return gesture code by analysing the sequence of points
      */
     TGestureCode CodeFromPoints( const RArray< TPointEntry >& aPoints, 
-            MGestureEvent::TAxis aRelevantAxis ) 
+                                 TAxis aRelevantAxis ) 
         {
         // select the correct filter based on aRelevantAxis
         // these filter_ objects are array decorators that will eliminate either 
@@ -82,8 +82,8 @@ namespace
         TYAxisPointArray filterX( aPoints );
         TPointArray filterNone( aPoints );
         TPointArray& filter = 
-            aRelevantAxis == MGestureEvent::EAxisHorizontal ? static_cast< TPointArray& >( filterY ) : 
-            aRelevantAxis == MGestureEvent::EAxisVertical   ? static_cast< TPointArray& >( filterX ) :
+            aRelevantAxis == EAxisHorizontal ? static_cast< TPointArray& >( filterY ) : 
+            aRelevantAxis == EAxisVertical   ? static_cast< TPointArray& >( filterX ) :
             /* otherwise EAxisBoth */                         filterNone;
                             
         // currently the gesture recogniser does not have any state, so it is fast
@@ -126,7 +126,6 @@ void CGesture::Reset()
     iHoldingState = ENotHolding;
     iState = ENotComplete;
     iHoldingPointIndex = 0;
-    iVisual = NULL;
     iIsDoubleTap = EFalse;
     iIsLongTap = EFalse;
     }
@@ -157,10 +156,7 @@ TInt CGesture::AddPoint( const TPoint& aPoint, const TTime& aEventTime )
 // SetVisual
 // ----------------------------------------------------------------------------
 //
-void CGesture::SetVisual( CAlfVisual* aVisual )
-    {
-    iVisual = aVisual;
-    }
+
 
 // ----------------------------------------------------------------------------
 // IsNearHoldingPoint
@@ -273,7 +269,7 @@ void CGesture::SetLongTap(TBool aLongTap)
 //
 TBool CGesture::IsTap() const
     {
-    return CodeFromPoints( iPoints, MGestureEvent::EAxisBoth ) == EGestureTap;
+    return CodeFromPoints( iPoints, EAxisBoth ) == EGestureTap;
     }
 
 /**
@@ -297,7 +293,7 @@ inline TGestureCode Hold( TGestureCode aCode )
 // Code
 // ----------------------------------------------------------------------------
 //
-TGestureCode CGesture::Code( MGestureEvent::TAxis aRelevantAxis ) /* const */
+TGestureCode CGesture::Code( TAxis aRelevantAxis ) /* const */
     {
     TGestureCode code;
     
@@ -686,10 +682,6 @@ TPoint CGesture::Distance() const
 // Visual
 // ----------------------------------------------------------------------------
 //
-CAlfVisual* CGesture::Visual() const
-    {
-    return iVisual;
-    }
 
 // ----------------------------------------------------------------------------
 // TimeFromPreviousPoint

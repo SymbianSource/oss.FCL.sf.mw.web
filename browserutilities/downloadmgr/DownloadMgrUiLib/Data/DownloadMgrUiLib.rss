@@ -310,6 +310,8 @@ RESOURCE TBUF r_dmul_download_complete { buf = qtn_browser_downloads_complete; }
 RESOURCE TBUF r_dmul_download_content_saved_to_gallery { buf = qtn_browser_downloads_content_saved_to_gallery; }
 
 RESOURCE TBUF r_dmul_download_content_saved_to_downloads_folder { buf =  qtn_dl_saved_to_folder; } 
+RESOURCE TBUF r_dmul_download_file_saved { buf =  qtn_browser_downloads_file_saved; } 
+RESOURCE TBUF r_dmul_download_files_saved { buf =  qtn_browser_downloads_files_saved; } 
 
 RESOURCE MENU_BAR r_dmul_downloadslist_menubar
     {
@@ -384,6 +386,22 @@ RESOURCE DMUL_AIW_INTEREST_MENUPANE_MAPPING_LIST r_dmul_aiw_interest_menupane_ma
         };
     }
 
+
+RESOURCE AIW_INTEREST r_dmul_filemanager_aiw_interest
+    {
+    items=
+        {
+        AIW_CRITERIA_ITEM
+            {
+            id = KAiwCmdEdit;
+            serviceCmd = KAiwCmdEdit;
+            contentType = "*";
+            serviceClass = KAiwClassBase; 
+            defaultProvider = 0x200110F9; // The service UID
+            maxProviders = 1;
+            }
+        };
+    }
 
 RESOURCE TBUF r_dmul_download_del_conf { buf = qtn_query_common_conf_delete; } 
 RESOURCE TBUF r_dmul_download_can_conf { buf = qtn_browser_downloads_query_cancel; }

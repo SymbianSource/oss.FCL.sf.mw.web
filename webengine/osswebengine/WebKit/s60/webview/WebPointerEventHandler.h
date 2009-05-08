@@ -43,7 +43,7 @@ public:
     void HandlePointerEventL(const TPointerEvent& aPointerEvent);
     void HandleHighlightChange(const TPoint &aPoint);
 
-    virtual void HandleGestureL( const RT_GestureHelper::MGestureEvent& aEvent );
+    virtual void HandleGestureL( const RT_GestureHelper::TGestureEvent& aEvent );
     
     
 private:    
@@ -54,11 +54,11 @@ private:
     bool isHighlitableElement(TBrCtlDefs::TBrCtlElementType& elType);
     TBrCtlDefs::TBrCtlElementType highlitableElement();
     void buttonDownTimerCB(WebCore::Timer<WebPointerEventHandler>* t);
-    void handleTouchDownL(const RT_GestureHelper::MGestureEvent& aEvent);
-    void handleTouchUp(const RT_GestureHelper::MGestureEvent& aEvent);
-    void handleTapL(const RT_GestureHelper::MGestureEvent& aEvent);
-    void handleDoubleTap(const RT_GestureHelper::MGestureEvent& aEvent);
-    void handleMove(const RT_GestureHelper::MGestureEvent& aEvent);
+    void handleTouchDownL(const RT_GestureHelper::TGestureEvent& aEvent);
+    void handleTouchUp(const RT_GestureHelper::TGestureEvent& aEvent);
+    void handleTapL(const RT_GestureHelper::TGestureEvent& aEvent);
+    void handleDoubleTap(const RT_GestureHelper::TGestureEvent& aEvent);
+    void handleMove(const RT_GestureHelper::TGestureEvent& aEvent);
     void doTapL();
     void updateCursor(const TPoint& pos);
 private:

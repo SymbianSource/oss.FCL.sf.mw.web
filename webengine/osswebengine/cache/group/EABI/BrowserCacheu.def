@@ -16,14 +16,12 @@ EXPORTS
 	_ZTI17CHttpCacheHandler @ 15 NONAME ; #<TI>#
 	_ZTI17CHttpCacheManager @ 16 NONAME ; #<TI>#
 	_ZTI21CHttpCacheLookupTable @ 17 NONAME ; #<TI>#
-	_ZTI21CHttpCacheStreamEntry @ 18 NONAME ; #<TI>#
-	_ZTI23CHttpCacheStreamHandler @ 19 NONAME ; #<TI>#
-	_ZTI25CHttpCacheEvictionHandler @ 20 NONAME ; #<TI>#
-	_ZTV15CHttpCacheEntry @ 21 NONAME ; #<VT>#
-	_ZTV17CHttpCacheHandler @ 22 NONAME ; #<VT>#
-	_ZTV17CHttpCacheManager @ 23 NONAME ; #<VT>#
-	_ZTV21CHttpCacheLookupTable @ 24 NONAME ; #<VT>#
-	_ZTV21CHttpCacheStreamEntry @ 25 NONAME ; #<VT>#
-	_ZTV23CHttpCacheStreamHandler @ 26 NONAME ; #<VT>#
-	_ZTV25CHttpCacheEvictionHandler @ 27 NONAME ; #<VT>#
+	_ZTI23CHttpCacheStreamHandler @ 18 NONAME ; #<TI>#
+	_ZTI25CHttpCacheEvictionHandler @ 19 NONAME ; #<TI>#
+	_ZTV15CHttpCacheEntry @ 20 NONAME ; #<VT>#
+	_ZTV17CHttpCacheHandler @ 21 NONAME ; #<VT>#
+	_ZTV17CHttpCacheManager @ 22 NONAME ; #<VT>#
+	_ZTV21CHttpCacheLookupTable @ 23 NONAME ; #<VT>#
+	_ZTV23CHttpCacheStreamHandler @ 24 NONAME ; #<VT>#
+	_ZTV25CHttpCacheEvictionHandler @ 25 NONAME ; #<VT>#
 

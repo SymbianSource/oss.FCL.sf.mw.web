@@ -456,11 +456,19 @@ void CMaskedBitmap::TileInBitmapRect( CFbsBitGc& gc, const TRect& bmpRect, const
     {
     if (!HasMask()) 
         {
-        gc.UseBrushPattern(iBitmap);
-        gc.SetBrushStyle(CGraphicsContext::EPatternedBrush);
-        gc.SetBrushOrigin(srcPt);
-        gc.DrawRect(bmpRect);
-        gc.DiscardBrushPattern();
+        TRAP_IGNORE( 
+            CFbsBitGc* copy = CFbsBitGc::NewL();
+            CleanupStack::PushL( copy );
+            copy->Activate( (CFbsDevice*) gc.Device() );
+            copy->CopySettings( gc );
+            copy->UseBrushPattern(iBitmap);
+            copy->SetPenStyle(CGraphicsContext::ENullPen);
+            copy->SetBrushStyle(CGraphicsContext::EPatternedBrush);
+            copy->SetBrushOrigin(srcPt);
+            copy->DrawRect(bmpRect);
+            copy->DiscardBrushPattern();
+            CleanupStack::PopAndDestroy( copy );
+        );
         }
     else 
         {

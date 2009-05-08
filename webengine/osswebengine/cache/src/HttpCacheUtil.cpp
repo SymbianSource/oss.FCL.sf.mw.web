@@ -15,7 +15,6 @@
 *
 */
 
-
 // INCLUDE FILES
 #include "HttpCacheUtil.h"
 #include <http/rhttpheaders.h>
@@ -501,14 +500,18 @@ TBool HttpCacheUtil::CacheTimeIsFresh(
         TBuf<50> dateString;
         TTime fr( freshness );
 
-        fr.FormatL( dateString, KDateString );
-        HttpCacheUtil::WriteLog( 0, _L( "fresness" ) );
-        HttpCacheUtil::WriteLog( 0, dateString );
+        TRAP(err, fr.FormatL( dateString, KDateString ) );
+        if ( err == KErrNone ) {
+            HttpCacheUtil::WriteLog( 0, _L( "freshness" ) );
+            HttpCacheUtil::WriteLog( 0, dateString );
+            }
 
         TTime ca( age );
-        ca.FormatL( dateString, KDateString );
-        HttpCacheUtil::WriteLog( 0, _L( "age" ) );
-        HttpCacheUtil::WriteLog( 0, dateString );
+        TRAP( err, ca.FormatL( dateString, KDateString ) );
+        if ( err == KErrNone ) {
+            HttpCacheUtil::WriteLog( 0, _L( "age" ) );
+            HttpCacheUtil::WriteLog( 0, dateString );
+            }
 #endif // __CACHELOG__
 
     // Get useful cache-control directives from the requestHeaders
@@ -704,6 +707,7 @@ TBool HttpCacheUtil::PragmaNoCache(
     return( noCacheField == KErrNone || noStoreField == KErrNone );
     }
 
+        
 // -----------------------------------------------------------------------------
 // HttpCacheUtil::GetHeaderFileName
 //
@@ -720,6 +724,7 @@ void HttpCacheUtil::GetHeaderFileName(
     aHeaderFileName.Append( KHttpCacheHeaderExt() );
     }
 
+
 // -----------------------------------------------------------------------------
 // HttpCacheUtil::AdjustExpirationTime
 //
@@ -734,16 +739,18 @@ void HttpCacheUtil::AdjustExpirationTimeL(
 
     if( aResponseHeaders.GetField( aStrP.StringF( HTTP::EExpires, stringTable ), 0, hdrVal ) == KErrNone )
         {
+        TTime expDate( hdrVal.DateTime() );
+
+#ifdef __CACHELOG__
         HttpCacheUtil::WriteLog( 0, _L( "adjust expiration time from" ) );
 
-        TTime expDate( hdrVal.DateTime() );
-#ifdef __CACHELOG__
         TBuf<50> dateString;
         TTime expTime( hdrVal.DateTime() );
 
         expTime.FormatL( dateString, KDateString );
         HttpCacheUtil::WriteLog( 0, dateString );
 #endif // __CACHELOG__
+
         // double it
         TTimeIntervalMinutes minutes;
         TTimeIntervalHours hours;
@@ -752,16 +759,17 @@ void HttpCacheUtil::AdjustExpirationTimeL(
 
         if( expDate.MinutesFrom( now, minutes ) == KErrNone )
             {
+
 #ifdef __CACHELOG__
-        //
         now.FormatL( dateString, KDateString );
+
         HttpCacheUtil::WriteLog( 0, _L( "current time" ) );
         HttpCacheUtil::WriteLog( 0, dateString );
         //
         now.FormatL( dateString, KDateString );
         HttpCacheUtil::WriteLog( 0, _L( "expires in (minutes)" ), minutes.Int() );
 #endif // __CACHELOG__
-            //
+
             expDate+=minutes;
             }
         // minutes owerflow? take hours instead
@@ -963,7 +971,9 @@ TBool HttpCacheUtil::IsCacheable(
         contType.StrF() == strP.StringF( HttpFilterCommonStringsExt::EApplicationVndOmaDrm,
         HttpFilterCommonStringsExt::GetTable() ) )
         {
-        HttpCacheUtil::WriteLog( 0, _L( "sensitive content. do not cache" ) );
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteLog( 0, _L( "HttpCacheUtil::IsCacheable - sensitive content. do not cache" ) );
+#endif
         // drm == nocache
         isCacheable = EFalse;
         }
@@ -976,7 +986,9 @@ TBool HttpCacheUtil::IsCacheable(
         if( respHeaders.GetField( fieldName, 0, contLen ) != KErrNotFound &&
             ( contLen.Type() == THTTPHdrVal::KTIntVal && contLen.Int() > aMaxSize ) )
             {
+#ifdef __CACHELOG__
             HttpCacheUtil::WriteLog( 0, _L( "oversized content. do not cache" ) );
+#endif
             // oversized content
             return EFalse;
             }
@@ -992,7 +1004,9 @@ TBool HttpCacheUtil::IsCacheable(
             // If no-cache or no-store directives exist -> don't cache.
             if( noCache || noStore )
                 {
-                HttpCacheUtil::WriteLog( 0, _L( "no cache/no store header. do not cache" ) );
+#ifdef __CACHELOG__
+                HttpCacheUtil::WriteLog( 0, _L( "HttpCacheUtil::IsCacheable - no cache/no store header. do not cache" ) );
+#endif
                 // no protection on this entry
                 aProtectedEntry = EFalse;
                 return EFalse;
@@ -1108,15 +1122,16 @@ void HttpCacheUtil::WriteLog(
     TBool log( aLogLevel <= KCurrentLogLevel );
     TPtrC fileName( KHttpCacheGeneralFileName );
 
-    if( aLogLevel == 1 )
+    if ( aLogLevel == 1 )
         {
-        // hash
+        // write logging to hash.txt
         fileName.Set( KHttpCacheHashFileName );
         log = ETrue;
         }
-    if( log )
+
+    if ( log )
         {
-        if( aAny != 0xffff )
+        if ( aAny != 0xffff )
             {
             RFileLogger::WriteFormat(_L("Browser"), fileName, EFileLoggingModeAppend,
                     _L("%S %d"), &aBuf, aAny );
@@ -1132,6 +1147,97 @@ void HttpCacheUtil::WriteLog(
     (void)aBuf;
     (void)aAny;
 #endif // __CACHELOG__
+    }
+
+// -----------------------------------------------------------------------------
+// HttpCacheUtil::WriteLogFilenameAndUrl
+//
+// -----------------------------------------------------------------------------
+//
+void HttpCacheUtil::WriteLogFilenameAndUrl(
+    TInt aLogLevel,
+    TPtrC aMethodName,
+    const TPtrC aFilename,
+    const TDesC8& aUrl,
+    TInt aAny,
+    TLogItemType aItemType )
+    {
+#ifdef __CACHELOG__
+    // Create a buffer for method name, filename, and url string
+    _LIT(KColonSpace, " : ");
+    _LIT(KSpace, " ");
+    TInt itemTypeStringLen( 30 );
+    TInt tmpLen( aMethodName.Length() + aFilename.Length() +
+                 3*KColonSpace().Length() + aUrl.Length() + itemTypeStringLen );
+    HBufC* tmp = HBufC::New( tmpLen );
+    
+    if ( tmp ) {
+        TPtr tmpPtr( tmp->Des() );
+        tmpPtr.Copy( aMethodName );
+        tmpPtr.Append( KColonSpace );
+
+        TChar backSlash('\\');
+        TInt filenamePos( aFilename.LocateReverse( TChar('\\') ) );
+        if ( filenamePos > 0 ) {
+            tmpPtr.Append( aFilename.Right( aFilename.Length() - filenamePos - 1 ) );
+            tmpPtr.Append( KColonSpace );
+        }
+
+        // Convert url to TPtr
+        HBufC* tmpUrl = HBufC::New( aUrl.Length() );
+        if ( tmpUrl ) {
+            TPtr tmpUrlPtr( tmpUrl->Des() );
+            tmpUrlPtr.Copy( aUrl );
+            TInt urlPos( tmpUrlPtr.LocateReverse( TChar('/') ) );
+            if ( urlPos > 0 && (aUrl.Length()-2 > urlPos) ) {
+                tmpPtr.Append( tmpUrlPtr.Right( aUrl.Length() - urlPos - 1 ) );
+                tmpPtr.Append( KColonSpace );
+            }
+            else {
+                tmpPtr.Append( tmpUrlPtr );
+                tmpPtr.Append( KColonSpace );
+            }
+        }
+        
+        // Append the bucketIndex, lookup table pos, etc...
+        switch ( aItemType )
+        {
+            case ELogItemTypeNone:
+                break;
+        
+            case ELogBucketIndex:
+                tmpPtr.Append( _L("bucketIndex =") );
+                break;
+                
+            case ELogEntrySize:
+                tmpPtr.Append( _L("entrySize =") );
+                break;
+
+            case ELogLookupTablePos:
+                tmpPtr.Append( _L("lookupTable pos =") );
+                break;
+
+            case ELogFileErrorCode:
+                tmpPtr.Append( _L("file errorCode =") );
+                break;
+
+            default:
+                break;
+        }
+
+        HttpCacheUtil::WriteLog( aLogLevel, tmpPtr, aAny );
+
+        delete tmp;
+        delete tmpUrl;
+        }
+#else // __CACHELOG__
+    (void)aLogLevel;
+    (void)aMethodName;
+    (void)aFilename;
+    (void)aUrl;
+    (void)aAny;
+    (void)aItemType;
+#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -1221,19 +1327,19 @@ void HttpCacheUtil::WriteUrlToLog(
 // -----------------------------------------------------------------------------
 HBufC* HttpCacheUtil::GenerateNameLC(
         const TDesC8& aUrl, const TDesC& aBaseDir)
-        {
-
+    {
+   
     TUint32 crc (0);
-
+    
     //use the entire URL for CRC calculation: maximizes source entropy/avoids collisions
     Mem::Crc32(crc, aUrl.Ptr(), aUrl.Size()); 
     TUint32 nibble (crc & (KCacheSubdirCount-1)); // extract least significant 4 bits (nibble) for subdirectory
-
+    
     HBufC* fileName = HBufC::NewLC( KMaxPath ); // e.g E\078AFEFE
     _LIT(KFormat,"%S%x%c%08x"); // Note the %08x : a 32-bit value can represented as 0xFFFFFFFF 
     fileName->Des().Format(KFormat, &aBaseDir, nibble, KPathDelimiter, crc);
     return fileName;
-
+    
     }
 
 
@@ -1351,7 +1457,6 @@ TInt64 HttpCacheUtil::Age(
     TDateTime date;
     TTime time;
 
-    // Int64 timeinsec;
     TInt64 correctedRecvAge;
     TInt64 apparentAge;
     TInt64 responseDelay;
@@ -1370,9 +1475,11 @@ TInt64 HttpCacheUtil::Age(
 #ifdef __CACHELOG__
     TBuf<50> dateString;
     //
-    now.FormatL( dateString, KDateString );
-    HttpCacheUtil::WriteLog( 0, _L( "current time" ) );
-    HttpCacheUtil::WriteLog( 0, dateString );
+    TRAP( err, now.FormatL( dateString, KDateString ) );
+    if ( err == KErrNone ) {
+        HttpCacheUtil::WriteLog( 0, _L( "current time" ) );
+        HttpCacheUtil::WriteLog( 0, dateString );
+        }
 #endif // __CACHELOG__
 
     // The aRequestTime is same as that of headers time.
@@ -1597,7 +1704,7 @@ TInt HttpCacheUtil::GetCacheControlDirective(
         else
             {
             aDirective = cacheDir.Copy();
-            // Directives which MUST have values;
+            // Directives which MUST have values
             if( ( aDirective == aStrP.StringF( HTTP::EMaxAge, RHTTPSession::GetTable() ) ) ||
                 ( aDirective == aStrP.StringF( HTTP::EMinFresh, RHTTPSession::GetTable() ) ) ||
                 ( aDirective == aStrP.StringF( HTTP::ESMaxAge, RHTTPSession::GetTable() ) ) )

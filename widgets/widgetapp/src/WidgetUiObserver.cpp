@@ -183,6 +183,19 @@ void CWidgetUiObserver::UpdateSoftkeyL( TBrCtlKeySoftkey aKeySoftkey,
             iWindow->SetSoftKeyLabelL( aKeySoftkey, aLabel );
             }
         }
+    
+    if (iWindow->WindowManager().ActiveWindow() && 
+            iWindow->WindowManager().View()->CbaGroup()->IsVisible())
+        {
+        TBrCtlDefs::TBrCtlElementType elementtype =
+                      iWindow->WindowManager().ActiveWindow()->Engine()->FocusedElementType();
+        // Check if focused element type is editing type
+        if ((elementtype != TBrCtlDefs::EElementActivatedInputBox) &&
+                       (elementtype != TBrCtlDefs::EElementActivatedObjectBox))
+            {
+            iWindow->WindowManager().View()->ShowActivatedObject( EFalse );
+            }        
+        }
     }
 
 // -----------------------------------------------------------------------------
@@ -231,6 +244,7 @@ TBool CWidgetUiObserver::ResolveEmbeddedLinkL(const TDesC& aEmbeddedUrl,
         iWindow->WindowManager().WidgetUIClientSession().GetLprojName( lprojName );
         TranslateURLToFilenameL( aEmbeddedUrl, lprojName ); 
         
+		iFs.PrivatePath(iAppPrivatePath);        
         // TRUE if e:/private/10282822/*/* was requested. It may or may not be inside a widget's sandbox.
         TBool isInsidePrivateDir = ( iFileName && ( (*iFileName).FindF(iAppPrivatePath) == KMaxDriveName ) ) ? ETrue : EFalse; 
 
@@ -341,6 +355,7 @@ void CWidgetUiObserver::ConstructL()
     iHandler = CDocumentHandler::NewL( CEikonEnv::Static()->Process() ) ;
         // Get WidgetUI's private directory (e.g. c:/private/10282822/)
     iCollectBitmapTimer = CIdle::NewL(CActive::EPriorityLow);
+    iFs.Connect();
     }
 
 // -----------------------------------------------------------------------------
@@ -362,6 +377,7 @@ CWidgetUiObserver::~CWidgetUiObserver()
     delete iSoftkeyExitStr;
     delete iLeftSoftkeyStr;
     delete iCollectBitmapTimer; 
+    iFs.Close(); 
     }
 
 // -----------------------------------------------------------------------------

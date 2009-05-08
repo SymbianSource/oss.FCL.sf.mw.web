@@ -153,7 +153,7 @@ void CRtspHandler::HandleUrlEmbeddedL()
     CLOG_WRITE(" :iDocHandler->OpenTempFileL() ok");
     CleanupClosePushL( ramDocTempFile );
     //
-    TDataType dataType( _L8("audio/x-pn-realaudio") );
+    TDataType dataType( _L8("audio/x-pn-realaudio-plugin") );
     CAiwGenericParamList* paramList = CAiwGenericParamList::NewLC();
     TAiwVariant filename( _L8("c:\\system\\temp\\RtspTemp.ram") );
     TAiwGenericParam param( EGenericParamFile, filename );

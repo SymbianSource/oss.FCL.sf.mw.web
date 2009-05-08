@@ -130,11 +130,11 @@ void WebPageScrollHandler::constructL()
         m_scrollTimer = CPeriodic::NewL(CActive::EPriorityUserInput - 1);
         m_pageOverviewScrollPeriodic = CPeriodic::NewL(CActive::EPriorityUserInput - 1);
         m_lastPosition = TPoint(0, 0);
-        
+        m_scrollbarDrawer = WebScrollbarDrawer::NewL();
         if(AknLayoutUtils::PenEnabled()) {
             m_touchScrolling = true;
             m_scrollDirectionState = ScrollDirectionUnassigned;
-            m_scrollbarDrawer = WebScrollbarDrawer::NewL();
+            
 #ifndef BRDO_USE_GESTURE_HELPER            
             m_decel = WebScrollingDecelerator::NewL(*m_webView);
 #else            
@@ -582,7 +582,7 @@ void WebPageScrollHandler::scrollPageOverviewGH()
 }
 
 
-void WebPageScrollHandler::handleScrollingGH(const MGestureEvent& aEvent)
+void WebPageScrollHandler::handleScrollingGH(const TGestureEvent& aEvent)
 {   
     TPoint newPos = aEvent.CurrentPos();
     m_currentPosition = newPos;
@@ -600,7 +600,7 @@ void WebPageScrollHandler::handleScrollingGH(const MGestureEvent& aEvent)
 }
 
 
-void WebPageScrollHandler::handleTouchDownGH(const MGestureEvent& aEvent)
+void WebPageScrollHandler::handleTouchDownGH(const TGestureEvent& aEvent)
 {
     TPoint newPos = aEvent.CurrentPos();
     m_lastMoveEventTime = 0; 
@@ -617,7 +617,7 @@ void WebPageScrollHandler::handleTouchDownGH(const MGestureEvent& aEvent)
 }
 
 
-void WebPageScrollHandler::handleTouchUpGH(const MGestureEvent& aEvent)
+void WebPageScrollHandler::handleTouchUpGH(const TGestureEvent& aEvent)
 {
     bool decelDoesScrollbars = false;
     TPoint newPos = aEvent.CurrentPos();
@@ -660,7 +660,7 @@ void WebPageScrollHandler::handleTouchUpGH(const MGestureEvent& aEvent)
 }
 
 
-bool WebPageScrollHandler::startDeceleration(const MGestureEvent& aEvent)
+bool WebPageScrollHandler::startDeceleration(const TGestureEvent& aEvent)
 {
     bool started = false;
     TRealPoint gstSpeed = aEvent.Speed();

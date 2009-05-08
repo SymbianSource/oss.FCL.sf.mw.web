@@ -32,7 +32,7 @@
 #define KPlaceHolderMozillaVer		_L("Mozilla/5.0")
 #define KPlaceHolderSecurity		_L("U;")
 #define KPlaceHolderComponent		_L("AppleWebKit/525 (KHTML, like Gecko) Version/3.0 Safari/525")
-#define KPlaceHolderBrowserNG		_L("BrowserNG")
+#define KPlaceHolderBrowserName		_L("WicKed")
 
 #define KPlaceHolderSlash           _L("/")
 #define KPlaceHolderSymbianOS       _L("SymbianOS")
@@ -411,9 +411,7 @@ void CUserAgent::ReadAndCreateUAStringL(TPtr &aUAStringPtr)
 	aUAStringPtr.Append(KPlaceHolderClose);
 	
 	aUAStringPtr.Append(KSpaceChar);
-	aUAStringPtr.Append(KPlaceHolderBrowserNG);
-	aUAStringPtr.Append(KSpaceChar);
-	aUAStringPtr.Append(iBrowserVersionStr->Des());
+	aUAStringPtr.Append(iBrowserNameAndVersionStr->Des());
 
 	aUAStringPtr.Append(KSpaceChar);
 	aUAStringPtr.Append(KPlaceHolderComponent);
@@ -717,8 +715,8 @@ void CUserAgent::GetBrowserNameAndVersionL()
 	TInt length = KMaxBrowserVersionStringLength  + KMaxBrowserNameLength;
 	iBrowserNameAndVersionStr = HBufC::NewL( length);
 
-	iBrowserNameAndVersionStr->Des().Append(KPlaceHolderBrowserNG);			
-	iBrowserNameAndVersionStr->Des().Append(KSpaceChar);  // add a gap
+	iBrowserNameAndVersionStr->Des().Append(KPlaceHolderBrowserName);			
+	iBrowserNameAndVersionStr->Des().Append(KPlaceHolderSlash);
 	iBrowserNameAndVersionStr->Des().Append( *iBrowserVersionStr );
 }
 // End of file

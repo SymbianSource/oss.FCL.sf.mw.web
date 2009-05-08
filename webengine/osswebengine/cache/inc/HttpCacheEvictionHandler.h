@@ -84,14 +84,6 @@ class CHttpCacheEvictionHandler : public CBase
         * @param 
         * @return 
         */
-        void Changed( CHttpCacheEntry& aCacheEntry ); 
-
-        /**
-        * 
-        * @since 3.1
-        * @param 
-        * @return 
-        */
         void Remove( CHttpCacheEntry& aCacheEntry ); 
 
         /**
@@ -160,9 +152,13 @@ class CHttpCacheEvictionHandler : public CBase
         */
         TInt FastLog2( TUint aNum );
 
-#ifdef __CACHELOG__
+        /**
+        * Used for debugging
+        * @since 3.1
+        * @param 
+        * @return 
+        */
         void LogBuckets();
-#endif // __CACHELOG__
 
     private:    // Data
 

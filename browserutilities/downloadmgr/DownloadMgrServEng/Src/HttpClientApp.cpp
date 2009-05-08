@@ -207,14 +207,25 @@ CHttpClientAppInstance*
 
     CLOG_WRITE8_1( "New instance id: [%d]", instanceId );
 
-    // Create new connhandler used by the instance
-    // Every instance has its own connhandler
-    CHttpConnHandler* conn = CHttpConnHandler::NewL( this );
+    
+    CHttpConnHandler* conn = NULL;
+    
+    if(iInstances->Count() ==0 && iConnections->Count() > 0)
+        {
+          conn = iConnections->At(0) ;	 
+        }
+    else
+        {
+        // Create new connhandler used by the instance
+        // Every instance has its own connhandler
+        conn = CHttpConnHandler::NewL( this );
 
-    // connhandlers are owned by CHttpClientApp.
-    CleanupStack::PushL( conn );
-    iConnections->AppendL( conn );
-    CleanupStack::Pop( conn );
+        // connhandlers are owned by CHttpClientApp.
+        CleanupStack::PushL( conn );
+        iConnections->AppendL( conn );
+        CleanupStack::Pop( conn );
+        }
+    
 
     // Create new client instance
     CHttpClientAppInstance* instance = 

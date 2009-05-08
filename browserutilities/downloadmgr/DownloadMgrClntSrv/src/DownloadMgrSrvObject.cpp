@@ -108,8 +108,8 @@ void CDownloadSubSession::CloseDownload()
 	{
     CLOG_WRITE( "CDownloadSubSession::CloseDownload" )
    
+    iDownload->DetachClientInstance(iSession->ClientAppInstance());
     iSession->ClientAppInstance()->ClientApp()->UnregisterDownload( iDownload ); 
-	iDownload->DetachClientInstance(iSession->ClientAppInstance());
 	iSession->DeleteDownload( Message().Int3() );
 	}
 

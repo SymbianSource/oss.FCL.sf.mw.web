@@ -21,6 +21,23 @@
 #include <e32base.h>
 #include <e32cmn.h>
 
+#ifdef TRACK_ALLOCATIONS
+typedef struct {
+	TInt requestedSize;
+	TUint32 cellId; 
+}THeapTrace;
+
+TAny* GetRealPtrFromClientPtr(TAny* aClientPtr);
+void  DecreaseSizeInPlace(TInt& aSize);
+
+class CMemoryPool;
+TAny* TraceAlloc(CMemoryPool* aPool, TInt* aSize, TUint32* aCellId);
+void TraceFree(TAny **aPtr);
+TBool TracePreRealloc(TAny** aPtr, TInt *aSize, TUint32& aOriginalCellId);
+void TracePostRealloc(TAny** p, TInt aRequestedSize, TUint32* aNewCellId, TUint32 aOriginalCellId, TBool aIssueNewCellId);
+
+#endif
+
 class CFastMemoryPool;
 
 class RFastAllocator : public RAllocator
@@ -46,6 +63,35 @@ private:
     RHeap& iHeap;
     TUint32 iHeapBase;
     CFastMemoryPool* iPool;
+#ifdef TRACK_ALLOCATIONS
+    TUint32 iNextCellId;
+#endif
+  };
+
+class CNewSymbianHeapPool;
+
+NONSHARABLE_CLASS(RSymbianDlAllocatorWrapper) : public RAllocator
+{
+public:
+	RSymbianDlAllocatorWrapper(CNewSymbianHeapPool*);
+    ~RSymbianDlAllocatorWrapper();
+
+	TAny* Alloc(TInt aSize);
+	void Free(TAny* aPtr);
+	TAny* ReAlloc(TAny* aPtr, TInt aSize, TInt aMode=0);
+	TInt AllocLen(const TAny* aCell) const;
+	TInt Compress();
+	void Reset();
+	TInt AllocSize(TInt& aTotalAllocSize) const;
+	TInt Available(TInt& aBiggestBlock) const;
+	TInt DebugFunction(TInt aFunc, TAny* a1=NULL, TAny* a2=NULL);
+	TInt Extension_(TUint aExtensionId, TAny*& a0, TAny* a1);
+
+private:
+    CNewSymbianHeapPool* iPool;
+#ifdef TRACK_ALLOCATIONS
+    TUint32 iNextCellId;
+#endif
   };
 
 #endif //!__FASTALLOCATOR_H__

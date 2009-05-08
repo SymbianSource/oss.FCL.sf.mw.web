@@ -97,8 +97,8 @@ public:
 
     virtual short verticalPositionHint(bool firstLine) const;
 
-    void setText(PassRefPtr<StringImpl>, bool force = false);
-    void setTextWithOffset(PassRefPtr<StringImpl>, unsigned offset, unsigned len, bool force = false);
+    void setText(PassRefPtr<StringImpl>, bool force = false, bool backspace = false);
+    void setTextWithOffset(PassRefPtr<StringImpl>, unsigned offset, unsigned len, bool force = false, bool backspace = false);
 
     virtual bool canBeSelectionLeaf() const { return true; }
     virtual SelectionState selectionState() const { return static_cast<SelectionState>(m_selectionState); }
@@ -132,7 +132,7 @@ public:
     void checkConsistency() const;
 
 protected:
-    virtual void setTextInternal(PassRefPtr<StringImpl>);
+    virtual void setTextInternal(PassRefPtr<StringImpl>, bool backspace = false);
     virtual void calcPrefWidths(int leadWidth);
     virtual UChar previousCharacter();
 

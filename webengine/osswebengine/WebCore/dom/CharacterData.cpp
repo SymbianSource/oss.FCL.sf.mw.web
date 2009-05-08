@@ -156,8 +156,9 @@ void CharacterData::deleteData( const unsigned offset, const unsigned count, Exc
     if ((!renderer() || !rendererIsNeeded(renderer()->style())) && attached()) {
         detach();
         attach();
-    } else if (renderer())
-        static_cast<RenderText*>(renderer())->setTextWithOffset(str, offset, count);
+    } else if (renderer()){
+    	static_cast<RenderText*>(renderer())->setTextWithOffset(str, offset, count, false, true);
+    }
 
     dispatchModifiedEvent(oldStr);
     oldStr->deref();

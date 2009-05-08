@@ -1,4 +1,21 @@
 /*
+* Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  
+*
+*
+*/
+/*
   This is a version (aka dlmalloc) of malloc/free/realloc written by
   Doug Lea and released to the public domain, as explained at
   http://creativecommons.org/licenses/publicdomain.  Send questions,
@@ -4976,6 +4993,11 @@ void *chunkMoreCore(int size)
     return oldmark;
 }
 
+#ifdef TRACE_CHUNK_USAGE
+void TraceChunkUsage(TInt aChunkHandle, TUint8* aBase, TInt aChunkSize);
+#else
+#define TraceChunkUsage(a,b,c)
+#endif
 void* symbian_mmap(size_t size)
 {
     size_t addr = (size_t)watermark;
@@ -5023,6 +5045,7 @@ void* symbian_mmap(size_t size)
     else
         oldmark = (void*)addr;
 
+    TraceChunkUsage(rchunk.Handle(),rchunk.Base(),rchunk.Size());
     MEM_LOGF( _L8("chunk size: %d"), rchunk.Size());
     return oldmark;
 }
@@ -5067,7 +5090,7 @@ int symbian_munmap(void* ptr, size_t size)
                     // all three cells are adjacent
                     if (p->ptr + p->size == e->ptr) {
                         p->size += e->size;
-                        p->next = 0;
+                        p->next = e->next;
                         free(e);
                     }
                 } else if (cell->ptr + cell->size == e->ptr) {
@@ -5093,6 +5116,7 @@ int symbian_munmap(void* ptr, size_t size)
         }
     }
 
+    TraceChunkUsage(rchunk.Handle(),rchunk.Base(),rchunk.Size());
     MEM_LOGF( _L8("chunk size: %d"), rchunk.Size());
     return 0;
 }

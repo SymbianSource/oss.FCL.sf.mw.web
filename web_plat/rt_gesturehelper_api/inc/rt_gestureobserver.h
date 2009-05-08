@@ -15,14 +15,10 @@
 *
 */
 
-
 #ifndef _RT_GESTUREOBSERVER_H_
 #define _RT_GESTUREOBSERVER_H_
 
 #include <e32std.h>
-
-class CAlfControl;
-class CAlfVisual;
 
 namespace RT_GestureHelper
 {
@@ -78,78 +74,45 @@ NONSHARABLE_STRUCT( TRealPoint )
 /**
  * a gesture event
  */
-class MGestureEvent
-    {
-public:
-    /** X and Y axes, or both */
-    enum TAxis
-        {
-        EAxisBoth,
-        EAxisHorizontal,
-        EAxisVertical
-        };
 
-public:
-    /**
-     * @param aRelevantAxis indicates whether only x, y or both coordinates 
-     *        should be considered when determining the code. For example,
-     *        if client specifies EAxisVertical as relevant axis, a swipe
-     *        to left and slightly up would result in an "swipe up" code,
-     *        and not "swipe left" code. If client specifies EAxisHorizontal
-     *        or EAxisBoth, "swipe left" code is returned.
-     * @return gesture code
-     */
-    virtual TGestureCode Code( TAxis aRelevantAxis ) /* const */ = 0;
-    
-    /** 
-     * @return ETrue if user has activated holding 
-     *         (by keeping stylus in the same position for longer time)
-     *         EFalse if holding has not been activated
-     */
-    virtual TBool IsHolding() const = 0;
-    
-    /** 
-     * @return position where gesture started, i.e., where stulys 
-     * was pressed down 
-     */
-    virtual TPoint StartPos() const = 0;
-    
-    /** 
-     * @return current position of the stylus
-     */
-    virtual TPoint CurrentPos() const = 0; 
-    
-    /** 
-     * @return speed of a swipe. unit is pixels per second.
-     */
-    virtual TRealPoint Speed() const = 0;
-    
-    /**
-     * Abstracts the algorithm to calculate speed during swipe and hold. This
-     * algorithm (currently) assumes that max speed is achieved at the edges of an
-     * area.
-     * @param aEdges represents the coordinates of the rectange on which speed is 
-     *               calculated. Speed will reach maximum if stylus is on the edge 
-     *               or beyond the rect. In practise, the value should match the
-     *               area of the layout that contains the scrollable visuals.
-     *               For example, if the control area is the whole screen, the
-     *               rect should be the screen rect.
-     * @returns the speed as a percentage between -100% and 100%
-     */
-    virtual TRealPoint SpeedPercent( const TRect& aEdges ) const = 0;
-    
-    /** 
-     * @return Length of gesture from starting position
-     *         (start pos - current pos)
-     */
-    virtual TPoint Distance() const = 0; 
-    
-    /**
-     * @return visual on which the gesture started
-     *         NULL if not known (e.g., AVKON-based client 
-     */
-    virtual CAlfVisual* Visual() const = 0;
+enum TAxis
+    {
+    EAxisBoth,
+    EAxisHorizontal,
+    EAxisVertical
     };
+
+
+class TGestureEvent
+{
+public:    
+    inline TGestureCode Code( TAxis /*aRelevantAxis*/ ) const { return iCode; };
+    inline TBool IsHolding() const { return iIsHolding; };
+    inline TPoint StartPos() const { return iStartPos; };
+    inline TPoint CurrentPos() const { return iCurrPos; }; 
+    inline TRealPoint Speed() const { return iSpeed; };
+    inline TRealPoint SpeedPercent ( const TRect& /*aEdges*/ ) const { return iSpeedPercent; };
+    inline TPoint Distance() const { return iDistance; }; 
+    
+    inline void SetCurrentPos(TPoint aPos) { iCurrPos = aPos; };
+    inline void SetStartPos(TPoint aPos) {iStartPos = aPos; };
+    inline void SetCode(TGestureCode aCode) {iCode = aCode; };
+    inline void SetSpeed(TRealPoint aSpeed) { iSpeed = aSpeed; };
+    inline void SetDistance(TPoint aDistance) { iDistance = aDistance; };
+    inline void SetSpeedPercent(TRealPoint aSpeedPercent) { iSpeedPercent = aSpeedPercent; };
+    
+    inline void SetIsHolding(TBool aIsHolding) { iIsHolding = aIsHolding; };
+    
+private:    
+    TGestureCode   iCode;
+    TBool          iIsHolding;
+    TPoint         iStartPos;
+    TPoint         iCurrPos;
+    TRealPoint     iSpeed;
+    TRealPoint     iSpeedPercent;
+    TPoint         iDistance;
+};
+
     
 /** 
  * Observer that will be notified when user makes gestures
@@ -161,22 +124,9 @@ public:
      * Handle the gesture event
      * @param aEvent event describing the gesture 
      */
-    virtual void HandleGestureL( const MGestureEvent& aEvent ) = 0;
+    virtual void HandleGestureL( const TGestureEvent& aEvent ) = 0;
     };
 
-/** 
- * static class for finding a visual from a visual tree
- */
-class HitTest
-    {
-public:
-    /** 
-     * @return the leaf-most visual is under aPos, or NULL if not found
-     */
-    IMPORT_C static CAlfVisual* VisualByCoordinates( const CAlfControl& aControl, 
-        const TPoint& aPos );
-    };
-    
 // ----------------------------------------------------------------------------
 // Default constructor for real point
 // ----------------------------------------------------------------------------

@@ -23,10 +23,6 @@
 #include <coemain.h>
 #include <rt_gesturehelper.h>
 
-class CAlfEnv;
-class CAlfDisplay;
-class CAlfVisual;
-class TAlfEvent;
 
 struct TPointerEvent;
 
@@ -52,8 +48,6 @@ public:
     /** Destructor */
     ~CGestureHelperImpl();    
     
-    void InitAlfredPointerCaptureL( CAlfEnv& aEnv, CAlfDisplay& aDisplay, 
-        TInt aFreeControlGroupId );
     
     /** See @ref CGestureHelper::SetHoldingEnabled */
     void SetHoldingEnabled( TBool aEnabled );
@@ -65,8 +59,7 @@ public:
     TBool IsDoubleTapEnabled() const;
     /** See @ref CGestureHelper::HandlePointerEventL */
     TBool HandlePointerEventL( const TPointerEvent& aEvent );
-    /** See @ref CGestureHelper::OfferEventL */
-    TBool OfferEventL( const TAlfEvent& aEvent );
+    
     /** Reset helper state */
     void Reset();
    
@@ -78,13 +71,7 @@ private:
     /** Constructor */
     CGestureHelperImpl( MGestureObserver& aObserver );
 
-    /**
-     * Analyse how the pointer event affects the current gesture, and potentially
-     * notify the observer. 
-     * @param aVisual visual on which the event fell on or NULL if not known
-     * @return ETrue if the event was consumed
-     */
-    TBool HandlePointerEventL( const TPointerEvent& aEvent, CAlfVisual* aVisual );
+    
     
     TBool noneAlf_HandlePointerEventL( const TPointerEvent& aEvent);
 
@@ -99,27 +86,27 @@ private:
     /* Set previous tag gesture to null (and recycle the gesture object) */
     static void RecyclePreviousTapGesture( TAny* aSelf );
     /** Emits a tap event since second tap of a double tap was not received within timeout */
-    void EmitFirstTapEventL();
+    void EmitFirstTapEvent();
     /** Emit the start gesture event that aGesture would have produced */
     void EmitStartEventL( const CGesture& aGesture );
     /** 
      * Send code event if not holding. Also sets the event to released and emits again.
      * Modifies aGesture! 
      */
-    void CompleteAndEmitL( CGesture& aGesture );
+    void CompleteAndEmit( CGesture& aGesture );
     /** 
      * Send cancel event about the latest gesture client was notified about 
      * Sets the latest gesture to Cancelled.
      */
-    void EmitCancelEventL();
+    void EmitCancelEvent();
     
     /**
      * Send Released event
      */
-    void EmitReleasedEventL();
+    void EmitReleasedEvent();
     
     /** Notify observer of the gesture */
-    void EmitEventL( const CGesture& aGesture );
+    void EmitEvent( const CGesture& aGesture );
     /** 
      * (re)start holding timer at the current point.
      * Does not restart holding if the point (in aEvent) is near enough to where holding 
@@ -138,11 +125,11 @@ private:
     void RecycleGesture( CGesture*& aGesturePointer );
     
     
-    void HandleTouchUpL(const TPointerEvent& aEvent);
+    void HandleTouchUp(const TPointerEvent& aEvent);
     void HandleTouchDownL(const TPointerEvent& aEvent);
     void HandleMoveL(const TPointerEvent& aEvent);
-    void HandleLongTouchL();
-    void EmitDoubleTapEventL();
+    void HandleLongTouch();
+    void EmitDoubleTapEvent();
     TBool IsMovementGesture(TGestureCode aCode);
     
 private:

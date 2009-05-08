@@ -109,6 +109,10 @@ void HttpSessionManager::openHttpSessionIfNeededL()
 		RStringF batchingBuffSize = strP.StringF(HTTP::EBatchingBufferSize, stringTable );
 		connInfo.SetPropertyL( batchingBuffSize, THTTPHdrVal(KHttpBatchingBuffSize));
 
+		//set HTTP socket prioritis to high
+		THTTPHdrVal enableTranspHndlrPriority(strP.StringF(HTTP::EEnableTranspHndlrPriority, RHTTPSession::GetTable()));
+		connInfo.SetPropertyL(strP.StringF(HTTP::ETranspHndlrPriority, RHTTPSession::GetTable()), enableTranspHndlrPriority);
+
 
         strP.OpenL( HttpFilterCommonStringsExt::GetTable() );
         strP.OpenL( HttpFilterCommonStringsExt::GetLanguageTable() );

@@ -54,11 +54,11 @@
 #include <StringLoader.h>				// strings
 #include <f32file.h>
 #include <THttpFields.h>
+#include <textresolver.h>
 
 // Resources
 #include <coneresloader.h>
 #include <BrowserDialogsProvider.rsg>
-#include <ErrorRes.rsg>
 
 // Data Caging
 #include <data_caging_path_literals.hrh>    
@@ -71,7 +71,6 @@ const TInt KBrCtlMegabyte = 1000;	// although 1MB=1024 kB, treat as 1000kb for u
 
 // DLL resource file name with path
 _LIT( KBrowserDialogsProviderDirAndFile, "z:BrowserDialogsProvider.rsc" );// resource
-_LIT( KErrorResDirAndFile, "z:ErrorRes.rsc" );  // error resource
 
 //Mime Types
 _LIT( KMimeTypeImage, "image/*" );
@@ -91,9 +90,7 @@ CBrowserDialogsProvider::CBrowserDialogsProvider(
 :   iCoeEnv( *CCoeEnv::Static() ), 
     iObserver( aObserver ),
     iResourceLoader( iCoeEnv ),    
-    iResourceOpened( EFalse ),    
-    iErrResourceLoader( iCoeEnv ),    
-    iErrResourceOpened( EFalse )    
+    iResourceOpened( EFalse )
 	{
 	}
 
@@ -132,7 +129,6 @@ void CBrowserDialogsProvider::ConstructL()
 CBrowserDialogsProvider::~CBrowserDialogsProvider()
 	{
 	iResourceLoader.Close();
-	iErrResourceLoader.Close();
 
 	// Delete any dialogs
 	CancelAll();
@@ -152,7 +148,9 @@ CBrowserDialogsProvider::~CBrowserDialogsProvider()
 EXPORT_C void CBrowserDialogsProvider::DialogNotifyErrorL( TInt aErrCode )
 	{
     TInt httpErr = KBrCtlHttpErrorsOffset - aErrCode;
-
+	CTextResolver* textresolver = CTextResolver::NewLC(); 
+	TPtrC msg;
+		
     switch ( httpErr )
         {
         case EHttpMultipleChoices: 
@@ -160,21 +158,21 @@ EXPORT_C void CBrowserDialogsProvider::DialogNotifyErrorL( TInt aErrCode )
         case EHttpMovedTemporarily:
         case EHttpTemporaryRedirect:
             {
-            // Handle the redirect error dialog
-            HBufC* msg = NULL;
-            msg = StringLoader::LoadLC( R_NW_STAT_TOO_MANY_REDIRECTS );
-            DialogNoteL( *msg );
-    		CleanupStack::PopAndDestroy();	// msg
+            // Id for r_nw_stat_too_many_redirects is -20019, browser errors start at -20000 
+            msg.Set( textresolver->ResolveErrorString( KErrTooManyRedirects ));  
             break;
             }
         default:
             {
             // Handle all others as system error dialog
-        	iCoeEnv.HandleError( aErrCode );
-        	break;
+            msg.Set( textresolver->ResolveErrorString( aErrCode ));            
+        	  break;
             }
         }   // end of switch
 	
+       DialogNoteL( msg );
+       CleanupStack::PopAndDestroy(); //textresolver
+       
 	if ( iObserver )
     	{
     	iObserver->ReportDialogEventL( 
@@ -192,6 +190,8 @@ EXPORT_C void CBrowserDialogsProvider::DialogNotifyHttpErrorL(
 								TInt aErrCode, const TDesC& /*aUri*/ )
 	{
     TInt httpErr = KBrCtlHttpErrorsOffset - aErrCode;
+    CTextResolver* textresolver = CTextResolver::NewLC(); 
+	TPtrC msg;	
 
     switch ( httpErr )
         {
@@ -200,20 +200,29 @@ EXPORT_C void CBrowserDialogsProvider::DialogNotifyHttpErrorL(
         case EHttpMovedTemporarily:
         case EHttpTemporaryRedirect:
             {
-            // Handle the redirect error dialog
-            HBufC* msg = NULL;
-            msg = StringLoader::LoadLC( R_NW_STAT_TOO_MANY_REDIRECTS );
-            DialogNoteL( *msg );
-    		CleanupStack::PopAndDestroy();	// msg
-            break;
+            // Handle the redirect error dialog browser errors start from -20000 ,id for r_nw_stat_malformed_url is -20019.
+			msg.Set( textresolver->ResolveErrorString( KErrTooManyRedirects ));  
+			DialogNoteL( msg );
+            break;     
             }
+        case EHttpBadGateway:
+	        {
+    	    // Handle the unresolved dns name error dialog
+    	    HBufC* msg = NULL;
+        	msg = StringLoader::LoadLC( R_BROWSER_NOT_VALID_DNS_NAME);
+			DialogNoteL( *msg );			
+			CleanupStack::PopAndDestroy();	// msg
+			break;
+        	}
         default:
             {
             // Handle all others as system error dialog
-        	iCoeEnv.HandleError( aErrCode );
-        	break;
+            msg.Set( textresolver->ResolveErrorString( aErrCode ));     
+			DialogNoteL( msg );
+            break;
             }
-        }   // end of switch
+        }   // end of switch			 
+    CleanupStack::PopAndDestroy(); //textresolver    
 	
     if ( iObserver )
         {
@@ -1214,33 +1223,6 @@ void CBrowserDialogsProvider::AssureResourceL()
         if ( !error )
             {
             iResourceOpened = ETrue;
-            }
-        else
-            {
-            User::Leave( error );
-            }
-        }
-
-    if ( !iErrResourceOpened )
-        {
-        // Add error resource file.
-        TParse* errfp = new(ELeave) TParse(); 
-
-        TInt err = errfp->Set( KErrorResDirAndFile, 
-                               &KDC_RESOURCE_FILES_DIR, 
-                               NULL ); 
-        if ( err != KErrNone)
-            {
-            User::Leave( err );
-            }   
-    
-        TFileName errResourceFileName = errfp->FullName();
-        delete errfp;
-
-        TRAPD( error, iErrResourceLoader.OpenL( errResourceFileName ) );
-        if ( !error )
-            {
-            iErrResourceOpened = ETrue;
             }
         else
             {

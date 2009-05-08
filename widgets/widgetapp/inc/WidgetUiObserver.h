@@ -318,6 +318,7 @@ class CWidgetUiObserver : public CBase,
         HBufC*                  iLeftSoftkeyStr;
         //Active Object to collect bitmap
         CIdle* iCollectBitmapTimer;
+        RFs iFs;
     };
 
 #endif      // WIDGEUIOBSERVER_H

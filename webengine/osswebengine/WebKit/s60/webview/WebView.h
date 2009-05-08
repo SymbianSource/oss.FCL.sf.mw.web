@@ -35,6 +35,7 @@ namespace WebCore
     class DOMDocument;
     class FormState;
     class Element;
+    class Frame;
 }
 
 class CPluginHandler;
@@ -167,6 +168,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         WebPointerEventHandler* pointerEventHandler() { return m_webpointerEventHandler; }
         void updateScrollbars(int documentHeight, int displayPosY,
             int documentWidth, int displayPosX);
+        void updateScrollbars();
         void openPageViewL();
         void closePageView();
         void cancelPageView();
@@ -441,7 +443,21 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void zoomLevelChanged(int newZoomLevel);
         void UpdateZoomArray();
         TInt FindCurrentZoomIndex(TInt aCurrentZoomLevel);
+        bool sendKeyEventToEngine(const TKeyEvent& keyevent, 
+	                          TEventCode eventcode, WebCore::Frame* frame);
 
+        // helper functions for OfferKeyEventL
+        bool handleEventKeyDown(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
+        bool handleTabbedNavigation(const TKeyEvent& keyevent, TEventCode eventcode);
+        bool handleMinimapNavigation();
+        bool handleKeyNavigation(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
+        bool handleInputElement(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
+        bool handleEventKeyL(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
+        void setFocusedNode(WebCore::Frame* frame);
+        void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
+        bool handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
+        bool handleEditable(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame );
+        bool isNaviKey(const TKeyEvent& keyevent);
     public:
         void fepTimerFired(WebCore::Timer<WebView>*);
         void fepVKBTimerFired(WebCore::Timer<WebView>*);
@@ -475,6 +491,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
 
         TTime m_scrollingStartTime;
         TKeyEvent m_currentEventKey;
+        TEventCode m_currentEventCode;
         CPeriodic* m_fastScrollTimer;
         int m_scrollingSpeed;
         TBrCtlDefs::TBrCtlElementType m_focusedElementType;

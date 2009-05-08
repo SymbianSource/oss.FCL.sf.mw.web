@@ -22,7 +22,7 @@
 #include <LiwVariant.h>
 #include <LiwGenericParam.h>
 #include <Liwcommon.h>
-
+#include <liwcommon.hrh>
 #include <AknsFrameBackgroundControlContext.h>
 #include <fbs.h>
 #include <aknsdrawutils.h> 
@@ -149,6 +149,9 @@ CCpsPublisher* CCpsPublisher::NewL()
 
 CCpsPublisher::~CCpsPublisher()
     {
+    
+    TRAP_IGNORE(ExecuteRegistrationCommandL( KLiwOptCancel ));
+    
     if( iCpsInterface )
         {
         iCpsInterface->Close();
@@ -161,6 +164,7 @@ CCpsPublisher::~CCpsPublisher()
         iServiceHandler = NULL;
         }
     delete iMaskBitmap;
+__UHEAP_MARKEND;    
     }
 
 CLiwDefaultMap* ElementSizeFilterLC()
@@ -196,6 +200,7 @@ CCpsPublisher::CCpsPublisher()
 
 void CCpsPublisher::ConstructL()
     {
+    __UHEAP_MARK;
     RDebug::Printf("CCpsPublisher::InitCPS");
     InitCpsInterfaceL();
     RDebug::Printf("CCpsPublisher::Register");
@@ -249,7 +254,6 @@ void CCpsPublisher::GetBitmapSizeL()
 void CCpsPublisher::ExecuteRegistrationCommandL( 
     TUint aOption )
     {
-    __UHEAP_MARK;
     CLiwDefaultMap* filter = ElementSizeFilterLC();
     filter->InsertL( KOperation, TLiwVariant( KUpdate ));
     
@@ -270,7 +274,6 @@ void CCpsPublisher::ExecuteRegistrationCommandL(
     outParamList.Reset();
     inParamList.Reset(); 
     CleanupStack::PopAndDestroy( filter );
-    __UHEAP_MARKEND;
     }
 
 TInt CCpsPublisher::HandleNotifyL(

@@ -53,10 +53,17 @@ EXPORT_C RAllocator* MemoryManager::SwitchToFastAllocator()
     {
     // create the right memory pool
     __ASSERT_DEBUG( s_pool == 0, User::Panic( KMemManPanicDes, 0 ) );
+#ifdef __NEW_ALLOCATOR__
+    s_pool = new CNewSymbianHeapPool();
+    s_pool->Create();
+    RSymbianDlAllocatorWrapper* allocator = new RSymbianDlAllocatorWrapper((CNewSymbianHeapPool*)s_pool);
+    return User::SwitchAllocator( allocator );
+#else
     s_pool = new CFastMemoryPool();
     s_pool->Create();
     RFastAllocator* allocator = new RFastAllocator((CFastMemoryPool*)s_pool);
     return User::SwitchAllocator( allocator );
+#endif
     }
 
 //-----------------------------------------------------------------------------
@@ -64,8 +71,13 @@ EXPORT_C RAllocator* MemoryManager::SwitchToFastAllocator()
 //-----------------------------------------------------------------------------
 EXPORT_C void MemoryManager::CloseFastAllocator(RAllocator* aDefaultAllocator)
     {
+#ifdef __NEW_ALLOCATOR__
+    RAllocator* allocator = User::SwitchAllocator( aDefaultAllocator );
+    delete (RSymbianDlAllocatorWrapper*)(allocator);
+#else
     RAllocator* allocator = User::SwitchAllocator( aDefaultAllocator );
     delete (RFastAllocator*)(allocator);
+#endif
     }
 
 //-----------------------------------------------------------------------------

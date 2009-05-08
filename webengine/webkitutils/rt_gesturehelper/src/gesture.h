@@ -74,7 +74,6 @@ public:
     TInt AddPoint( const TPoint& aPoint, const TTime& eventtime);
     
     /** Set the visual of this gesture. Should be called when gesture starts */
-    void SetVisual( CAlfVisual* aVisual );
     
     /** @return ETrue if the point is very near the holding point */
     TBool IsNearHoldingPoint( const TPoint& aPoint ) const;
@@ -115,14 +114,13 @@ public:
 // From MGestureEvent
     TTime TimeOfLastEntry() const;
     inline TGestureCode PreviousGestureCode() { return iPrevGestureCode; };
-    TGestureCode Code( MGestureEvent::TAxis aRelevantAxis );
+    TGestureCode Code( TAxis aRelevantAxis );
     TBool IsHolding() const;
     TPoint StartPos() const;
     TPoint CurrentPos() const; 
     TRealPoint Speed() const;
     TRealPoint SpeedPercent( const TRect& aEdges ) const;
     TPoint Distance() const; 
-    CAlfVisual* Visual() const;
     
     
     
@@ -186,7 +184,6 @@ private:
     TTime iCompletionTime;
     
     /// visual relevant to this gesture. null if not known.
-    CAlfVisual* iVisual;
     
     TGestureCode iPrevGestureCode;
     

@@ -131,6 +131,9 @@ void ParseCmdLineL( TUid& aUid, TUint32& aOperation )
 
     // Try to get the size.
     TRAP_IGNORE( aOperation = readStream.ReadInt32L() );
+    
+    delete commandLine;
+    commandLine = NULL;
     }
     
 //===========================================================================

@@ -169,6 +169,9 @@ void HTMLParser::reset()
     m_isindexElement = 0;
 
     m_skipModeTag = nullAtom;
+#if PLATFORM(SYMBIAN)
+    m_scriptSupported = true;
+#endif
 }
 
 void HTMLParser::setCurrent(Node* newCurrent) 
@@ -773,8 +776,19 @@ bool HTMLParser::noscriptCreateErrorCheck(Token* t, RefPtr<Node>& result)
 {
     if (!m_isParsingFragment) {
         Settings* settings = document->settings();
-        if (settings && settings->isJavaScriptEnabled())
+#if PLATFORM(SYMBIAN)
+        if (m_scriptSupported && settings && settings->isJavaScriptEnabled()) {
             setSkipMode(noscriptTag);
+        }
+        else {
+            m_scriptSupported = true;
+            return false;
+        }
+#else    
+        if (settings && settings->isJavaScriptEnabled()) {
+            setSkipMode(noscriptTag);
+        }
+#endif
     }
     return true;
 }

@@ -36,6 +36,15 @@ enum TCacheLoadMethod
     EMethodTrace,
     };
 
+enum TLogItemType
+    {
+    ELogItemTypeNone,
+    ELogBucketIndex,
+    ELogEntrySize,
+    ELogLookupTablePos,
+    ELogFileErrorCode
+    };
+
 const TInt KCacheVersionNumber = 1;
 //make 16 subdirectories named 0 through F for organizing cached files
 const TUint32 KCacheSubdirCount = 16;
@@ -138,7 +147,7 @@ class HttpCacheUtil
         * @return
         */
         static TCacheLoadMethod MethodFromStr( RStringF aMethodStr, RStringPool aStrP );
-
+     
         /**
         *
         * @since 3.1
@@ -230,7 +239,7 @@ class HttpCacheUtil
         static TInt GetCacheControls( const RHTTPHeaders& aHeaders, TInt64* aMaxAge, TInt64* aMinFresh, TInt64* aMaxStale, TBool* aMustRevalidate,
             TBool* aNoCache, TBool* aNoStore, RStringPool aStrP );
 
-    /**
+        /**
         *
         * @since 3.1
         * @param
@@ -246,6 +255,18 @@ class HttpCacheUtil
         */
         static void WriteLog( TInt aLogLevel, TPtrC aBuf, TInt aAny = 0xffff );
 
+        /**
+        *
+        * @since 7.1
+        * @param
+        * @return
+        */
+        static void WriteLogFilenameAndUrl( TInt aLogLevel,
+                                            TPtrC aMethodName,
+                                            const TPtrC aFilename,
+                                            const TDesC8& aUrl,
+                                            TInt aAny,
+                                            TLogItemType aItemType = ELogItemTypeNone );
         /**
         *
         * @since 3.1

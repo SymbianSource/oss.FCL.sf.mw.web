@@ -755,7 +755,7 @@ void CWidgetUiWindow::NetworkSecurityCheckL()
         // after code above, which may have prompted user, perform a final access check
         if ( EAllow != NetworkAccessGrant( ) )
         {
-        User::Leave( KErrAccessDenied );
+        User::Leave( KErrCancel );
         }
     }
 

@@ -83,32 +83,32 @@ TBrCtlDefs::TBrCtlElementType nodeTypeB(Node* node, Frame* frame)
     }
     else if ( e->hasLocalName(aTag) ) {
         elType = TBrCtlDefs::EElementAnchor;
-        
+
         String href = e->getAttribute( hrefAttr );
         if (!href.isNull()) {
-            
-            if( href.startsWith( KTel ) ) {            
+
+            if( href.startsWith( KTel ) ) {
                 elType = TBrCtlDefs::EElementTelAnchor;
             }
             else if( href.startsWith( KWtai ) ) {
-            
+
                 if( href.startsWith( KWtaiMC ) || href.startsWith(KWtaiAP) || href.startsWith(KWtaiSD) ) {
                     elType = TBrCtlDefs::EElementTelAnchor;
-                }                    
-                    
+                }
+
             }
             else if( href.startsWith( KMailto ) ) {
                 elType = TBrCtlDefs::EElementMailtoAnchor;
             }
 
-    
+
         }
         else if (!e->getAttribute( ctiAttr ).isNull()) {
-            elType = TBrCtlDefs::EElementTelAnchor;                
+            elType = TBrCtlDefs::EElementTelAnchor;
         }
-        else if( e->hasLocalName(areaTag) ) {        
-        
-            elType = TBrCtlDefs::EElementInputBox;                        
+        else if( e->hasLocalName(areaTag) ) {
+
+            elType = TBrCtlDefs::EElementInputBox;
         }
     }
     else if (e->isControl()) {
@@ -138,7 +138,7 @@ TBrCtlDefs::TBrCtlElementType nodeTypeB(Node* node, Frame* frame)
             }
         }
         else if (ie->type() == "textarea")
-            elType = TBrCtlDefs::EElementTextAreaBox;            
+            elType = TBrCtlDefs::EElementTextAreaBox;
     }
     else if( e->hasLocalName(objectTag) || e->hasLocalName(embedTag) ) {
         if( e->renderer() && e->renderer()->isWidget() )
@@ -160,23 +160,23 @@ TBrCtlDefs::TBrCtlElementType nodeTypeB(Node* node, Frame* frame)
 
 
 WebFrame* frameAndPointUnderCursor(IntPoint& p_, WebView& v_)
-{    
+{
     WebFrameView* mfv = v_.mainFrame()->frameView();
     p_ = StaticObjectsContainer::instance()->webCursor()->position();
     WebFrame* frame = v_.mainFrame()->frameAtPoint(p_);
-    if (!frame) 
+    if (!frame)
         frame = v_.mainFrame();
-    IntPoint rc = frame->frameView()->rectInGlobalCoords().iTl;    
+    IntPoint rc = frame->frameView()->rectInGlobalCoords().iTl;
     p_ = frame->frameView()->viewCoordsInFrameCoords(p_);
     return frame;
 }
 
 String getNodeUrlAtPointInFrame(WebFrame& f_, IntPoint& p_)
-{    
+{
     Document* doc = core(&f_)->document();
     if (doc) {
         Node* node = doc->elementFromPoint(p_.x(), p_.y());
-        
+
         if (node) {
             if (node->hasTagName(areaTag)) {
                 HTMLElement* e =  static_cast<HTMLElement*>(node);
@@ -189,29 +189,29 @@ String getNodeUrlAtPointInFrame(WebFrame& f_, IntPoint& p_)
             for (; n; n = n->parentNode())
                 if (n->isFocusable() && n->isElementNode())
                     break;
-        
+
             if (n && n->isFocusable() && n->isElementNode()) {
-                HTMLElement* e =  static_cast<HTMLElement*>(n);            
+                HTMLElement* e =  static_cast<HTMLElement*>(n);
                 if (!e->getAttribute(hrefAttr).isNull()) {
-                    return e->getAttribute(hrefAttr);                
+                    return e->getAttribute(hrefAttr);
                 }
             }
         }
     }
-    return String();   
+    return String();
 }
 
 
 int imageCountInFrame(WebFrame& wf_, bool visibleOnly_)
-{        
+{
     int count = 0;
     Frame* f = core(&wf_);
-    
+
     if (!f || !f->document() || !f->document()->renderer())
         return count;
-    
-    Document* doc = f->document();    
-    RefPtr<WebCore::HTMLCollection> collection = doc->images();         
+
+    Document* doc = f->document();
+    RefPtr<WebCore::HTMLCollection> collection = doc->images();
 
     FrameView* v = doc->view();
     IntRect r1 = wf_.frameView()->topView()->mainFrame()->frameView()->rect();
@@ -221,20 +221,20 @@ int imageCountInFrame(WebFrame& wf_, bool visibleOnly_)
         RenderImage* render = static_cast<RenderImage*>(n->renderer());
         if (render) {
 
-            Image* img = render->image();     
-            if (!img->isNull() && img->data()) { 
+            Image* img = render->image();
+            if (!img->isNull() && img->data()) {
                 //if visible only is true, check for intersection
-                bool processing = true;                    
+                bool processing = true;
                 if (visibleOnly_) {
                     IntRect imageRect;
                     IntPoint tl = wf_.frameView()->frameCoordsInViewCoords(n->getRect().topLeft());
                     IntPoint br = wf_.frameView()->frameCoordsInViewCoords(n->getRect().bottomRight());
                     imageRect.setLocation(tl);
                     imageRect.setSize(br-tl);
-                    
+
                     processing = r1.intersects(imageRect);
                 }
-                if (processing) {                    
+                if (processing) {
                     String alttext = static_cast<HTMLImageElement*>(render->element())->altText();
                     // Check if alttext is "Nokia" or "No_save".
                     // Then do not count
@@ -249,52 +249,52 @@ int imageCountInFrame(WebFrame& wf_, bool visibleOnly_)
 }
 
 CArrayFixFlat<TBrCtlImageCarrier>* imagesInFrame(WebFrame& wf_, bool visibleOnly_)
-{    
+{
     CArrayFixFlat<TBrCtlImageCarrier>* imglist = new CArrayFixFlat<TBrCtlImageCarrier>(10);
     Frame* f = core(&wf_);
-    
+
     if (!f || !f->document() || !f->document()->renderer())
         return imglist;
 
     CleanupStack::PushL(imglist);
 
-    Document* doc = f->document();    
+    Document* doc = f->document();
     FrameView* v = doc->view();
     IntRect r1 = wf_.frameView()->topView()->mainFrame()->frameView()->rect();
-    
 
-    RefPtr<WebCore::HTMLCollection> collection = doc->images();         
+
+    RefPtr<WebCore::HTMLCollection> collection = doc->images();
     for (Node* n = collection->firstItem(); n; n = collection->nextItem()) {
 
         RenderImage* render = static_cast<RenderImage*>(n->renderer());
-        if (render) {               
-            Image* img = render->image();     
-            if (!img->isNull() && img->data()) { 
+        if (render) {
+            Image* img = render->image();
+            if (!img->isNull() && img->data()) {
                 //if visible only is true, check for intersection
-                TBool processing = ETrue;                    
+                TBool processing = ETrue;
                 if (visibleOnly_) {
                     IntRect imageRect;
                     IntPoint tl = wf_.frameView()->frameCoordsInViewCoords(n->getRect().topLeft());
                     IntPoint br = wf_.frameView()->frameCoordsInViewCoords(n->getRect().bottomRight());
                     imageRect.setLocation(tl);
                     imageRect.setSize(br-tl);
-                    
+
                     processing = r1.intersects(imageRect);
                 }
-                if (processing) {                    
+                if (processing) {
                     String alttext = static_cast<HTMLImageElement*>(render->element())->altText();
-                    TBrCtlImageType type = EImageTypeAny; 
+                    TBrCtlImageType type = EImageTypeAny;
                     if (img->getMimeType().find("image/vnd.wap.wbmp") == 0)
-                        type = EImageTypeWbmp; 
+                        type = EImageTypeWbmp;
                     else if (img->getMimeType().find("image/vnd.nokia.ota-bitmap") == 0)
-                        type = EImageTypeOta; 
+                        type = EImageTypeOta;
                     //
-                    TBrCtlImageCarrier tImg(TPtrC8((const TUint8*)img->data()->data(),img->data()->size()), 
+                    TBrCtlImageCarrier tImg(TPtrC8((const TUint8*)img->data()->data(),img->data()->size()),
                         static_cast<HTMLImageElement*>(render->element())->getAttribute(srcAttr),
                         alttext, type, img->getMimeType());
 
                     // Check if alttext is "Nokia" or "No_save".
-                    // Then do not add the image to the list                
+                    // Then do not add the image to the list
                     if (!(equalIgnoringCase(alttext, "nokia") || equalIgnoringCase(alttext, "no_save"))) {
                         // Check if this image has been retrieved before.
                         // Image pointer should be the same for similar images
@@ -310,36 +310,36 @@ CArrayFixFlat<TBrCtlImageCarrier>* imagesInFrame(WebFrame& wf_, bool visibleOnly
                         if (!imgexists)
                             imglist->AppendL(tImg);
                     }
-                }                
+                }
             }
-        }                        
+        }
     }
     CleanupStack::Pop(imglist);
-    return imglist; 
+    return imglist;
 }
 
 CArrayFixFlat<TBrCtlSubscribeTo>* findSubscribeToInFrame(WebFrame& wf_)
 {
     CArrayFixFlat<TBrCtlSubscribeTo>* linkList = new CArrayFixFlat<TBrCtlSubscribeTo>(10);
     Frame* f = core(&wf_);
-    
+
     if (!f || !f->document())
         return linkList;
 
     CleanupStack::PushL(linkList);
     for (Node *n = f->document(); n; n = n->traverseNextNode()) {
-        if (n->isElementNode() && n->hasTagName(linkTag)) {                
+        if (n->isElementNode() && n->hasTagName(linkTag)) {
 
-            HTMLElement* e =  static_cast<HTMLElement*>(n);           
+            HTMLElement* e =  static_cast<HTMLElement*>(n);
             String type = e->getAttribute(typeAttr);
 
-            if (type == "application/rss+xml" || type == "application/atom+xml" || 
+            if (type == "application/rss+xml" || type == "application/atom+xml" ||
                 type == "text/xml" || type == "application/xml") {
                 String href = e->getAttribute(hrefAttr);
                 String title = e->getAttribute(titleAttr);
 
-                TBrCtlSubscribeTo item(title.des(), href.des(), 0);       
-                linkList->AppendL(item);                
+                TBrCtlSubscribeTo item(title.des(), href.des(), 0);
+                linkList->AppendL(item);
             }
         }
     }
@@ -353,7 +353,7 @@ int focusedImage(WebView* webView, TBrCtlImageCarrier*& imageCarrier)
     TBrCtlImageCarrier* t = NULL;
     RenderImage *r = renderImageUnderCursor(webView);
     if (r) {
-        Image* img = r->image();     
+        Image* img = r->image();
         CachedImage* ci = r->cachedImage();
         if( ci && !img->isNull()) {
             SharedBuffer* imgData = img->data();
@@ -374,7 +374,7 @@ int focusedImage(WebView* webView, TBrCtlImageCarrier*& imageCarrier)
                         else if ( img->getMimeType().des().Find(KMimeOTA) != KErrNotFound ) {
                             brCtlTtype = EImageTypeOta;
                         }
-                        t = new TBrCtlImageCarrier(TPtrC8((const TUint8*)img->data()->data(),img->data()->size()), 
+                        t = new TBrCtlImageCarrier(TPtrC8((const TUint8*)img->data()->data(),img->data()->size()),
                             static_cast<HTMLImageElement*>(r->element())->getAttribute(srcAttr),
                             alttext, brCtlTtype, img->getMimeType());
                         if (!t) {
@@ -414,7 +414,7 @@ void loadFocusedImage(WebView* webView)
         CachedImage* ci = r->cachedImage();
         if (ci && ci->status() == CachedResource::Unknown) {
             IntPoint p;
-            WebFrame* frame = frameAndPointUnderCursor(p, *webView);            
+            WebFrame* frame = frameAndPointUnderCursor(p, *webView);
             cache()->loader()->load(core(frame)->document()->docLoader(), ci, true);
         }
     }
@@ -428,20 +428,20 @@ RenderImage* renderImageUnderCursor(WebView* webView)
     RenderImage* render = NULL;
     if (!f || !f->document() || !f->document()->renderer())
         return NULL;
-    Document* doc = f->document();    
+    Document* doc = f->document();
     FrameView* v = doc->view();
-    RefPtr<WebCore::HTMLCollection> collection = doc->images();         
+    RefPtr<WebCore::HTMLCollection> collection = doc->images();
     for (Node* n = collection->firstItem(); n; n = collection->nextItem()) {
         render = static_cast<RenderImage*>(n->renderer());
-        if (render) {               
-            Image* img = render->image();     
-            if (!img->isNull()) { 
+        if (render) {
+            Image* img = render->image();
+            if (!img->isNull()) {
                 //if visible only is true, check for intersection
                 if (n->getRect().contains(p)) {
                     return render;
-                }                
+                }
             }
-        }                        
+        }
     }
     return NULL;
 }
@@ -490,7 +490,7 @@ void insertOneMenuItem(CEikMenuPane& menuPane, int command, int resourceId, unsi
     menuPane.InsertMenuItemL(item, 0);
 }
 
-int textMultiplier(int fontLevel, int originalSize) 
+int textMultiplier(int fontLevel, int originalSize)
 {
     int sizeMultiplier = originalSize;
     switch(fontLevel)
@@ -550,7 +550,7 @@ void addFocusedUrlToContacts(WebView* webView)
                     for (; n; n = n->parentNode())
                         if (n->isFocusable() && n->isElementNode())
                             break;
-        
+
                     if (n && n->isFocusable() && n->isElementNode()) {
                         HTMLElement* e =  static_cast<HTMLElement*>(n);
                         String tel;
@@ -587,14 +587,14 @@ void addFocusedUrlToContacts(WebView* webView)
                         // telbook
                         attr = e->getAttribute(telbookAttr);
                         if (!attr.isNull() && !attr.isEmpty() )
-                            telbook = attr;            
+                            telbook = attr;
                         // Save to phone book
-                        String url;            
+                        String url;
                         String makeCallUrlPrefix("wtai://wp/ap;");
-                        char numberNameSeparator = ';';            
-                        int len = makeCallUrlPrefix.length() + 3; // NULL terminator and ';' separators            
-                        len += tel.length() + telbook.length() + email.length();            
-                        //url.reserve(len);            
+                        char numberNameSeparator = ';';
+                        int len = makeCallUrlPrefix.length() + 3; // NULL terminator and ';' separators
+                        len += tel.length() + telbook.length() + email.length();
+                        //url.reserve(len);
                         url = makeCallUrlPrefix;
                         url.append(tel);
                         url.append(numberNameSeparator);
@@ -623,12 +623,12 @@ int mapHttpErrors(int err )
         err == KErrHttpCannotEstablishTunnel) {
         return KErrSSLAlertHandshakeFailure;
     }
-    
+
     // Deal with DNS lookup errors
     if ((err <= KErrInet6NoDestination) && (err > (KErrInet6NoDestination - 200))) {
         return KBrowserHTTP502;
     }
-    
+
     // Deal with HTTP errors
     if (err <= KHttpErrorBase && err > KHttpErrorBase - 200) {
         // Encode errors
@@ -642,7 +642,7 @@ int mapHttpErrors(int err )
             err == KErrHttpDecodeDigestAuth) {
             return KBrowserMissingAuthHeader;
         }
-        
+
         // Decode errors
         if (err <= KErrHttpDecodeMalformedDate && err >= KErrHttpDecodeCookie) {
             return KBrowserBadContent;
@@ -722,13 +722,26 @@ int mapHttpErrors(int err )
 bool handleSelectElementScrolling(WebView* webView, int tb)
 {
     bool ret = false;
+    bool isScrollList = false;
     if (webView->focusedElementType() == TBrCtlDefs::EElementSelectMultiBox && tb != 0) {
         IntPoint point;
         WebFrame* frame = frameAndPointUnderCursor(point, *webView);
         Element* e = core(frame)->document()->elementFromPoint(point.x(), point.y());
         if (e && e->isControl()) {
             HTMLGenericFormElement* ie = static_cast<HTMLGenericFormElement*>( e );
-            if (ie->type() == "select-multiple") {
+        	if (ie->type() == "select-multiple") {
+        		isScrollList = true;
+        	}
+        	else if (ie->type() == "select-one") {
+        		HTMLSelectElement* theSecletedElement = static_cast<HTMLSelectElement*>( e );
+        		//check if the size is > 1
+        		if (theSecletedElement->size() > 1) {
+        			isScrollList = true;
+        		} //select-one
+        	}
+
+        	//scroll only for the list which is either multiple or single but with more than one lines
+            if (isScrollList) {
                 RenderListBox* render = static_cast<RenderListBox*>(e->renderer());
                 if (render->isScrollable()) {
                     HTMLSelectElement* selectElement = static_cast<HTMLSelectElement*>( e );
@@ -767,10 +780,11 @@ bool handleSelectElementScrolling(WebView* webView, int tb)
                             ret = true;
                         }
                     }
-                }
-            }
-        }
-    }
+                }//isScrollable()
+            }//isScrollList
+        } //isControl
+    } //focusedElementType()
+
     return ret;
-}    
+}
 

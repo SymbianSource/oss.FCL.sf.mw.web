@@ -19,7 +19,10 @@
 
 #include "config.h"
 #include "../../bidi.h"
-
+#include "StaticObjectsContainer.h"
+#include "AtomicString.h"
+#include "PlatformFontCache.h"
+#include "BrCtl.h"
 #include "WebFepTextEditor.h"
 #include "WebEditorClient.h"
 #include "WebTextFormatMask.h"
@@ -88,6 +91,7 @@ CWebFepTextEditor::~CWebFepTextEditor()
     delete m_state;
     delete m_inlineEditText;
     delete m_textFormatMask;
+	delete m_ExtendedInputCapabilities;
     }
 
 // -----------------------------------------------------------------------------
@@ -495,11 +499,50 @@ void CWebFepTextEditor::GetFormatForFep(TCharFormat& /*aFormat*/,TInt /*aDocumen
 // 
 // 
 // -----------------------------------------------------------------------------
-void CWebFepTextEditor::GetScreenCoordinatesForFepL(TPoint& /*aLeftSideOfBaseLine*/,
-                                                    TInt& /*aHeight*/,
-                                                    TInt& /*aAscent*/,
-                                                    TInt /*aDocumentPosition*/) const
-{    
+void CWebFepTextEditor::GetScreenCoordinatesForFepL(TPoint& aLeftSideOfBaseLine,
+                                                    TInt& aHeight,
+                                                    TInt& aAscent,
+                                                    TInt aDocumentPosition) const
+{
+Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
+if (frame &&
+    frame->document() &&
+    frame->document()->focusedNode()){
+    if ( frame->document()->focusedNode()->hasTagName(HTMLNames::inputTag) || 
+		 frame->document()->focusedNode()->hasTagName(HTMLNames::textareaTag)){
+		HTMLGenericFormElement*  ie = static_cast<HTMLGenericFormElement*>(frame->document()->focusedNode());	
+		SelectionController* sc = frame->selectionController();
+		int xPos(0);
+		int yPos(0);
+		if ( sc ){
+			IntRect rect = sc->caretRect(); 
+			xPos = rect.x();     
+			yPos = rect.y();
+			yPos +=  m_webView->brCtl()->PositionRelativeToScreen().iY;
+			Node* editNode = sc->focusNode();	
+			String str;
+			if ( editNode &&
+				 editNode->isTextNode() ) {
+				WebCore::Text* aText = (WebCore::Text*)editNode;
+				str = aText->data();
+				aDocumentPosition =  aText->length();
+				TInt position = aDocumentPosition - ( str.reverseFind(KBlankDesC(), aDocumentPosition )+1);
+				String word(str);
+				if( position > 0 ){
+					word = str.left( position );
+					}
+				RenderStyle* s = frame->document()->focusedNode()->renderStyle(); 	
+				PlatformFontCache* cache = StaticObjectsContainer::instance()->fontCache();
+				CFont* sFont =  cache->zoomedFont( s->fontDescription(), cache->fontZoomFactor());
+				TInt sizePix =	sFont->MeasureText( word.des() );
+				xPos -= sizePix;	
+				}		
+			}
+		aLeftSideOfBaseLine.SetXY( xPos,yPos );              
+		}
+	}
+	aAscent = 0;
+	aHeight = 0;
 }
 
 // -----------------------------------------------------------------------------

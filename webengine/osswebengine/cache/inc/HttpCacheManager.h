@@ -250,6 +250,7 @@ class CHttpCacheManager : public CBase, public MCenRepNotifyHandlerCallback
         */
 
         TBool VSSHeaderCheck(  TDes8*  aHttpHeaderString ) const ;
+
     private:    // Data
 
         CHttpCacheHandler*                         iCache;      // owned

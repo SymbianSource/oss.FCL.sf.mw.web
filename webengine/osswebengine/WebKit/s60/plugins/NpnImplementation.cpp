@@ -439,6 +439,17 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
             }
         }
         break;
+        case NPPVPluginPointerEvent:
+            {
+            PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
+            if (pluginWin) {
+                TPointerEvent* event = (TPointerEvent*)aSetValue;
+                if (event) {
+                    pluginWin->HandlePointerEventFromPluginL(*event);
+                }
+            }
+            break;
+            }
         case NPPVPluginDeactivate:
             {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
@@ -453,6 +464,16 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             pluginWin->TogleScreenMode(*isFullScreen);
             break;
+            }
+        case NPPVPluginZoom:
+            {
+            PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
+            if (pluginWin) {
+                TPoint* focusPoint = (TPoint*) aSetValue;
+                if (focusPoint) {
+                    pluginWin->adaptiveZoom(*focusPoint);
+                   }
+               }
             }
         default:
         break;

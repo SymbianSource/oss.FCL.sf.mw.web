@@ -87,7 +87,9 @@
 //
 #define qtn_browser_query_select_image  "Select image"
 
-
+//d: message for unresolved hostname. The host name could not be resolved by Domain Name Server lookup
+//l: opup_note_window
+#define qtn_browser_not_valid_dns_name  "Unresolved server name"
 
 //-----------------------------------------------------------------------------
 //

@@ -95,7 +95,11 @@ LIBRARY     commonui.lib            // For CDocumentHandler
 LIBRARY     apmime.lib              // For mime type handling (class TDataType)
 
 LIBRARY     PlatformEnv.lib
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 LIBRARY     MGXMediaFileAPI.lib
+#endif
+
 LIBRARY     DcfRep.lib
 LIBRARY     FeatMgr.lib
 

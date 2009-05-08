@@ -18,6 +18,7 @@
 
 
 // INCLUDE FILES
+#include <platform/mw/Browser_platform_variant.hrh>
 #include    "UserInteractionsEventHandler.h"
 #include    "CUserInteractionsUtils.h"
 #include    "ProgressInfoCreator.h"
@@ -38,8 +39,12 @@
 #include    <etelpckt.h>
 #include    <AknNoteDialog.h>
 #include    <UriUtils.h>
+
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MGXFileManagerFactory.h>
 #include    <CMGXFileManager.h>
+#endif
 
 #include    <pathinfo.h>
 #include    <driveinfo.h>
@@ -936,6 +941,8 @@ void CUserInteractionsEventHandler::HandleCompletedStateL()
             EDlAttrDestFilename, fileNamePtr );
         CLOG_WRITE_FORMAT(" EDlAttrDestFilename: %S",&fileNamePtr);
         TBool havePath = (attErr == KErrNone) && (fileNamePtr.Length() > 0);
+        
+        #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
         //
         CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL(
             CEikonEnv::Static()->FsSession() );
@@ -948,9 +955,18 @@ void CUserInteractionsEventHandler::HandleCompletedStateL()
             {
             TRAP_IGNORE( mgFileManager->UpdateL() );
             }
-        CleanupStack::PopAndDestroy( fileName );
+        
         delete mgFileManager;
         mgFileManager = NULL;
+        
+        #else
+         if( havePath )
+            {
+            TRAP_IGNORE( iUiUtils.UpdateDCFRepositoryL( fileNamePtr ) );
+            }
+        #endif    
+        
+        CleanupStack::PopAndDestroy( fileName );
         
         }
     else

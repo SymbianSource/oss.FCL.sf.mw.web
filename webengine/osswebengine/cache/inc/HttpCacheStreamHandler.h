@@ -43,183 +43,6 @@ class RFileReadStream;
 *  @lib
 *  @since 3.1
 */
-class CHttpCacheStreamEntry : public CBase
-    {
-    public:  // Constructors and destructor
-
-        /**
-        * Two-phased constructor.
-        * @since 3.1
-        * @param
-        * @param
-        * @return CHttpCacheStreamEntry object.
-        */
-        static CHttpCacheStreamEntry* NewL( RFs& aRfs, CHttpCacheEntry& aHttpCacheEntry, TDriveUnit aDrive,
-            TInt64 aCriticalLevel );
-
-        /**
-        * Destructor.
-        */
-        virtual ~CHttpCacheStreamEntry();
-
-    public: // new functions
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        inline CHttpCacheEntry* CacheEntry() const { return iHttpCacheEntry; }
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        void Erase();
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        HBufC8* HeadersL();
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        HBufC8* NextChunkL( TBool& aLastChunk );
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        TInt SaveHeaders( const TDesC8& aHeaderStr );
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        void RemoveHeaders();
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        TInt SaveBodyData( const TDesC8& aBodyStr );
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        void RemoveBodyData();
-
-        /**
-        * Flush
-        * @since 3.1
-        * @param
-        * @return
-        */
-        TInt Flush();
-
-    private:
-
-        /**
-        * Construct.
-        * @since 3.1
-        * @param
-        * @param
-        * @return CHttpCacheStreamEntry object.
-        */
-        CHttpCacheStreamEntry( RFs& aRfs, CHttpCacheEntry& aHttpCacheEntry, TDriveUnit aDrive,
-            TInt64 aCriticalLevel );
-
-        /**
-        * By default Symbian 2nd phase constructor is private.
-        */
-        void ConstructL();
-
-    private: //
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        void GetHeaderFileName( const TFileName& aBodyFileName, TFileName& aHeaderFileName );
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        TBool OpenCacheFiles();
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        TBool CreateNewFilesL();
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        void BodyFileName( TFileName& aBodyFileName );
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        TBool DiskSpaceBelowCriticalLevel( TInt aContentSize );
-
-    private:    // Data
-
-        //
-        TBool               iFileOk;
-        //
-        RFs                 iRfs;       // not owned
-        //
-        RFile               iHeaderFile;      // owned
-        //
-        RFile               iBodyFile;      // owned
-        //
-        CHttpCacheEntry*    iHttpCacheEntry; // not owned
-        //
-        TDriveUnit          iDrive;
-        //
-        TInt64              iCriticalLevel;
-        //
-        HBufC8*             iCacheBuffer;   // owned
-    };
-
-/**
-*
-*  @lib
-*  @since 3.1
-*/
 class CHttpCacheStreamHandler : public CBase
     {
     public:  // Constructors and destructor
@@ -254,6 +77,14 @@ class CHttpCacheStreamHandler : public CBase
         * @param
         * @return
         */
+        inline void SetSavedContentSize( TInt aContentSize ) { iContentSize = aContentSize; }
+
+        /**
+        *
+        * @since 3.1
+        * @param
+        * @return
+        */
         TBool AttachL( CHttpCacheEntry& aCacheEntry );
 
         /**
@@ -262,7 +93,7 @@ class CHttpCacheStreamHandler : public CBase
         * @param
         * @return
         */
-        void Detach( const CHttpCacheEntry& aCacheEntry );
+        void Detach( CHttpCacheEntry& aCacheEntry );
 
         /**
         *
@@ -270,7 +101,7 @@ class CHttpCacheStreamHandler : public CBase
         * @param
         * @return
         */
-        void Erase( const CHttpCacheEntry& aCacheEntry );
+        void EraseCacheFile( CHttpCacheEntry& aCacheEntry );
 
         /**
         *
@@ -334,17 +165,16 @@ class CHttpCacheStreamHandler : public CBase
         * @param
         * @return
         */
-        inline void SetStartupCacheSize( TInt aContentSize ) { iContentSize = aContentSize; }
+        TBool OpenCacheFiles( CHttpCacheEntry& aCacheEntry );
 
-#ifdef _DEBUG
         /**
         *
         * @since 3.1
         * @param
         * @return
         */
-        inline TBool Find( const CHttpCacheEntry& aCacheEntry ) { return ( FindStreamEntry( aCacheEntry ) != NULL );  }
-#endif // _DEBUG
+        TBool CreateNewFilesL( CHttpCacheEntry& aCacheEntry );
+
     private:
 
         /**
@@ -369,24 +199,28 @@ class CHttpCacheStreamHandler : public CBase
         * @param
         * @return
         */
-        CHttpCacheStreamEntry* FindStreamEntry( const CHttpCacheEntry& aCacheEntry, TInt* aIndex = NULL );
-
-
+        TBool IsDiskSpaceAvailable( TInt aContentSize );
+        
+        /**
+        *
+        * @since 7.1
+        * @param
+        * @return
+        */
+        void FindCacheEntryIndex( const CHttpCacheEntry& aCacheEntry, TInt* aIndex );
 
     private:    // Data
 
         //
-        RFs                                         iRfs;               // owned
+        RFs                                 iRfs;               // owned
         // attached entries
-        CArrayPtrFlat<CHttpCacheStreamEntry>*       iActiveEntries;     // owned
+        CArrayPtrFlat<CHttpCacheEntry>*     iActiveEntries;     // owned
         //
-        TInt                                        iContentSize;
+        TInt                                iContentSize;
         //
-        TDriveUnit          iDrive;
+        TDriveUnit                          iDrive;
         //
-        TInt64              iCriticalLevel;
-        //
-        TInt                iDiskFull;
+        TInt64                              iCriticalLevel;
     };
 
 #endif      // CHTTPCACHESTREAMHANDLER_H

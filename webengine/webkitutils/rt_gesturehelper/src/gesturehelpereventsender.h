@@ -38,7 +38,7 @@ public:
         };
     static CGestureEventSender* NewL( MGestureObserver& aObserver );
     ~CGestureEventSender();
-    TInt AddEvent(const CGestureEvent* aGestureEvent);
+    TInt AddEvent(const TGestureEvent& aGestureEvent);
 protected:    
     void RunL();
     void DoCancel();
@@ -46,9 +46,9 @@ protected:
 private:
     CGestureEventSender(MGestureObserver& aObserver);
     void Complete();
-    void EmitEventL( const CGestureEvent& aGestureEvent );
+    void EmitEventL( const TGestureEvent& aGestureEvent );
     
-    RPointerArray< CGestureEvent >  iEvents;
+    RArray< TGestureEvent >  iEvents;
     MGestureObserver& iObserver;
     TEventSenderState iState;
     };

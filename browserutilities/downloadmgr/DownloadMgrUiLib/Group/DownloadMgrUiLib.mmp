@@ -123,7 +123,11 @@ LIBRARY         etel.lib
 LIBRARY         DRMCommon.lib
 LIBRARY         DrmRights.lib
 LIBRARY         DrmServerInterfaces.lib
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 LIBRARY			MGXMediaFileAPI.lib
+#endif
+
 LIBRARY			DcfRep.lib
 LIBRARY         centralrepository.lib 
 LIBRARY         caf.lib

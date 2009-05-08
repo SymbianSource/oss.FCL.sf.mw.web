@@ -61,7 +61,7 @@ LIBRARY		bafl.lib
 LIBRARY		charconv.lib 
 LIBRARY		cxmlparser.lib
 
-LANG			SC
+LANGUAGE_IDS
 /*
 START WINS      
 ?wins_specific_information

@@ -362,6 +362,8 @@ typedef enum {
     // Custom NPP variables, starting from 100 till 1000
     NPPVPluginFocusPosition = 100,    
     NPPVPluginDeactivate = 101,
+    NPPVPluginZoom = 102,
+    NPPVPluginPointerEvent = 103,
     NPPVpluginInteractiveBool = 1000,
 #endif
 

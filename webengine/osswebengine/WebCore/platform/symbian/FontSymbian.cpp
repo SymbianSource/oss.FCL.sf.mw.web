@@ -128,7 +128,9 @@ void Font::drawComplexText(GraphicsContext* graphicsContext, const TextRun& run,
             // and replace them with regular spaces. otherwise they show up as boxes.
             if (indexOfFirstNonRegularSpace > -1) {
                 for(; indexOfFirstNonRegularSpace<strLength; ++indexOfFirstNonRegularSpace ) {
-                    if( TChar(newStr[indexOfFirstNonRegularSpace]).IsSpace() ) {
+                	// if ZERO WIDTH SPACE found do not replace it with regular space
+                    if( TChar(newStr[indexOfFirstNonRegularSpace]).IsSpace() && 
+                    	!(Font::treatAsZeroWidthSpace (newStr[indexOfFirstNonRegularSpace]))) {
                         newStr[indexOfFirstNonRegularSpace] = ' ';
                     }
                 }

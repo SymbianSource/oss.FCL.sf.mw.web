@@ -41,9 +41,12 @@
 #include "BrCtl.h"
 #include "Frame.h"
 #include "WebCursor.h"
+#include "WebPointerEventHandler.h"
 #include "WebPageScrollHandler.h"
+#include "WebKitLogger.h"
 
 using namespace WebCore;
+using namespace RT_GestureHelper;
 // CONSTANTS
 const TInt KPluginGranularity = 3;
 _LIT(KPath,"c:\\system\\temp\\");
@@ -156,6 +159,7 @@ void PluginWin::windowChanged()
 void PluginWin::windowChangedL()
 {
     if (m_fullscreen) return;
+    PlayPausePluginL();
     if (m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->setwindow ){
         NPWindow  window;
     TRect rect( m_pluginskin->getPluginWinRect() );
@@ -659,6 +663,8 @@ void PluginWin::pluginDeactivate()
 //
 TBool PluginWin::HitRegionContains(const TPoint &aPoint, const CCoeControl &/*aControl*/) const
     {
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+    pluginHandler->setPluginToActivate(NULL);
 
     if (m_pluginskin->frame()->frameView()->topView()->focusedElementType() != TBrCtlDefs::EElementActivatedObjectBox)
         {
@@ -668,6 +674,12 @@ TBool PluginWin::HitRegionContains(const TPoint &aPoint, const CCoeControl &/*aC
             m_pluginskin->activate();
         }
         else {
+            /* We are storing  plugin that we want to acrivate here 
+             * When we get to WebPointerEventHandler::HandleGesture() we will check
+             * if this pointer != NULL and will send mousePress event to WebCore.
+             * This will trigger the plugin activation.
+             */         
+            pluginHandler->setPluginToActivate(m_pluginskin);
         TPoint point = m_pluginskin->getPluginWinRect().iTl + aPoint;
 
         // Plugin gets pointer event. Activate plugin
@@ -675,15 +687,6 @@ TBool PluginWin::HitRegionContains(const TPoint &aPoint, const CCoeControl &/*aC
 
         WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
         cursor->setPosition(point);
-        TKeyEvent keyEvent;
-        keyEvent.iModifiers = 0;
-        keyEvent.iRepeats = 0;
-        keyEvent.iCode = EKeyDevice3;
-        keyEvent.iScanCode = EStdKeyDevice3;
-        CCoeEnv::Static()->SimulateKeyEventL(keyEvent, EEventKeyDown);
-        CCoeEnv::Static()->SimulateKeyEventL(keyEvent, EEventKey);
-        CCoeEnv::Static()->SimulateKeyEventL(keyEvent, EEventKeyUp);
-        PluginWin* win = const_cast<PluginWin*>(this);
         }
         }
     return ETrue;
@@ -725,14 +728,19 @@ void PluginWin::Draw( const TRect& /*rect*/ ) const
 void PluginWin::TogleScreenMode(bool aFullScreen)
 {
   m_fullscreen = aFullScreen;
-  WebFrame* mf = mainFrame(m_pluginskin->frame());
   CBrCtl*   brCtl = control(m_pluginskin->frame());
-  WebView*  view = brCtl->webView();
 
-  view->setPluginFullscreen(aFullScreen);
+  StaticObjectsContainer::instance()->setPluginFullscreen(aFullScreen);
   brCtl->reportStateChanged(TBrCtlDefs::EStatePluginFullScreen, m_fullscreen);
 }
-
+void PluginWin::adaptiveZoom(const TPoint& aCurPosition)
+{
+  CBrCtl*   brCtl = control(m_pluginskin->frame());
+  WebView*  view = brCtl->webView();
+  WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+  cursor->setPosition(aCurPosition);
+  view->setZoomLevelAdaptively();
+}
 void PluginWin::NotifyPluginVisible (TBool visible)
 
 {
@@ -747,4 +755,68 @@ void PluginWin::NotifyPluginVisible (TBool visible)
         TRAP_IGNORE(m_notifier->NotifyL(MPluginNotifier::EPluginInvisible, (void*)0));
       }	
     }
+}
+void PluginWin::PlayPausePluginL ()
+{
+    if(m_notifier) 
+    {
+        CBrCtl*   brCtl = control(m_pluginskin->frame());    
+        WebView*  view = brCtl->webView();
+        TBool scrolling = view->viewIsScrolling();
+        if (scrolling) {
+            m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)1 );
+        }
+        else {
+            m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)0 );
+        }
+    }
+}
+
+void PluginWin::HandlePointerEventFromPluginL(const TPointerEvent& aEvent)
+{
+    CBrCtl*   brCtl = control(m_pluginskin->frame());    
+    WebView*  view = brCtl->webView();
+    TPointerEvent event(aEvent);
+    
+    if (!StaticObjectsContainer::instance()->isPluginFullscreen()) {
+        event.iPosition = aEvent.iPosition - view->PositionRelativeToScreen();
+    }
+    view->pointerEventHandler()->HandlePointerEventL(event);
+}
+
+
+TBool PluginWin::HandleGesture(const TGestureEvent& aEvent)
+{
+    TBool ret = EFalse;
+    if (m_control) {
+        TGestureEvent gestEvent(aEvent);
+        CBrCtl*   brCtl = control(m_pluginskin->frame());    
+        WebView*  view = brCtl->webView();
+        TPoint newPos = aEvent.CurrentPos();
+        TPoint startPos = aEvent.StartPos();
+        TPoint viewPos = view->PositionRelativeToScreen();
+        TPoint ctrlPos = m_control->PositionRelativeToScreen();
+        
+        if (!StaticObjectsContainer::instance()->isPluginFullscreen()) {
+        // adjust the position to make it relative to top left corner of 
+            newPos += viewPos; 
+            startPos += viewPos;
+            gestEvent.SetCurrentPos(newPos);
+            gestEvent.SetStartPos(startPos);
+        }
+    
+        if (StaticObjectsContainer::instance()->isPluginFullscreen() || 
+	    m_control->Rect().Contains(newPos - ctrlPos)) {
+            NPEvent event;
+            NPEventPointer ev;
+            event.event = ENppEventPointer;
+            ev.reserved = &gestEvent;
+            ev.pointerEvent = NULL;
+            event.param = &ev;
+            ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
+                                                         static_cast<void*>(&event));
+        }
+    }
+    return ret;
+
 }

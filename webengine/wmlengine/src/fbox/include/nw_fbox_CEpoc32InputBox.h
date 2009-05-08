@@ -32,9 +32,12 @@
 
 #include <fepbase.h>
 #include <aknedsts.h> 
+#include <fepipext.h>
 
 // CONSTANTS
 const TInt KBufLength = 512;
+#define KFepUid 0x100056de
+#define KLineEnterChar 0x21b2
 
 // FORWARD DECLARATIONS
 
@@ -58,7 +61,9 @@ class CSharedDataInteger;
 */
 class CEpoc32InputBox : public CEikBorderedControl, public MEikEdwinObserver, public MCoeFepObserver,
 public MCoeFocusObserver, 
-public MCoeFepAwareTextEditor, public MCoeCaptionRetrieverForFep, private MCoeFepAwareTextEditor_Extension1
+public MCoeFepAwareTextEditor, public MCoeCaptionRetrieverForFep, 
+public TCoeInputCapabilities::MCoeFepSpecificExtensions, 
+private MCoeFepAwareTextEditor_Extension1
     {
     protected:      // Constructors and destructor
         /*
@@ -337,7 +342,12 @@ public:
         // for virtual keyboard
         void UpdateInlineTextL(const TDesC& aText);
         void ClearInlineText();
-
+    
+    private: 
+        
+        virtual TBool IsValidCharacter(TInt aChar);
+        virtual void MCoeFepSpecificExtensions_Reserved_1(){};
+        virtual void MCoeFepSpecificExtensions_Reserved_2(){};
 
     private:        // Data
 

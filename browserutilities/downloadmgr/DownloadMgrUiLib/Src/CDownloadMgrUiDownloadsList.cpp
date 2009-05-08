@@ -18,6 +18,7 @@
 
 
 // INCLUDE FILES
+#include <platform/mw/Browser_platform_variant.hrh>
 #include    "CDownloadMgrUiDownloadsList.h"
 #include    "CDownloadMgrUiLibRegistry.h"
 #include    "CDownloadMgrUiDownloadMenu.h"
@@ -39,9 +40,13 @@
 #include    <uikon.hrh>
 #include    <AknServerApp.h>
 #include    <UriUtils.h>
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MGXFileManagerFactory.h>
 #include    <CMGXFileManager.h>
 #include    <MediaGalleryUID.h>  //Gallery UIDs
+#endif
+
 #include    <DocumentHandler.h>
 #include    "bautils.h"
 #include    <BrowserUiSDKCRKeys.h>
@@ -54,6 +59,9 @@
 
 // CONSTANTS
 const TInt KUpdateProgressInfoInterval   = 2*1000000;  // 2 sec
+
+const TInt KMostRecentSort  = 2;  // Most Recent Sort in File Manager
+const TInt KLauchStandAlone = 1;  // Launch the File Manager in Stand Alone Mode
 
 _LIT8(KSisxContentType, "x-epoc/x-sisx-app");
 
@@ -705,7 +713,8 @@ CDownloadMgrUiDownloadsList::CDownloadMgrUiDownloadsList
     ( CDownloadMgrUiLibRegistry& aRegistryModel )
 :   CDownloadMgrUiBase( aRegistryModel ),
     iIsVisible( EFalse ),
-    iIsCancelInProgress( EFalse )
+    iIsCancelInProgress( EFalse ),
+    iPlatformSupportsGallery( EFalse )
     {
     }
 
@@ -731,6 +740,12 @@ void CDownloadMgrUiDownloadsList::ConstructL()
 	iProgressiveDownload = EFalse;
 	iRegistryModel.DownloadMgr().GetBoolAttribute(EDlMgrProgressiveDownload, iProgressiveDownload);
     CLOG_LEAVEFN("CDownloadMgrUiDownloadsList::ConstructL");
+    
+    //whether the platform supports gallery app or not; defined in browser_platfrom_variant.hrh
+    #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
+    iPlatformSupportsGallery = ETrue;
+    #endif
+  
     }
 
 // -----------------------------------------------------------------------------
@@ -1874,6 +1889,9 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
     			   CleanupStack::PopAndDestroy( &rfs );
 
     			   // Notify Media Gallery about new media file
+    			   
+    			#ifdef BRDO_APP_GALLERY_SUPPORTED_FF   
+    			
     			   CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL(
     			       CEikonEnv::Static()->FsSession() );
     			   if( fileNamePtr.Length() > 0 )
@@ -1885,9 +1903,18 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
     			       {
     			       TRAP_IGNORE( mgFileManager->UpdateL() );
     			       }
-
+    			 
     			   delete mgFileManager;
     			   mgFileManager = NULL;
+    			 
+    			 #else
+    			 
+    			  if( fileNamePtr.Length() > 0 )
+    			       {
+    			       TRAP_IGNORE( iUiUtils->UpdateDCFRepositoryL( fileNamePtr ) );
+    			       }
+    			 
+    			 #endif  
     			   
                 	}
                  else
@@ -2004,6 +2031,9 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 
         case EDownloadsListCmdGallery:
             {
+            
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
+            
             TVwsViewId id = TVwsViewId(
                 TUid::Uid( KMediaGalleryUID3 ),
                 TUid::Uid( KMediaGalleryListViewUID ) );
@@ -2015,31 +2045,54 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
                     id, 
                     TUid::Uid( KMediaGalleryCmdMoveFocusToAllFilesTab ),
                     customMessage );
+#endif                    
             break;
             }
       
         case EDownloadsListCmdFileManager:
             {
+ 
+            if ( iPlatformSupportsGallery )
+                {
+            	LaunchFileManagerApplication();
+                }
+            else
+                {
+            	CAiwServiceHandler* serviceHandler = CAiwServiceHandler::NewL();
+                serviceHandler->AttachL( R_DMUL_FILEMANAGER_AIW_INTEREST );
             
-            TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
-            CRepository *repository=CRepository::NewL(KCRUidBrowser);
-            TInt fileManagerId;
-            User::LeaveIfError(repository->Get(KFileManagerUid , fileManagerId ));
-            TUid id = TUid::Uid(fileManagerId);
-            TApaTask task = taskList.FindApp( id );
-            if ( task.Exists() )
-            {
-            task.BringToForeground();
-            }
-            else 
-            {
-            RApaLsSession appArcSession;
-            User::LeaveIfError( appArcSession.Connect() );
-            CleanupClosePushL( appArcSession );
-            TThreadId id1;
-            User::LeaveIfError( appArcSession.StartDocument( KNullDesC, id, id1 ) );  
-            CleanupStack::PopAndDestroy( &appArcSession );
-            }
+                CAiwGenericParamList* inParams = CAiwGenericParamList::NewLC();
+             
+                //get the destination file path
+                HBufC* fileName = HBufC::NewLC( KMaxPath );
+                TPtr fileNamePtr = fileName->Des();
+                User::LeaveIfError ( currDownload.GetStringAttribute( EDlAttrDestFilename, fileNamePtr ) );
+               
+                // Locate the last '\\' character and remove the file name so that we will get the folder name
+                TInt len = fileNamePtr.LocateReverse('\\');
+                TPtr ptr = fileNamePtr.LeftTPtr(len + 1);
+            
+                // Append the directory name to be opened
+                inParams->AppendL(TAiwGenericParam(EGenericParamDir, TAiwVariant( ptr ) ) );
+                //Append the sort method
+                inParams->AppendL(TAiwGenericParam(EGenericParamDir, TAiwVariant( KMostRecentSort ) ) );
+                //Append to define whether to open in standalone mode
+                inParams->AppendL(TAiwGenericParam(EGenericParamDir, TAiwVariant( KLauchStandAlone ) ) );
+    
+                TRAPD( err, serviceHandler->ExecuteServiceCmdL( KAiwCmdEdit, *inParams, serviceHandler->OutParamListL() ));
+            
+    	   		CleanupStack::PopAndDestroy( fileName );
+            	CleanupStack::PopAndDestroy( inParams );
+        	
+        	    delete serviceHandler;
+        	    
+        	    //if there is any error, open the file manager in root folder
+                if (err != KErrNone)
+          	        {
+          	        LaunchFileManagerApplication();
+           		    }
+                }
+  
             break;
             }
          
@@ -2049,6 +2102,38 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
             }
         }
     }
+    
+    
+// -----------------------------------------------------------------------------
+// CDownloadMgrUiDownloadsList::LaunchFileManagerApplication
+// -----------------------------------------------------------------------------
+//
+
+void CDownloadMgrUiDownloadsList::LaunchFileManagerApplication()
+{
+	
+    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
+    CRepository *repository=CRepository::NewL(KCRUidBrowser);
+    TInt fileManagerId;
+    User::LeaveIfError(repository->Get(KFileManagerUid , fileManagerId ));
+    TUid id = TUid::Uid(fileManagerId);
+    TApaTask task = taskList.FindApp( id );
+    if ( task.Exists() )
+        {
+        task.BringToForeground();
+        }
+    else 
+        {
+        RApaLsSession appArcSession;
+        User::LeaveIfError( appArcSession.Connect() );
+        CleanupClosePushL( appArcSession );
+        TThreadId id1;
+        User::LeaveIfError( appArcSession.StartDocument( KNullDesC, id, id1 ) );  
+        CleanupStack::PopAndDestroy( &appArcSession );
+        }
+	
+}
+
 
 // -----------------------------------------------------------------------------
 // CDownloadMgrUiDownloadsList::DynInitMenuPaneL
@@ -2167,7 +2252,9 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
             }
             
         // For any gallery supported download,  "go to gallery" option should be displayed in the download list option when the download completes     
-        if ( !( isCompleted && s60Supported && gallerySupported ) )
+        
+        
+        if ( (!( isCompleted && s60Supported && gallerySupported ) ) || (!iPlatformSupportsGallery) )
             {
 			aMenuPane->DeleteMenuItem( EDownloadsListCmdGallery );
     		}
@@ -2284,12 +2371,15 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
         if ( !( 1 < downloadCount ) )
             {
             aMenuPane->DeleteMenuItem( EDownloadsListCmdCancelAll );
-            }                               
-       	
-        if ( isCompleted && gallerySupported && s60Supported )
-            {
-            aMenuPane->DeleteMenuItem( EDownloadsListCmdFileManager );
-            }  
+            }              
+                             
+       	if ( iPlatformSupportsGallery )
+       	    {
+       		if ( isCompleted && gallerySupported && s60Supported )
+                {
+                aMenuPane->DeleteMenuItem( EDownloadsListCmdFileManager );
+                }
+       	    }
         }
         
     if ( wasCompleted && !isThemeType ) 

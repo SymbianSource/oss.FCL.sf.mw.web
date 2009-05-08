@@ -236,6 +236,8 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
         void ProvideInputParametersL( CAiwGenericParamList& aParams,
                                       TInt& /*aCommandOptions*/,
                                       RHttpDownload& aDownload);
+                                      
+        void LaunchFileManagerApplication();
 
     private:  // Data
         
@@ -252,6 +254,7 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
 		TBool						iProgressiveDownload;
 		
 		TBool						iIsCancelInProgress;
+		TBool                       iPlatformSupportsGallery;
 
     private: // Friend classes
 

@@ -21,7 +21,7 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../inc/rt_gesturecontrol.h   MW_LAYER_PLATFORM_EXPORT_PATH(rt_gesturecontrol.h)
+
 ../inc/rt_gesturehelper.h    MW_LAYER_PLATFORM_EXPORT_PATH(rt_gesturehelper.h)
 ../inc/rt_gestureobserver.h  MW_LAYER_PLATFORM_EXPORT_PATH(rt_gestureobserver.h)
 

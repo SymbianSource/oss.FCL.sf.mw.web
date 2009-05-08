@@ -21,10 +21,11 @@
 #define PluginHandler_H
 
 //  INCLUDES
+#include <e32std.h>
 #include <npupp.h>
 #include <f32file.h>
 #include <badesca.h>
-
+#include <wtf/HashSet.h>
 #include <ECom/ImplementationInformation.h>    // ecom
 #include "EcomBrowserPluginInterface.h"
 #include "WebCorePluginHandler.h"
@@ -32,7 +33,7 @@
 // FORWARD DECLARATIONS
 class PluginInfo;
 class WebView;
-
+class PluginSkin;
 
 // CLASS DECLARATION
 
@@ -136,6 +137,13 @@ class PluginHandler : public CBase
         * @return ETrue or EFalse.
         */
         TBool isSupported(const TDesC& contType, const TDesC8& url);
+        void  storePluginObject(PluginSkin* pluginObj);
+        void  removePluginObject(PluginSkin* pluginObj);
+        WTF::HashSet<PluginSkin*>& pluginObjects() { return m_pluginObjects; };
+        PluginSkin*  pluginToActivate() { return m_pluginToActivate; };
+        void  setPluginToActivate(PluginSkin* pluginObj) {m_pluginToActivate = pluginObj; };
+        PluginSkin*  activePlugin() { return m_activePlugin; };
+        void setActivePlugin(PluginSkin* pluginObj) { m_activePlugin = pluginObj; };
 
     private: // New functions
 
@@ -181,6 +189,7 @@ class PluginHandler : public CBase
 
         // Array of information about existing plugins
         RPointerArray<PluginInfo>   m_pluginInfoArray;
+        WTF::HashSet<PluginSkin*>   m_pluginObjects;
         TInt                        m_nextHandle;
         TBool                       m_pluginsLoaded;
         TBool                       m_enablePlugins;
@@ -189,6 +198,8 @@ class PluginHandler : public CBase
 
         CIdle*                      m_idle;              //Active Object to initailise
                                                         //the plugins from drives
+        PluginSkin*                 m_pluginToActivate;
+        PluginSkin*                 m_activePlugin;
     };
 
 

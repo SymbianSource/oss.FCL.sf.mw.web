@@ -53,7 +53,8 @@
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "FocusController.h"
-
+#include "WebTabbedNavigation.h"
+#include "PluginHandler.h"
 
 #include "WebKitLogger.h"
 using namespace WebCore;
@@ -130,9 +131,19 @@ void WebPointerEventHandler::ConstructL()
  * EGestureDrop -  drag + touch up, !(EGestureSwipe || EGestureFlick) - events
  *                 sent: EGestureDrop, EGestureReleased
  */
-void WebPointerEventHandler::HandleGestureL( const MGestureEvent& aEvent )
+void WebPointerEventHandler::HandleGestureL( const TGestureEvent& aEvent )
 {
-    TGestureCode gtype = const_cast<MGestureEvent&>(aEvent).Code(MGestureEvent::EAxisBoth);
+    TGestureCode gtype = aEvent.Code(EAxisBoth);
+    TPoint gpos = aEvent.CurrentPos();
+    
+    TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
+    
+    PluginSkin* plugin = m_webview->mainFrame()->focusedPlugin();
+    if (plugin && plugin->pluginWin()) {
+      if (plugin->pluginWin()->HandleGesture(aEvent)) {
+          return;
+      }
+    }
     updateCursor(aEvent.CurrentPos());
 
     switch (gtype) {
@@ -204,7 +215,7 @@ void WebPointerEventHandler::HandleGestureL( const MGestureEvent& aEvent )
 // ======================================================================
 // WebPointerEventHandler::handleTap
 // ======================================================================
-void WebPointerEventHandler::handleTapL(const MGestureEvent& aEvent)
+void WebPointerEventHandler::handleTapL(const TGestureEvent& aEvent)
 {
     m_buttonDownTimer.stop();
     m_lastTapEvent = m_currentEvent; 
@@ -215,7 +226,7 @@ void WebPointerEventHandler::handleTapL(const MGestureEvent& aEvent)
 // ======================================================================
 //  WebPointerEventHandler::handleDoubleTap
 //======================================================================
-void WebPointerEventHandler::handleDoubleTap(const MGestureEvent& aEvent)
+void WebPointerEventHandler::handleDoubleTap(const TGestureEvent& aEvent)
 {
     if ( !m_webview->viewIsScrolling() &&
          (m_webview->brCtl()->capabilities() & TBrCtlDefs::ECapabilityFitToScreen)) {
@@ -232,13 +243,16 @@ void WebPointerEventHandler::handleDoubleTap(const MGestureEvent& aEvent)
 // ======================================================================
 // WebPointerEventHandler::handleTouchDownL
 //======================================================================
-void WebPointerEventHandler::handleTouchDownL(const MGestureEvent& aEvent)
+void WebPointerEventHandler::handleTouchDownL(const TGestureEvent& aEvent)
 {
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+    PluginSkin* pluginToActivate = pluginHandler->pluginToActivate();
     m_buttonDownEvent = m_currentEvent;
     m_highlightPos = aEvent.CurrentPos();
     
-    if ( !m_buttonDownTimer.isActive() && !m_webview->inPageViewMode() ){
+    if ( !m_buttonDownTimer.isActive() && !m_webview->inPageViewMode() && 
+         !pluginToActivate ){
         m_buttonDownTimer.startOneShot(0.1f);        
     }
 
@@ -254,6 +268,10 @@ void WebPointerEventHandler::handleTouchDownL(const MGestureEvent& aEvent)
                 plugin->pluginWin()->HandlePointerEventL(m_buttonDownEvent);
             }
         }
+    }
+    if (pluginToActivate) {
+        Frame* coreFrame = core(m_webview->mainFrame());
+        coreFrame->eventHandler()->handleMousePressEvent(PlatformMouseEvent(m_buttonDownEvent));
     }    
     /*
      * After introducing "link selection" pointer down action is done in 
@@ -273,7 +291,7 @@ void WebPointerEventHandler::handleTouchDownL(const MGestureEvent& aEvent)
 // ======================================================================
 // WebPointerEventHandler::handleTouchUp 
 // ======================================================================
-void WebPointerEventHandler::handleTouchUp(const MGestureEvent& aEvent)
+void WebPointerEventHandler::handleTouchUp(const TGestureEvent& aEvent)
 {
     m_highlightPos = TPoint(-1,-1);
     m_highlightedNode = NULL;
@@ -284,7 +302,7 @@ void WebPointerEventHandler::handleTouchUp(const MGestureEvent& aEvent)
 // ======================================================================
 // WebPointerEventHandler::handleMoveL
 // ======================================================================
-void WebPointerEventHandler::handleMove(const MGestureEvent& aEvent)
+void WebPointerEventHandler::handleMove(const TGestureEvent& aEvent)
 {
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
     TPoint curPos = aEvent.CurrentPos();

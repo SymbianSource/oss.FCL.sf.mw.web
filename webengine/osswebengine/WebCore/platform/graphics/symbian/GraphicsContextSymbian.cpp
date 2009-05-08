@@ -373,14 +373,14 @@ void GraphicsContext::strokeArc(const IntRect& rect, int startAngle, int angleSp
 
     int x = xForm(rect.x());
     int y = xForm(rect.y());
-    float w = (float)rect.width();
+    float w = xForm((float)rect.width());
 
     // starting point & end point
     float r = w/2;
     float fa = startAngle;
-    TPoint ps( x + r*cos(-fa * M_PI/180), y + r*sin( -fa * M_PI/180 ) );
+    TPoint ps( x + r + r*cos(fa * M_PI/180), y + r - r*sin( fa * M_PI/180 ) );
     fa += angleSpan;
-    TPoint pe( x + r*cos(-fa * M_PI/180), y + r*sin( -fa * M_PI/180 ) );
+    TPoint pe( x + r + r*cos(fa * M_PI/180), y + r - r*sin( fa * M_PI/180 ) );
 
     setPenColor( context, strokeColor() );
     gc.DrawArc( xForm(rect), ps, pe );

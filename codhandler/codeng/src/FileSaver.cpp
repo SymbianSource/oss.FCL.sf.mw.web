@@ -19,7 +19,7 @@
 
 
 // INCLUDE FILES
-
+#include <platform/mw/Browser_platform_variant.hrh>
 #include "FileSaver.h"
 #include "CodBuffStorage.h"
 #include "CodLoadObserver.h"
@@ -35,8 +35,12 @@
 #include <HttpDownloadMgrCommon.h>
 #include <DocumentHandler.h>
 #include <pathinfo.h>
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include <MGXFileManagerFactory.h>
 #include <CMGXFileManager.h>
+#endif
+
 #include <DcfEntry.h>
 #include <DcfRep.h>
 
@@ -603,12 +607,16 @@ void CFileSaver::UpdateDCFRepositoryL( const TDesC& aFileName )
 // knows update its view.
 // ---------------------------------------------------------
 // 
+
+
 void CFileSaver::UpdateMediaGalleryIfNeededL( const TDesC& aFileName )
-    {       
+    {
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF           
     CMGXFileManager* fm = MGXFileManagerFactory::NewFileManagerL( iFs );
     CleanupStack::PushL(fm);
     fm->UpdateL(aFileName);
     CleanupStack::PopAndDestroy(); // fm
+#endif    
     }
 // ---------------------------------------------------------
 // CFileSaver::NotifyMediaGalleryL()
@@ -617,6 +625,8 @@ void CFileSaver::UpdateMediaGalleryIfNeededL( const TDesC& aFileName )
 // 
 void CFileSaver::NotifyMediaGalleryL( const TDesC& aFileName )
     {
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF    
+    
     CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL( iFs );
     CleanupStack::PushL( mgFileManager );
 
@@ -625,6 +635,9 @@ void CFileSaver::NotifyMediaGalleryL( const TDesC& aFileName )
 
     // Notify Media Gallery
     TRAP_IGNORE( UpdateMediaGalleryIfNeededL( aFileName ) );
+
+#endif
+    
     
     // Notify DCF repository
     TRAP_IGNORE( UpdateDCFRepositoryL( aFileName ) );

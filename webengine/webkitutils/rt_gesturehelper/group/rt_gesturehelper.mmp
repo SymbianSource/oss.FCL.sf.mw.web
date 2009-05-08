@@ -32,18 +32,14 @@ MW_LAYER_SYSTEMINCLUDE
 SOURCEPATH    ../src
 
 SOURCE        gesture.cpp
-SOURCE        gesturecontrol.cpp
 SOURCE        gesturehelper.cpp
 SOURCE        gesturehelperimpl.cpp
 SOURCE        gesturerecogniser.cpp
-SOURCE        hittest.cpp
 SOURCE        pointarray.cpp
-SOURCE        pointercapturer.cpp
 SOURCE        utils.cpp 
 SOURCE        gestureeventfilter.cpp
 SOURCE        gesturehelpereventsender.cpp
 
-LIBRARY       alfclient.lib
 LIBRARY       avkon.lib
 LIBRARY       cone.lib
 LIBRARY       euser.lib

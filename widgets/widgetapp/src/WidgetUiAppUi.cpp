@@ -306,7 +306,8 @@ void CWidgetUiAppUi::HandleWsEventL(
 
     if ( aEvent.Type() == KAknUidValueEndKeyCloseEvent )
         {
-        // Let the Container::OfferKeyEventL handle the red end key
+        // Close the current active widget
+        iWindowManager->CloseWindowsAsync(EFalse);
         return;
         }
 

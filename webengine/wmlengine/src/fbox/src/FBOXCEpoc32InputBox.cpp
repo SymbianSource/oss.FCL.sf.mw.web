@@ -58,7 +58,6 @@
 // CONSTANTS
 
 static const TInt KNumberOfLines = 1000;
-_LIT(KBlankDesC," ");
 
 // ================= STATIC FUNCTIONS =======================
 TInt CEpoc32InputBox::RefreshContents( TAny* aParam )
@@ -277,7 +276,7 @@ void CEpoc32InputBox::ConstructL( const TRect& aInitialRectangle,
         }
     else
         {
-        CreateWindowL( iParent );
+        SetContainerWindowL( *iParent );
         }
 
     // Create formatted editor
@@ -620,6 +619,13 @@ void CEpoc32InputBox::ShowCursorL( TWmlCursorHandling aMode )
             }
          }
       }
+    else
+        {
+         if ( iEditor )
+           {
+              iEditor->TextView()->FormatTextL();
+           }
+        }
     }
 
 // ---------------------------------------------------------
@@ -1316,7 +1322,7 @@ TCoeInputCapabilities CEpoc32InputBox::InputCapabilities() const
             {
             return TCoeInputCapabilities(iEditor->InputCapabilities().Capabilities(),
                     (MCoeFepAwareTextEditor*) this,
-                    (MCoeCaptionRetrieverForFep*) this);
+                    (MCoeCaptionRetrieverForFep*) this, TUid::Uid(KFepUid), (TCoeInputCapabilities::MCoeFepSpecificExtensions*)this );
             }
         else
             {
@@ -1628,7 +1634,7 @@ TInt CEpoc32InputBox::DocumentLengthForFep() const
 // -----------------------------------------------------------------------------
 TInt CEpoc32InputBox::DocumentMaximumLengthForFep() const
 {
-    return KMaxTInt;
+    return iMaxLength;
 }
 
 // -----------------------------------------------------------------------------
@@ -1665,12 +1671,12 @@ void CEpoc32InputBox::GetCursorSelectionForFep(TCursorSelection& aCursorSelectio
 //
 // -----------------------------------------------------------------------------
 void CEpoc32InputBox::GetEditorContentForFep(TDes& aEditorContent,TInt aDocumentPosition,TInt aLengthToRetrieve) const
-{
-    aEditorContent = KBlankDesC;
-    if ( iInlineEditText && aDocumentPosition >= 0 && (aDocumentPosition + aLengthToRetrieve) <= iInlineEditText->Length() )
-        {
-        aEditorContent = iInlineEditText->Des().Mid(aDocumentPosition,aLengthToRetrieve);
-        }
+{    
+    aEditorContent = KNullDesC; 
+	if ( iInlineEditText && aDocumentPosition >= 0 && (aDocumentPosition + aLengthToRetrieve) <= iInlineEditText->Length() ) 
+	    {
+	    aEditorContent = iInlineEditText->Des().Mid(aDocumentPosition,aLengthToRetrieve);
+		}
 }
 
 // -----------------------------------------------------------------------------
@@ -1816,6 +1822,17 @@ void CEpoc32InputBox::HandleUpdateCursor()
     }
 }
 
+// -------------------------------------------------------------------------------
+// IsValidCharacter :: interface method of MCoeFepSpecificExtensions
+// 
+// -------------------------------------------------------------------------------
+TBool CEpoc32InputBox::IsValidCharacter(TInt aChar) 
+    {
+    // Single line input box, enter character need not be taken  
+    if ( aChar == KLineEnterChar )
+        return EFalse; 
+    return ETrue; 
+    }
 
 //  End of File
 

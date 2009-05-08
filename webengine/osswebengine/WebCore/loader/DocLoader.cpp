@@ -294,7 +294,9 @@ void DocLoader::clearPreloads()
     ListHashSet<CachedResource*>::iterator end = m_preloads.end();
     for (ListHashSet<CachedResource*>::iterator it = m_preloads.begin(); it != end; ++it) {
         CachedResource* res = *it;
-        if (res->preloadResult() == CachedResource::PreloadNotReferenced)
+        if (res->canDelete() && !res->inCache())  
+	            delete res;  
+        else if (res->preloadResult() == CachedResource::PreloadNotReferenced) 
             cache()->remove(res);
         res->decreasePreloadCount();
     }

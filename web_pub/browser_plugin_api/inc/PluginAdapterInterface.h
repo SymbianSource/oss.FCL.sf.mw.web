@@ -122,7 +122,10 @@ class MPluginNotifier
        ESystemNotification,
        EPluginInvisible,
        EPluginActivated,
-       EPluginDeactivated};
+       EPluginDeactivated,
+       EMenuOptionEnableDecider,
+       EPluginPause
+    };
 
 
     public: // New functions

@@ -44,6 +44,7 @@
 #include "webkitlogger.h"
 #include "webutil.h"
 #include "PluginSkin.h"
+#include "PluginHandler.h"
 #include "kjs_proxy.h"
 #if PLATFORM(SYMBIAN)
 #include "oom.h"
@@ -307,42 +308,18 @@ void WebFrame::notifyPluginOfScrolling(RenderObject* renderer)
 
 PluginSkin* WebFrame::focusedPlugin()
 {
-    int pluginCount = 0;
-    Frame* coreFrame = core(this);
-    MWebCoreObjectWidget* view = NULL;
-    MWebCoreObjectWidget* tmpView = NULL;
-
-    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) {
-        PassRefPtr<HTMLCollection> objects = frame->document()->objects();     
-        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) {
-            tmpView = widget(n); 
-            if (tmpView) {
-                pluginCount++;
-                view = tmpView;
-                if (view->isActive()) {
-                    return static_cast<PluginSkin*>(view);
-                }
-            }
-        }
-
-        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();       
-        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) {
-            tmpView = widget(n);
-            if (tmpView) { 
-                pluginCount++;
-                view = tmpView;
-                if (view->isActive()) {
-                    return static_cast<PluginSkin*>(view);
-                }
-            }
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+    PluginSkin* plugin = pluginHandler->activePlugin();
+    if (!plugin) {
+        //no focused plugin. If only one plugin is present return that plugin
+        WTF::HashSet<PluginSkin*> pluginObjs = pluginHandler->pluginObjects();
+        if (pluginObjs.size() == 1) {
+            WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin();
+            plugin = *it;
         }
     }
-    //no focused plugin. If only one plugin is present return that plugin
-    if(pluginCount == 1 && view) {
-        return static_cast<PluginSkin*>(view);           
-    } //endof pluginCount = 1
-
-    return NULL;    
+    
+    return plugin;
 }
 
 void WebFrame::setFrameView(WebFrameView* v) 

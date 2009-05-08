@@ -388,4 +388,18 @@
 //
 #define qtn_browser_downloads_cancel_all "Cancel All"
 
+//d:Shown for completed downloads in Downloads List, if gallery is not supported
+//l:list_double_large_graphic_pane_t2_cp2
+//w:
+//r:7.1
+//
+#define qtn_browser_downloads_file_saved "File Saved"
+
+//d:Shown for completed downloads in Downloads List for Album download(more than one media object), if gallery is not supported
+//l:list_double_large_graphic_pane_t2_cp2
+//w:
+//r:7.1
+//
+#define qtn_browser_downloads_files_saved "Files Saved"
+
 // End of File

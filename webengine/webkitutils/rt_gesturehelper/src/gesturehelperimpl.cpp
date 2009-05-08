@@ -18,18 +18,15 @@
 
 #include "gesturehelperimpl.h"
 
-#include <alf/alfevent.h>
 #include <e32base.h>
 #include <w32std.h>
 
 #include "gesture.h"
 #include "gesturedefs.h"
 #include "utils.h"
-#include "pointercapturer.h"
 #include "gestureeventfilter.h"
 #include "gesturehelpereventsender.h"
 #include "flogger.h"
-#include "gestureevent.h"
 
 using namespace RT_GestureHelper;
 
@@ -128,7 +125,7 @@ inline TPoint Position( const TPointerEvent& aEvent )
     // and because the (Alfred) drag events are not local to visual even when
     // coming from the client
     
-    return aEvent.iParentPosition;
+    return aEvent.iPosition;
     }
 
 // ----------------------------------------------------------------------------
@@ -140,14 +137,14 @@ CGestureHelperImpl* CGestureHelperImpl::NewL( MGestureObserver& aObserver )
     CGestureHelperImpl* self = new ( ELeave ) CGestureHelperImpl( aObserver );
     CleanupStack::PushL( self );
     self->iEventSender = CGestureEventSender::NewL( aObserver );
-    self->iDoubleTapTimer = CCallbackTimer::NewL( *self, EmitFirstTapEventL, 
+    self->iDoubleTapTimer = CCallbackTimer::NewL( *self, EmitFirstTapEvent, 
             KMaxTapDuration, EFalse ); // double tap is disabled by default
     self->iHoldingTimer = CCallbackTimer::NewL( *self, StartHoldingL, 
         KHoldDuration, EFalse ); // holding is enabled by default
     
-    self->iLongTouchTimer = CCallbackTimer::NewL( *self, HandleLongTouchL, 
+    self->iLongTouchTimer = CCallbackTimer::NewL( *self, HandleLongTouch, 
             KLongTapDuration, ETrue ); // holding is enabled by default
-    self->iPointerCapturer = CPointerCapturer::NewL();    
+    
     self->iGesture = new ( ELeave ) CGesture();
     self->iUnusedGesture = new ( ELeave ) CGesture();
     TInt tapLimit = Mm2Pixels(KFingerSize_mm) / 2;
@@ -176,7 +173,6 @@ CGestureHelperImpl::~CGestureHelperImpl()
     delete iGesture;
     delete iPreviousTapGesture;
     delete iUnusedGesture;
-    delete iPointerCapturer;
     delete iLongTouchTimer;
     delete iEventFilter;
     delete iEventSender;
@@ -219,15 +215,7 @@ TBool CGestureHelperImpl::IsDoubleTapEnabled() const
     return iDoubleTapTimer->IsEnabled();
     }
     
-// ----------------------------------------------------------------------------
-// InitAlfredPointerEventCaptureL
-// ----------------------------------------------------------------------------
-//
-void CGestureHelperImpl::InitAlfredPointerCaptureL( CAlfEnv& aEnv, 
-        CAlfDisplay& aDisplay, TInt aFreeControlGroupId )
-    {
-    iPointerCapturer->InitForAlfredL(*this, aEnv, aDisplay, aFreeControlGroupId );
-    }
+
 
 // ----------------------------------------------------------------------------
 // Reset state
@@ -238,7 +226,6 @@ void CGestureHelperImpl::Reset()
     iHoldingTimer->Cancel();
     iLongTouchTimer->Cancel();
     iGesture->Reset();
-    iPointerCapturer->Stop();
     }
 
 /** 
@@ -259,7 +246,6 @@ TBool CGestureHelperImpl::HandlePointerEventL( const TPointerEvent& aEvent )
     SetLastEventTime();
     if (!iEventFilter->FilterDrag(aEvent, iLastEventTime, filterReason))
         {
-        iGesture->SetVisual( NULL );
         return noneAlf_HandlePointerEventL( aEvent );
         }
     else
@@ -275,39 +261,13 @@ TBool CGestureHelperImpl::HandlePointerEventL( const TPointerEvent& aEvent )
         }
     }
 
-// ----------------------------------------------------------------------------
-// OfferEventL
-// ----------------------------------------------------------------------------
-//
-TBool CGestureHelperImpl::OfferEventL( const TAlfEvent& aEvent )
-    {
-    if ( aEvent.IsPointerEvent() )
-        {
-        return HandlePointerEventL( aEvent.PointerEvent(), aEvent.Visual() );
-        }
-    return EFalse;
-    }
-
-
-
-
-
-
-// ----------------------------------------------------------------------------
-// Handle a pointer event
-// ----------------------------------------------------------------------------
-//
-
 
 TBool CGestureHelperImpl::noneAlf_HandlePointerEventL( const TPointerEvent& aEvent)
     {
-    
     switch ( aEvent.iType )
         {
         case TPointerEvent::EButton1Down:
             {
-            
-            iPointerCapturer->StartL();
             HandleTouchDownL(aEvent);
             break;
             }
@@ -318,16 +278,15 @@ TBool CGestureHelperImpl::noneAlf_HandlePointerEventL( const TPointerEvent& aEve
             }
         case TPointerEvent::EButton1Up:
             {
-            CleanupStack::PushL( TCleanupItem( &ResetHelper, this ) );
             if (KErrNone == AddPoint( aEvent ))
                 {
-                HandleTouchUpL(aEvent);
+                HandleTouchUp(aEvent);
                 }
             else
                 {
-                EmitCancelEventL();
+                EmitCancelEvent();
                 }
-            CleanupStack::PopAndDestroy( this ); 
+            Reset();
             break;
             }
         default:
@@ -336,162 +295,19 @@ TBool CGestureHelperImpl::noneAlf_HandlePointerEventL( const TPointerEvent& aEve
     return ETrue;
     }
 
-
-TBool CGestureHelperImpl::HandlePointerEventL( const TPointerEvent& aEvent,
-        CAlfVisual* aVisual )
-    {  
-    // filter out events that do not start with button down. It is a stray
-    // event from another visual
-    if ( IsIdle() && aEvent.iType != TPointerEvent::EButton1Down )
-        {
-        return EFalse; // don't consume
-        }
-    
-    switch ( aEvent.iType )
-        {
-        case TPointerEvent::EButton1Down:
-            // If no up event was received during previous gesture, cancel 
-            // previous event and reset state
-            if ( !IsIdle() )
-                {
-                // ambiguous what is the right thing when "cancel" event leaves
-                // and "start" does not. Leaving for cancel *after* "start" could 
-                // be unexpected to client, as client would have handled start 
-                // event successfully. Assume that leaving upon cancellation 
-                // can be ignored.
-                TRAP_IGNORE( EmitCancelEventL() );
-                Reset();  
-                }
-            // as long as down event of a double tap comes within the double 
-            // tap timeout, it does not matter how long the user keeps the finger
-            // pressed for the gesture to be a double tap. Therefore, cancel
-            // the timeout, as it is no longer relevant. (Of course, this call
-            // will only do something if the timer is actually running, which
-            // is only if received a tap event very recently.)
-            iDoubleTapTimer->Cancel();
-            // adding the first point implicitly makes the state "not idle"
-            AddPointL( aEvent );
-            iGesture->SetVisual( aVisual );
-            // if pointer capturer leaves, the remaining pointer events will
-            // not be captured if stylus is dragged outside the capturing visual
-            // an error note will be shown, so the potential problem is irrelevant,
-            // assuming client does not (incorrectly) block the leave from reaching 
-            // the framework
-            iPointerCapturer->StartL();
-            // Delay emitting a down event _until_ it is known that this beginning 
-            // gesture is _not_ the second tap of a double tap event.
-            // iPreviousTapGesture is only non-null if very recently received 
-            // a tap event and double tap is enabled. 
-            if ( !iPreviousTapGesture )
-                {
-                EmitEventL( *iGesture );
-                }
-            // else delay emitting an event, as it might be a double tap 
-            // (allow the second tap of a double tap to be anywhere, so don't check
-            // for start pos here)
-            break;
-            
-        case TPointerEvent::EDrag:
-            // While stylus down, the same event is received repeatedly
-            // even if stylus does not move. Filter out by checking if point 
-            // is the same as the latest point
-            if ( !iGesture->IsLatestPoint( Position( aEvent ) ) )
-                {
-                AddPointL( aEvent );
-
-                // as long as the starting gesture is seen as a tap, do not emit any
-                // drag events
-                if ( !iGesture->IsTap() )
-                    {
-                    // if there is a previous tap gesture, getting drag events means that
-                    // the previous gesture is not a double tap. So emit the previous gesture.
-                    if ( iPreviousTapGesture )
-                        {
-                        // this is a second gesture after a tap (double tap is enabled)
-                        EmitFirstTapEventL();
-                        // emit down event for the current gesture (since its down was delayed, until
-                        // it was to be known if the event is a tap. That is known now.)
-                        EmitStartEventL( *iGesture );
-                        }
-                    // restart holding timer every time the current stylus pos changes
-                    StartHoldingTimer( aEvent );
-                    // emit the drag event to client
-                    EmitEventL( *iGesture );
-                    }
-                // else: do not emit drag events until it is known that the gesture is not a tap
-                // (or the second tap of double tap)
-                }
-            break;
-
-        case TPointerEvent::EButton1Up:
-            // reset in case the down event for next gesture is not received for a reason 
-            // in client, and instead drag or up events are received. 
-            // reset via cleanup stack to ensure Reset is run even if
-            // observer leaves
-            CleanupStack::PushL( TCleanupItem( &ResetHelper, this ) );
-            // if adding of the point fails, notify client with a 
-            // cancelled event. It would be wrong to send another
-            // gesture code when the up point is not known
-            if ( KErrNone == AddPoint( aEvent ) )
-                {
-                
-                // if the gesture is a tap, the gesture is either the first tap of a _potential_
-                // double tap, or the second tap of a double tap
-                if ( iDoubleTapTimer->IsEnabled() && iGesture->IsTap() )
-                    {
-                    __ASSERT_DEBUG( !iGesture->IsHolding(), Panic( EGesturePanicIllegalLogic ) );
-                    if ( !iPreviousTapGesture )
-                        {
-                        // First tap. Delay emitting its code evemt and released events until it is known
-                        // whether the tap is a double tap
-                        iPreviousTapGesture = iGesture;
-                        iGesture = NewGesture();
-                        iDoubleTapTimer->Start(); 
-                        }
-                    else
-                        {
-                        // This is a second tap of a double tap. Do not emit anything for the second
-                        // tap. Only down event has been emitted for the first tap. Emit the code 
-                        // event (double tap) and released for the first tap.
-                        iPreviousTapGesture->SetDoubleTap();
-                        EmitFirstTapEventL();
-                        }
-                    }
-                
-                else 
-                    {
-                    // modified iGesture to be "released"
-                    CompleteAndEmitL( *iGesture );
-                    }
-                }
-            else
-                { // adding a point failed
-                EmitCancelEventL();
-                }
-            // reset state
-            CleanupStack::PopAndDestroy( this ); 
-            break;
-            
-        default:
-            break;
-        }
-    return ETrue; // consume
-    }
-
-
 TBool CGestureHelperImpl::IsMovementGesture(TGestureCode aCode)
     {
     return (aCode == EGestureDrag || aCode == EGestureFlick || aCode == EGestureSwipeUp ||
             aCode == EGestureSwipeDown || aCode == EGestureSwipeRight || aCode == EGestureSwipeLeft);
     }
 
-void CGestureHelperImpl::HandleLongTouchL()
+void CGestureHelperImpl::HandleLongTouch()
     {
     iDoubleTapTimer->Cancel();
     iGesture->SetLongTap(ETrue);
     iGesture->SetComplete();
     TPoint startPos = iGesture->StartPos();
-    EmitEventL(*iGesture);
+    EmitEvent(*iGesture);
     iGesture->Reset();
     iGesture->AddPoint( startPos, GetLastEventTime() );
     }
@@ -500,18 +316,25 @@ void CGestureHelperImpl::HandleTouchDownL(const TPointerEvent& aEvent)
     {
     TGestureCode prevCode = iGesture->PreviousGestureCode();
     if (prevCode == EGestureStart) return;
+    if (prevCode == EGestureDrag) 
+        {
+        iGesture->Reset();
+        }
     AddPointL( aEvent );
     
+    if (!iLongTouchTimer->IsActive())
+        {
     iLongTouchTimer->Start();
+        }
     if (!iDoubleTapTimer->IsActive())
         {
-            EmitEventL( *iGesture );
+            EmitEvent( *iGesture );
         }
     }
 
 void CGestureHelperImpl::HandleMoveL(const TPointerEvent& aEvent)
     {
-    if (iGesture->IsLatestPoint( iGesture->Visual() ? Position ( aEvent ) : aEvent.iPosition)) return; // I'm not sure we need this
+    if (iGesture->IsLatestPoint( Position(aEvent))) return; // I'm not sure we need this
     //Cancel double tap time - it's neither tap nor double tap 
     iDoubleTapTimer->Cancel();
     iLongTouchTimer->Cancel();
@@ -527,11 +350,11 @@ void CGestureHelperImpl::HandleMoveL(const TPointerEvent& aEvent)
     
     if (!isFirstPoint)
         {
-        EmitEventL( *iGesture );
+        EmitEvent( *iGesture );
         }
     }
 
-void CGestureHelperImpl::HandleTouchUpL(const TPointerEvent& /*aEvent*/)
+void CGestureHelperImpl::HandleTouchUp(const TPointerEvent& /*aEvent*/)
     {
     TGestureCode prevCode = iGesture->PreviousGestureCode();
     iLongTouchTimer->Cancel();
@@ -547,13 +370,13 @@ void CGestureHelperImpl::HandleTouchUpL(const TPointerEvent& /*aEvent*/)
     */
     if ( prevCode == EGestureLongTap )
         {
-        EmitReleasedEventL();
+        EmitReleasedEvent();
         }
     else if (IsMovementGesture(prevCode) || 
              !iDoubleTapTimer->IsEnabled() /* || !iGesture->IsTap()*/ ) 
         {
         iGesture->SetComplete();
-        EmitEventL(*iGesture);
+        EmitEvent(*iGesture);
         }
     
     else 
@@ -566,7 +389,7 @@ void CGestureHelperImpl::HandleTouchUpL(const TPointerEvent& /*aEvent*/)
             // it's a double tap
             iLastTouchUpTime = iLastEventTime;
             iLastDoubleTapTime = iLastEventTime;
-            EmitDoubleTapEventL();
+            EmitDoubleTapEvent();
             }
         else
             {
@@ -586,18 +409,18 @@ void CGestureHelperImpl::HandleTouchUpL(const TPointerEvent& /*aEvent*/)
 
 
 
-void CGestureHelperImpl::EmitDoubleTapEventL()
+void CGestureHelperImpl::EmitDoubleTapEvent()
     {
     iPreviousTapGesture->SetDoubleTap();
-    EmitFirstTapEventL();
+    EmitFirstTapEvent();
     }
 
 
-void CGestureHelperImpl::EmitReleasedEventL()
+void CGestureHelperImpl::EmitReleasedEvent()
     {
     iGesture->SetComplete();
     iGesture->SetReleased();
-    EmitEventL(*iGesture);
+    EmitEvent(*iGesture);
     }
 
 
@@ -628,7 +451,7 @@ inline void CGestureHelperImpl::AddPointL( const TPointerEvent& aEvent )
 //
 inline TInt CGestureHelperImpl::AddPoint( const TPointerEvent& aEvent )
     {
-    TPoint pos = iGesture->Visual() ? Position ( aEvent ) : aEvent.iPosition;
+    TPoint pos = Position ( aEvent );
     return iGesture->AddPoint( pos, GetLastEventTime() );
     }
 
@@ -679,7 +502,7 @@ void CGestureHelperImpl::StartHoldingL()
     // otherwise, the holding gesture code will be sent twice
     CleanupStack::PushL( TCleanupItem( &ContinueHolding, iGesture ) );
     
-    EmitEventL( *iGesture );
+    EmitEvent( *iGesture );
     
     // set holding state to "post holding"
     CleanupStack::PopAndDestroy( iGesture );
@@ -699,21 +522,16 @@ void CGestureHelperImpl::RecyclePreviousTapGesture( TAny* aSelf )
 // Emit the remainder of the previous tap event (tap + released)
 // ----------------------------------------------------------------------------
 //
-void CGestureHelperImpl::EmitFirstTapEventL()
+void CGestureHelperImpl::EmitFirstTapEvent()
     {
     // when this function is called, a tap has turned out to _not_ be a double tap
     __ASSERT_DEBUG( IsDoubleTapEnabled(), Panic( EGesturePanicIllegalLogic ) );
     __ASSERT_DEBUG( iPreviousTapGesture, Panic( EGesturePanicIllegalLogic ) );
     
     iDoubleTapTimer->Cancel();
-    
-    // ensure previous tap gesture is reset even if client leaves
-    CleanupStack::PushL( TCleanupItem( &RecyclePreviousTapGesture, this ) );
-    
-    CompleteAndEmitL( *iPreviousTapGesture );
-    
-    // recycle the emitted gesture 
-    CleanupStack::PopAndDestroy( this ); 
+    CompleteAndEmit( *iPreviousTapGesture );
+    RecycleGesture(iPreviousTapGesture);
+     
     }
 
 // ----------------------------------------------------------------------------
@@ -723,7 +541,7 @@ void CGestureHelperImpl::EmitFirstTapEventL()
 void CGestureHelperImpl::EmitStartEventL( const CGesture& aGesture )    
     {
     CGesture* startGesture = aGesture.AsStartEventLC();
-    EmitEventL( *startGesture );
+    EmitEvent( *startGesture );
     CleanupStack::PopAndDestroy( startGesture );    
     }
     
@@ -731,7 +549,7 @@ void CGestureHelperImpl::EmitStartEventL( const CGesture& aGesture )
 // EmitCompletionEventsL
 // ----------------------------------------------------------------------------
 //
-void CGestureHelperImpl::CompleteAndEmitL( CGesture& aGesture )
+void CGestureHelperImpl::CompleteAndEmit( CGesture& aGesture )
     {
     aGesture.SetComplete();
     // send gesture code if holding has not been started. If holding has 
@@ -741,48 +559,44 @@ void CGestureHelperImpl::CompleteAndEmitL( CGesture& aGesture )
         {
         // if client leaves, the state is automatically reset.
         // In this case the client will not get the released event
-        EmitEventL( aGesture ); 
+        EmitEvent( aGesture ); 
         }
     
     // send an event that stylus was lifted
     aGesture.SetReleased();
-    EmitEventL( aGesture ); 
+    EmitEvent( aGesture ); 
     }
     
 // ----------------------------------------------------------------------------
 // EmitCancelEventL
 // ----------------------------------------------------------------------------
 //
-void CGestureHelperImpl::EmitCancelEventL()
+void CGestureHelperImpl::EmitCancelEvent()
     {
     iDoubleTapTimer->Cancel();
 
-    // ensure previous tap gesture is reset even if client leaves
-    CleanupStack::PushL( TCleanupItem( &RecyclePreviousTapGesture, this ) );
-
+    
     CGesture& gestureToCancel = iPreviousTapGesture ? *iPreviousTapGesture : *iGesture;
     gestureToCancel.SetCancelled();
-    EmitEventL( gestureToCancel );
+    EmitEvent( gestureToCancel );
+    RecycleGesture(iPreviousTapGesture);
     
-    // recycle the emitted gesture 
-    CleanupStack::PopAndDestroy( this ); 
     }
 
 // ----------------------------------------------------------------------------
 // Notify observer
 // ----------------------------------------------------------------------------
 //
-void CGestureHelperImpl::EmitEventL( const CGesture& aGesture )
+void CGestureHelperImpl::EmitEvent( const CGesture& aGesture )
     {
     // deallocation of the event is happening in CGestureEventSender::RunL() 
-    CGestureEvent* event = new(ELeave) CGestureEvent();
-    event->iCode = const_cast<CGesture&>(aGesture).Code(MGestureEvent::EAxisBoth);
-    event->iCurrPos = aGesture.CurrentPos();
-    event->iDistance = aGesture.Distance();
-    event->iStartPos = aGesture.StartPos();
-    event->iIsHolding = aGesture.IsHolding();
-    event->iSpeed = aGesture.Speed();
-    event->iVisual = aGesture.Visual();
+    TGestureEvent event;
+    event.SetCode(const_cast<CGesture&>(aGesture).Code(EAxisBoth));
+    event.SetCurrentPos(aGesture.CurrentPos());
+    event.SetDistance(aGesture.Distance());
+    event.SetStartPos(aGesture.StartPos());
+    event.SetIsHolding(aGesture.IsHolding());
+    event.SetSpeed(aGesture.Speed());
     iEventSender->AddEvent(event);
     }
 

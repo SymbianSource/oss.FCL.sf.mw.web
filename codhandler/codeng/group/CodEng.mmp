@@ -113,7 +113,11 @@ LIBRARY     DRMCommon.lib
 LIBRARY     avkon.lib 
 LIBRARY     commonengine.lib
 LIBRARY     cone.lib 
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 LIBRARY     MGXMediaFileAPI.lib
+#endif
+
 LIBRARY     DcfRep.lib
 LIBRARY     estor.lib
 

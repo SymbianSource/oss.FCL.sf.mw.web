@@ -69,6 +69,9 @@ public:
 
     bool skipMode() const { return !m_skipModeTag.isNull(); }
     bool isHandlingResidualStyleAcrossBlocks() const { return m_handlingResidualStyleAcrossBlocks; }
+#if PLATFORM(SYMBIAN)
+    void setScriptOk( bool scriptSupported ) { m_scriptSupported = scriptSupported; }
+#endif
 
 private:
     void setCurrent(Node*);
@@ -159,6 +162,9 @@ private:
     bool m_reportErrors;
     bool m_handlingResidualStyleAcrossBlocks;
     int inStrayTableContent;
+#if PLATFORM(SYMBIAN)
+    bool m_scriptSupported;
+#endif
 };
 
 }

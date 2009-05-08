@@ -224,6 +224,10 @@ bool WebTabbedNavigation::navigate(int horizontalDir, int verticalDir)
                 StaticObjectsContainer::instance()->webCursor()->updatePositionAndElemType(m_focusPosition - m_webView->mainFrame()->frameView()->contentPos());
                 ret = true;
             }
+            else
+            {
+                m_focusPosition = oldFocusPoint;
+            }
         }
     }
     StaticObjectsContainer::instance()->webCursor()->cursorUpdate(true);

@@ -66,6 +66,8 @@ public:
     WebCursor* webCursor();
     WebCannedImages* webCannedImages();
     PluginHandler* pluginHandler();
+    void setPluginFullscreen(bool val) { m_pluginFullscreen = val; }
+    bool isPluginFullscreen() { return m_pluginFullscreen; }
 
     virtual ~StaticObjectsContainer();
 
@@ -98,6 +100,7 @@ private:
     Vector<CBrCtl*>         m_activeBrCtls;
     OOMHandler*             m_oomHandler;
     bool                    m_fullScreenMode;
+    bool                    m_pluginFullscreen;
 };
 
 }

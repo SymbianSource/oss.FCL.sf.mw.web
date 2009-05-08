@@ -769,7 +769,7 @@ void RenderText::setSelectionState(SelectionState state)
     containingBlock()->setSelectionState(state);
 }
 
-void RenderText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset, unsigned len, bool force)
+void RenderText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset, unsigned len, bool force, bool backspace)
 {
     unsigned oldLen = textLength();
     unsigned newLen = text->length();
@@ -831,7 +831,7 @@ void RenderText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset,
     }
 
     m_linesDirty = dirtiedLines;
-    setText(text, force);
+    setText(text, force, backspace);
 }
 
 static inline bool isInlineFlowOrEmptyText(RenderObject* o)
@@ -860,7 +860,7 @@ UChar RenderText::previousCharacter()
     return prev;
 }
 
-void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
+void RenderText::setTextInternal(PassRefPtr<StringImpl> text, bool backspace)
 {
     m_text = text;
     ASSERT(m_text);
@@ -924,7 +924,13 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
                 m_text = m_text->secureShowLast(whiteBullet);
                 break;
             case TSDISC:
-                m_text = m_text->secureShowLast(bullet);
+                if(backspace){
+                	m_text = m_text->secure(bullet);
+                }
+                else{
+                	m_text = m_text->secureShowLast(bullet);
+                }
+                	
                 break;
             case TSSQUARE:
                 m_text = m_text->secureShowLast(blackSquare);
@@ -960,14 +966,14 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text)
     m_isAllASCII = charactersAreAllASCII(m_text.get());
 }
 
-void RenderText::setText(PassRefPtr<StringImpl> text, bool force)
+void RenderText::setText(PassRefPtr<StringImpl> text, bool force, bool backspace)
 {
     ASSERT(text);
 
     if (!force && equal(m_text.get(), text.get()))
         return;
 
-    setTextInternal(text);
+    setTextInternal(text, backspace);
     setNeedsLayoutAndPrefWidthsRecalc();
 }
 

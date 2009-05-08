@@ -289,7 +289,7 @@ MaskBase* MaskComposite::nextMask()
 {
     if( ++m_offset < m_length || m_length == kInfinite )
         return this;
-    
+    m_offset = 0;
     return NULL;
 }
 

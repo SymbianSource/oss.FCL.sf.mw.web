@@ -313,8 +313,12 @@ TKeyResponse CWidgetUiWindowContainer::OfferKeyEventL(
                 if (aKeyEvent.iCode == EKeyEnter || aKeyEvent.iCode == EKeyOK ||
                    (aKeyEvent.iScanCode > EStdKeyScrollLock && aKeyEvent.iScanCode < EStdKeyF1))
                     {
-                    iWindowManager.View()->ShowActivatedObject(ETrue, showStausPane);
-                    editing = ETrue;
+                    if ( iWindowManager.ActiveWindow() &&
+          			        iWindowManager.View()->CbaGroup()->IsVisible() )
+                        {
+                        iWindowManager.View()->ShowActivatedObject(ETrue, showStausPane);
+                        editing = ETrue;
+                        }
                     }
                 break;
                 }

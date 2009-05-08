@@ -155,8 +155,8 @@ void DataConnection::parseUrlLC(HBufC8*& contentType, HBufC8*& encoding, HBufC8*
             if( !ok ) { // if not base64, simple copy
                 if( !body ) {
                     body = HBufC8::NewLC( data.Length() );
+                    body->Des().Copy( data );
                 }
-                body->Des().Copy( data );
             }
         }
     }

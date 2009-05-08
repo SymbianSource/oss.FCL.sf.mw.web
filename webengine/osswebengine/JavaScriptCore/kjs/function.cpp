@@ -74,6 +74,9 @@ JSValue* FunctionImp::callAsFunction(ExecState* exec, JSObject* thisObj, const L
 {
   JSObject* globalObj = exec->dynamicInterpreter()->globalObject();
 
+#if PLATFORM(SYMBIAN)
+  exec->dynamicInterpreter()->resetStatementCount();
+#endif
   // enter a new execution context
   Context ctx(globalObj, exec->dynamicInterpreter(), thisObj, body.get(),
                  codeType(), exec->context(), this, &args);

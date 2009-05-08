@@ -56,6 +56,8 @@ RESOURCE TBUF r_browser_dlgprov_obj_download_filetype		{ buf = qtn_browser_dlgpr
 // Authentication Dialog
 RESOURCE TBUF r_browser_dlgprov_auth_fail_retry_query		{ buf=text_wml_auth_fail_retry_query; }
 RESOURCE TBUF r_browser_dlgprov_query_basic_authentication	{ buf=qtn_browser_dlgprov_query_basic_authentication; }
+// DNS look up failed message
+RESOURCE TBUF r_browser_not_valid_dns_name						{ buf = qtn_browser_not_valid_dns_name; }
 
 //
 // ===================================================

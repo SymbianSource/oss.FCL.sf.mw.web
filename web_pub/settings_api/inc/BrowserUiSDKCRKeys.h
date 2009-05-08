@@ -337,4 +337,52 @@ const TUint32 KBrowserNGShortCutFuncFullScreen =    0x00000075;
 // Any String value
 const TUint32 KBrowserNGShortCutFuncZoomMode =      0x00000076;
 
+// KBrowserSearchIconPath path to mif file saving search icons
+// Given and updated by search application
+// like z:\\resource\\apps\\xxx.mif
+const TUint32 KBrowserSearchIconPath = 0x00000077;
+
+// KBrowserSearchIconId Current search iconId From search mif file
+// Given and updated by search application
+// Valid values: TInt
+const TUint32 KBrowserSearchIconId = 0x00000078;
+
+// KBrowserSearchIconMaskId Current search iconMaskId From search mif file
+// Given and updated by search application
+// Valid values: TInt
+const TUint32 KBrowserSearchIconMaskId = 0x00000079;
+
+// KBrowserSearchProviderTitle Title to current search provider
+// Given and updated by search application
+const TUint32 KBrowserSearchProviderTitle = 0x0000007A;
+
+// KBrowserServiceUrl Browser Service url
+// Used to lauch service application through scheme handler
+const TUint32 KBrowserServiceUrl = 0x0000007B;
+
+// KBrowserFirstBoot
+// Valid values: 1 if browser first boot is not done yet, other 0  
+const TUint32 KBrowserFirstBoot = 0x0000007C;
+
+// KBrowserSearch TInt if browser search is present 
+// Valid values: 0, 1
+const TUint32 KBrowserSearch = 0x0000007D;
+
+// KBrowserServices TInt if browser service is present
+// Valid values: 0,1 
+const TUint32 KBrowserServices = 0x0000007E;
+
+// KBrowserSearchAppUid - browser Search Application UID
+// Valid values:any positive 32-bit integer value
+const TUint32 KBrowserSearchAppUid= 0x0000007F;
+
+// Search Application View UID for selection of Default 
+// Search Provider.
+// Valid values:any positive 32-bit integer value.
+const TUint32 KBrowserSearchProviderSettingViewId = 0x00000080;
+
+// KBrowserSearchProviderUrl Browser Search url
+// Used by Search Scheme Handler.
+const TUint32 KBrowserSearchProviderUrl = 0x00000081;
+
 #endif      // BROWSERUISDKCRKEYS_H

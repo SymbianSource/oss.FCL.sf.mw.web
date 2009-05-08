@@ -491,6 +491,16 @@ HTMLTokenizer::State HTMLTokenizer::scriptHandler(State state)
             setSrc(SegmentedString());
             state = scriptExecution(exScript, state, DeprecatedString::null, scriptStartLineno);
         }
+#if PLATFORM(SYMBIAN)
+        else
+        {
+            // script was not executed for possible reasons: either configured
+            // not to, or type not supported.     
+            // set the script_ok flag in parser to false, so that noscript
+            // can be handled and displayed.
+            parser->setScriptOk( false );
+        }
+#endif
     }
 
     if (!m_executingScript && !state.loadingExtScript()) {

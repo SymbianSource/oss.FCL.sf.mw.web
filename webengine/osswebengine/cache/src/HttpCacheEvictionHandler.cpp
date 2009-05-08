@@ -124,30 +124,29 @@ CHttpCacheEvictionHandler::~CHttpCacheEvictionHandler()
 //
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheEvictionHandler::Insert(
-    CHttpCacheEntry& aCacheEntry )
+void CHttpCacheEvictionHandler::Insert( CHttpCacheEntry& aCacheEntry )
     {
 #ifdef __CACHELOG__
     HttpCacheUtil::WriteUrlToLog( 0, _L( "Eviction table: item is inserted:" ), aCacheEntry.Url() );
     // check double insert
     CHttpCacheEntry* entry;
-    for( TInt i = 0; i < KHttpCacheBucketNum; i++ )
+    for ( TInt i = 0; i < KHttpCacheBucketNum; i++ )
         {
         TBucketIter bucketIter( *iBuckets->At( i ) );
         //
         bucketIter.SetToFirst();
-        while( ( entry = bucketIter++ ) != NULL )
+        while ( ( entry = bucketIter++ ) != NULL )
             {
             __ASSERT_DEBUG( ( entry != &aCacheEntry ) , User::Panic( _L("cacheHandler Panic"), KErrCorrupt ) );
             }
         }
-    //
-    HttpCacheUtil::WriteLog( 0, _L( "insert entry to eviction table:" ), BucketIndex( FastLog2( aCacheEntry.Size() ) ) );
+
+    HttpCacheUtil::WriteLog( 0, _L( "insert entry to eviction table:" ), BucketIndex( FastLog2( aCacheEntry.BodySize() ) ) );
 #endif // __CACHELOG__
+
     // Objects are classified into a limited number of groups according to log2(Si/refi)
-    // caclulate to which bucket it goes.
-    // buckets are orderd by LRU
-    Bucket( BucketIndex( FastLog2( aCacheEntry.Size() / aCacheEntry.Ref() ) ) )->AddLast( aCacheEntry );
+    // calculate to which bucket it goes. Buckets are orderd by LRU
+    Bucket( BucketIndex( FastLog2( aCacheEntry.BodySize() / aCacheEntry.Ref() ) ) )->AddLast( aCacheEntry );
     }
 
 // -----------------------------------------------------------------------------
@@ -155,10 +154,9 @@ void CHttpCacheEvictionHandler::Insert(
 //
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheEvictionHandler::Accessed(
-    CHttpCacheEntry& aCacheEntry )
+void CHttpCacheEvictionHandler::Accessed( CHttpCacheEntry& aCacheEntry )
     {
-    HttpCacheUtil::WriteUrlToLog( 0, _L( "Eviction table: item is accessed:" ), aCacheEntry.Url() );
+    HttpCacheUtil::WriteUrlToLog( 0, _L( "CHttpCacheEvictionHandler::Accessed - Eviction table: item is accessed:" ), aCacheEntry.Url() );
     // first check where it is now
     TInt oldRef( aCacheEntry.Ref() - 1 );
     if( oldRef > 0 )
@@ -166,20 +164,26 @@ void CHttpCacheEvictionHandler::Accessed(
         //
         // buckets are orderd by LRU
         // see if we need to move it to a new bucket
-        TInt currentBucketIndex( BucketIndex( FastLog2( aCacheEntry.Size() / oldRef ) ) );
-        TInt newBucketIndex( BucketIndex( FastLog2( aCacheEntry.Size() / aCacheEntry.Ref() ) ) );
+        TInt currentBucketIndex( BucketIndex( FastLog2( aCacheEntry.BodySize() / oldRef ) ) );
+        TInt newBucketIndex( BucketIndex( FastLog2( aCacheEntry.BodySize() / aCacheEntry.Ref() ) ) );
         // check if the item is really there
         TBool itemOk( ItemIsInBucket( currentBucketIndex, aCacheEntry ) );
 
-        if( itemOk )
+        if ( itemOk )
             {
-            HttpCacheUtil::WriteLog( 0, _L( "item is in bucket:" ), currentBucketIndex );
-            if( currentBucketIndex == newBucketIndex )
+            if ( currentBucketIndex == newBucketIndex )
                 {
-                HttpCacheUtil::WriteLog( 0, _L( "move entry to the end of the bucket. it's safe there" ) );
+#ifdef __CACHELOG__
+                HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                               _L("CHttpCacheEvictionHandler::Accessed - MOVED item to end of bucket"),
+                                               aCacheEntry.Filename(),
+                                               aCacheEntry.Url(),
+                                               newBucketIndex,
+                                               ELogBucketIndex );
+#endif
                 TBucket* bucket( Bucket( currentBucketIndex ) );
                 // move it to the end
-                if( !bucket->IsLast( &aCacheEntry ) )
+                if ( !bucket->IsLast( &aCacheEntry ) )
                     {
                     bucket->Remove( aCacheEntry );
                     bucket->AddLast( aCacheEntry );
@@ -187,15 +191,21 @@ void CHttpCacheEvictionHandler::Accessed(
                 }
             else
                 {
-                HttpCacheUtil::WriteLog( 0, _L( "move item to a new bucket" ), newBucketIndex );
+#ifdef __CACHELOG__
+                HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                               _L("CHttpCacheEvictionHandler::Accessed - MOVED item to new bucket"),
+                                               aCacheEntry.Filename(),
+                                               aCacheEntry.Url(),
+                                               newBucketIndex,
+                                               ELogBucketIndex );
+#endif
                 // new bucket
                 TBucket* currBucket( Bucket( currentBucketIndex ) );
                 TBucket* newBucket( Bucket( newBucketIndex ) );
                 // remove from the current and add it to the
                 // new as last item
 
-                // make sure the item is there
-                // move it to the end
+                // make sure the item is there, move it to the end
                 currBucket->Remove( aCacheEntry );
                 newBucket->AddLast( aCacheEntry );
                 }
@@ -219,62 +229,68 @@ void CHttpCacheEvictionHandler::Accessed(
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheEvictionHandler::Changed
-//
-// -----------------------------------------------------------------------------
-//
-void CHttpCacheEvictionHandler::Changed(
-    CHttpCacheEntry& /*aCacheEntry*/ )
-    {
-    // check if size changed
-    }
-
-// -----------------------------------------------------------------------------
 // CHttpCacheEvictionHandler::Remove
 //
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheEvictionHandler::Remove(
-    CHttpCacheEntry& aCacheEntry )
+void CHttpCacheEvictionHandler::Remove( CHttpCacheEntry& aCacheEntry )
     {
-    HttpCacheUtil::WriteUrlToLog( 0, _L( "Eviction table: try to remove item:" ), aCacheEntry.Url() );
-    //
-    TInt sizeFreqVal( FastLog2( aCacheEntry.Size() / aCacheEntry.Ref() ) );
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheEvictionHandler::Remove - trying to removing entry"),
+                                           aCacheEntry.Filename(),
+                                           aCacheEntry.Url(),
+                                           aCacheEntry.BodySize(),
+                                           ELogEntrySize );
+#endif
+
+    TInt sizeFreqVal( FastLog2( aCacheEntry.BodySize() / aCacheEntry.Ref() ) );
     // check if the item is in the right bucket
     TInt bucketIndex( BucketIndex( sizeFreqVal ) );
     TBucket* bucket( Bucket( bucketIndex ) );
     TBool itemOk( ItemIsInBucket( bucketIndex, aCacheEntry ) );
 
-    if( itemOk )
+    if ( itemOk )
         {
-        //
-        HttpCacheUtil::WriteLog( 0, _L( "removed from bucket:" ), bucketIndex );
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheEvictionHandler::Remove - removing entry from"),
+                                           aCacheEntry.Filename(),
+                                           aCacheEntry.Url(),
+                                           bucketIndex,
+                                           ELogBucketIndex );
+#endif
         bucket->Remove( aCacheEntry );
         }
 #ifdef __CACHELOG__
     else
         {
-         HttpCacheUtil::WriteLog( 0, _L( "item is not in bucket no." ), bucketIndex );
+         HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheEvictionHandler::Remove - item NOT in"),
+                                           aCacheEntry.Filename(),
+                                           aCacheEntry.Url(),
+                                           bucketIndex,
+                                           ELogBucketIndex );
         }
 #endif // __CACHELOG__
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheEvictionHandler::Evict
+// CHttpCacheEvictionHandler::EvictL
 //
 // -----------------------------------------------------------------------------
 //
 CArrayPtrFlat<CHttpCacheEntry>* CHttpCacheEvictionHandler::EvictL(
     TInt aSpaceNeeded )
     {
-    HttpCacheUtil::WriteLog( 0, _L( "need space:" ), aSpaceNeeded );
 #ifdef __CACHELOG__
+    HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheEvictionHandler::EvictL - aSpaceNeeded = " ), aSpaceNeeded );
     LogBuckets();
 #endif // __CACHELOG__
-    //
+
     CArrayPtrFlat<CHttpCacheEntry>* evictedEntries = new(ELeave)CArrayPtrFlat<CHttpCacheEntry>( 10 );
     CleanupStack::PushL( evictedEntries );
-    //
+
     // Each group is managed using a LRU
     // policy. The extended cost-to-size model is applied to the
     // eviction candidates from all nonempty groups, purging the
@@ -299,13 +315,18 @@ CArrayPtrFlat<CHttpCacheEntry>* CHttpCacheEvictionHandler::EvictL(
                 {
                 entry = bucket->First();
                 }
+#ifdef __CACHELOG__
+            else {
+                HttpCacheUtil::WriteLog( 0, _L("CHttpCacheEvictionHandler::EvictL : NO entries found in bucket ="), i);
+            }
+#endif
             // evacuate nonactive entries only
             if( entry && entry->State() == CHttpCacheEntry::ECacheComplete )
                 {
                 // watch out for 32 bit. it might overflow secInt.
                 currTime.SecondsFrom( entry->LastAccessed(), secInt );
 
-                TInt val( secInt.Int() * entry->Size() / entry->Ref() );
+                TInt val( secInt.Int() * entry->BodySize() / entry->Ref() );
                 // get the object with largest ( DeltaT * Size / Ref )
                 if( val > maxVal )
                     {
@@ -315,37 +336,51 @@ CArrayPtrFlat<CHttpCacheEntry>* CHttpCacheEvictionHandler::EvictL(
                     }
                 }
             }
-        // remove from the bucket
-        // add it to the evicted list
+
+        // remove from the bucket, add it to the evicted list, 
         // reduce space needed size
-        if( candidate )
+        if ( candidate )
             {
 #ifdef __CACHELOG__
             // no protected entries should be evacuated
             if( candidate->Protected() )
             	{
-	            HttpCacheUtil::WriteUrlToLog( 0, _L( "PROTECTED entry is about to be removed" ), candidate->Url() );
+	            HttpCacheUtil::WriteUrlToLog( 0, _L( "CHttpCacheEvictionHandler::EvictL - PROTECTED entry is about to be removed" ), candidate->Url() );
             	}
-            //
-            HttpCacheUtil::WriteUrlToLog( 0, _L( "entry to remove:" ), candidate->Url() );
+
+            HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheEvictionHandler::EvictL - removing entry "),
+                                           candidate->Filename(),
+                                           candidate->Url(),
+                                           candidate->BodySize(), 
+                                           ELogEntrySize );
 #endif //__CACHELOG__
-            //
+            
             iBuckets->At( bucketInd )->Remove( *candidate );
-            // reduce size
-            aSpaceNeeded-= candidate->Size();
-            aSpaceNeeded-= candidate->HeaderSize();
-            //
+            // Reduce size needed
+            aSpaceNeeded -= candidate->BodySize();
+            aSpaceNeeded -= candidate->HeaderSize();
+
             evictedEntries->AppendL( candidate );
-            //
-            HttpCacheUtil::WriteLog( 0, _L( "more space needed" ), aSpaceNeeded );
+
+#ifdef __CACHELOG__
+            if ( aSpaceNeeded > 0 ) {
+                HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheEvictionHandler::EvictL - more space needed aSpaceNeeded = " ), aSpaceNeeded );
+            	}
+#endif
             }
         else
             {
             // no candidate no free
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheEvictionHandler::EvictL - NO Candidates to remove" ) );
+#endif
             break;
             }
-        }
+        }   // end if while
+
     CleanupStack::Pop(); // evictedEntries
+
     return evictedEntries;
     }
 
@@ -356,9 +391,11 @@ CArrayPtrFlat<CHttpCacheEntry>* CHttpCacheEvictionHandler::EvictL(
 //
 void CHttpCacheEvictionHandler::RemoveAll()
     {
+#ifdef __CACHELOG__
     HttpCacheUtil::WriteLog( 0, _L( "Eviction table: remove all item:" ) );
-    //
-    for( TInt i = 0; i < KHttpCacheBucketNum; i++ )
+#endif
+
+    for ( TInt i = 0; i < KHttpCacheBucketNum; i++ )
         {
         iBuckets->At( i )->Reset();
         //
@@ -428,13 +465,20 @@ TBool CHttpCacheEvictionHandler::ItemIsInBucket(
             found = ETrue;
             break;
             }
-        }
+        }   // end of while
+
 #ifdef __CACHELOG__
     if( !found )
         {
-        HttpCacheUtil::WriteLog( 0, _L( "Eviction table: item NOT FOUND" ) );
+        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheEvictionHandler::ItemIsInBucket - entry NOT found"),
+                                           aCacheEntry.Filename(),
+                                           aCacheEntry.Url(),
+                                           aCacheEntry.BodySize(), 
+                                           ELogEntrySize );
         }
 #endif // __CACHELOG__
+
     return found;
     }
 
@@ -470,18 +514,23 @@ void CHttpCacheEvictionHandler::LogBuckets()
         while( ( entry = bucketIter++ ) != NULL )
             {
             _LIT( KDateString,"%D%M%Y%/0%1%/1%2%/2%3%/3 %-B%:0%J%:1%T%:2%S%.%*C4%:3%+B");
-            _LIT( KRefSizeString,"size: %d refcount:%d");
+            _LIT( KRefSizeString,"CHttpCacheEvictionHandler::LogBuckets - size: %d refcount:%d");
 
             TBuf<50> refStr;
             TBuf<50> lastAccessedStr;
 
             TTime lastAccessed( entry->LastAccessed() );
-            lastAccessed.FormatL( lastAccessedStr, KDateString );
+            TRAP_IGNORE( lastAccessed.FormatL( lastAccessedStr, KDateString ) );
             // add size/refcount
-            refStr.Format( KRefSizeString, entry->Size(), entry->Ref() );
+            refStr.Format( KRefSizeString, entry->BodySize(), entry->Ref() );
             // copy to 8bit string
-            HttpCacheUtil::WriteUrlToLog( 0, refStr, entry->Url() );
             HttpCacheUtil::WriteLog( 0, lastAccessedStr );
+            HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                               _L("CHttpCacheEvictionHandler::LogBuckets - "),
+                                               entry->Filename(),
+                                               entry->Url(),
+                                               i, 
+                                               ELogBucketIndex );
             }
         }
     }

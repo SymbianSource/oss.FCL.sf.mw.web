@@ -20,8 +20,11 @@
 
 //  INCLUDES
 #include <e32base.h>
+#include <f32file.h>
 
 // CONSTANTS
+const TInt KBufferSize32k = 32768;
+const TInt KBufferSizeZero = 0;
 
 // MACROS
 
@@ -155,7 +158,7 @@ class CHttpCacheEntry : public CBase
         * @param 
         * @return 
         */
-        inline TUint Size() const { return iSize; }
+        inline TUint BodySize() const { return iBodySize; }
 
         /**
         * 
@@ -163,7 +166,7 @@ class CHttpCacheEntry : public CBase
         * @param 
         * @return 
         */
-        void SetSize( TUint aSize );
+        void SetBodySize( TUint aSize );
 
         /**
         * 
@@ -180,6 +183,38 @@ class CHttpCacheEntry : public CBase
         * @return 
         */
         inline void SetHeaderSize( TUint16 aHeaderSize ) { iHeaderSize = aHeaderSize; }
+
+        /**
+        * 
+        * @since 7.1
+        * @param 
+        * @return 
+        */
+        inline RFile& HeaderFile() { return iHeaderFile; }
+
+        /**
+        * 
+        * @since 7.1
+        * @param 
+        * @return 
+        */
+        inline RFile& BodyFile() { return iBodyFile; }
+
+        /**
+        * 
+        * @since 7.1
+        * @param 
+        * @return 
+        */
+        TPtr8 CacheBuffer();
+        
+        /**
+        * 
+        * @since 7.1
+        * @param 
+        * @return 
+        */
+        void SetCacheBufferL( TInt aCacheBufferSize );
 
         /**
         * 
@@ -221,6 +256,41 @@ class CHttpCacheEntry : public CBase
         */
         void Accessed(TInt64 aLastAccessed, TUint16 aRef);
 
+        /**
+        * 
+        * @since 7.1
+        * @param 
+        * @return 
+        */
+        inline TBool BodyFileDeleteNeeded() { return iBodyFileDeleteNeeded; }
+
+        /**
+        * 
+        * @since 7.1
+        * @param 
+        * @return 
+        */
+        inline void SetBodyFileDeleteNeeded( TBool aBodyFileDeleteNeeded )
+                    {
+                    iBodyFileDeleteNeeded = aBodyFileDeleteNeeded;
+                    }
+
+        /**
+        * 
+        * @since 7.1
+        * @param 
+        * @return 
+        */
+        TBool CacheFilesOpened() { return iCacheFilesOpened; }
+
+        /**
+        * 
+        * @since 7.1
+        * @param 
+        * @return 
+        */
+        void SetCacheFilesOpened( TBool aCacheFilesOpened );
+
     public : 
 
         // support linked list
@@ -245,9 +315,9 @@ class CHttpCacheEntry : public CBase
     private:    // Data
 
         //
-        HBufC8*                         iUrl;       // owned
+        HBufC8*                         iUrl;               // owned
         // if empty, then use url to get filename
-        HBufC*                          iFileName; // owned
+        HBufC*                          iFileName;          // owned
         //
         TCacheEntryState                iState;
         //
@@ -255,17 +325,27 @@ class CHttpCacheEntry : public CBase
         // ref counter
         TUint16                         iRef;
         // content size
-        TUint                           iSize;
+        TUint                           iBodySize;
         // header size
         TUint16                         iHeaderSize;
         // protected content like css, script
         TUint8                          iProtected;
         //
-        TSglQueLink                     iSlink;
+        TSglQueLink                     iSqlQueLink;
         //
-        CHttpCacheEvictionHandler*      iEvictionHandler;         // not owned
+        CHttpCacheEvictionHandler*      iEvictionHandler;   // not owned
         // Etrue if added to the eviction table
-        TUint8                          iVictim;
+        TUint8                          iEvictionCandidate;
+        //
+        TBool                           iBodyFileDeleteNeeded;
+        //
+        RFile                           iHeaderFile;        // owned
+        //
+        RFile                           iBodyFile;          // owned
+        //
+        HBufC8*                         iCacheBuffer;       // owned
+        // ETrue if files open (and attached to StreamHandler) for read/write
+        TBool                           iCacheFilesOpened;
     };
 
 #endif      // CHTTPCACHEENTRY_H

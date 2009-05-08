@@ -1,0 +1,56 @@
+/*
+* Copyright (c) 2008 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  ?Description
+*
+*/
+
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
+
+TARGET          FavouritesEngineTest.dll
+TARGETTYPE      dll
+UID             0x1000008D 0x101FB3E7
+
+#if defined(EKA2)
+CAPABILITY      ALL -TCB
+//VENDORID        VID_DEFAULT
+VENDORID        0
+#endif
+
+DEFFILE         FavouritesEngineTest.def
+
+SOURCEPATH      ../src
+SOURCE          FavouritesEngineTest.cpp
+SOURCE          FavouritesItemTestCases.cpp
+SOURCE          FavouritesItemListTestCases.cpp
+SOURCE          FavouritesDbTestCases.cpp
+SOURCE          FavouritesWapApTestCases.cpp
+SOURCE          FavouritesDbIncrementalTestCases.cpp
+SOURCE          FavouritesFileTestCases.cpp
+SOURCE          FavouritesSessionTestCases.cpp
+SOURCE          FavouritesNotifierTestCases.cpp
+SOURCE          FavouritesItemTestData.cpp
+SOURCE          FavouritesDbTestObserver.cpp
+
+USERINCLUDE     ../inc 
+SYSTEMINCLUDE   ../../inc
+
+MW_LAYER_SYSTEMINCLUDE
+
+LIBRARY         euser.lib efsrv.lib favouritesengine.lib estor.lib
+LIBRARY         stiftestinterface.lib
+
+LANGUAGE_IDS
+
+// End of File

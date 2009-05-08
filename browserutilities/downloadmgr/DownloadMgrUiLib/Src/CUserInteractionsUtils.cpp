@@ -18,6 +18,7 @@
 
 
 // INCLUDE FILES
+#include <platform/mw/Browser_platform_variant.hrh>
 #include    "CUserInteractionsUtils.h"
 #include    "MDownloadHandlerObserver.h"
 #include    "CDownloadMgrUiBase.h"
@@ -56,8 +57,11 @@
 #include    <rconnmon.h>
 #include    <DcfEntry.h>
 #include    <DcfRep.h>
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MGXFileManagerFactory.h>
 #include    <CMGXFileManager.h>
+#endif
 
 // LOCAL CONSTANTS AND MACROS
 const TInt KErrorUiHttpStatusBase = -25000;
@@ -906,8 +910,12 @@ TBool CUserInteractionsUtils::DeleteWithUserConfirmL( RHttpDownload& aDownload )
 	   
         if(iCodDownload)
 			{
+			
+			#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 			CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL(
 	        CEikonEnv::Static()->FsSession() );
+	        
+	        #endif
 	        
 	        //Assume that all files to be deleted are valid.
 	        TBool fileNotFound = EFalse;
@@ -930,6 +938,8 @@ TBool CUserInteractionsUtils::DeleteWithUserConfirmL( RHttpDownload& aDownload )
                     }
 
                 rfs.Delete( fileNamePtr );
+                
+                #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
                 // Notify Media Gallery about new media file
                 if( fileNamePtr.Length() > 0 )
                    {
@@ -940,11 +950,23 @@ TBool CUserInteractionsUtils::DeleteWithUserConfirmL( RHttpDownload& aDownload )
                    {
                    TRAP_IGNORE( mgFileManager->UpdateL() );
                    }
+                 
+                 #else
+                    if( fileNamePtr.Length() > 0 )
+                   {
+                   TRAP_IGNORE( UpdateDCFRepositoryL( fileNamePtr ) );
+                   }
+                  
+                 #endif  
+                   
                 CleanupStack::PopAndDestroy( &rfs );
                 CleanupStack::PopAndDestroy( fileName );    
                 }
+                
+                #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
                 delete mgFileManager;
                 mgFileManager = NULL;
+                #endif
                 
                 //Inform the user that atleast one file not found.	
 	   		    if(fileNotFound)
@@ -1754,13 +1776,14 @@ void CUserInteractionsUtils::LaunchPdAppL( RHttpDownload& aDownload, const TBool
                 (
                     appArcSession.StartDocument( *param, pdPlayerUid, id )
                 );
-            if( aProgressively )
-                {
-                User::LeaveIfError( aDownload.SetIntAttribute( EDlAttrActivePlayedDownload, activeDownloadID ) );
-                }            
+                     
             CleanupStack::PopAndDestroy( &appArcSession );
             CleanupStack::PopAndDestroy( param );
             }
+        if( aProgressively )
+            {
+            User::LeaveIfError( aDownload.SetIntAttribute( EDlAttrActivePlayedDownload, activeDownloadID ) );
+            }   
 
         CleanupStack::PopAndDestroy( param8 );
 		CleanupStack::PopAndDestroy( fileName );

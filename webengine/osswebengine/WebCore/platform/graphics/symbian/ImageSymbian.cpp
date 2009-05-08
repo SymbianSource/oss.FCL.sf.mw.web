@@ -325,6 +325,9 @@ Image* Image::loadPlatformResource(const char *name)
 void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dst, const FloatRect& src, CompositeOperator op)
 {
     WebCoreGraphicsContext* context = ctxt->platformContext();
+	if (!context) {
+          return;
+	}
 
     CMaskedBitmap* bm = frameAtIndex(m_currentFrame);
     if (!bm) // If it's too early we won't have an BitmapImage yet.

@@ -54,6 +54,6 @@ LIBRARY         stiftestinterface.lib stiftestengine.lib
 // component under test
 LIBRARY     browserengine.lib
 
-LANG            SC
+LANGUAGE_IDS
 
 // End of File

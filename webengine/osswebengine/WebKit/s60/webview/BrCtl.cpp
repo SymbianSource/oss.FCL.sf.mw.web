@@ -286,8 +286,9 @@ void CBrCtl::Draw(const TRect& aRect) const
 {
     if (m_webView->isPluginFullscreen()) return; //don't draw if in plugin fullscreen mode
 
-    if (!(m_capabilities & TBrCtlDefs::ECapabilityDisplayScrollBar) ||
-        AknLayoutUtils::PenEnabled()) { //touch screen scrollbar is drawn
+    if (!(m_capabilities & TBrCtlDefs::ECapabilityDisplayScrollBar) 
+          || (getMainScrollbarWidth() == 0)
+          || AknLayoutUtils::PenEnabled()) { //touch screen scrollbar is drawn
         return;                         //by WebScrollbarDrawer
     }
     CWindowGc& gc = SystemGc();
@@ -2474,7 +2475,8 @@ void CBrCtl::SetScriptLogMode(TInt aMode)
 
 int CBrCtl::getMainScrollbarWidth() const
 {
-  return (AknLayoutUtils::PenEnabled() ?  0  :  KMainScrollbarWidth);
+  //return (AknLayoutUtils::PenEnabled() ?  0  :  KMainScrollbarWidth);
+  return 0;
 }
 
 MBrCtlDownloadObserver* CBrCtl::brCtlDownloadObserver()

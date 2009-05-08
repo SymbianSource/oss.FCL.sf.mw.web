@@ -2941,6 +2941,7 @@ TBool CFeedsDatabase::CommitItemL(TInt aItemId, TInt aFeedId,
     TPtrC  description(KNullDesC);
     TPtrC  link(KNullDesC);
     TPtrC  itemIdStr(KNullDesC);
+    TBool  isNewItem(EFalse);
 
     // Get the values.
     for (TInt i = 0; i < aAttributes.Count(); i++)
@@ -2968,25 +2969,6 @@ TBool CFeedsDatabase::CommitItemL(TInt aItemId, TInt aFeedId,
                 break;                
             }
         }
-    
-    // Ignore the item if it is already in the database.
-    // TODO: Don't ignore it if the timestamp changes.  In this case 
-    //       the item needs to be updated below rather than inserted.
-    TInt  id;
-    
-    if (FindItemL(aFeedId, itemIdStr, id))
-        {
-        // If the item is found then append it's id to aItemIds.
-        aItemIds.AppendL(id);
-
-        return EFalse;
-        }
-        
-    // Otherwise this is a new item so append the provided id to aItemIds.
-    else
-        {
-        aItemIds.AppendL(aItemId);
-        }
 
     // If timeStamp was provided convert it into a TTime otherwise just
     // use the current time.
@@ -3004,11 +2986,51 @@ TBool CFeedsDatabase::CommitItemL(TInt aItemId, TInt aFeedId,
         {
         date.UniversalTime();
         }
-        
-    // Update the database.
-    iItemTable.Reset();
-    iItemTable.InsertL();
-    
+
+    // Ignore the item if it is already in the database.
+    // If the timestamp chnages the item needs to be updated 
+    // rather than inserted.
+    TInt  id;
+
+    if (FindItemL(aFeedId, itemIdStr, id))
+        {
+        TDbSeekKey  seekKey( id );
+        // Update the database.
+        iItemTable.SeekL(seekKey);
+        iItemTable.GetL();
+
+        TBuf<(KMaxTimeFormatSpec + KMaxShortDateFormatSpec) * 2>  previousTimestamp;
+        TTime previousDate = iItemTable.ColTime(iItemColSet->ColNo(KDate));
+        previousDate.FormatL(previousTimestamp, TTimeFormatSpec());
+
+        if (date == previousDate)
+            {
+            // If the item is found and timestamp remains same then just 
+            // append it's id to aItemIds.
+            aItemIds.AppendL(id);
+            return isNewItem;
+            }
+        else
+            {
+            // If the item is found and the timestamp has changed then make sure that 
+            // the new itemId is appened to aItemIds.
+            aItemIds.AppendL(aItemId);
+            iItemTable.GetL();
+            iItemTable.UpdateL();
+            }
+        }
+
+    // Otherwise this is a new item so append the provided id to aItemIds.
+    else
+        {
+        aItemIds.AppendL(aItemId);
+
+        // Update the database.
+        iItemTable.Reset();
+        iItemTable.InsertL();
+        isNewItem = ETrue;
+        }
+
     iItemTable.SetColL(iItemColSet->ColNo(KItemId), aItemId);
     iItemTable.SetColL(iItemColSet->ColNo(KFeedId), aFeedId);
     iItemTable.SetColL(iItemColSet->ColNo(KDate), date);
@@ -3017,10 +3039,9 @@ TBool CFeedsDatabase::CommitItemL(TInt aItemId, TInt aFeedId,
     WriteLongTextL(iItemTable, iItemColSet->ColNo(KDescription), description);
     WriteLongTextL(iItemTable, iItemColSet->ColNo(KWebUrl), link);
     WriteLongTextL(iItemTable, iItemColSet->ColNo(KItemIdStr), itemIdStr);
-    
+
     iItemTable.PutL();
-    
-    return ETrue;
+    return isNewItem;
     }
     
     
@@ -4505,6 +4526,7 @@ void CFeedsDatabase::DebugPrintItemTableL()
         HBufC* idStr = NULL;
         ReadLongTextL(iItemTable, iItemColSet->ColNo(KItemIdStr), idStr);
         CleanupStack::PushL(idStr);
+        TPtrC idStrPtr(idStr->Des());
 
         switch( itemStatus )
             {
@@ -4512,21 +4534,21 @@ void CFeedsDatabase::DebugPrintItemTableL()
                 {
                 FEED_LOG6(_L("Feeds"), _L("Feeds_DB.log"), 
                     EFileLoggingModeAppend, _L("%d\t%d\t%S\t%S\t%S\t%S"), 
-                    itemId, feedId, &KUnread(), &idStr->Des(), &title, &timestamp);
+                    itemId, feedId, &KUnread(), &idStrPtr, &title, &timestamp);
                 }
                 break;
             case EReadItem:
-                {            
+                {
                 FEED_LOG6(_L("Feeds"), _L("Feeds_DB.log"), 
                     EFileLoggingModeAppend, _L("%d\t%d\t%S\t%S\t%S\t%S"), 
-                    itemId, feedId, &KRead(), &idStr->Des(), &title, &timestamp);
+                    itemId, feedId, &KRead(), &idStrPtr, &title, &timestamp);
                 }
                 break;
             case ENewItem:
-                {            
+                {
                 FEED_LOG6(_L("Feeds"), _L("Feeds_DB.log"), 
                     EFileLoggingModeAppend, _L("%d\t%d\t%S\t%S\t%S\t%S"), 
-                    itemId, feedId, &KNew(), &idStr->Des(), &title, &timestamp);
+                    itemId, feedId, &KNew(), &idStrPtr, &title, &timestamp);
                 }
                 break;
             }
