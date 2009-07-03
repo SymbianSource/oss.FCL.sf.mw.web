@@ -195,12 +195,12 @@ void CUpdateFeedTask::LoadCompleted(TInt aStatusCode, TDesC8* aResponseBody,
         iObserver.Completed(iPackedFeed, *iUrl,iFeedId, err);
         iPackedFeed = NULL;
         }
-    
+
     // The load failed, exit cleanly.
     else
         {
         // Pass the status to the observer.
-        iObserver.Completed(NULL, *iUrl,iFeedId, aStatusCode);
+        iObserver.Completed(NULL, *iUrl,iFeedId, ((aStatusCode == KErrNone)? KErrCorrupt:aStatusCode));
         }
     }
 

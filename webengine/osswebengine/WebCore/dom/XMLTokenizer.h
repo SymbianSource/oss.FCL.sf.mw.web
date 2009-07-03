@@ -116,7 +116,8 @@ namespace WebCore {
 
         int lineNumber() const;
         int columnNumber() const;
-
+        
+        static void cleanupXMLStringParser();
     private:
         void initializeParserContext();
         void setCurrentNode(Node*);

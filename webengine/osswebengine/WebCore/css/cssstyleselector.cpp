@@ -22,7 +22,6 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
 #include "CSSStyleSelector.h"
 
 #include "CSSBorderImageValue.h"
@@ -224,6 +223,14 @@ CSSStyleSheet *CSSStyleSelector::svgSheet = 0;
 
 static CSSStyleSelector::Encodedurl *currentEncodedURL = 0;
 static PseudoState pseudoState;
+
+struct defaultStyleNACleaner {
+    ~defaultStyleNACleaner() {
+        delete CSSStyleSelector::styleNotYetAvailable;
+        CSSStyleSelector::styleNotYetAvailable = 0;
+    }
+};
+struct defaultStyleNACleaner styleNACleaner;
 
 CSSStyleSelector::CSSStyleSelector(Document* doc, const String& userStyleSheet, StyleSheetList *styleSheets, bool _strictParsing)
 {
@@ -3626,7 +3633,15 @@ void CSSStyleSelector::applyProperty(int id, CSSValue *value)
         if (id == CSS_VAL_NONE)
             appearance = NoAppearance;
         else
+#if PLATFORM ( SYMBIAN )
+        {
+        if (id == CSS_VAL_SEARCHFIELD)
+            id = CSS_VAL_TEXTFIELD;  
+#endif
             appearance = EAppearance(id - CSS_VAL_CHECKBOX + 1);
+#if PLATFORM ( SYMBIAN )
+        }
+#endif
         style->setAppearance(appearance);
         return;
     }
@@ -4989,5 +5004,47 @@ bool CSSStyleSelector::hasSelectorForAttribute(const AtomicString &attrname)
 {
     return m_selectorAttrs.contains(attrname.impl());
 }
+
+#if PLATFORM(SYMBIAN)
+void CSSStyleSelector::deleteDefaultStyle()
+{
+    delete defaultStyle;
+    defaultStyle = 0;
+    delete defaultQuirksStyle;
+    defaultQuirksStyle = 0;
+    delete defaultPrintStyle;
+    defaultPrintStyle = 0;
+    delete defaultViewSourceStyle;
+    defaultViewSourceStyle = 0;
+
+    defaultSheet->deref();
+//    delete defaultSheet;
+//    defaultSheet = 0;
+
+    // styleNotYetAvailable->deref();
+    //goes to overridden delete operator but calls destructor
+    delete styleNotYetAvailable;
+    //release cell allocated because overridder delete does not do that.
+    free(styleNotYetAvailable);
+    styleNotYetAvailable = 0;
+
+    quirksSheet->deref();
+    // delete quirksSheet;
+    // quirksSheet = 0;
+
+    viewSourceSheet->deref();
+    // delete viewSourceSheet;
+    // viewSourceSheet = 0;
+
+#if ENABLE(SVG)
+    svgSheet->deref();
+    // delete svgSheet;
+    // svgSheet = 0;
+#endif
+
+    //*currentEncodedURL->deref(); //static CSSStyleSelector::Encodedurl *currentEncodedURL = 0;
+    pseudoState = PseudoUnknown;
+}
+#endif
 
 } // namespace WebCore

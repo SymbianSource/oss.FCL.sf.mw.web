@@ -39,6 +39,7 @@ public:
     virtual WebCore::ResourceHandle* handle() { return m_handle; }
     virtual int totalContentSize() = 0;
     virtual void setDefersLoading(bool /*defers*/) {}
+    virtual void handleError(int error) {};
 
 public: // data    
     WebCore::ResourceHandle* m_handle;

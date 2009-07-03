@@ -41,7 +41,7 @@ WebPageFullScreenHandler* WebPageFullScreenHandler::NewL(WebView& webView)
 {
     WebPageFullScreenHandler* self = new (ELeave) WebPageFullScreenHandler( webView );
     CleanupStack::PushL(self);
-    self->constructL();
+    self->ConstructL();
     CleanupStack::Pop(); //self
     return self;
 }
@@ -52,8 +52,7 @@ WebPageFullScreenHandler* WebPageFullScreenHandler::NewL(WebView& webView)
 // might leave.
 // -----------------------------------------------------------------------------
 //
-WebPageFullScreenHandler::WebPageFullScreenHandler(WebView& webView)
-: m_webView(&webView), m_spriteVisible(EFalse), m_tappedOnSprite(EFalse)
+WebPageFullScreenHandler::WebPageFullScreenHandler(WebView& webView) : m_webView(&webView)
 {
 }
 
@@ -62,8 +61,12 @@ WebPageFullScreenHandler::WebPageFullScreenHandler(WebView& webView)
 // The constructor that can contain code that might leave.
 // -----------------------------------------------------------------------------
 //
-void WebPageFullScreenHandler::constructL()
+void WebPageFullScreenHandler::ConstructL()
 {
+    m_buttonIcon = StaticObjectsContainer::instance()->webCannedImages()->getImage(WebCannedImages::EImageEscFullScreen);
+    TPoint pos = CalculatePosition();
+    BaseConstructL(m_webView, pos, m_buttonIcon.m_img, m_buttonIcon.m_msk, ETrue);
+    Hide();   
 }
 
 // -----------------------------------------------------------------------------
@@ -75,6 +78,17 @@ WebPageFullScreenHandler::~WebPageFullScreenHandler()
 }
 
 
+TPoint WebPageFullScreenHandler::CalculatePosition()
+{
+    TPoint pos = m_webView->Rect().iBr;
+    TSize iconSize = m_buttonIcon.m_img->SizeInPixels();
+    
+    pos -= iconSize;
+    pos -= TPoint(KFullScreenButtonBuff, KFullScreenButtonBuff);
+    //pos -= m_webView->PositionRelativeToScreen();
+    return pos;
+}
+
 //-------------------------------------------------------------------------------
 // WebPageFullScreenHandler::showEscBtnL
 // Draws the full screen button on the screen
@@ -82,10 +96,8 @@ WebPageFullScreenHandler::~WebPageFullScreenHandler()
 
 void WebPageFullScreenHandler::showEscBtnL() 
 {
-    if (AknLayoutUtils::PenEnabled() && !m_spriteVisible) {
-        constructSprite();
-        SizeChanged();
-        AddWsObserverToControl();
+    if (AknLayoutUtils::PenEnabled()) {
+        Show();
     }
 }
 
@@ -96,9 +108,8 @@ void WebPageFullScreenHandler::showEscBtnL()
 
 void WebPageFullScreenHandler::hideEscBtnL()
 {
-    if (AknLayoutUtils::PenEnabled() && m_spriteVisible) {
-        destructSprite();
-        m_eventMonitor->RemoveObserver(this);
+    if (AknLayoutUtils::PenEnabled()) {
+        Hide();    
     }
 }
 
@@ -109,12 +120,9 @@ void WebPageFullScreenHandler::hideEscBtnL()
 
 void WebPageFullScreenHandler::SizeChanged(void)
 {
-    if (AknLayoutUtils::PenEnabled() && m_spriteVisible) {
-        m_pos = m_webView->Rect().iBr;
-        TPoint point (m_webView->PositionRelativeToScreen());
-        m_pos -= TSize(  KFullScreenButtonWidth + KFullScreenButtonBuff, 
-        				 KFullScreenButtonHeight - point.iY + KFullScreenButtonBuff);
-        m_sprite.SetPosition(m_pos);
+    if (AknLayoutUtils::PenEnabled()) {
+        TPoint pos = CalculatePosition();
+        SetPos(pos);
     }
 }
 
@@ -129,101 +137,23 @@ bool WebPageFullScreenHandler::isFullScreenMode()
 }
 
 
-//-------------------------------------------------------------------------------
-// WebPageFullScreenHandler::HitRegionContains
-// Defines a control's hit region
-//-------------------------------------------------------------------------------
-
-TBool WebPageFullScreenHandler::HitRegionContains(const TPoint& aPoint)
+void WebPageFullScreenHandler::HandlePointerEventL(const TPointerEvent& aPointerEvent)
 {
-    TRect spriteRect (m_pos, TSize(KFullScreenButtonHeight, KFullScreenButtonWidth));
-    return spriteRect.Contains(aPoint);
-}
-
-
-//-------------------------------------------------------------------------------
-// WebPageFullScreenHandler::destructSprite
-// close/hide sprite for time being
-//-------------------------------------------------------------------------------
-
-void WebPageFullScreenHandler::destructSprite()
-{
-    m_sprite.Close();
-    m_spriteVisible = EFalse;
-}
-
-//-------------------------------------------------------------------------------
-// WebPageFullScreenHandler::constructSprite
-// Show/create sprite at m_pos
-//-------------------------------------------------------------------------------
-
-void WebPageFullScreenHandler::constructSprite()
-{
-    m_sprite = RWsSprite(m_webView->brCtl()->CCoeControlParent()->ControlEnv()->WsSession());
-    m_sprite.Construct(m_webView->brCtl()->CCoeControlParent()->ControlEnv()->RootWin(), m_pos, ESpriteNoShadows);
-    TCannedImageData cannedImage = StaticObjectsContainer::instance()->webCannedImages()->getImage(WebCannedImages::EImageEscFullScreen);
-
-	TSpriteMember spriteMem;
-	spriteMem.iBitmap = cannedImage.m_img; 
-	spriteMem.iMaskBitmap = cannedImage.m_msk; //masked bitmap still of the canned image need to be changed
-
-    m_sprite.AppendMember(spriteMem);
-	m_sprite.Activate();
-	
-	m_spriteVisible = ETrue;
-}
-
-//-------------------------------------------------------------------------------
-// WebPageFullScreenHandler::HandleWsEventL
-// check if click region hits sprite
-//-------------------------------------------------------------------------------
-
-void WebPageFullScreenHandler::HandleWsEventL(const TWsEvent& aEvent,CCoeControl* aDestination)
-{
-    if (!aDestination) return;
-    
-    if(aEvent.Type() == EEventPointer)
+   switch (aPointerEvent.iType)
        {
-       switch (aEvent.Pointer()->iType)
+       case TPointerEvent::EButton1Down:
+           m_isTouchDown = ETrue;
+           break;
+
+       case TPointerEvent::EButton1Up:
            {
-           case TPointerEvent::EButton1Down:
-               if (m_spriteVisible)
-                   {
-                   TPoint point (aDestination->PositionRelativeToScreen());
-                   m_tappedOnSprite = HitRegionContains(aEvent.Pointer()->iPosition + point);
-                   }
-               break;
-
-           case TPointerEvent::EButton1Up:
-               {
-               TPoint point (aDestination->PositionRelativeToScreen());
-               if (m_spriteVisible && m_tappedOnSprite && 
-                    HitRegionContains(aEvent.Pointer()->iPosition + point))
-                   {
-                   hideEscBtnL();
-                   m_webView->notifyFullscreenModeChangeL( false );
-                   }
-               m_tappedOnSprite = EFalse;
-               }
-               break;
-           
-            }
-       }
+           if (m_isTouchDown) {
+               Hide();
+               m_webView->notifyFullscreenModeChangeL( false );
+           }
+           m_isTouchDown = EFalse;
+           }
+           break;          
+        }       
 }
 
-
-//-------------------------------------------------------------------------------
-// WebPageFullScreenHandler::AddWsObserverToControl
-// register for events from WSession
-//-------------------------------------------------------------------------------
-
-void WebPageFullScreenHandler::AddWsObserverToControl()
-{
-    m_eventMonitor = ((CAknAppUi*)m_webView->ControlEnv()->AppUi())->EventMonitor();
-    
-    if(m_eventMonitor)
-        {
-        m_eventMonitor->AddObserverL(this);
-        m_eventMonitor->Enable(ETrue);
-        }
-}

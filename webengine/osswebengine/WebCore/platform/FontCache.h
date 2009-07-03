@@ -60,7 +60,8 @@ public:
     static const AtomicString& systemFontFamilyName( const AtomicString& familyName );
     static FontPlatformData* getDeviceDefaultFont(float size);
 #endif
-
+    static void deleteFontDataCache();
+    
 private:
     static FontPlatformData* getCachedFontPlatformData(const FontDescription&, const AtomicString& family, bool checkingAlternateName = false);
     static FontData* getCachedFontData(const FontPlatformData*);

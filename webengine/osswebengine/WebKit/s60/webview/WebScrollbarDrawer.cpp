@@ -27,10 +27,12 @@
 #include "BrCtl.h"
 #include "StaticObjectsContainer.h"
 #include "WebSurface.h"
+#include "WebSprite.h"
 
 #include "WebKitLogger.h"
 
-const int     KScrollbarWidth = 15;
+const int     KMinScrollbarWidth = 10;
+const int     KMaxScrollbarWidth = 15;
 const TUint32 KMinScrollBarTransparency = 150;
 const int     KScrollBarFadeInterval = 30000;
 const TInt32  KScrollBarTransparencyStep = 10;
@@ -60,8 +62,8 @@ void WebScrollbarDrawer::ConstructL()
 WebScrollbarDrawer::WebScrollbarDrawer(): 
                                         m_webView(NULL),
                                         m_scrollBarTransparency(KMinScrollBarTransparency),
-                                        m_scrollBarWidth(KScrollbarWidth),
-                                        m_dX(0), m_dY(0)
+                                        m_scrollBarWidth(KMinScrollbarWidth),
+                                        m_dX(0), m_dY(0), m_spriteV(NULL), m_spriteH(NULL)
 {
 }
 
@@ -74,7 +76,9 @@ WebScrollbarDrawer::~WebScrollbarDrawer()
   }
   delete m_scrollBarFader;
   
-  removeBitmaps();  
+  removeBitmaps();
+  delete m_spriteV;
+  delete m_spriteH;
 }
 
 
@@ -97,13 +101,33 @@ TInt WebScrollbarDrawer::InitScrollbar(WebView* view)
   m_scrollBarTransparency = KMinScrollBarTransparency;
   m_dY = 0.0;
   m_dX = 0.0;
+  m_rectVThum = TRect();
+  m_rectHThum = TRect();
+  m_rect.SetRect(m_webView->brCtl()->Rect().iTl,
+                 m_webView->brCtl()->Rect().Size());
+  m_scrollBarWidth = Max(0.04 * Min(m_rect.Width(), m_rect.Height()), KMinScrollbarWidth);  
   calculateBitmapRects();
   
   err = SetupBitmaps();
-  
+ 
   if (err == KErrNone) {
-      constructSprite(m_spriteV, m_rectVThum.iTl, m_scrollBarV, m_scrollBarVMask);
-      constructSprite(m_spriteH, m_rectHThum.iTl, m_scrollBarH, m_scrollBarHMask);
+      if (!m_spriteV) {
+          m_spriteV = CWebSprite::NewL(m_webView, m_rectVThum.iTl, m_scrollBarV, m_scrollBarVMask, ETrue);
+      }
+      else {
+          m_spriteV->SetBitmap(m_scrollBarV, m_scrollBarVMask, ETrue);
+          m_spriteV->SetPos(m_rectVThum.iTl);
+      }
+      
+      if (!m_spriteH) {
+          m_spriteH = CWebSprite::NewL(m_webView, m_rectHThum.iTl, m_scrollBarH, m_scrollBarHMask, ETrue);
+      }
+      else {    
+          m_spriteH->SetBitmap(m_scrollBarH, m_scrollBarHMask, ETrue);
+          m_spriteH->SetPos(m_rectHThum.iTl);
+      }
+      m_spriteV->Hide();
+      m_spriteH->Hide();
   }
   
   return err;
@@ -144,8 +168,17 @@ int handleFadeScrollBar(TAny* ptr)
 
 void WebScrollbarDrawer::clearSprites()
 {
-   m_spriteV.Close();
-   m_spriteH.Close();
+   if (m_spriteV) {
+       m_spriteV->Hide();
+       m_spriteV->Update(NULL, NULL);
+       
+   }
+   
+   if (m_spriteH) {
+       m_spriteH->Hide();
+       m_spriteH->Update(NULL, NULL);
+       
+   }
 }
 
 void WebScrollbarDrawer::fade()
@@ -166,34 +199,35 @@ void WebScrollbarDrawer::fade()
     
     if (m_hasVScroll) {
       drawThumbMask(m_gcVMask, m_rectVThum);
-      updateSprite(m_spriteV, m_scrollBarV, m_scrollBarVMask);
+      if (m_spriteV) {
+          m_spriteV->Update(m_scrollBarV, m_scrollBarVMask);
+      }
     }
     
     if (m_hasHScroll) {
       drawThumbMask(m_gcHMask, m_rectHThum);
-      updateSprite(m_spriteH, m_scrollBarH, m_scrollBarHMask);
+      if (m_spriteH) {
+          m_spriteH->Update(m_scrollBarH, m_scrollBarHMask);
+      }
     }
   }
 }
 
+TBool WebScrollbarDrawer::canRedraw()
+{
+    return ((m_webView && m_spriteV && m_spriteH) && 
+            (m_spriteV->IsShown() || m_spriteH->IsShown()));    
+}
+
 void WebScrollbarDrawer::redrawScrollbar()
 {
-    if (m_webView) {
-	    TInt err = KErrNone;
-	    calculateBitmapRects();
-	    removeBitmaps();
-	    err = SetupBitmaps();
-	    if (err == KErrNone) {
-	        m_spriteV.SetPosition(m_rectVThum.iTl);
-	        updateSprite(m_spriteV, m_scrollBarV, m_scrollBarVMask);
-	        m_spriteH.SetPosition(m_rectHThum.iTl);
-	        updateSprite(m_spriteH, m_scrollBarH, m_scrollBarHMask);
-	    }
-	    else {
-	        clearSprites();
-	    }
+    if (canRedraw()) {
+        clearSprites();
+        removeBitmaps();
+        InitScrollbar(m_webView);
     }
 }
+
 void WebScrollbarDrawer::drawScrollbar(WebView* view)
 {
     TPoint p = TPoint(1,1);
@@ -219,15 +253,30 @@ void WebScrollbarDrawer::drawScrollbar(WebView* view, TPoint& scrollPos)
     InitScrollbar(view);
   }
   
+  /*
+   * According to spec vertical scrollbar is always visible
+   * even if user is not scrolling in vertical direction
+   * Horizontal scrollbar is shown only if user scroll in 
+   * horizontal direction. If content height < screen height
+   * vertical scrollbar is not shown. The same for horizontal one.  
+   */
   if (!m_hasHScroll) { //set it only once
-    m_hasHScroll = (scrollPos.iX != 0) && (m_displayWidth < m_docWidth);
+    m_hasHScroll = (Abs(scrollPos.iX) > 1) && (m_displayWidth < m_docWidth);
+    if (m_hasHScroll) {
+        m_spriteH->Update(m_rectHThum.iTl, m_scrollBarH, m_scrollBarHMask);
+        
+    }
   }
   
   if (!m_hasVScroll) {  //set it only once
-    m_hasVScroll = (scrollPos.iY != 0) && (m_displayHeight < m_docHeight);
+    m_hasVScroll = ( (Abs(scrollPos.iY) > 1) || (Abs(scrollPos.iX) > 1) ) && 
+                     (m_displayHeight < m_docHeight);
+    if (m_hasVScroll) {
+        m_spriteV->Update(m_rectVThum.iTl, m_scrollBarV, m_scrollBarVMask);
+    }
   }
 
-  if ((scrollPos.iY != 0) && (m_displayHeight < m_docHeight)) {
+  if (m_hasVScroll) {
     m_dY += m_zoomFactor * ((float)scrollPos.iY * (float)m_displayHeight ) / (float)m_docHeight / 100;
 
     if (m_rectVThum.iTl.iY + m_dY < m_rectV.iTl.iY) {
@@ -247,12 +296,12 @@ void WebScrollbarDrawer::drawScrollbar(WebView* view, TPoint& scrollPos)
       m_dY = 0.0;
     }
     
-    m_spriteV.SetPosition(m_rectVThum.iTl);
-    updateSprite(m_spriteV, m_scrollBarV, m_scrollBarVMask);
+    m_spriteV->SetPos(m_rectVThum.iTl);
+    //m_spriteV->Update(m_rectVThum.iTl, m_scrollBarV, m_scrollBarVMask);
   }
   
   
-  if ((scrollPos.iX != 0) && (m_displayWidth < m_docWidth)) {
+  if (m_hasHScroll) {
     m_dX = m_zoomFactor * ((float)scrollPos.iX * (float)m_displayWidth ) / (float)m_docWidth / 100;
     
     if (m_rectHThum.iTl.iX + m_dX < m_rectH.iTl.iX) {
@@ -271,39 +320,11 @@ void WebScrollbarDrawer::drawScrollbar(WebView* view, TPoint& scrollPos)
       m_rectHThum.Move(m_dX, 0);
     }
 
-    m_spriteH.SetPosition(m_rectHThum.iTl);
-    updateSprite(m_spriteH, m_scrollBarH, m_scrollBarHMask);
-  }
-  
-  
-  
+    m_spriteH->SetPos(m_rectHThum.iTl);
+    //m_spriteH->Update(m_rectHThum.iTl, m_scrollBarH, m_scrollBarHMask);
+  }  
 }
 
-void WebScrollbarDrawer::constructSprite(RWsSprite& sprite, TPoint& pos,
-		                                 CFbsBitmap* bitmap, CFbsBitmap* bitmapMask)
-{
-  sprite = RWsSprite(m_webView->brCtl()->CCoeControlParent()->ControlEnv()->WsSession());
-  RDrawableWindow *window =  (RDrawableWindow* )m_webView->brCtl()->CCoeControlParent()->DrawableWindow();
-  sprite.Construct(*window, pos, ESpriteNoChildClip);
-  
-  TSpriteMember spriteMem;
-  spriteMem.iBitmap = 0;//bitmap;
-  spriteMem.iMaskBitmap = 0;//bitmapMask;
-  spriteMem.iInvertMask = EFalse;
-
-  sprite.AppendMember(spriteMem);
-  sprite.Activate();
-}
-
-void WebScrollbarDrawer::updateSprite(RWsSprite& sprite, CFbsBitmap* bitmap, 
-                                      CFbsBitmap* bitmapMask)
-{
-  TSpriteMember spriteMem;
-  spriteMem.iBitmap = bitmap;
-  spriteMem.iMaskBitmap = bitmapMask;
-  spriteMem.iInvertMask = ETrue;  
-  sprite.UpdateMember(0, spriteMem);
-}
 
 TInt WebScrollbarDrawer::createBitmap(CFbsBitmap*& bm, CFbsBitGc*& gc, 
 		                               CFbsBitmapDevice*& dev, TRect& rect)
@@ -314,11 +335,13 @@ TInt WebScrollbarDrawer::createBitmap(CFbsBitmap*& bm, CFbsBitGc*& gc,
       err = KErrNoMemory;
   }
   if (err == KErrNone) {
-      bm->Create(rect.Size(), EColor256);
+      err = bm->Create(rect.Size(), EColor256);      
   }
-  TRAP(err, dev = CFbsBitmapDevice::NewL(bm));
+  if (err == KErrNone) {
+      TRAP(err, dev = CFbsBitmapDevice::NewL(bm));
+  }
   if (err == KErrNone && dev != NULL) {
-    err = dev->CreateContext(gc);
+      err = dev->CreateContext(gc);
   }
   if (err != KErrNone) {
       delete dev;
@@ -348,8 +371,9 @@ void WebScrollbarDrawer::deleteBitmap(CFbsBitmap*& bm, CFbsBitGc*& gc,
 
 TInt WebScrollbarDrawer::SetupBitmaps()
 {
-  TInt err = KErrNone;
-  if (!m_scrollBarV) {
+  // if rect is empty don't create bitmap
+  TInt err = (m_rectVThum != TRect(0,0,0,0)) ? KErrNone : KErrNotReady;
+  if (!m_scrollBarV && err == KErrNone) {
     err = createBitmap(m_scrollBarV, m_gcV, m_devV, m_rectVThum);
   }
   
@@ -362,6 +386,11 @@ TInt WebScrollbarDrawer::SetupBitmaps()
       drawThumbMask(m_gcVMask, m_rectVThum);
   }
 
+  // if rect is empty don't create bitmap
+  if (err == KErrNotReady || KErrNone) {
+      err = (m_rectHThum != TRect(0,0,0,0)) ? KErrNone : KErrNotReady;
+  }
+  
   if (!m_scrollBarH && err == KErrNone) {
     err = createBitmap(m_scrollBarH, m_gcH, m_devH, m_rectHThum);
   }
@@ -375,6 +404,9 @@ TInt WebScrollbarDrawer::SetupBitmaps()
       drawThumbMask(m_gcHMask, m_rectHThum);
   }
   
+  if (err == KErrNotReady) {
+      err = KErrNone;
+  }
   return err;
 }
 
@@ -382,8 +414,6 @@ TInt WebScrollbarDrawer::SetupBitmaps()
 void WebScrollbarDrawer::calculateBitmapRects()
 {
   m_zoomFactor =  ((float)m_webView->scalingFactor() / 100);
-  m_rect.SetRect(m_webView->brCtl()->Rect().iTl,
-		         m_webView->brCtl()->Rect().Size());
   int delta = 0;
   int posX = m_zoomFactor * m_webView->mainFrame()->frameView()->contentPos().iX;
   int posY = m_zoomFactor * m_webView->mainFrame()->frameView()->contentPos().iY;

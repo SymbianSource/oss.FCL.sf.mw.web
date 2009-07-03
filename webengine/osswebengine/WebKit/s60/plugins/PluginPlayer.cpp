@@ -130,13 +130,12 @@ void PluginPlayer::start()
     DrawNow();
     // not sure why we need this for bavp
     m_plugin->SetRect( TRect( TPoint(x,y), m_orgrect.Size() ) );
-    m_plugin->setPluginFocusL(ETrue);
-    
+    TRAP_IGNORE( m_plugin->setPluginFocusL(ETrue) );
     }
 
 void PluginPlayer::stop()
     {
-    m_plugin->setPluginFocusL(EFalse);
+    TRAP_IGNORE( m_plugin->setPluginFocusL(EFalse) );
     m_plugin->SetParent( m_orgparent );
     m_plugin->SetRect( TRect( m_orgrect.iTl, m_orgrect.Size() ) );
     m_plugin->makeVisible( EFalse );

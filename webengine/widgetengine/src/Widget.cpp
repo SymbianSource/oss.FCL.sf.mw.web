@@ -26,6 +26,7 @@
 #include "WidgetFuncs.h"
 #include "WidgetCallbacks.h"
 #include "WidgetEventHandler.h"
+#include "WidgetJSObjectProtector.h"
 #include "Wrt.h"
 
 // EXTERNAL DATA STRUCTURES
@@ -48,7 +49,7 @@ const ClassInfo JSWidget::info = { "JSWidget", 0, &WidgetTable, 0 };
 
 // ============================= LOCAL FUNCTIONS ===============================
 /*
-@begin WidgetTable 16
+@begin WidgetTable 17
     openApplication JSWidget::openApplication DontDelete|Function 1
     openURL JSWidget::openURL DontDelete|Function 1
     preferenceForKey JSWidget::preferenceForKey DontDelete|Function 1
@@ -56,6 +57,7 @@ const ClassInfo JSWidget::info = { "JSWidget", 0, &WidgetTable, 0 };
     performTransition JSWidget::performTransition DontDelete|Function 0
     setPreferenceForKey JSWidget::setPreferenceForKey DontDelete|Function 2
     setNavigationEnabled JSWidget::setNavigationEnabled DontDelete|Function 1
+    setNavigationType JSWidget::setNavigationType DontDelete|Function 1
     identifier JSWidget::identifier DontDelete|ReadOnly
     onhide JSWidget::onhide DontDelete|ReadOnly
     onremove JSWidget::onremove DontDelete|ReadOnly
@@ -76,9 +78,9 @@ const ClassInfo JSWidget::info = { "JSWidget", 0, &WidgetTable, 0 };
 //
 //
 // ----------------------------------------------------------------------------
-JSWidget::JSWidget(MJSWidgetCallbacks* aWidgetCallbacks) :
+JSWidget::JSWidget(MJSWidgetCallbacks* aWidgetCallbacks, MJSObjectProtector* aProtector) :
                     JSObject(),
-                    d(new WidgetPrivate(aWidgetCallbacks,0,0,0,0))
+                    d(new WidgetPrivate(aWidgetCallbacks,0,0,0,0, aProtector))
 {
 }
 
@@ -165,6 +167,7 @@ JSValue* JSWidget::getValueProperty(KJS::ExecState* exec, int token) const
         case performTransition:
         case setPreferenceForKey:
         case setNavigationEnabled:
+        case setNavigationType:
         case setDisplayLandscape:
         case setDisplayPortrait: {
             JSWidgetFunc *wf = new JSWidgetFunc(exec,token,d->m_callbacks);
@@ -211,13 +214,13 @@ void JSWidget::put(ExecState *exec, const Identifier &propertyName, JSValue *val
             case onhide: {
                 delete d->m_hideCallback;
                 d->m_hideCallback = NULL;
-                d->m_hideCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec());
+                d->m_hideCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec(), d->m_protector);
                 break;
             }
             case onshow: {
                 delete d->m_showCallback;
                 d->m_showCallback = NULL;
-                d->m_showCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec());
+                d->m_showCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec(), d->m_protector);
                 // fire the onShow if the SetVisibilty was called before the onShowCallback was created
                 if (d->m_visibility) {
                     d->m_visibility = !d->m_visibility;
@@ -228,7 +231,7 @@ void JSWidget::put(ExecState *exec, const Identifier &propertyName, JSValue *val
             case onexit: {
                 delete d->m_exitCallback;
                 d->m_exitCallback = NULL;
-                d->m_exitCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec());
+                d->m_exitCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec(), d->m_protector);
                 break;
             }
             default:

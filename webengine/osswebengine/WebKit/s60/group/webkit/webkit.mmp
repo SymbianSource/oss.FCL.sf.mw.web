@@ -51,6 +51,7 @@ SOURCE          WidgetExtension.cpp
 SOURCE          WebScrollingDecelerator.cpp
 SOURCE          WebScrollingDeceleratorGH.cpp
 SOURCE          WebScrollbarDrawer.cpp
+SOURCE          WebSprite.cpp
 
 SOURCEPATH      ../../FormControls
 SOURCE          WebFormFill.cpp

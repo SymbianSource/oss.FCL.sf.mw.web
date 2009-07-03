@@ -48,6 +48,13 @@ DEFINE_GLOBAL(QualifiedName, baseAttr, nullAtom, "base", xmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, langAttr, nullAtom, "lang", xmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, spaceAttr, nullAtom, "space", xmlNamespaceURI);
 
+static bool initialized = false; 
+// Attributes 
+static const char *xmlNSString = "http://www.w3.org/XML/1998/namespace"; 
+static const char *baseAttrString = "base"; 
+static const char *langAttrString = "lang"; 
+static const char *spaceAttrString = "space"; 
+
 
 WebCore::QualifiedName** getXMLAttrs(size_t* size)
 {
@@ -62,7 +69,6 @@ WebCore::QualifiedName** getXMLAttrs(size_t* size)
 
 void init()
 {
-    static bool initialized = false;
     if (initialized)
         return;
     initialized = true;
@@ -70,20 +76,30 @@ void init()
     // Use placement new to initialize the globals.
     
     AtomicString::init();
-    AtomicString xmlNS("http://www.w3.org/XML/1998/namespace");
+    AtomicString xmlNS(xmlNSString);
 
     // Namespace
     new ((void*)&xmlNamespaceURI) AtomicString(xmlNS);
-
-    // Attributes
-    const char *baseAttrString = "base";
-    const char *langAttrString = "lang";
-    const char *spaceAttrString = "space";
 
     new ((void*)&baseAttr) QualifiedName(nullAtom, baseAttrString, xmlNS);
     new ((void*)&langAttr) QualifiedName(nullAtom, langAttrString, xmlNS);
     new ((void*)&spaceAttr) QualifiedName(nullAtom, spaceAttrString, xmlNS);
 }
+
+void remove() 
+{ 
+    if( initialized ) {
+        xmlNamespaceURI.~AtomicString();
+        baseAttr.~QualifiedName();
+        langAttr.~QualifiedName();
+        spaceAttr.~QualifiedName();
+    }
+        xmlNSString = ""; 
+        baseAttrString = ""; 
+        langAttrString = ""; 
+        spaceAttrString = ""; 
+        initialized = false; 
+} 
 
 } }
 

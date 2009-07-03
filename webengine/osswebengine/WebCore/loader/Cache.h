@@ -27,6 +27,7 @@
 #ifndef Cache_h
 #define Cache_h
 
+#include "config.h"
 #include "CachePolicy.h"
 #include "CachedResource.h"
 #include "PlatformString.h"
@@ -39,6 +40,7 @@
 
 namespace WebCore  {
 
+class CachedCSSStyleSheet;
 class CachedResource;
 class DocLoader;
 class KURL;
@@ -94,11 +96,12 @@ public:
     // Request resources from the cache.  A load will be initiated and a cache object created if the object is not
     // found in the cache.
 #if PRELOAD_SCANNER_ENABLED
-    CachedResource* requestResource(DocLoader*, CachedResource::Type, const KURL& url, const String* charset = 0, bool skipCanLoadCheck = false, bool sendResourceLoadCallbacks = true, bool isPreload = false);
+    CachedResource* requestResource(DocLoader*, CachedResource::Type, const KURL& url, const String& charset, bool isPreload = false);
 #else
-    CachedResource* requestResource(DocLoader*, CachedResource::Type, const KURL& url, const String* charset = 0, bool skipCanLoadCheck = false, bool sendResourceLoadCallbacks = true);
+    CachedResource* requestResource(DocLoader*, CachedResource::Type, const KURL& url, const String& charset);
 #endif
 
+	CachedCSSStyleSheet* requestUserCSSStyleSheet(DocLoader*, const String& url, const String& charset);
     // Sets the cache's memory capacities, in bytes. These will hold only approximately, 
     // since the decoded cost of resources like scripts and stylesheets is not known.
     //  - minDeadBytes: The maximum number of bytes that dead resources should consume when the cache is under pressure.
@@ -148,11 +151,24 @@ public:
 
 #if PLATFORM(SYMBIAN)
     void clearImages();
+    static void deleteStaticCache();
 #endif
 
 private:
     Cache();
+
+#if PLATFORM(SYMBIAN)
+    ~Cache() {
+        typedef HashMap<String, CachedResource*>::iterator ResourceIt;
+        ResourceIt endIt = m_resources.end();
+        for(ResourceIt it=m_resources.begin();it != endIt; ++it) {
+            CachedResource* res = (*it).second;;
+            delete res;
+        }
+    }
+#else
     ~Cache(); // Not implemented to make sure nobody accidentally calls delete -- WebCore does not delete singletons.
+#endif
        
     LRUList* lruListFor(CachedResource*);
     void resourceAccessed(CachedResource*);

@@ -122,6 +122,7 @@ DeprecatedValueListImpl::DeprecatedValueListImpl(const DeprecatedValueListImpl &
 
 DeprecatedValueListImpl::~DeprecatedValueListImpl()
 {
+	d=0;
 }
 
 void DeprecatedValueListImpl::clear()

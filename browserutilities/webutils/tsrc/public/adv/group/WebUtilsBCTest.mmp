@@ -57,7 +57,11 @@ LIBRARY         stiftestinterface.lib
 LIBRARY         webutils.lib
 LIBRARY         Centralrepository.lib
 
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 
 /*
 START WINS      

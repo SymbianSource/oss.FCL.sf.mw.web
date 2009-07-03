@@ -21,6 +21,10 @@
 #include <e32std.h>
 
 class WebView;
+namespace WebCore {
+    class Element;
+    class Node;
+};
 
 class WebTabbedNavigation {
     public:
@@ -30,6 +34,8 @@ class WebTabbedNavigation {
         bool navigate(int horizontalDir, int verticalDir);
         void clear();
         void initializeForPage();
+        void updateCursorPosition(const TPoint& pos);
+        void focusedElementChanged(WebCore::Element* element);
 
     private:
         bool selectNode(int horizontalDir, int verticalDir, TRect& selectedRect, TRect& newNodeRect, TPoint& selectedPoint, TPoint& newFocusPoint);

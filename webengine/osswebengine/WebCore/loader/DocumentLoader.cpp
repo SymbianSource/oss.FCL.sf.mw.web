@@ -154,6 +154,7 @@ FrameLoader* DocumentLoader::frameLoader() const
 DocumentLoader::~DocumentLoader()
 {
     ASSERT(!m_frame || frameLoader()->activeDocumentLoader() != this || !frameLoader()->isLoading());
+    m_mainResourceData = 0;
 }
 
 PassRefPtr<SharedBuffer> DocumentLoader::mainResourceData() const

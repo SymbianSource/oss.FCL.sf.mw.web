@@ -139,7 +139,7 @@ void QualifiedName::deref()
         return;
 #endif
 
-    if (m_impl->hasOneRef())
+    if (m_impl->hasOneRef() && gNameCache )
         gNameCache->remove(m_impl);
     m_impl->deref();
 }
@@ -170,6 +170,15 @@ void QualifiedName::init()
         AtomicString::init();
         new ((void*)&anyName) QualifiedName(nullAtom, starAtom, starAtom);
         initialized = true;
+    }
+}
+
+void QualifiedName::cleanup() 
+{
+    if( gNameCache ) {
+        gNameCache->clear();
+        delete gNameCache;
+        gNameCache=NULL;
     }
 }
 

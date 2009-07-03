@@ -155,7 +155,7 @@ public:
     /**
     * Get preference for a particular key
     */
-    TInt preferenceL( const TDesC& akey, TPtrC& avalue);
+    TInt preferenceL( const TDesC& akey, HBufC*& avalue);
 
     
     /**

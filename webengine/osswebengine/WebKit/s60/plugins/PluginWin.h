@@ -106,13 +106,6 @@ class PluginWin :  public CCoeControl,
         */
         TInt refreshPlugin(CFbsBitGc& bitmapContext);
 
-        /**
-        * ViewFocusChanged - invoked when WebKitView gains or loses focus
-        *
-        * @since 3.1
-        * @return void
-        */
-        void viewFocusChanged(TBool focused);
 
         /**
         * ResizePluginRect
@@ -288,13 +281,6 @@ class PluginWin :  public CCoeControl,
         */        
         void Draw(const TRect& rect) const;
  
-        /**
-        * FocusChanged
-        * From CCoeControl
-        *
-        */        
-        void FocusChanged(TDrawNow aDrawNow);
-
   public: //From MCoeForegroundObserver
 
     /**
@@ -488,7 +474,7 @@ public: // Functions from MPluginAdapter
     HBufC8* PluginDataUrl();
     
     
-    void TogleScreenMode(bool aFullScreen);
+    void ToggleScreenMode(bool aFullScreen);
     void PlayPausePluginL ();
     void HandlePointerEventFromPluginL(const TPointerEvent& aEvent);
     TBool HandleGesture(const RT_GestureHelper::TGestureEvent& aEvent);    

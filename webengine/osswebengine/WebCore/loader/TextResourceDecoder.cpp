@@ -279,6 +279,7 @@ TextResourceDecoder::TextResourceDecoder(const String& mimeType, const TextEncod
 
 TextResourceDecoder::~TextResourceDecoder()
 {
+    m_buffer.clear();
 }
 
 void TextResourceDecoder::setEncoding(const TextEncoding& encoding, EncodingSource source)

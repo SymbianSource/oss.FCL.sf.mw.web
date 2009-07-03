@@ -35,6 +35,8 @@ namespace WebCore {
 
         virtual String decode(const char*, size_t length, bool flush = false);
         virtual CString encode(const UChar*, size_t length, bool allowEntities = false);
+
+        static void deleteStatAvailCharsets();
     
     private:
         bool initializeConverter();

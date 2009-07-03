@@ -30,6 +30,7 @@ public:
     virtual void setRightSoftKeyLabel( const TDesC& aText ) = 0;
     virtual void setLeftSoftKeyLabel( const TDesC& aText ) = 0;
     virtual void setTabbednavigation(bool aOn) = 0;
+    virtual void setNavigationType(const TDesC& aType) = 0;
 
 };
 

@@ -19,6 +19,8 @@
 
 #include <e32base.h>
 
+class MJSObjectProtector;
+
 namespace KJS {
 
 
@@ -29,7 +31,7 @@ class ExecState;
 class WidgetEventHandler : public CBase
     {
     public:
-        WidgetEventHandler( JSValue* aValue, ExecState* aExecState );
+        WidgetEventHandler( JSValue* aValue, ExecState* aExecState, MJSObjectProtector* aProtector);
         virtual ~WidgetEventHandler();
 
     public:
@@ -40,6 +42,8 @@ class WidgetEventHandler : public CBase
         JSValue* iEventHandler;
         
         ExecState* iGlobalExecState;
+
+		MJSObjectProtector* iProtector;
         
         TBool iInUse;
         TBool iSelfDelete;

@@ -379,8 +379,6 @@ class PluginSkin : public CBase,
         
         void playPluginContent(const TDesC8& aRequestUrl) {};
 
-        void viewFocusChanged(TBool focused);
-        
         void positionChanged();
 
         void stopPluginContent(const TDesC8& aRequestUrl) {};
@@ -430,7 +428,6 @@ class PluginSkin : public CBase,
         * @return Bool.
         */
         TBool RunScript(); 
-        void handlePluginForeground(TBool focus);       
   private:  // private member data
         void setPluginWinClipedRect();
         TRect frameVisibleRect() const;

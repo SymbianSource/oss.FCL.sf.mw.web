@@ -12412,22 +12412,23 @@ xmlInitParser(void) {
 
 void
 xmlCleanupParser(void) {
-    if (!xmlParserInitialized)
-        return;
-
-    xmlCleanupCharEncodingHandlers();
-#ifdef LIBXML_CATALOG_ENABLED
-    xmlCatalogCleanup();
-#endif
-    xmlCleanupInputCallbacks();
-#ifdef LIBXML_OUTPUT_ENABLED
-    xmlCleanupOutputCallbacks();
-#endif
-    xmlCleanupGlobals();
-    xmlResetLastError();
-    xmlCleanupThreads(); /* must be last if called not from the main thread */
-    xmlCleanupMemory();
-    xmlParserInitialized = 0;
+    if (xmlParserInitialized)
+        {
+        xmlCleanupCharEncodingHandlers();
+    #ifdef LIBXML_CATALOG_ENABLED
+        xmlCatalogCleanup();
+    #endif
+        xmlCleanupInputCallbacks();
+    #ifdef LIBXML_OUTPUT_ENABLED
+        xmlCleanupOutputCallbacks();
+    #endif
+        xmlCleanupGlobals();
+        xmlResetLastError();
+        xmlCleanupThreads(); /* must be last if called not from the main thread */
+        xmlCleanupMemory();
+        xmlParserInitialized = 0;
+        }
+    xecleanTLS();
 }
 
 /************************************************************************

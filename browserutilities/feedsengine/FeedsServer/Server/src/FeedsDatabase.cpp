@@ -297,7 +297,7 @@ void CFeedsDatabase::ConstructL(TBool &aDatabaseCreated)
 // -----------------------------------------------------------------------------
 //
 CFeedsDatabase::CFeedsDatabase(CFeedsServer* aFeedsServer):
-    iLeakTracker(CLeakTracker::EFeedsDatabase),iFeedsServer(aFeedsServer)
+    iLeakTracker(CLeakTracker::EFeedsDatabase),iFeedsServer(aFeedsServer),iIsFolderTableUpdateNeeded(EFalse)
     {
     }
 
@@ -1407,7 +1407,7 @@ void CFeedsDatabase::FolderItemUpdateL(TInt aFolderItemId,
         {
         TBool  isFolder;
     //    TInt   folderListId;
-        
+
         // Update the title in the folder list table.
         iFolderListTable.GetL();
         iFolderListTable.UpdateL();
@@ -1431,24 +1431,27 @@ void CFeedsDatabase::FolderItemUpdateL(TInt aFolderItemId,
             //    }
 
 
-		    UseFeedTableLC(RDbTable::EUpdatable);
-	        TDbSeekKey  seekKey((TUint16) feedId);
-        
-        	if (iFeedTable.SeekL(seekKey))
-        	    {        
-        	    iFeedTable.GetL();
-        	    iFeedTable.UpdateL();
-        	    }
-        	else
-        	    {
-        	    User::Leave(KErrCorrupt);
-        	    }
-		    iFeedTable.SetColL(iFeedColSet->ColNo(KTitle_100MaxLen), aTitle.Left(K100MaxLen));
-    		WriteLongTextL(iFeedTable, iFeedColSet->ColNo(KFeedUrl), aUrl);
+            UseFeedTableLC(RDbTable::EUpdatable);
+            TDbSeekKey  seekKey((TUint16) feedId);
+
+            if (iFeedTable.SeekL(seekKey))
+                {
+                iFeedTable.GetL();
+                iFeedTable.UpdateL();
+                }
+            else
+                {
+                User::Leave(KErrCorrupt);
+                }
+            iFeedTable.SetColL(iFeedColSet->ColNo(KTitle_100MaxLen), aTitle.Left(K100MaxLen));
+            if (aUrl.Length() > 0)
+                {
+                WriteLongTextL(iFeedTable, iFeedColSet->ColNo(KFeedUrl), aUrl);
+                }
             iFeedTable.SetColL(iFeedColSet->ColNo(KAutoUpdateFreq), aFreq);
-			iFeedTable.PutL();
-		    CleanupStack::PopAndDestroy(/*feed table*/);  
-		    // Set the feed id.
+            iFeedTable.PutL();
+            CleanupStack::PopAndDestroy(/*feed table*/);
+            // Set the feed id.
             //iFolderListTable.SetColL(iFolderListColSet->ColNo(KFeedId), feedId);
             }
 
@@ -2781,7 +2784,14 @@ void CFeedsDatabase::CommitFeedL(TInt aFolderListId, TBool aIsNewFeed, TInt aFee
     iFeedTable.SetColL(iFeedColSet->ColNo(KUnreadCount), unreadCount);    
         
     iFeedTable.PutL();
-   
+
+    if (iIsFolderTableUpdateNeeded)
+        {
+        //update the folder table.
+        TInt entryId;
+        EntryIdFromFeedId(aFeedId, aFolderListId, entryId);
+        FolderItemUpdateL(entryId, title, KNullDesC, KAutoUpdatingOff);
+        }
     }
 
 
@@ -4379,6 +4389,96 @@ void CFeedsDatabase::AlterFeedTableWithAutoFequencyL()
           }
 
     CleanupStack::PopAndDestroy(/* iFeedTable */);
+    }
+
+// -----------------------------------------------------------------------------
+// CFeedsDatabase::FeedIdFromEntryId
+//
+// Returns the feed id of the feed with the given entry id.
+// -----------------------------------------------------------------------------
+//
+TBool CFeedsDatabase::FeedIdFromEntryId(const TInt& aEntryId, TInt aFolderListId, TInt& aFeedId)
+    {
+    RDbView  view;
+    TBool    found = EFalse;
+    HBufC*   query = NULL;
+
+    // Create a view given this select...
+    // SELECT FeedId FROM FeedTable WHERE FeedUrl = 'aFeedUrl' AND FolderListId = aFolderListId
+    _LIT(KQuery, "SELECT FeedId FROM FolderListTable WHERE FolderItemId = %d AND FolderListId = %d");
+
+    query = HBufC::NewLC( KQuery().Length() + KIntLength + KIntLength );
+
+    query->Des().Format( KQuery, aEntryId, aFolderListId );
+
+    User::LeaveIfError(view.Prepare(iDatabase, TDbQuery(*query), RDbView::EReadOnly));
+    CleanupClosePushL(view);
+
+    CDbColSet* colSet = view.ColSetL();
+    CleanupStack::PushL(colSet);
+
+    // Search for the feed.
+    if (view.Evaluate() >= 0)
+        {
+        if (view.FirstL())
+            {
+            // Get the feed id.
+            view.GetL();
+            aFeedId = view.ColUint16(colSet->ColNo(KFeedId));
+            found = ETrue;
+            }
+        }
+
+    CleanupStack::PopAndDestroy(colSet);
+    CleanupStack::PopAndDestroy(/*view*/);
+    CleanupStack::PopAndDestroy(query);
+
+    return found;
+    }
+
+// -----------------------------------------------------------------------------
+// CFeedsDatabase::EntryIdFromFeedId
+//
+// Returns the feed id of the feed with the given entry id.
+// -----------------------------------------------------------------------------
+//
+TBool CFeedsDatabase::EntryIdFromFeedId(const TInt& aFeedId, TInt aFolderListId, TInt& aEntryId)
+    {
+    RDbView  view;
+    TBool    found = EFalse;
+    HBufC*   query = NULL;
+
+    // Create a view given this select...
+    // SELECT FeedId FROM FeedTable WHERE FeedUrl = 'aFeedUrl' AND FolderListId = aFolderListId
+    _LIT(KQuery, "SELECT FolderItemId FROM FolderListTable WHERE FeedId = %d AND FolderListId = %d");
+
+    query = HBufC::NewLC( KQuery().Length() + KIntLength + KIntLength );
+
+    query->Des().Format( KQuery, aFeedId, aFolderListId );
+
+    User::LeaveIfError(view.Prepare(iDatabase, TDbQuery(*query), RDbView::EReadOnly));
+    CleanupClosePushL(view);
+
+    CDbColSet* colSet = view.ColSetL();
+    CleanupStack::PushL(colSet);
+
+    // Search for the feed.
+    if (view.Evaluate() >= 0)
+        {
+        if (view.FirstL())
+            {
+            // Get the feed id.
+            view.GetL();
+            aEntryId = view.ColUint16(colSet->ColNo(KFolderItemId));
+            found = ETrue;
+            }
+        }
+
+    CleanupStack::PopAndDestroy(colSet);
+    CleanupStack::PopAndDestroy(/*view*/);
+    CleanupStack::PopAndDestroy(query);
+
+    return found;
     }
 
 #if defined(_DEBUG)

@@ -19,6 +19,7 @@
 #ifndef __STATICOBJECTCONTAINER_H__
 #define __STATICOBJECTCONTAINER_H__
 
+#include <Browser_Platform_Variant.hrh>
 #include <e32base.h>
 #include <e32std.h>
 #include <wtf/Noncopyable.h>
@@ -34,9 +35,12 @@ class WebCursor;
 class PluginHandler;
 class WebCannedImages;
 class CBrCtl;
+class MWidgetEngineBridge;
+class MDeviceBridge;
 
 namespace WebCore {
-
+class RenderThemeSymbian;
+class RenderTheme;
 typedef enum
     {
     ELowScreenResolution,
@@ -68,7 +72,12 @@ public:
     PluginHandler* pluginHandler();
     void setPluginFullscreen(bool val) { m_pluginFullscreen = val; }
     bool isPluginFullscreen() { return m_pluginFullscreen; }
-
+#if defined(BRDO_LIW_FF)
+    MDeviceBridge* getDeviceBridgeL();
+#endif     
+    MWidgetEngineBridge* getWidgetEngineBridgeL();
+    RenderTheme* theme();
+    
     virtual ~StaticObjectsContainer();
 
     void ref(CBrCtl& brctl);
@@ -101,6 +110,11 @@ private:
     OOMHandler*             m_oomHandler;
     bool                    m_fullScreenMode;
     bool                    m_pluginFullscreen;
+    RLibrary                m_widgetLibrary;
+#if defined(BRDO_LIW_FF)
+    RLibrary                m_deviceLibrary;
+#endif
+    RenderThemeSymbian*	    m_symbianTheme;
 };
 
 }

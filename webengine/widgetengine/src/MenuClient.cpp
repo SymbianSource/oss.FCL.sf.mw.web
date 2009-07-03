@@ -139,15 +139,6 @@ CMenuClient::~CMenuClient()
         }
 
     iCascadeArr.Close();
-    
-    if (m_jsmenu) {
-        KJS::Collector::unprotect(m_jsmenu);                
-    }
-    
-    if (m_jsmenuitemctr) {
-        KJS::Collector::unprotect(m_jsmenuitemctr);                            
-    }
-    
 }
 
 
@@ -168,11 +159,10 @@ void CMenuClient::ConstructL()
 //
 //
 // ----------------------------------------------------------------------------
-KJS::JSMenu* CMenuClient::jsmenu() 
+KJS::JSMenu* CMenuClient::jsmenu(MJSObjectProtector* aProtector) 
 { 
     if (!m_jsmenu) {
-        m_jsmenu = new KJS::JSMenu(this);   
-        KJS::Collector::protect(m_jsmenu);        
+        m_jsmenu = new KJS::JSMenu(this, aProtector);
     }
     
     return m_jsmenu; 
@@ -185,11 +175,10 @@ KJS::JSMenu* CMenuClient::jsmenu()
 //
 //
 // ----------------------------------------------------------------------------
-KJS::JSMenuItemConstructor* CMenuClient::jsmenuitem() 
+KJS::JSMenuItemConstructor* CMenuClient::jsmenuitem(MJSObjectProtector* protector) 
 {
     if (!m_jsmenuitemctr){
-        m_jsmenuitemctr = new KJS::JSMenuItemConstructor(this);    
-        KJS::Collector::protect(m_jsmenuitemctr);                
+        m_jsmenuitemctr = new KJS::JSMenuItemConstructor(this, protector);
     }
 
     return m_jsmenuitemctr;    

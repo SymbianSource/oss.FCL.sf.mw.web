@@ -35,6 +35,7 @@
 
 // CLASS DECLARATION
 class MJSMenuCallbacks;
+class MJSObjectProtector;
 
 /**
 *  CMenu
@@ -49,10 +50,12 @@ class WidgetEventHandler;
 struct MenuPrivate
 {
     MenuPrivate(MJSMenuCallbacks* callbacks,
+				MJSObjectProtector* protector,
                 WidgetEventHandler* onShowCallback = NULL,
                 WidgetEventHandler* rightKeyCallback = NULL,
                 WidgetEventHandler* leftKeyCallback = NULL) : 
                     m_callbacks(callbacks),
+					m_protector(protector),
                     m_onShowCallback(onShowCallback),
                     m_rightKeyCallback(rightKeyCallback),
                     m_leftKeyCallback(leftKeyCallback)
@@ -65,6 +68,7 @@ struct MenuPrivate
                              delete m_leftKeyCallback;}
     
     MJSMenuCallbacks* m_callbacks;
+	MJSObjectProtector* m_protector;
     WidgetEventHandler* m_onShowCallback;
     WidgetEventHandler* m_rightKeyCallback;        
     WidgetEventHandler* m_leftKeyCallback;
@@ -74,7 +78,7 @@ class JSMenu: public JSObject
     {
 
     public:
-        JSMenu(MJSMenuCallbacks* aMenuCallbacks);
+        JSMenu(MJSMenuCallbacks* aMenuCallbacks, MJSObjectProtector* aProtector);
         virtual ~JSMenu();
 
     //From JSObject

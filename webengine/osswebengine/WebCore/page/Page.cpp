@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "config.h"
+
 #include "Page.h"
 
 #include "Chrome.h"
@@ -234,5 +234,19 @@ void Page::setInLowQualityImageInterpolationMode(bool mode)
 {
     m_inLowQualityInterpolationMode = mode;
 }
+
+#if PLATFORM(SYMBIAN)
+void deletePageStaticData()
+{
+    delete allPages;
+    allPages = NULL;
+    delete frameNamespaces;
+    frameNamespaces = NULL;
+
+#ifndef NDEBUG
+    PageCounter::count = 0;
+#endif
+}
+#endif
 
 } // namespace WebCore

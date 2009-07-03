@@ -23,6 +23,8 @@
 #include "WebUtil.h"
 #include "Document.h"
 #include "Frame.h"
+#include "HitTestRequest.h"
+#include "HitTestResult.h"
 #include "HTMLNames.h"
 #include "FrameTree.h"
 #include "BrCtlDefs.h"
@@ -38,6 +40,7 @@
 #include "FocusController.h"
 #include "RenderListBox.h"
 #include "HTMLSelectElement.h"
+#include "HTMLInputElement.h"
 
 using namespace WebCore;
 using namespace HTMLNames;
@@ -75,6 +78,28 @@ void WebTabbedNavigation::initializeForPage()
     }
 }
 
+void WebTabbedNavigation::updateCursorPosition(const TPoint& pos)
+{
+    m_focusPosition = pos;
+    WebFrame* frame = StaticObjectsContainer::instance()->webCursor()->getFrameAtPoint(pos);
+    TPoint point(frame->frameView()->viewCoordsInFrameCoords(pos));
+
+    Element* node = core(frame)->document()->elementFromPoint(point.iX, point.iY);
+    if (node->isFocusable() && !node->hasTagName(iframeTag) && !node->hasTagName(frameTag))
+        m_webView->page()->focusController()->setFocusedNode(node, core(frame));
+    else
+        m_webView->page()->focusController()->setFocusedNode(NULL, core(frame));
+    m_selectedElementRect.SetRect(pos.iX, pos.iY, pos.iX + 1, pos.iY + 1);
+}
+
+void WebTabbedNavigation::focusedElementChanged(Element* element)
+{
+    m_initializedForPage = true;
+    m_firstNavigationOnPage = false;
+    m_node = element;
+    m_selectedElementRect = element->getRect().Rect();
+    m_focusPosition = StaticObjectsContainer::instance()->webCursor()->position();
+}
 
 bool WebTabbedNavigation::navigate(int horizontalDir, int verticalDir)
 {
@@ -181,6 +206,16 @@ bool WebTabbedNavigation::navigate(int horizontalDir, int verticalDir)
             m_focusPosition = selectedPoint;
             selectedRect = newRect;
             m_selectedElementRect = selectedRect;
+
+            int x, y;
+            selectedNode->renderer()->absolutePosition(x, y);
+            Vector<IntRect> rects;
+            selectedNode->renderer()->absoluteRects(rects, x, y);
+            WebFrameView* fv = kit(selectedNode->document()->frame())->frameView();
+            if (rects.size() > 0) {
+                 selectedPoint = TPoint(rects[0].x(), rects[0].y());
+                selectedPoint = fv->frameCoordsInViewCoords(selectedPoint);
+            }
             StaticObjectsContainer::instance()->webCursor()->updatePositionAndElemType(selectedPoint);
             // special handling for Select-Multi
             if (m_webView->focusedElementType() == TBrCtlDefs::EElementSelectMultiBox) {
@@ -218,6 +253,16 @@ bool WebTabbedNavigation::navigate(int horizontalDir, int verticalDir)
             m_webView->mainFrame()->frameView()->scrollTo(contentPos + TPoint(horizontalDir * m_webView->Rect().Width() / KScrollWhenNotFound, verticalDir * m_webView->Rect().Height() / KScrollWhenNotFound));
             TPoint diff(m_webView->mainFrame()->frameView()->contentPos() - contentPos);
             if (diff.iX || diff.iY) {
+                Frame* focusedFrame = m_webView->page()->focusController()->focusedFrame();
+                if (focusedFrame == NULL) focusedFrame = m_webView->page()->mainFrame();
+                Node* focusNode = focusedFrame->document()->focusedNode();
+                if (focusNode) {
+                    TRect selectedRect = focusNode->getRect().Rect();
+                    selectedRect = TRect(kit(focusedFrame)->frameView()->frameCoordsInViewCoords(selectedRect.iTl), 
+                        kit(focusedFrame)->frameView()->frameCoordsInViewCoords(selectedRect.iBr));
+                    if (!selectedRect.Intersects(kit(focusedFrame)->frameView()->visibleRect()))
+                        m_webView->page()->focusController()->setFocusedNode(NULL,0);
+                }
                 m_selectedElementRect.Move(diff);
                 m_focusPosition = oldFocusPoint + diff;
                 m_node = NULL;
@@ -289,6 +334,7 @@ TPoint WebTabbedNavigation::potentialFocusPoint(int horizontalDir, int verticalD
 
 int WebTabbedNavigation::distanceFunction(int horizontalDir, int verticalDir, TRect& rect, TPoint& point)
 {
+    // Based on http://www.w3.org/TR/WICD/#focus-navigation
     TReal x, y, euclidianDistance;
     int sameAxisDist, otherAxisDist, overlap;
 
@@ -306,6 +352,10 @@ int WebTabbedNavigation::distanceFunction(int horizontalDir, int verticalDir, TR
             int top = max(m_selectedElementRect.iTl.iY, rect.iTl.iY);
             int bottom = std::min(m_selectedElementRect.iBr.iY, rect.iBr.iY);
             overlap = bottom - top;
+            if (overlap == rect.Height()) {
+                euclidianDistance = (euclidianDistance * rect.Height()) / m_selectedElementRect.Height();
+                otherAxisDist = 0;
+            }
         }
     }
     else { // vertical    
@@ -316,10 +366,14 @@ int WebTabbedNavigation::distanceFunction(int horizontalDir, int verticalDir, TR
             int top = max(m_selectedElementRect.iTl.iX, rect.iTl.iX);
             int bottom = std::min(m_selectedElementRect.iBr.iX, rect.iBr.iX);
             overlap = bottom - top;
+            if (overlap == rect.Width()) {
+                euclidianDistance = (euclidianDistance * rect.Width()) / m_selectedElementRect.Width();
+                otherAxisDist = 0;
+            }
         }
     }
     long ed, o;
     Math::Int(ed, euclidianDistance);
     Math::Int(o, sqrt(overlap));
-    return ed + sameAxisDist + 2 * otherAxisDist + o;
+    return ed + sameAxisDist + 2 * otherAxisDist - o;
 }

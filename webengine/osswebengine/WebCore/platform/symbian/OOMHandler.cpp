@@ -64,7 +64,7 @@ OOMHandler::OOMHandler()
 OOMHandler::~OOMHandler()
 {
     MemoryManager::RemoveCollector(this);
-    MemoryManager::AddStopper(this);
+    MemoryManager::RemoveStopper(this);
 }
 
 TUint OOMHandler::Collect(TUint aRequired)

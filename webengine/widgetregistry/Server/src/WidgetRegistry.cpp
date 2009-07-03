@@ -29,6 +29,7 @@
 #include <libc\stdlib.h>
 #include <libxml2_parser.h>
 #include <libxml2_tree.h>
+#include <xmlengxestd.h>
 #include "WidgetMMCHandler.h"
 #include "UidAllocator.h"
 #if defined( BRDO_WRT_SECURITY_MGR_FF )
@@ -1664,7 +1665,7 @@ void CWidgetRegistry::CreateLangDirListL()
 
     xmlFreeDoc(doc);
     xmlCleanupParser();
-    xmlCleanupGlobalData();
+    XmlEngineCleanup();
     CleanupStack::PopAndDestroy( buf );
     }
 

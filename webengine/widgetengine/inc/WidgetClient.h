@@ -35,6 +35,7 @@
 // FORWARD DECLARATION
 class WidgetRenderer;
 class WidgetPreferences;
+class MJSObjectProtector;
 
 namespace KJS {
     class JSWidget;
@@ -51,7 +52,7 @@ class CWidgetClient: public CBase, public MJSWidgetCallbacks
 {
 
 public:
-    static CWidgetClient* NewL(MWidgetCallback& aWidgetCallback, MWidgetEngineCallbacks& aWidgetEngineCallback, WidgetPreferences* preferences);
+    static CWidgetClient* NewL(MWidgetCallback& aWidgetCallback, MJSObjectProtector* aProtector, MWidgetEngineCallbacks& aWidgetEngineCallback, WidgetPreferences* preferences);
     virtual ~CWidgetClient();
 
 public:
@@ -69,9 +70,10 @@ public: // From MJSWidgetCallbacks
     void openUrl( const TDesC& aUrl );
     TDesC& getWidgetBundleId();
     void setNavigationEnabled( TBool aEnable );
+    void setNavigationType( const TDesC& aType );
     void prepareForTransition( const TDesC& aTransition );
     void performTransition();        
-    TInt preferenceForKey( const TDesC& aKey, TPtrC& aValue );
+    TInt preferenceForKey( const TDesC& aKey, HBufC*& aValue );
     void setPreferenceForKey( const TDesC& aKey, const TDesC& aValue );
     void removePreferenceForKey( const TDesC& aKey, const TDesC& aValue );
     void setDisplayLandscape();
@@ -81,7 +83,7 @@ private:
     void launchApplicationL( const TUid& aUid, const TDesC& aParam );
 
 protected:
-    void ConstructL(MWidgetEngineCallbacks& aWidgetEngineCallback);
+    void ConstructL(MWidgetEngineCallbacks& aWidgetEngineCallback, MJSObjectProtector* protector);
     CWidgetClient(MWidgetCallback& aWidgetCallback, MWidgetEngineCallbacks& aWidgetEngineCallback, WidgetPreferences* preferences);
 
 private:

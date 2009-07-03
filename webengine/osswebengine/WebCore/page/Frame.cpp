@@ -176,12 +176,12 @@ Frame::~Frame()
 {
     setView(0);
     loader()->clearRecordedFormValues();
+	loader()->closeURL();
+    loader()->cancelAndClear();
 
 #if PLATFORM(MAC) || PLATFORM(SYMBIAN)
     setBridge(0);
 #endif
-    
-    loader()->cancelAndClear();
     
     // FIXME: We should not be doing all this work inside the destructor
 

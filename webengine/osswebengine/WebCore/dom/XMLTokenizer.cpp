@@ -427,9 +427,9 @@ void setLoaderForLibXMLCallbacks(DocLoader* docLoader)
     globalDocLoader = docLoader;
 }
 
+static bool didInit = false;
 static xmlParserCtxtPtr createStringParser(xmlSAXHandlerPtr handlers, void* userData)
 {
-    static bool didInit = false;
     if (!didInit) {
         xmlInitParser();
         xmlRegisterInputCallbacks(matchFunc, openFunc, readFunc, closeFunc);
@@ -445,7 +445,17 @@ static xmlParserCtxtPtr createStringParser(xmlSAXHandlerPtr handlers, void* user
     xmlSwitchEncoding(parser, BOMHighByte == 0xFF ? XML_CHAR_ENCODING_UTF16LE : XML_CHAR_ENCODING_UTF16BE);
     return parser;
 }
+
 #endif
+
+void XMLTokenizer::cleanupXMLStringParser()
+{
+#ifndef USE_QXMLSTREAM
+    if( didInit ) {
+        xmlCleanupParser();
+    }
+#endif
+}
 
 // --------------------------------
 

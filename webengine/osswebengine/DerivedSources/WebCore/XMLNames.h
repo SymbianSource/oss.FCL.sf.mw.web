@@ -48,6 +48,7 @@ WebCore::QualifiedName** getXMLAttr(size_t* size);
 #endif
 
 void init();
+void remove();
 
 } }
 

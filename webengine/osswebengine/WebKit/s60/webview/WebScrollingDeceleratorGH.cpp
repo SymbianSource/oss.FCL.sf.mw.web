@@ -163,27 +163,25 @@ void WebScrollingDeceleratorGH::scroll()
     TPoint cpos = scrollingView->contentPos();
     dist = scrollingView->toDocCoords(dist);
     TPoint pos = m_startPos + dist;
-    
-    if ((vx * m_initSpeed.iX < 0) || (vy * m_initSpeed.iY < 0) || (vx + vy == 0) ||
-        (m_numscrollsteps > 1 && !scrollingView->needScroll(pos))) {
+   
+    WebPageScrollHandler* handler = m_webView.pageScrollHandler();
+
+    if ((vx * m_initSpeed.iX < 0) || (vy * m_initSpeed.iY < 0) || (vx + vy == 0) || 
+        (m_numscrollsteps > 1 && !scrollingView->needScroll(pos) && 
+        !handler->currentScrollingElement())) {
         if (m_scrollbarDrawer) {
             m_scrollbarDrawer->fadeScrollbar();
         }
         m_decelTimer->Cancel();
+        handler->clearScrollingElement();
         m_webView.setViewIsScrolling(false);
         m_webView.toggleRepaintTimer(true);
     }
     else {
-        scrollingView->scrollTo(pos);
-        if (m_scrollbarDrawer) {
-            TPoint scrollDelta = pos - m_lastPos;
-            scrollDelta.iX *= 100;
-            scrollDelta.iY *= 100;
-            m_webView.pageScrollHandler()->updateScrollbars(pos, scrollDelta);   
-        }
+        TPoint scrollDelta = pos - m_lastPos;
+        handler->scrollContent(scrollDelta);
         m_lastPos = pos;
-    }
-    
+    }  
 }
 
 

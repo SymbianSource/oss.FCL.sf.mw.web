@@ -256,8 +256,6 @@ CArrayFixFlat<TBrCtlImageCarrier>* imagesInFrame(WebFrame& wf_, bool visibleOnly
     if (!f || !f->document() || !f->document()->renderer())
         return imglist;
 
-    CleanupStack::PushL(imglist);
-
     Document* doc = f->document();
     FrameView* v = doc->view();
     IntRect r1 = wf_.frameView()->topView()->mainFrame()->frameView()->rect();
@@ -308,13 +306,12 @@ CArrayFixFlat<TBrCtlImageCarrier>* imagesInFrame(WebFrame& wf_, bool visibleOnly
 
                         }
                         if (!imgexists)
-                            imglist->AppendL(tImg);
+                            TRAP_IGNORE( imglist->AppendL(tImg) );
                     }
                 }
             }
         }
     }
-    CleanupStack::Pop(imglist);
     return imglist;
 }
 
@@ -326,7 +323,6 @@ CArrayFixFlat<TBrCtlSubscribeTo>* findSubscribeToInFrame(WebFrame& wf_)
     if (!f || !f->document())
         return linkList;
 
-    CleanupStack::PushL(linkList);
     for (Node *n = f->document(); n; n = n->traverseNextNode()) {
         if (n->isElementNode() && n->hasTagName(linkTag)) {
 
@@ -339,11 +335,10 @@ CArrayFixFlat<TBrCtlSubscribeTo>* findSubscribeToInFrame(WebFrame& wf_)
                 String title = e->getAttribute(titleAttr);
 
                 TBrCtlSubscribeTo item(title.des(), href.des(), 0);
-                linkList->AppendL(item);
+                TRAP_IGNORE( linkList->AppendL(item) );
             }
         }
     }
-    CleanupStack::Pop(linkList);
     return linkList;
 }
 
@@ -467,27 +462,37 @@ HBufC* generateFrameName()
 void addOneMenuItemAfter(CEikMenuPane& menuPane, unsigned int after, int command, int resourceId, unsigned int commandBase)
 {
     CEikMenuPaneItem::SData item;
-    HBufC* buf = StringLoader::LoadLC(resourceId);
+    HBufC* buf = NULL;
+    TRAP_IGNORE( buf = StringLoader::LoadL(resourceId));
+    if(buf == NULL)
+        {
+        return;
+        }
     item.iText.Copy(*buf);
-    CleanupStack::PopAndDestroy();  // buf
+    delete buf;
     buf = NULL;
     item.iCommandId = command + commandBase;
     item.iFlags = 0;
     item.iCascadeId = 0;
-    menuPane.AddMenuItemL(item, after);
+    TRAP_IGNORE( menuPane.AddMenuItemL(item, after) );
 }
 
 void insertOneMenuItem(CEikMenuPane& menuPane, int command, int resourceId, unsigned int commandBase)
 {
     CEikMenuPaneItem::SData item;
-    HBufC* buf = StringLoader::LoadLC(resourceId);
+    HBufC* buf = NULL;
+    TRAP_IGNORE( buf = StringLoader::LoadL(resourceId));
+    if(buf == NULL)
+        {
+        return;
+        }
     item.iText.Copy(*buf);
-    CleanupStack::PopAndDestroy();  // buf
+    delete buf;
     buf = NULL;
     item.iCommandId = command + commandBase;
     item.iFlags = 0;
     item.iCascadeId = 0;
-    menuPane.InsertMenuItemL(item, 0);
+    TRAP_IGNORE( menuPane.InsertMenuItemL(item, 0) );
 }
 
 int textMultiplier(int fontLevel, int originalSize)
@@ -601,7 +606,7 @@ void addFocusedUrlToContacts(WebView* webView)
                         url.append(telbook);
                         url.append(numberNameSeparator);
                         url.append(email);
-                        handleSpecialSchemeL(url, webView->brCtl());
+                        TRAP_IGNORE( handleSpecialSchemeL(url, webView->brCtl()) );
                     }
                 }
             }

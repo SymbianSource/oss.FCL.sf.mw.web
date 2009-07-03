@@ -69,44 +69,31 @@ CWidgetExtension::CWidgetExtension(WebView& aWebKitView) :
 CWidgetExtension::~CWidgetExtension()
 {
     delete m_widgetengine;
-    m_widgetLibrary.Close();
 #if defined(BRDO_LIW_FF)
     delete m_deviceBridge;
-    m_deviceLibrary.Close();
 #endif
 }
 
 void CWidgetExtension::ConstructL(MWidgetCallback& aWidgetCallback)
 {
     if (!m_widgetengine) {
-        _LIT( KBrowserWidgetEngineName, "widgetengine.dll" );
-        User::LeaveIfError( m_widgetLibrary.Load(KBrowserWidgetEngineName) );
-        TLibraryFunction entry = m_widgetLibrary.Lookup(1);
-        if (!entry) {
+
+        m_widgetengine = WebCore::StaticObjectsContainer::instance()->getWidgetEngineBridgeL();
+        if(!m_widgetengine) {
             User::Leave(KErrNotFound);
         }
-        m_widgetengine = (MWidgetEngineBridge*) entry();
+            
         m_widgetcallback = &aWidgetCallback;
 
-        if (m_widgetengine) {
-            AddJSExtension(_L("widget"),m_widgetengine->Widget(*m_widgetcallback, *this));
-            AddJSExtension(_L("menu"),m_widgetengine->Menu(*m_widgetcallback, *this));
-            AddJSExtension(_L("MenuItem"),m_widgetengine->MenuItem(*m_widgetcallback, *this));
-        }
 
 #if defined(BRDO_LIW_FF)
         // device for SAPI
-        _LIT( KDeviceDLLName, "jsdevice.dll" );
-        User::LeaveIfError( m_deviceLibrary.Load(KDeviceDLLName) );
-        TLibraryFunction device_entry = m_deviceLibrary.Lookup(1);
-        if (!device_entry) {
+        
+        m_deviceBridge = WebCore::StaticObjectsContainer::instance()->getDeviceBridgeL();
+        if (!m_deviceBridge) {
             User::Leave(KErrNotFound);
         }
-        m_deviceBridge = (MDeviceBridge*) device_entry();
-
-        if (m_deviceBridge) {
-            AddJSExtension(_L("device"), m_deviceBridge->Device(0));
-        }
+        
 #endif
 
         if (m_webview && m_webview->page()) {
@@ -224,10 +211,38 @@ void CWidgetExtension::setLeftSoftKeyLabel(const TDesC& aText)
 
 void CWidgetExtension::setTabbednavigation(bool aOn)
 {
-    m_webview->brCtl()->settings()->setTabbedNavigation(aOn);
+    m_webview->brCtl()->settings()->setNavigationType(aOn ? SettingsContainer::NavigationTypeTabbed : SettingsContainer::NavigationTypeCursor);
     WebCore::StaticObjectsContainer::instance()->webCursor()->cursorUpdate(true);
 }
 
+void CWidgetExtension::setNavigationType(const TDesC& aType)
+{
+    if (aType.Compare(_L("cursor")) == 0)
+        m_webview->brCtl()->settings()->setNavigationType(SettingsContainer::NavigationTypeCursor);
+    else if (aType.Compare(_L("tabbed")) == 0)
+        m_webview->brCtl()->settings()->setNavigationType(SettingsContainer::NavigationTypeTabbed);
+    else if (aType.Compare(_L("none")) == 0)
+        m_webview->brCtl()->settings()->setNavigationType(SettingsContainer::NavigationTypeNone);
+    WebCore::StaticObjectsContainer::instance()->webCursor()->cursorUpdate(true);
+}
+
+void CWidgetExtension::windowObjectCleared()
+{
+    if (m_widgetengine) {
+        m_widgetengine->Clear();
+        AddJSExtension(_L("widget"),m_widgetengine->Widget(*m_widgetcallback, *this));
+        AddJSExtension(_L("menu"),m_widgetengine->Menu(*m_widgetcallback, *this));
+        AddJSExtension(_L("MenuItem"),m_widgetengine->MenuItem(*m_widgetcallback, *this));
+    }
+
+#if defined(BRDO_LIW_FF)
+    if (m_deviceBridge) {
+        m_deviceBridge->Clear();
+        AddJSExtension(_L("device"), m_deviceBridge->Device(0));
+        m_deviceBridge->SetUid( iWidgetId);
+    }
+#endif
+}
 
 //END OF FILE
 

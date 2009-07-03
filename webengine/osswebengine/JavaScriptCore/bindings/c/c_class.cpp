@@ -53,7 +53,24 @@ CClass::~CClass()
 }
 
 typedef HashMap<NPClass*, CClass*> ClassesByIsAMap;
+typedef HashMap<NPClass*, CClass*>::iterator ClassesByIsAMapIt;
 static ClassesByIsAMap* classesByIsA = 0;
+
+struct cleanupClassesByIsA {
+    ~cleanupClassesByIsA() {
+        if( classesByIsA ) {
+            ClassesByIsAMapIt end = classesByIsA->end();
+            for( ClassesByIsAMapIt it=classesByIsA->begin(); it!=end; ++it ) {
+                CClass* obj = (*it).second;
+                delete obj;
+            }
+            classesByIsA->clear();
+            delete classesByIsA;
+            classesByIsA = 0;
+        }
+    }
+};
+struct cleanupClassesByIsA cleanupClassIsAHash;
 
 CClass* CClass::classForIsA(NPClass* isa)
 {

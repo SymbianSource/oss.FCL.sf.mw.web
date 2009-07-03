@@ -91,7 +91,7 @@ class ConsoleFunc : public JSObject
     {
     public:
         ConsoleFunc(ExecState *exec, int aFuncType);
-        virtual ~ConsoleFunc() {}
+        virtual ~ConsoleFunc() {delete d;}
 
     //From JSObject
     public:

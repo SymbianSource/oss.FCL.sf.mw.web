@@ -17,6 +17,7 @@
 #include "WidgetEventHandler.h"
 #include "config.h"
 #include <kjs/object.h>
+#include "WidgetJSObjectProtector.h"
 
 // ============================ MEMBER FUNCTIONS ===============================
 using namespace KJS;
@@ -28,10 +29,13 @@ using namespace KJS;
 //
 //
 // ----------------------------------------------------------------------------
-WidgetEventHandler::WidgetEventHandler( JSValue* aValue, ExecState* aExecState ) : iGlobalExecState (aExecState)
+WidgetEventHandler::WidgetEventHandler( JSValue* aValue, ExecState* aExecState, MJSObjectProtector* aProtector) : iGlobalExecState (aExecState), iProtector(aProtector)
 {
     iEventHandler = aValue;
-    Collector::protect(iEventHandler);    
+    if(iProtector)
+        {
+	    iProtector->Protect(iEventHandler);
+	    }
 }
 
 
@@ -43,7 +47,10 @@ WidgetEventHandler::WidgetEventHandler( JSValue* aValue, ExecState* aExecState )
 // ----------------------------------------------------------------------------
 WidgetEventHandler::~WidgetEventHandler()
 {
-    Collector::unprotect(iEventHandler);
+    if(iProtector) 
+        {
+	    iProtector->Unprotect(iEventHandler);
+	    }
 }
 
 // ----------------------------------------------------------------------------

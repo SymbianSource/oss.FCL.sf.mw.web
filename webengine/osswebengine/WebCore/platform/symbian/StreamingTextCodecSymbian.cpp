@@ -254,6 +254,12 @@ void TextCodecSymbian::checkSupportedEncoding()
 }
 
 
+void TextCodecSymbian::deleteStatAvailCharsets()
+{
+    delete s_availableCharsets;
+    s_availableCharsets = 0;
+}
+
 }
 
 // END OF FILE

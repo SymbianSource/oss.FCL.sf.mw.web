@@ -644,6 +644,7 @@ CMaskedBitmap* CMaskedBitmap::ScaleImageToSize( TSize newSize )
         return iScaledBitmap;
 
     delete iScaledBitmap;
+    iScaledBitmap = NULL;
     iScaledBitmap = CMaskedBitmap::NewL();
 
     CFbsBitmap& bmp = iScaledBitmap->BitmapModifyable();

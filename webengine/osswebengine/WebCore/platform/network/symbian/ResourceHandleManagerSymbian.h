@@ -39,7 +39,7 @@ public:
 
     int add(ResourceHandle*);
     void cancel(ResourceHandle*);
-
+    virtual ~CResourceHandleManager();
 public :
     void receivedResponse(ResourceHandle* resource, ResourceResponse& response, MUrlConnection* connection);
     void receivedData(ResourceHandle* resource, const TDesC8&, int contentLength, MUrlConnection* connection);
@@ -47,7 +47,7 @@ public :
 
 private:
     CResourceHandleManager();
-    virtual ~CResourceHandleManager();
+   
 
 };
 

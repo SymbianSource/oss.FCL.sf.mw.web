@@ -19,7 +19,6 @@
  *
  */
 
-#include "config.h"
 #include "RenderStyle.h"
 
 #include "CSSStyleSelector.h"
@@ -1442,5 +1441,16 @@ const Vector<StyleDashboardRegion>& RenderStyle::noneDashboardRegions()
     }
     return noneList;
 }
+
+#if PLATFORM(SYMBIAN)
+void RenderStyle::deleteDefaultRenderStyle()
+{
+	//goes to overridden delete operator but calls destructor
+	delete defaultStyle;
+	//release cell allocated because overridder delete does not do that.
+	free(defaultStyle);
+	defaultStyle = NULL;
+}
+#endif
 
 }

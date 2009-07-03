@@ -36,6 +36,7 @@
 // CLASS DECLARATION
 
 class MJSWidgetCallbacks;
+class MJSObjectProtector;
 
 /**
 *  CWidget
@@ -54,12 +55,14 @@ struct WidgetPrivate
                     WidgetEventHandler* showCallback,
                     WidgetEventHandler* hideCallback,
                     WidgetEventHandler* exitCallback,
-                    bool visibility) :
+                    bool visibility,
+					MJSObjectProtector* protector) :
                         m_callbacks(callbacks),
                         m_showCallback(showCallback),
                         m_hideCallback(hideCallback),
                         m_exitCallback(exitCallback),
                         m_visibility(visibility),
+						m_protector(protector),
                         m_wrt(0)
     {
     }
@@ -69,10 +72,11 @@ struct WidgetPrivate
                                delete m_hideCallback;
                                delete m_showCallback; }
 
-    MJSWidgetCallbacks*   m_callbacks;
-    WidgetEventHandler* m_showCallback;
-    WidgetEventHandler* m_hideCallback;
-    WidgetEventHandler* m_exitCallback;
+    MJSWidgetCallbacks*		m_callbacks;
+    WidgetEventHandler*		m_showCallback;
+    WidgetEventHandler*		m_hideCallback;
+    WidgetEventHandler*		m_exitCallback;
+	MJSObjectProtector*		m_protector;
     bool m_visibility;
     JSWrt* m_wrt;
 
@@ -82,7 +86,7 @@ class JSWidget : public JSObject
 {
 
 public:
-    JSWidget(MJSWidgetCallbacks* aWidgetCallbacks);
+    JSWidget(MJSWidgetCallbacks* aWidgetCallbacks, MJSObjectProtector* aProtector);
     virtual ~JSWidget();
 
 //From JSObject
@@ -107,6 +111,7 @@ public:
         performTransition,
         setPreferenceForKey,
         setNavigationEnabled,
+        setNavigationType,
         setDisplayLandscape,
         setDisplayPortrait,
         isRotationSupported,

@@ -27,6 +27,7 @@
 
 
 class WebView;
+class CWebSprite;
 
 class WebScrollbarDrawer: public CBase
 {
@@ -46,10 +47,6 @@ class WebScrollbarDrawer: public CBase
   private:
     WebScrollbarDrawer();
     void ConstructL(); 
-    void constructSprite(RWsSprite& sprite, TPoint& pos, 
-    		             CFbsBitmap* bitmap, CFbsBitmap* bitmapMask);
-    void updateSprite(RWsSprite& sprite, CFbsBitmap* bitmap, 
-                      CFbsBitmap* bitmapMask);
     TInt InitScrollbar(WebView* view);
     TInt SetupBitmaps();
     
@@ -62,11 +59,12 @@ class WebScrollbarDrawer: public CBase
     void removeBitmaps();
     void clearSprites();
     void calculateBitmapRects();
+    TBool canRedraw();
     
   private:
     WebView*              m_webView;
-    RWsSprite             m_spriteV;
-    RWsSprite             m_spriteH;
+    CWebSprite*           m_spriteV;
+    CWebSprite*           m_spriteH;
     TRect                 m_rect;
     int                   m_scrollBarTransparency;
     CPeriodic*            m_scrollBarFader;

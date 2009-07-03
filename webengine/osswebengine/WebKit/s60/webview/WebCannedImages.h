@@ -26,7 +26,6 @@
 
 #include <AknsConstants.h>
 #include <AknsItemID.h>
-#include <AknsConstants.h>
 
 // CONSTANTS
 

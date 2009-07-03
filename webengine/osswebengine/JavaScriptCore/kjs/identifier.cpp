@@ -51,6 +51,17 @@ namespace KJS {
 typedef HashSet<UString::Rep *> IdentifierTable;
 static IdentifierTable *table;
 
+struct cleanupIdentifier {
+    ~cleanupIdentifier() {
+        if( table ) {
+            table->clear();
+            delete table;
+            table=0;
+        }
+    }
+};
+static cleanupIdentifier cleanIdentifier;
+
 static inline IdentifierTable& identifierTable()
 {
     ASSERT(JSLock::lockCount() > 0);

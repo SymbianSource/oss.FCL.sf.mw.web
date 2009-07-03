@@ -864,6 +864,11 @@ NONSHARABLE_CLASS( CHttpDownload ): public CActive
         void AppendHeadersL( TPtr8& aBuf, CArrayPtrFlat<CHeaderField>* aHeaders );
 
         /**
+        * Get the size of Http headers
+        */
+        TInt GetHttpHeadersSize(CArrayPtrFlat<CHeaderField>* aHeaders );
+        
+        /**
         * Add the given header in the header array
         * @return None. Leaves on error.
         */

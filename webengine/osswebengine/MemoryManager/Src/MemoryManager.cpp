@@ -31,6 +31,17 @@ _LIT( KMemManPanicDes, "MemMan:0"  );
 //  initializing a global memory pool.
 static CMemoryPool *s_pool = 0;
 
+struct cleanupMemoryPool {
+    ~cleanupMemoryPool() {
+    	if(s_pool)
+    		{
+    		delete s_pool;
+    		s_pool = NULL;
+    		}
+    }
+};
+static cleanupMemoryPool deleteMemoryPool;
+
 //-----------------------------------------------------------------------------
 // Pool() - a utility function for accessing the right memory pool
 //-----------------------------------------------------------------------------

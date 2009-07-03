@@ -21,10 +21,8 @@
 #include "WebCannedImages.h"
 #include <data_caging_path_literals.hrh>
 #include "../../bidi.h"
-#include <AknsConstants.h>
 #include <AknsUtils.h>
 #include <AknsItemID.h>
-#include <AknsConstants.h>
 #include <eikenv.h>
 
 #ifdef __BROWSER_SDK

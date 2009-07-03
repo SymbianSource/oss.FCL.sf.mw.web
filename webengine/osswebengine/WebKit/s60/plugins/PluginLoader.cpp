@@ -423,20 +423,20 @@ void CPluginLoader::ConstructL(const TDesC8& aBaseUrl)
 // Method to return transaction Id, using the request url
 // -----------------------------------------------------------------------------
 TInt CPluginLoader::GetTransactionId( const TDesC8& aRequestUrl )
-    {
+  {
   for (TInt i = 0;i < iPluginLoadDataArray->Count(); i++)
+    {
+    CPluginLoadData& loadData = iPluginLoadDataArray->At(i);
+    if (loadData.RequestUrl())
       {
-      CPluginLoadData& loadData = iPluginLoadDataArray->At(i);
-      if (loadData.RequestUrlL())
-          {
-        if (aRequestUrl.Compare(*loadData.RequestUrlL()) == 0)
-            {
-          return loadData.TransactionId();
-            }
-          }
+      if (aRequestUrl.Compare(*loadData.RequestUrl()) == 0)
+        {
+        return loadData.TransactionId();
+        }
       }
-  return KErrNotFound;
     }
+  return KErrNotFound;
+  }
 
 // -----------------------------------------------------------------------------
 // CPluginLoader::GetCompleteError
@@ -553,17 +553,16 @@ TBool CPluginLoader::SaveCompleteError(
 TBool CPluginLoader::SaveResponseHeader( TInt aTrId,
                                          CUrlResponseHeaderInfo& aResponseHeader )
     {
-  for (TInt i = 0;i < iPluginLoadDataArray->Count(); i++)
-      {
-      CPluginLoadData& loadData = iPluginLoadDataArray->At(i);
-    if (loadData.TransactionId() == aTrId)
+    for (TInt i = 0;i < iPluginLoadDataArray->Count(); i++)
         {
-        loadData.SetRequestUrlL(aResponseHeader.RequestUrl());
-        return ETrue;
+        CPluginLoadData& loadData = iPluginLoadDataArray->At(i);
+        if (loadData.TransactionId() == aTrId)
+            {
+            TRAPD( error, loadData.SetRequestUrlL(aResponseHeader.RequestUrl()) );
+            return error == KErrNone;
+            }
         }
-      }
-
-  return EFalse;
+    return EFalse;
     }
 
 // -----------------------------------------------------------------------------

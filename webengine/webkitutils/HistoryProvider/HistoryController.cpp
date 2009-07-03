@@ -56,7 +56,7 @@ EXPORT_C HistoryControllerInterface* HistoryController::initWithCallback( Histor
 
 HistoryController::~HistoryController()
 {
-    clearHistoryList();
+	m_historyStack.ResetAndDestroy();
 }
 
 /**
@@ -229,6 +229,7 @@ void HistoryController::clearHistoryList()
             delete deadEntry;
         }
     }
+
     m_currentIndex  = (m_currentIndex != -1) ? 0: m_currentIndex ;
     m_tempCurrentIndex = m_currentIndex;
     m_historyLoadOffset = 0;

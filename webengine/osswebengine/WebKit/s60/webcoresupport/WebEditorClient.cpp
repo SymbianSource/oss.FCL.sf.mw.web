@@ -287,7 +287,7 @@ bool WebEditorClient::shouldInsertNode(Node*, Range*, EditorInsertAction)
 //-----------------------------------------------------------------------------
 void WebEditorClient::pageDestroyed()
 {
-    notImplemented();
+    delete this;
 }
 
 //-----------------------------------------------------------------------------

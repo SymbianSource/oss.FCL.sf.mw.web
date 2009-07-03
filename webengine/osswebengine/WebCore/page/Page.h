@@ -21,6 +21,8 @@
 #ifndef Page_h
 #define Page_h
 
+#include "config.h"
+
 #include "BackForwardList.h"
 #include "Chrome.h"
 #include "ContextMenuController.h"
@@ -145,6 +147,10 @@ namespace WebCore {
         static HINSTANCE s_instanceHandle;
 #endif
     };
+
+#if PLATFORM(SYMBIAN)
+        void deletePageStaticData();
+#endif
 
 } // namespace WebCore
     

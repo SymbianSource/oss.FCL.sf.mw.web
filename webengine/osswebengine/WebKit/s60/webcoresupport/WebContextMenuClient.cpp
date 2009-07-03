@@ -23,7 +23,11 @@
 
 using namespace WebCore;
 
-void WebContextMenuClient::contextMenuDestroyed()                                           { notImplemented(); }
+void WebContextMenuClient::contextMenuDestroyed()
+{
+    delete this;
+}
+
 PlatformMenuDescription WebContextMenuClient::getCustomMenuFromDefaultItems(ContextMenu*)   { notImplemented(); return 0; }
 void WebContextMenuClient::contextMenuItemSelected(ContextMenuItem*, const ContextMenu*)    { notImplemented(); }
 void WebContextMenuClient::downloadURL(const KURL& url)                                     { notImplemented(); }

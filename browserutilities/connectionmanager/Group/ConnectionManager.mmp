@@ -48,7 +48,11 @@ SOURCE ConnManActiveConnector.cpp
 SOURCE ConnManKeyAbsorber.cpp
 SOURCE ConnManLogger.cpp
 
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 
 LIBRARY     ESock.lib
 LIBRARY     AknNotify.lib

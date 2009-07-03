@@ -37,23 +37,24 @@
 
 namespace WebCore {
 
-CachedScript::CachedScript(DocLoader* dl, const String& url, const String& charset)
+CachedScript::CachedScript(const String& url, const String& charset)
     : CachedResource(url, Script)
     , m_encoding(charset)
+	, m_decodedDataDeletionTimer(this, &CachedScript::decodedDataDeletionTimerFired)
 {
     // It's javascript we want.
     // But some websites think their scripts are <some wrong mimetype here>
     // and refuse to serve them if we only accept application/x-javascript.
     setAccept("*/*");
-    // load the file
-    cache()->loader()->load(dl, this, false);
-    m_loading = true;
+
     if (!m_encoding.isValid())
         m_encoding = Latin1Encoding();
 }
 
 CachedScript::~CachedScript()
 {
+	destroyDecodedData();
+	m_decodedDataDeletionTimer.stop();
 }
 
 void CachedScript::ref(CachedResourceClient* c)
@@ -70,15 +71,25 @@ void CachedScript::setEncoding(const String& chs)
         m_encoding = encoding;
 }
 
+void CachedScript::allReferencesRemoved() 
+{ 
+        destroyDecodedData(); 
+} 
+
+const String& CachedScript::script()  
+{  
+       if (!m_script && m_data) {  
+            m_script = m_encoding.decode(m_data->data(), encodedSize());  
+            setDecodedSize(m_script.length() * sizeof(UChar));  
+        }  
+       m_decodedDataDeletionTimer.startOneShot(0);  
+        return m_script;  
+}  
+
 void CachedScript::data(PassRefPtr<SharedBuffer> data, bool allDataReceived)
 {
-    if (!allDataReceived)
-        return;
-
     m_data = data;
     setEncodedSize(m_data.get() ? m_data->size() : 0);
-    if (m_data.get())
-        m_script = m_encoding.decode(m_data->data(), encodedSize());
     m_loading = false;
     checkNotify();
 }
@@ -99,5 +110,16 @@ void CachedScript::error()
     m_errorOccurred = true;
     checkNotify();
 }
+
+void CachedScript::destroyDecodedData()
+{
+    m_script = String();
+    setDecodedSize(0);
+}
+
+void CachedScript::decodedDataDeletionTimerFired(Timer<CachedScript>*)  
+{  
+    destroyDecodedData();  
+} 
 
 }

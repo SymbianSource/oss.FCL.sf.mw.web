@@ -140,8 +140,11 @@ void WebFrameLoaderClient::makeRepresentation(DocumentLoader* docLoader)
     if (isWMLContent(m_response.mimeType())) {
         // call the WmlDispatcher Headers routine to set the WML flag
         if (! m_WmlContentListener) {
-            m_WmlContentListener = CWmlDispatcher::NewL(brctl(m_webFrame), core(m_webFrame) );
-            brctl(m_webFrame)->setWmlDispatcher(m_WmlContentListener);
+            TRAPD(err, m_WmlContentListener = CWmlDispatcher::NewL(brctl(m_webFrame), core(m_webFrame) ));
+            if((err == KErrNone) && (m_WmlContentListener != NULL))
+                {
+                brctl(m_webFrame)->setWmlDispatcher(m_WmlContentListener);
+                }
         }
         TRAPD(err,m_WmlContentListener->HeadersL( 0, m_response ));
     }
@@ -160,7 +163,7 @@ void WebFrameLoaderClient::makeRepresentation(DocumentLoader* docLoader)
         }
 
         if (!core(m_webFrame)->ownerElement()) {
-            brctl(m_webFrame)->settings()->setTabbedNavigation(!(brctl(m_webFrame)->capabilities()&TBrCtlDefs::ECapabilityCursorNavigation));
+            brctl(m_webFrame)->settings()->setNavigationType((brctl(m_webFrame)->capabilities()&TBrCtlDefs::ECapabilityCursorNavigation) ? SettingsContainer::NavigationTypeCursor : SettingsContainer::NavigationTypeTabbed);
             StaticObjectsContainer::instance()->webCursor()->cursorUpdate(true);
             m_webFrame->frameView()->topView()->tabbedNavigation()->clear();
 		}        
@@ -270,10 +273,12 @@ void WebFrameLoaderClient::download(ResourceHandle* handle, const ResourceReques
         [download _setOriginatingURL:originalURL];
     */
     StaticObjectsContainer::instance()->resourceLoaderDelegate()->download(handle, request, response);
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventNewUrlContentArrived, 0, 0 ); // must send this for progress bar to go away
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventUrlLoadingFinished, 0, 0 );
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventContentFinished, 0, 0 );
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventLoadFinished, 0, 0 );
+    );
 }
 
 void WebFrameLoaderClient::assignIdentifierToInitialRequest(unsigned long identifier, DocumentLoader*, const ResourceRequest&)
@@ -535,7 +540,9 @@ void WebFrameLoaderClient::dispatchDidReceiveIcon()
 
     [webView _didChangeValueForKey:_WebMainFrameIconKey];
     */
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventFaviconAvailable, 0, 0 );
+    );
     notImplemented(); 
 }
 
@@ -551,7 +558,9 @@ void WebFrameLoaderClient::dispatchDidStartProvisionalLoad()
         implementations.didStartProvisionalLoadForFrameFunc(frameLoadDelegate, @selector(webView:didStartProvisionalLoadForFrame:), webView, m_webFrame.get());
     }
     */
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventNewContentStart, 0, 0 );
+    );
     notImplemented(); 
 }
 
@@ -565,7 +574,9 @@ void WebFrameLoaderClient::dispatchDidReceiveTitle(const String& title)
         implementations.didReceiveTitleForFrameFunc(frameLoadDelegate, @selector(webView:didReceiveTitle:forFrame:), webView, title, m_webFrame.get());
     }
     */
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventTitleAvailable, 0, 0 );
+    );
     notImplemented(); 
 }
 
@@ -584,7 +595,9 @@ void WebFrameLoaderClient::dispatchDidCommitLoad()
         implementations.didCommitLoadForFrameFunc(frameLoadDelegate, @selector(webView:didCommitLoadForFrame:), webView, m_webFrame.get());
     }
     */
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventTitleAvailable, 0, 0 );
+    );
 }
 
 void WebFrameLoaderClient::dispatchDidFailProvisionalLoad(const ResourceError& error)
@@ -604,7 +617,9 @@ void WebFrameLoaderClient::dispatchDidFailProvisionalLoad(const ResourceError& e
         m_WmlContentListener->HandleError(0,error.errorCode());
     }
     //
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventLoadError, 0, 0 );
+    );
     notImplemented(); 
 }
 
@@ -627,7 +642,9 @@ void WebFrameLoaderClient::dispatchDidFailLoad(const ResourceError& error)
         m_WmlContentListener->HandleError(0,error.errorCode());
     }
     //
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventLoadError, 0, 0 );
+    );
     m_webFrame->frameView()->topView()->pageLoadFinished();
     notImplemented(); 
 }
@@ -672,7 +689,9 @@ void WebFrameLoaderClient::dispatchDidFirstLayout()
         implementations.didFirstLayoutInFrameFunc(frameLoadDelegate, @selector(webView:didFirstLayoutInFrame:), webView, m_webFrame.get());
     }
     */
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventNewContentDisplayed, 0, 0 );
+    );
 }
 
 Frame* WebFrameLoaderClient::dispatchCreatePage()
@@ -834,7 +853,9 @@ void WebFrameLoaderClient::didChangeEstimatedProgress()
 void WebFrameLoaderClient::postProgressStartedNotification() 
 {
     //    [[NSNotificationCenter defaultCenter] postNotificationName:WebViewProgressStartedNotification object:getWebView(m_webFrame.get())];
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventUrlLoadingStart, 0, 0 );
+    );
     total_bytes = 0;
 #ifdef PERF_REGRESSION_LOG
         wkDebug()<<"Load started"<<mem<<flush;
@@ -848,8 +869,10 @@ void WebFrameLoaderClient::postProgressEstimateChangedNotification()
 #endif // PERF_REGRESSION_LOG
     //    [[NSNotificationCenter defaultCenter] postNotificationName:WebViewProgressEstimateChangedNotification object:getWebView(m_webFrame.get())];
     double estimatedProgress = core(m_webFrame)->page()->progress()->estimatedProgress();
+    TRAP_IGNORE(
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventNewUrlContentArrived, total_bytes / estimatedProgress, 0 );
     brctl(m_webFrame)->HandleBrowserLoadEventL(TBrCtlDefs::EEventMoreUrlContentArrived, total_bytes, 0 );
+    );
 }
 
 void WebFrameLoaderClient::postProgressFinishedNotification() 
@@ -907,7 +930,9 @@ void WebFrameLoaderClient::didChangeTitle(DocumentLoader*)
 void WebFrameLoaderClient::committedLoad(DocumentLoader* loader, const char* data, int length) 
 { 
     if (brctl(m_webFrame)->wmlMode()) {
+        TRAP_IGNORE(
         m_WmlContentListener->ResponseL( data, length );
+        );
         return;
     }
     m_webFrame->bridge()->receivedData(data, length, m_response.textEncodingName());
@@ -1116,7 +1141,9 @@ String WebFrameLoaderClient::generatedMIMETypeForURLScheme(const String& URLSche
 void WebFrameLoaderClient::frameLoadCompleted()
 {
     if (brctl(m_webFrame)->wmlMode()) {
+        TRAP_IGNORE(
         m_WmlContentListener->CompleteL( 0, 0 );
+        );
         return;
     }
     /*
@@ -1373,8 +1400,9 @@ String WebFrameLoaderClient::overrideMediaType() const
 
 void WebFrameLoaderClient::windowObjectCleared() const
 {
-    //    [m_webFrame->_private->bridge windowObjectCleared];
-    notImplemented(); 
+    if (m_webFrame && !m_webFrame->parentFrame()) {
+        m_webFrame->frameView()->topView()->windowObjectCleared();
+    }
 }
 
 void WebFrameLoaderClient::didPerformFirstNavigation() const

@@ -54,3 +54,10 @@ xmlGlobalStatePtr xeGetTLS()
 {
     return STATIC_CAST(xmlGlobalStatePtr, Dll::Tls());
 }
+
+void xecleanTLS()
+{
+     xmlGlobalStatePtr gs = xeGetTLS();
+     delete gs;
+     xeSetTLS(NULL);
+}

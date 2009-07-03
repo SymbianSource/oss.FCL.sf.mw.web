@@ -110,45 +110,50 @@ class CUserAgent : public CBase
 		
 		bool IsUAStringEmpty(const TPtr &aUAString);
 		TInt GetCenRepFragment(TUserAgentStringKeys aFragmentType, TDes& fragmentValue);
-		void GetFragmentsL();
-		void ReadAndCreateUAStringL(TPtr &aUAStringPtr);
-		
-		
+    void GetFragmentsL();
+    void GetMMSFragmentsL();
+    void ReadAndCreateUAStringL(TPtr &aUAStringPtr);
+        
+        
 #ifdef BRDO_BROWSER_50_FF
-		void GetFragmentsFromOSExtL();
-		TInt GetOSExtFragment(TUserAgentStringKeys aFragmentType, TDes& fragmentValue, RFs& fs);
-		/**
+        void GetFragmentsFromOSExtL();
+        TInt GetOSExtFragment(TUserAgentStringKeys aFragmentType, TDes& fragmentValue, RFs& fs);
+        /**
         * Gets the Version Values from osext layer / central repository
         */
-		TInt GetOSVersion(TDes& aValue, RFs& aFs);
-		TInt GetS60Version(TDes& aValue, RFs& aFs);
-		TInt GetVersion(const SysVersionInfo::TVersionInfoType aType, TDes& aValue);
-		TInt GetHardwareVersion(TDes& aHardwareType, RFs& aFs);
-#endif //#ifdef BRDO_BROWSER_50_FF		
+        TInt GetOSVersion(TDes& aValue, RFs& aFs);
+        TInt GetS60Version(TDes& aValue, RFs& aFs);
+        TInt GetVersion(const SysVersionInfo::TVersionInfoType aType, TDes& aValue);
+        TInt GetHardwareVersion(TDes& aHardwareType, RFs& aFs);
+#endif //#ifdef BRDO_BROWSER_50_FF      
 
-		void GetBrowserVersionL();
-		void GetBrowserNameAndVersionL();
-		
-	private:		//data
+        void GetBrowserVersionL();
+        void GetBrowserNameAndVersionL();
+        
+    private:        //data
 
-	 	CRepository* iRepository;
+        CRepository* iRepository;
 
-	 	TBool	iUAStrQueried;
-	 	TBool	iMMSUAStrQueried;
-	 	TBool	iURLUAProfQueried;
+        TBool   iUAStrQueried;
+        TBool   iMMSUAStrQueried;
+        TBool   iURLUAProfQueried;
 
-		HBufC*	iBrowserCenrepStr;
-		HBufC*	iMMSCenrepStr;
-		HBufC*	iUAProfURL;
-		HBufC*	iUAProfURL3G;
-		
-		TBuf<64> iSymbianVersion;
-		TBuf<64> iS60Version;
-		TBuf<64> iMIDPCLDCVersion;
-		TBuf<64> iHardwareType;
+        HBufC*  iBrowserCenrepStr;
+        HBufC*  iMMSCenrepStr;
+        HBufC*  iUAProfURL;
+        HBufC*  iUAProfURL3G;
+        
+        TBuf<64> iSymbianVersion;
+        TBuf<64> iS60Version;
+        TBuf<64> iMIDPCLDCVersion;
+        TBuf<64> iHardwareType;
+        TBuf<64> iMMSS60Version;
+        TBuf<64> iMMSMIDPVersion;
+        TBuf<64> iMMSCLDCVersion;
+        TBuf<64> iMMSHardwareType;
 
-		HBufC*	iBrowserVersionStr;
-		HBufC*	iBrowserNameAndVersionStr;
+        HBufC*  iBrowserVersionStr;
+        HBufC*  iBrowserNameAndVersionStr;
 
    };
 

@@ -16,8 +16,9 @@
 */
 
 #include <platform_paths.hrh>
-
 #include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+
+#ifdef BRDO_MULTIPART_PARSER_FF
 
 PRJ_PLATFORMS
 DEFAULT
@@ -28,3 +29,4 @@ PRJ_EXPORTS
 PRJ_MMPFILES
 ./MultipartParser.mmp
 
+#endif

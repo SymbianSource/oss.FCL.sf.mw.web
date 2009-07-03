@@ -44,6 +44,7 @@ class JSWidgetFunc : public JSObject
             performTransition,
             setPreferenceForKey,
             setNavigationMode,
+            setNavigationType,
             setDisplayLandscape,
             setDisplayPortrait
             };

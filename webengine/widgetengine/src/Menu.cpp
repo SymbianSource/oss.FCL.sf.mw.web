@@ -60,9 +60,9 @@ const ClassInfo JSMenu::info = { "JSMenu", 0, &MenuTable, 0 };
 //
 //
 // ----------------------------------------------------------------------------
-JSMenu::JSMenu(MJSMenuCallbacks* aMenuCallbacks)
+JSMenu::JSMenu(MJSMenuCallbacks* aMenuCallbacks, MJSObjectProtector* aProtector)
         : JSObject(), 
-        d(new MenuPrivate(aMenuCallbacks,0,0))
+        d(new MenuPrivate(aMenuCallbacks, aProtector, 0,0))
 {  
 }
 
@@ -114,7 +114,7 @@ void JSMenu::setRightKeyCallback( ExecState *exec, JSValue *value )
     
     d->m_rightKeyCallback = NULL;
     if ( value && !value->isNull() ) {        
-        d->m_rightKeyCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec());
+        d->m_rightKeyCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec(), d->m_protector);
     }
 }
 
@@ -131,7 +131,7 @@ void JSMenu::setLeftKeyCallback( ExecState *exec, JSValue *value )
     
     d->m_leftKeyCallback = NULL;
     if ( value && !value->isNull() ) {        
-        d->m_leftKeyCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec());
+        d->m_leftKeyCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec(), d->m_protector);
     }
 }
 
@@ -244,7 +244,7 @@ void JSMenu::put(ExecState *exec, const Identifier &propertyName, JSValue *value
             case OnShow: {
                 delete d->m_onShowCallback;
                 d->m_onShowCallback = NULL;
-                d->m_onShowCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec());
+                d->m_onShowCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec(), d->m_protector);
                 break;
             }
             default:

@@ -49,6 +49,7 @@ class MDeviceBridge
         inline virtual void* Device( void* exec ) = 0;
         inline virtual ~MDeviceBridge() {};
         inline virtual void SetUid( const TUint& aValue) = 0;
+        virtual void Clear() = 0;
     };
 
 /**
@@ -94,6 +95,7 @@ NONSHARABLE_CLASS( TDeviceBridge ): public MDeviceBridge
         * @return none
         */
         void SetUid( const TUint& aValue);
+        void Clear();
 
     private:
 

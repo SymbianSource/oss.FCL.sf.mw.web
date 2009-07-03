@@ -30,9 +30,8 @@
 
 
 #define KPlaceHolderMozillaVer		_L("Mozilla/5.0")
-#define KPlaceHolderSecurity		_L("U;")
-#define KPlaceHolderComponent		_L("AppleWebKit/525 (KHTML, like Gecko) Version/3.0 Safari/525")
-#define KPlaceHolderBrowserName		_L("WicKed")
+#define KPlaceHolderComponent		_L("AppleWebKit/525 (KHTML, like Gecko) Version/3.0")
+#define KPlaceHolderBrowserName		_L("BrowserNG")
 
 #define KPlaceHolderSlash           _L("/")
 #define KPlaceHolderSymbianOS       _L("SymbianOS")
@@ -199,6 +198,7 @@ void CUserAgent::ReadUserAgentStringL()
 	{
 	LOG_ENTERFN("CUserAgent::ReadUserAgentStringL()");
 	TInt retCode (KErrNotReady);
+	TBuf<64> ignoreConfig(0);
 
 	// If the string queried already, dont read again
 	if(iUAStrQueried)
@@ -215,33 +215,35 @@ void CUserAgent::ReadUserAgentStringL()
 		User::Leave(KErrNotReady);
 		}
 	
-	/* ---------------- Read default UA string ---------------- */
-	LOG_WRITE("Reading default UA string from cenrep.");
 	if(!iBrowserCenrepStr)
 		{
 		iBrowserCenrepStr = HBufC::NewL(KMaxUserAgentStringLength);	
 		}
 
 	TPtr tempPtr = iBrowserCenrepStr->Des();
-
-	retCode = iRepository->Get(EDefaultUserAgentString, tempPtr);
-	if(retCode != KErrNone)
-		{
-		LOG_WRITE_FORMAT("Error: Reading default UA string from cenrep failed! (%d)",retCode);
-		LOG_LEAVEFN("CUserAgent::ReadUserAgentDataL()");
-		User::Leave(retCode);
+	retCode = iRepository->Get(KWebUtilsIgnoreConfig, ignoreConfig);
+	if(retCode != KErrNone || ignoreConfig == _L("0"))
+		{/* ---------------- Read default UA string ---------------- */
+			LOG_WRITE("Reading default UA string from cenrep.");
+			
+			retCode = iRepository->Get(EDefaultUserAgentString, tempPtr);
+			if(retCode != KErrNone)
+				{
+				LOG_WRITE_FORMAT("Error: Reading default UA string from cenrep failed! (%d)",retCode);
+				LOG_LEAVEFN("CUserAgent::ReadUserAgentDataL()");
+				User::Leave(retCode);
+				}
+		
+			if(!IsUAStringEmpty(tempPtr))
+				{
+				LOG_WRITE("Successfully read default UA string from cenrep, can use this as UA string");
+		
+				iUAStrQueried = TRUE;
+		
+				LOG_LEAVEFN("CUserAgent::ReadUserAgentDataL()");
+				return;
+				}
 		}
-
-	if(!IsUAStringEmpty(tempPtr))
-		{
-		LOG_WRITE("Successfully read default UA string from cenrep, can use this as UA string");
-
-		iUAStrQueried = TRUE;
-
-		LOG_LEAVEFN("CUserAgent::ReadUserAgentDataL()");
-		return;
-		}
-
 	ReadAndCreateUAStringL(tempPtr);	
 	LOG_WRITE("Successfully created a new UA string.");
 
@@ -269,6 +271,9 @@ bool CUserAgent::IsUAStringEmpty(const TPtr &aUAString)
 
 void CUserAgent::ReadMMSUserAgentStringL()
 	{
+	
+	//  MMS UA Format: <HardwareType>; <Series60Version> <MIDP_CLDC Version>
+	
 	LOG_ENTERFN("CUserAgent::ReadMMSUserAgentStringL()");
 	TInt retCode (KErrNotReady);
 
@@ -315,13 +320,27 @@ void CUserAgent::ReadMMSUserAgentStringL()
 		}
 
 	/* ---------------- Read all variant fragments and build a UA string ---------------- */
-	ReadAndCreateUAStringL(tempPtr);
+	GetMMSFragmentsL();
+			tempPtr.Append(iMMSHardwareType);
+			tempPtr.Append(KSpaceChar);
+			tempPtr.Append(iMMSS60Version);
+			tempPtr.Append(KSpaceChar);
+			tempPtr.Append(iMMSMIDPVersion);
+			tempPtr.Append(KSpaceChar);
+			tempPtr.Append(iMMSCLDCVersion);
+				
+	if(!IsUAStringEmpty(tempPtr))
+		{	
+			LOG_WRITE("Successfully created a new MMS UA string.");
+		}
+		else
+		{
+			LOG_WRITE("Failed to create a new MMS UA string...Exiting anyway");
+		}
 	
-	LOG_WRITE("Successfully created a new MMS UA string.");
-
 	iMMSUAStrQueried = TRUE;
-    LOG_LEAVEFN("CUserAgent::ReadMMSUserAgentStringL()");
-    return;
+  LOG_LEAVEFN("CUserAgent::ReadMMSUserAgentStringL()");
+  return;
 }
 
 // ---------------------------------------------------------
@@ -346,35 +365,37 @@ TInt CUserAgent::GetCenRepFragment(TUserAgentStringKeys aFragmentType, TDes& fra
 // ---------------------------------------------------------
 void CUserAgent::GetFragmentsL()
 	{
-
-#ifdef BRDO_BROWSER_50_FF
-	TInt osExtFailed(0);
-	TRAP(osExtFailed, GetFragmentsFromOSExtL());
-#endif
-
 	if(iSymbianVersion.Length() <= 0)
 		{
-		LOG_WRITE("Reading SymbianVersion from osext extended api or cenrep.");
-		User::LeaveIfError(GetCenRepFragment(ESymbianOSVersion, iSymbianVersion));
+		LOG_WRITE("Reading SymbianVersion from cenrep.");
+		GetCenRepFragment(ESymbianOSVersion, iSymbianVersion);
 		}
-
 	if(iS60Version.Length() <= 0)
 		{
-		LOG_WRITE("Reading S60Version from osext extended api or cenrep.");
-		User::LeaveIfError(GetCenRepFragment(ES60Version, iS60Version));
+		LOG_WRITE("Reading S60Version from cenrep.");
+		GetCenRepFragment(ES60Version, iS60Version);
 		}
-
 	if(iHardwareType.Length() <= 0)
 		{
-		LOG_WRITE("Reading HardwareVersion from osext extended api or cenrep.");
-		User::LeaveIfError(GetCenRepFragment(EHardwareType, iHardwareType));
+		LOG_WRITE("Reading HardwareVersion from cenrep.");
+		GetCenRepFragment(EHardwareType, iHardwareType);
+		if(iHardwareType.Length() > 0)
+			{ 		iHardwareType.Append(KPlaceHolderSemiColon); 
+			}
 		}
-		
 	if(iMIDPCLDCVersion.Length() <= 0)
 		{
-    	LOG_WRITE("Reading MIDPCLDCVersion from osext extended api or cenrep.");
-    	User::LeaveIfError(GetCenRepFragment(EMIDP_CLDCVersion, iMIDPCLDCVersion));
+    	LOG_WRITE("Reading MIDPCLDCVersion from cenrep.");
+    	GetCenRepFragment(EMIDP_CLDCVersion, iMIDPCLDCVersion);
 		}
+	//Only for 5.0 and above as 3.2 does not support OSExt APIs.
+	#ifdef BRDO_BROWSER_50_FF
+		if(iSymbianVersion.Length() <= 0 || iS60Version.Length() <= 0 || iHardwareType.Length() <= 0)
+		{
+			LOG_WRITE("Read from CenRep Failed... trying osext extended api");
+			GetFragmentsFromOSExtL();
+		}
+	#endif
 	}
 
 // ---------------------------------------------------------
@@ -385,36 +406,33 @@ void CUserAgent::ReadAndCreateUAStringL(TPtr &aUAStringPtr)
 	{
 	GetFragmentsL();
 
-	//
-	// Mozilla/5.0 (<Symbian Version> U; [en]; <Series60Version> <HardwareType> <MIDP_CLDC Version> ) AppleWebKit/413 (KHTML, like Gecko) Safari/413
-	//
-	
+	// Mozilla/5.0 (<Symbian Version> <Series60Version> <HardwareType> <MIDP_CLDC Version> ) AppleWebKit/413 (KHTML, like Gecko) BrowserName/Version
+		
 	aUAStringPtr.Copy(KPlaceHolderMozillaVer);
 	aUAStringPtr.Append(KSpaceChar);
-	
-	aUAStringPtr.Append(KPlaceHolderOpen);
-	
-	aUAStringPtr.Append(iSymbianVersion);
+	if(iSymbianVersion.Length() > 0 || iS60Version.Length() > 0 || iHardwareType.Length() > 0 || iMIDPCLDCVersion.Length() > 0)
+		{
+			aUAStringPtr.Append(KPlaceHolderOpen);
+			
+			aUAStringPtr.Append(iSymbianVersion);
+			aUAStringPtr.Append(KSpaceChar);
+			
+			aUAStringPtr.Append(iS60Version);
+			aUAStringPtr.Append(KSpaceChar);
+			
+			aUAStringPtr.Append(iHardwareType);
+			aUAStringPtr.Append(KSpaceChar);
+			
+			aUAStringPtr.Append(iMIDPCLDCVersion);
+			aUAStringPtr.Append(KSpaceChar);
+			
+			aUAStringPtr.Append(KPlaceHolderClose);
+		}
 	aUAStringPtr.Append(KSpaceChar);
-	
-	aUAStringPtr.Append(KPlaceHolderSecurity);
-	aUAStringPtr.Append(KSpaceChar);
-	
-	aUAStringPtr.Append(iS60Version);
-	aUAStringPtr.Append(KSpaceChar);
-	
-	aUAStringPtr.Append(iHardwareType);
-	
-	aUAStringPtr.Append(KSpaceChar);
-	aUAStringPtr.Append(iMIDPCLDCVersion);
-	aUAStringPtr.Append(KSpaceChar);
-	aUAStringPtr.Append(KPlaceHolderClose);
+	aUAStringPtr.Append(KPlaceHolderComponent);	
 	
 	aUAStringPtr.Append(KSpaceChar);
 	aUAStringPtr.Append(iBrowserNameAndVersionStr->Des());
-
-	aUAStringPtr.Append(KSpaceChar);
-	aUAStringPtr.Append(KPlaceHolderComponent);
 	}
 
 // ---------------------------------------------------------
@@ -712,11 +730,63 @@ void CUserAgent::GetBrowserVersionL()
 // -------------------------------------------------------------------------------
 void CUserAgent::GetBrowserNameAndVersionL()
 {
+  TInt ret(0);
+  TBuf<64> BrowserName(0);
 	TInt length = KMaxBrowserVersionStringLength  + KMaxBrowserNameLength;
 	iBrowserNameAndVersionStr = HBufC::NewL( length);
-
-	iBrowserNameAndVersionStr->Des().Append(KPlaceHolderBrowserName);			
+	
+	ret = iRepository->Get(KWebUtilsBrowserName, BrowserName);
+	if(ret != KErrNone)
+	{		
+		LOG_WRITE("Error: Reading default Browser Name from cenrep failed!");
+		iBrowserNameAndVersionStr->Des().Append(KPlaceHolderBrowserName);	
+	}
+	else
+	{
+		iBrowserNameAndVersionStr->Des().Append(BrowserName);		
+	}
 	iBrowserNameAndVersionStr->Des().Append(KPlaceHolderSlash);
 	iBrowserNameAndVersionStr->Des().Append( *iBrowserVersionStr );
 }
+
+// ---------------------------------------------------------
+// CUserAgent::GetFragmentsL()
+// Gets all required fragments from OSExt APIs/CenRep
+// ---------------------------------------------------------
+void CUserAgent::GetMMSFragmentsL()
+    {
+    if(iMMSHardwareType.Length() <= 0)
+        {
+        LOG_WRITE("Reading HardwareVersion from cenrep.");
+        iRepository->Get(KWebUtilsMMSUsrAg2, iMMSHardwareType);
+        if(iMMSHardwareType.Length() > 0)
+            {       iMMSHardwareType.Append(KPlaceHolderSemiColon); 
+            }
+        }
+    if(iMMSS60Version.Length() <= 0)
+        {
+        LOG_WRITE("Reading S60Version from cenrep.");
+        iRepository->Get(KWebUtilsMMSUsrAg3, iMMSS60Version);
+        }
+    if(iMMSMIDPVersion.Length() <= 0)
+        {
+        LOG_WRITE("Reading MIDPCLDCVersion from cenrep.");
+        iRepository->Get(KWebUtilsMMSUsrAg4, iMMSMIDPVersion);
+        }
+    if(iMMSCLDCVersion.Length() <= 0)
+        {
+        LOG_WRITE("Reading MIDPCLDCVersion from cenrep.");
+        iRepository->Get(KWebUtilsMMSUsrAg5, iMMSCLDCVersion);
+        }
+    //Only for 5.0 and above as 3.2 does not support OSExt APIs.
+    #ifdef BRDO_BROWSER_50_FF
+        if(iMMSS60Version.Length() <= 0 || iMMSHardwareType.Length() <= 0)
+        {
+            LOG_WRITE("Read from CenRep Failed... trying osext extended api");
+            GetFragmentsFromOSExtL();
+            iMMSHardwareType = iHardwareType;
+            iMMSS60Version = iS60Version;
+        }
+    #endif
+    }
 // End of file

@@ -34,6 +34,7 @@ namespace WebCore {
 
 class Cache;
 class CachedResourceClient;
+class CacheHandleBase;
 class DocLoader;
 class Request;
 
@@ -64,8 +65,10 @@ public:
         Cached       // regular case
     };
 
-    CachedResource(const String& URL, Type, bool forCache = true, bool sendResourceLoadCallbacks = false);
+    CachedResource(const String& URL, Type);
     virtual ~CachedResource();
+	virtual void load(DocLoader* docLoader)  { load(docLoader, false, false, true); }
+	void load(DocLoader*, bool incremental, bool skipCanLoadCheck, bool sendResourceLoadCallbacks);
 
     virtual void setEncoding(const String&) { }
     virtual void data(PassRefPtr<SharedBuffer> data, bool allDataReceived) = 0;
@@ -87,7 +90,7 @@ public:
     PreloadResult preloadResult() const { return m_preloadResult; }
     void setRequestedFromNetworkingLayer() { m_requestedFromNetworkingLayer = true; }
 #endif
-    virtual void allReferencesRemoved() {};
+    virtual void allReferencesRemoved() {}
 
     unsigned count() const { return m_clients.size(); }
 
@@ -144,7 +147,7 @@ public:
     bool treatAsLocal() const { return m_shouldTreatAsLocal; }
     bool sendResourceLoadCallbacks() const { return m_sendResourceLoadCallbacks; }
     
-    virtual void destroyDecodedData() {};
+    virtual void destroyDecodedData() {}
 
     void setDocLoader(DocLoader* docLoader) { m_docLoader = docLoader; }
 #if PRELOAD_SCANNER_ENABLED      

@@ -15,6 +15,7 @@
 *
 */
 
+#include "../browser_platform_api/inc/Browser_platform_variant.hrh"
 
 
 #include "../aiw_browser_provider_api/group/bld.inf"
@@ -26,7 +27,9 @@
 #include "../download_mgr_client_api_extn/group/bld.inf"
 #include "../feeds_engine_api/group/bld.inf"
 #include "../launcher_api/group/bld.inf"
+#ifdef BRDO_MULTIPART_PARSER_FF
 #include "../multipart_parser_api/group/bld.inf"
+#endif
 #include "../recent_url_store_api/group/bld.inf"
 #include "../rt_gesturehelper_api/group/bld.inf"
 #include "../scheme_handler_plugin_api/group/bld.inf"

@@ -149,8 +149,10 @@ void HistoryEntry::storeThumbnail(const CFbsBitmap* thumbnail, const TRect& area
     }
     if (m_thumbnailBuf) {
         RBufWriteStream stream(*m_thumbnailBuf);
+		CleanupClosePushL(stream);
         TRAPD(err, thumbnail->ExternalizeRectangleL(stream, area));
         stream.Close();
+		CleanupStack::PopAndDestroy(); //stream
         if (err) {
             delete m_thumbnailBuf;
             m_thumbnailBuf = 0;

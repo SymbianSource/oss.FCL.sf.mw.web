@@ -31,5 +31,8 @@ DragSourceAction WebDragClient::dragSourceActionMaskForPoint(const IntPoint& win
 void WebDragClient::startDrag(DragImageRef dragImage, const IntPoint& dragImageOrigin, const IntPoint& eventPos, Clipboard*, Frame*, bool linkDrag) { notImplemented(); }
 DragImageRef WebDragClient::createDragImageForLink(KURL&, const String& label, Frame*)          { notImplemented(); return 0; }
 
-void WebDragClient::dragControllerDestroyed()                                                   { notImplemented(); }
+void WebDragClient::dragControllerDestroyed()
+{
+    delete this;
+}
 

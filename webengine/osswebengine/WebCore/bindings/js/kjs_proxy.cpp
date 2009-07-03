@@ -54,6 +54,7 @@ KJSProxy::~KJSProxy()
     ASSERT(!m_script || !m_script->context());
     
     if (m_script) {
+        ((JSDOMWindow*)m_globalObject)->clear();
         m_script = 0;
     
         // It's likely that destroying the interpreter has created a lot of garbage.
@@ -151,10 +152,10 @@ void KJSProxy::initScriptIfNeeded()
 
   // Build the global object - which is a Window instance
   JSLock lock;
-  JSObject* globalObject = new JSDOMWindow(m_frame->domWindow());
-
+  m_globalObject = new JSDOMWindow(m_frame->domWindow());
+  
   // Create a KJS interpreter for this frame
-  m_script = new ScriptInterpreter(globalObject, m_frame);
+  m_script = new ScriptInterpreter(m_globalObject, m_frame);
 
   String userAgent = m_frame->loader()->userAgent(m_frame->document() ? m_frame->document()->URL() : KURL());
   if (userAgent.find("Microsoft") >= 0 || userAgent.find("MSIE") >= 0)

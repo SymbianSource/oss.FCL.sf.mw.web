@@ -24,7 +24,9 @@
 #include <e32base.h>
 #include <coedef.h>
 #include <w32std.h>
-#include <AknWsEventObserver.h>
+#include "WebSprite.h"
+#include "WebCannedImages.h"
+
 // MACROS
 
 // FORWARD DECLARATIONS
@@ -32,7 +34,8 @@ class WebView;
 class WebFrame;
 
 // CLASS DECLARATION
-class WebPageFullScreenHandler: public CBase, public MAknWsEventObserver {
+class WebPageFullScreenHandler: public CWebSprite  
+{
 public:  // Constructor and destructor
 
     /**
@@ -55,14 +58,10 @@ private:  // Constructors
     /**
      * By default Symbian 2nd phase constructor is private.
      **/
-    void constructL();
+    void ConstructL();
     
-	TBool HitRegionContains(const TPoint& aPoint);
-    void HandleWsEventL(const TWsEvent& aEvent,CCoeControl* aDestination);
-    void AddWsObserverToControl();
-    void constructSprite();
-    void destructSprite();
-    
+    TPoint CalculatePosition();
+
 public: // New functions
 
 
@@ -94,17 +93,14 @@ public: // New functions
      **/
     void SizeChanged(void);
     
-
+    void HandlePointerEventL(const TPointerEvent& aPointerEvent);
 private:   
 
     // Pointer to owning view
 
     WebView*                m_webView;     // not owned
-    CAknWsEventMonitor*     m_eventMonitor; // not owned
-    RWsSprite               m_sprite;
-    TBool                   m_spriteVisible;
-    TBool                   m_tappedOnSprite;
-    TPoint                  m_pos;
+    TBool                   m_isTouchDown;
+    TCannedImageData        m_buttonIcon;
 };
 
 #endif      //WEBPAGEFULLSCREENHANDLER_H

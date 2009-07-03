@@ -80,12 +80,26 @@ static const int preferredScriptCheckTimeInterval = 1000;
 Interpreter* Interpreter::s_hook = 0;
     
 typedef HashMap<JSObject*, Interpreter*> InterpreterMap;
+static InterpreterMap* map = 0;
 static inline InterpreterMap &interpreterMap()
 {
-    static InterpreterMap* map = new InterpreterMap;
+    if(!map )
+     map = new InterpreterMap;
     return* map;
 }
     
+struct cleanupInterpreterMap {
+    ~cleanupInterpreterMap() {
+    	if(map)
+    		{
+    		map->clear();
+    		delete map;
+    		map = NULL;
+    		}
+    }
+};
+static cleanupInterpreterMap deleteInterpreterMap;
+
 EXPORT
 Interpreter::Interpreter(JSObject* globalObject)
     : m_globalExec(this, 0)
@@ -145,7 +159,11 @@ Interpreter::~Interpreter()
         // This was the last interpreter
         s_hook = 0;
     }
+
     interpreterMap().remove(m_globalObject);
+
+    // It's likely that destroying the interpreter has created a lot of garbage. 
+    Collector::collect(); 
 }
 
 EXPORT

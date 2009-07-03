@@ -27,6 +27,7 @@
 #ifndef RenderStyle_h
 #define RenderStyle_h
 
+#include "config.h"
 /*
  * WARNING:
  * --------
@@ -1911,9 +1912,11 @@ public:
     static bool initialVisuallyOrdered() { return false; }
     static float initialTextStrokeWidth() { return 0; }
     static unsigned short initialColumnCount() { return 1; }
+
 #if PLATFORM(SYMBIAN)
     static const AtomicString& initialWapInputFormat() { return nullAtom; }
     static bool initialWapInputRequired() { return false; }
+    static void deleteDefaultRenderStyle();
 #endif
 
     // Keep these at the end.

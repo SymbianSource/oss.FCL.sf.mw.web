@@ -81,6 +81,29 @@ NONSHARABLE_CLASS(CFeedsDatabase): public CBase
         TBool FeedIdFromUrlL(const TDesC& aFeedUrl, TInt aFolderListId, TInt& aFeedId);
 
         /**
+        * Returns the feed id of the feed with the given entry id.
+        *
+        * @since 7.1
+        * @param aEntryId The feed's folder item id
+        * @param aFolderListId The folder list ID of the feed.
+        * @param aFeedId The resulting FolderListTable feed id.
+        * @return ETrue if the feed was resolved.
+        */
+
+        TBool CFeedsDatabase::FeedIdFromEntryId(const TInt& aEntryId, TInt aFolderListId, TInt& aFeedId);
+
+        /**
+        * Returns the feed id of the entry id with the given feed.
+        *
+        * @since 7.1
+        * @param aFeedId The resulting FolderListTable feed id.
+        * @param aFolderListId The folder list ID of the feed.
+        * @param aEntryId The feed's folder item id
+        * @return ETrue if the feed was resolved.
+        */
+        TBool CFeedsDatabase::EntryIdFromFeedId(const TInt& aFeedId, TInt aFolderListId, TInt& aEntryId);
+
+        /**
         * Return the folder list ID of the feed with the given feed-id.
         *
         * @since 3.2
@@ -1007,11 +1030,16 @@ NONSHARABLE_CLASS(CFeedsDatabase): public CBase
         * @return void
         */
         void GenerateNewFeedFolderTitleL(
-										const TInt &aFolderListId, 
-										const TInt &aParentEntryId, 
-										const TDesC& aTitle, 
-										TDes& aNewFeedTitle
-									);
+                                        const TInt &aFolderListId,
+                                        const TInt &aParentEntryId,
+                                        const TDesC& aTitle,
+                                        TDes& aNewFeedTitle
+                                        );
+
+        inline void SetIsFolderTableUpdateNeeded (TBool aIsFolderTableUpdateNeeded)
+        {
+           iIsFolderTableUpdateNeeded = aIsFolderTableUpdateNeeded;
+        }
 
     private:    // Data
         TLeakTracker        iLeakTracker;
@@ -1045,11 +1073,13 @@ NONSHARABLE_CLASS(CFeedsDatabase): public CBase
         TInt                iSettingsTableRefCount;
 
         TInt                iNextAvailableFeedId;
-        
-        RArray<TInt>		iDeleteFolderArray; // This array will be populated when session calls delete
-        CFeedsServer*       iFeedsServer; 
-        
-        
+
+        RArray<TInt>        iDeleteFolderArray; // This array will be populated when session calls delete
+        CFeedsServer*       iFeedsServer;
+
+        TBool               iIsFolderTableUpdateNeeded;
+
+
         friend class CImportFeedsTask;
         friend class CFeedsServerSession;
     };

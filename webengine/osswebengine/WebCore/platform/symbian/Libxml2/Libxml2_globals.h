@@ -36,6 +36,7 @@ typedef unsigned int xmlLinAddress;
 
 XMLPUBFUN void XMLCALL xeSetTLS(void* ptr);
 XMLPUBFUN xmlGlobalStatePtr XMLCALL xeGetTLS();
+XMLPUBFUN void XMLCALL xecleanTLS();
 
 //#if defined (XMLENGINE_USE_DOMSTRINGARGUMENT)
 XMLPUBFUN void XMLCALL xeCleanupDOMStringConverter();

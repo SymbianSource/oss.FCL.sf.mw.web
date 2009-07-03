@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:  
+* Description:
 *
 */
 
@@ -51,14 +51,14 @@ FloatRect Font::selectionRectForComplexText(const TextRun& run, const TextStyle&
     }
 
     TextRun end(run.characters() + from, to - from);
-    float w = floatWidthForComplexText(end, style);        
-            
+    float w = floatWidthForComplexText(end, style);
+
     FloatRect rect(b + point.x(), point.y(), w, h);
 
     return rect;
 }
 
-void Font::drawComplexText(GraphicsContext* graphicsContext, const TextRun& run, const TextStyle& style, const FloatPoint& point, int from, int to) const                          
+void Font::drawComplexText(GraphicsContext* graphicsContext, const TextRun& run, const TextStyle& style, const FloatPoint& point, int from, int to) const
 {
     PlatformFontCache* cache = StaticObjectsContainer::instance()->fontCache();
     CFont* font = cache->zoomedFont(m_fontDescription, cache->fontZoomFactor());
@@ -74,28 +74,28 @@ void Font::drawComplexText(GraphicsContext* graphicsContext, const TextRun& run,
 
     TPoint startPos = point;
     if (from) {
-        
+
         // the text run before the selection
         TextRun leftRun(run.characters(), from);
         // the selection start point
         startPos.iX += floatWidthForComplexText(leftRun, style);
     }
-    
+
     TPtrC str( (const TUint16*)(run.characters() + from), to - from);
-    
+
     TInt numSpaces(0);
     TInt indexOfFirstNonRegularSpace(-1);
     TInt strLength(str.Length());
-    
+
     // a) search for nbsp and similar
     // b) count the spaces for word spacing
     for( TInt n = 0; n<strLength; ++n) {
-    
+
         if ( str[n] == ' ' ) {
             numSpaces++;
         }
         else if( TChar(str[n]).IsSpace() ) {
-    
+
             if (indexOfFirstNonRegularSpace==-1) {
                 indexOfFirstNonRegularSpace = n;
             }
@@ -116,7 +116,7 @@ void Font::drawComplexText(GraphicsContext* graphicsContext, const TextRun& run,
         HBufC* text = 0;
         text = str.Alloc();
         if (text){
-            
+
             TPtr newStr(text->Des());
             if (isSmallCaps()) {
                 // proper small caps implementation would use smaller font, but that get complicated
@@ -128,43 +128,41 @@ void Font::drawComplexText(GraphicsContext* graphicsContext, const TextRun& run,
             // and replace them with regular spaces. otherwise they show up as boxes.
             if (indexOfFirstNonRegularSpace > -1) {
                 for(; indexOfFirstNonRegularSpace<strLength; ++indexOfFirstNonRegularSpace ) {
-                	// if ZERO WIDTH SPACE found do not replace it with regular space
-                    if( TChar(newStr[indexOfFirstNonRegularSpace]).IsSpace() && 
-                    	!(Font::treatAsZeroWidthSpace (newStr[indexOfFirstNonRegularSpace]))) {
+                    if( TChar(newStr[indexOfFirstNonRegularSpace]).IsSpace()) {
                         newStr[indexOfFirstNonRegularSpace] = ' ';
                     }
                 }
             }
-            
+
             if (style.rtl()) {
                 TBidiText* bidiText = TBidiText::NewL( newStr, 1, TBidiText::ERightToLeft );
                 bidiText->WrapText(xForm(width(run)), *font );
-                bitgc.DrawText( bidiText->DisplayText(),xForm(startPos)); 
-                delete bidiText;      
+                bitgc.DrawText( bidiText->DisplayText(),xForm(startPos));
+                delete bidiText;
             }
             else{
-                bitgc.DrawText( newStr, xForm(startPos) );   	
+                bitgc.DrawText( newStr, xForm(startPos) );
             }
-            
+
             if (graphicsContext && StaticObjectsContainer::instance()->pictograph())
                 StaticObjectsContainer::instance()->pictograph()->DrawPictographsInText(graphicsContext->platformContext(), bitgc, *font, newStr, startPos );
-            
+
             delete text;
         }
-        
+
     }else {
         bitgc.DrawText( str, xForm(startPos) );
-        if (graphicsContext && StaticObjectsContainer::instance()->pictograph())        
+        if (graphicsContext && StaticObjectsContainer::instance()->pictograph())
             StaticObjectsContainer::instance()->pictograph()->DrawPictographsInText(graphicsContext->platformContext(), bitgc, *font, str, startPos );
     }
-        
+
     bitgc.DiscardFont();
 }
 
 inline float floatWidthForComplexTextSymbian(const Font* f, const TextRun& run,  const TextStyle& style, int maxWidth, int& chars){
     const CFont& font( f->primaryFont()->platformData() );
     TPtrC str( (const TUint16*)(run.characters()), run.length());
-    
+
     TInt numSpaces(0);
     TInt indexOfFirstNonRegularSpace(-1);
     TInt strLength(str.Length());

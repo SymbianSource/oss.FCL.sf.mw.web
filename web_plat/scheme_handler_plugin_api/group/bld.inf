@@ -29,6 +29,10 @@ PRJ_EXPORTS
 ../inc/SchemeHandler.inl       MW_LAYER_PLATFORM_EXPORT_PATH(SchemeHandler.inl)
 ../inc/SchemeDefs.hrh          MW_LAYER_PLATFORM_EXPORT_PATH(SchemeDefs.hrh)
 
+#ifdef BRDO_ADDED_EXPORT_LOCATION
+../inc/SchemeDefs.hrh          BRDO_ADDED_EXPORT_LOCATION(SchemeDefs.hrh)
+#endif
+
 PRJ_MMPFILES
 
 

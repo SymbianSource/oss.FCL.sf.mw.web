@@ -301,6 +301,7 @@ NPError NpnGetUrlNotify(NPP aInstance, const TDesC& aUrl,
 //
 NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
 {
+    TInt err = NPERR_NO_ERROR;
     
     switch (aVariable) {
         
@@ -354,9 +355,11 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
             if (windowObject) {
                 void **v = (void **)aRetValue;
                 *v = windowObject;
-                return NPERR_NO_ERROR;
             }
-            return NPERR_GENERIC_ERROR;
+            else {
+                err = NPERR_GENERIC_ERROR;
+            }
+            break;
         }
         case NPNVDOMWindow:
         case NPNVxDisplay:          // Unix only: Returns the current Display
@@ -377,11 +380,14 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
             
             
         default:
+            {
             *((TBool*) aRetValue) = EFalse;
+            err = NPERR_INVALID_PARAM;
+            }
             break;
     }   // end of switch
     
-    return NPERR_NO_ERROR;
+    return err;
 
 }
 
@@ -462,7 +468,7 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
             {
             NPBool* isFullScreen = (NPBool*)aSetValue;
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
-            pluginWin->TogleScreenMode(*isFullScreen);
+            pluginWin->ToggleScreenMode(*isFullScreen);
             break;
             }
         case NPPVPluginZoom:

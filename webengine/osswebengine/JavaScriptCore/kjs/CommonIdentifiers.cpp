@@ -34,9 +34,18 @@ CommonIdentifiers::CommonIdentifiers()
 {
 }
 
+static CommonIdentifiers* sharedInstance=0;
+    
+struct cleanupCommonIdentifiers {
+    ~cleanupCommonIdentifiers() {
+        delete sharedInstance;
+        sharedInstance=0;
+    }
+};
+struct cleanupCommonIdentifiers cleanupIdentifiers;
+
 CommonIdentifiers* CommonIdentifiers::shared()
 {
-    static CommonIdentifiers* sharedInstance;
     if (!sharedInstance) {
         JSLock lock;
         sharedInstance = new CommonIdentifiers;

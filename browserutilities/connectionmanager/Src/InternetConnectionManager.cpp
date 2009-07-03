@@ -1359,7 +1359,8 @@ void CInternetConnectionManager::ConnectionStageAchievedL(TInt /*aStage*/)
      if(iConnected) 
      {
      	// this is a connection closed event
-    	iConnection.Close();
+        CLOG_WRITE( "ConnectionStageAchievedL() Stoping the connection instead of closing" );
+        iConnection.Stop();
     	iConnected = EFalse;
 
     	if( !iSilentMode )

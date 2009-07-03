@@ -681,7 +681,7 @@ void CHttpCacheHandler::ResponseComplete(
                 iStreamHandler->Detach( *entry );
 
                 // Clear the flushed cache buffer, we were using for incoming body
-                entry->SetCacheBufferL( KBufferSizeZero );
+                TRAP_IGNORE( entry->SetCacheBufferL( KBufferSizeZero ) );
                 }
             }
         else if( entry->State() == CHttpCacheEntry::ECacheDestroyed )
@@ -1003,16 +1003,40 @@ TBool CHttpCacheHandler::CacheNeedsSpaceL( TInt aSize )
         CArrayPtrFlat<CHttpCacheEntry>* evictedList = iEvictionHandler->EvictL( aSize );
         if ( evictedList && evictedList->Count() )
             {
-            // destroy items
+            // Delete entry items marked for eviction
             CHttpCacheEntry* entry;
-            for( TInt i = 0; i < evictedList->Count(); i++ )
+            for ( TInt i = 0; i < evictedList->Count(); i++ )
                 {
-                //
                 entry = evictedList->At( i );
-                if( entry )
+
+                if ( entry )
                     {
-                    // destroy
-                    iLookupTable->Remove( entry->Url() );
+                    // Handle removing valid and invalid entries. Check entry
+                    // for validity, and if in lookup table. It has been
+                    // found that the evictList can have invalid entries in it.
+                    // These invalid entries are not in the lookup table.
+                    TInt lookupTableIndex( -1 );
+                    iLookupTable->FindCacheEntryIndex( *entry, &lookupTableIndex );
+                    
+                    TInt sizeBody = entry->BodySize();
+                    if ( sizeBody == 0 && lookupTableIndex >= 0 )
+                        {
+                        // This is an empty body cache entry that exists
+                        // in the lookup table, remove it from file system and
+                        // lookup table.
+						// Use CreateNewFilesL() to open file handles, so we can delete
+						// the files associated with the cache entry. We don't check
+                        // return value of RemoveByPosition(), because we already
+                        // checked for index in FindCacheEntryIndex(). 
+                        iStreamHandler->CreateNewFilesL( *entry );
+                        iStreamHandler->EraseCacheFile( *entry );
+                        iLookupTable->RemoveByPosition( lookupTableIndex );
+                        }
+                    else if ( lookupTableIndex >= 0 )
+                        {
+                        // Remove valid entries that are found in lookup table
+                        iLookupTable->Remove( entry->Url() );
+                        }
                     }
                 }
 
@@ -1029,6 +1053,8 @@ TBool CHttpCacheHandler::CacheNeedsSpaceL( TInt aSize )
 #endif            
             ok = EFalse;
             }
+
+        // Cleanup the evicted list, including any invalid entries
         delete evictedList;
         }
     return ok;
@@ -1212,9 +1238,14 @@ void CHttpCacheHandler::OpenLookupTableL(CHttpCacheLookupTable* aLookupTable)
             }
         if( ret == KErrNone )
             {
-            CleanupClosePushL( readStream );
-            aLookupTable->InternalizeL( readStream, iDirectory->Des() );
-            CleanupStack::PopAndDestroy(1); // readStream
+            TRAPD ( err, aLookupTable->InternalizeL( readStream, iDirectory->Des() ) );
+            readStream.Close(); 
+            if ( err != KErrNone ) 
+                {
+                // In case Bad Things Happen (TM), do RemoveAllL() which clears this cache's 
+                // in-memory data structures + saves an updated lookup table to disk replacing the old one. 
+                TRAP_IGNORE( RemoveAllL() );
+                } 
             }
     }
 
@@ -1232,7 +1263,9 @@ void CHttpCacheHandler::SaveLookupTableL()
     RFileWriteStream writeStream;
 
     // Don't get notified about own changes
-    iHttpCacheObserver->Cancel();
+    if ( iHttpCacheObserver ) 
+        iHttpCacheObserver->Cancel();
+    
     TInt ret = KErrNone;
     TInt tryCount = 0;
     for (tryCount = 0; tryCount < 5; tryCount++) 
@@ -1256,7 +1289,9 @@ void CHttpCacheHandler::SaveLookupTableL()
         writeStream.CommitL();
         CleanupStack::PopAndDestroy(); // writeStream
         }
-    iHttpCacheObserver->StartObserver();
+    
+    if ( iHttpCacheObserver ) 
+        iHttpCacheObserver->StartObserver();
     }
 
 // -----------------------------------------------------------------------------
@@ -1327,7 +1362,9 @@ TBool CHttpCacheHandler::SaveBuffer(
 void CHttpCacheHandler::UpdateLookupTable()
     {
     TRAP_IGNORE(UpdateLookupTableL());
-    iHttpCacheObserver->StartObserver();
+    
+    if ( iHttpCacheObserver ) 
+        iHttpCacheObserver->StartObserver();
     }
 
 // -----------------------------------------------------------------------------

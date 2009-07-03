@@ -323,10 +323,23 @@ List List::copyTail() const
 
     return copy;
 }
+static List* staticEmptyList = 0;
+
+struct listCleaner {
+    ~listCleaner() {
+            delete staticEmptyList;
+            staticEmptyList = 0;
+    }
+};
+
+static listCleaner cleanList;
 
 const List& List::empty()
 {
-    static List* staticEmptyList = new List;
+		if(!staticEmptyList)
+			{
+    	staticEmptyList = new List;
+    	}
     return *staticEmptyList;
 }
 

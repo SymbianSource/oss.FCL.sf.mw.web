@@ -54,6 +54,7 @@
 #include "ChromeClient.h"
 #include "FocusController.h"
 #include "WebTabbedNavigation.h"
+#include "SettingsContainer.h"
 #include "PluginHandler.h"
 
 #include "WebKitLogger.h"
@@ -295,7 +296,8 @@ void WebPointerEventHandler::handleTouchUp(const TGestureEvent& aEvent)
 {
     m_highlightPos = TPoint(-1,-1);
     m_highlightedNode = NULL;
-       
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+    pluginHandler->setPluginToActivate(NULL);
     m_webview->pageScrollHandler()->handleTouchUpGH(aEvent);
 }
 
@@ -306,16 +308,10 @@ void WebPointerEventHandler::handleMove(const TGestureEvent& aEvent)
 {
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
     TPoint curPos = aEvent.CurrentPos();
-    
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+    pluginHandler->setPluginToActivate(NULL);
     m_buttonDownTimer.stop();
     HandleHighlightChange(curPos);
-    
-    if (elType == TBrCtlDefs::EElementActivatedObjectBox) {
-        PluginSkin* plugin = m_webview->mainFrame()->focusedPlugin();               
-        if (plugin) {
-            plugin->deActivate();
-        }
-    }
     
     m_webview->pageScrollHandler()->handleScrollingGH(aEvent);
 }
@@ -350,6 +346,20 @@ void WebPointerEventHandler::HandlePointerEventL(const TPointerEvent& aPointerEv
         else if (aPointerEvent.iType == TPointerEvent::EButton1Up) {
             m_webview->GetContainerWindow().DisablePointerMoveBuffer();
         }
+        if (m_webview->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone) {
+            TPointerEvent event;
+            event.iPosition = aPointerEvent.iPosition;
+            event.iModifiers = 0;
+            event.iType = aPointerEvent.iType;
+
+            if (event.iType == TPointerEvent::EDrag) event.iType = TPointerEvent::EMove;
+            m_webview->sendMouseEventToEngine(event.iType, event.iPosition, core(m_webview->mainFrame()));
+            return;
+        }
+    }
+
+    if (m_webview->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed) {
+        m_webview->tabbedNavigation()->updateCursorPosition(aPointerEvent.iPosition);
     }
 
 #ifdef BRDO_USE_GESTURE_HELPER

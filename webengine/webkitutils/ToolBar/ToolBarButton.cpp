@@ -843,53 +843,84 @@ void CToolBarButton::ShowToolTip(TBool aVisible)
         TRect boundingRect(TPoint(0,0),TSize(w,h));
 
         //mask
-        iToolTipMask = new (ELeave) CFbsBitmap;
-        User::LeaveIfError( iToolTipMask->Create( TSize(w,h), EColor16MA ) );
-        iToolTipMaskDevice = CFbsBitmapDevice::NewL( iToolTipMask );
-        User::LeaveIfError( iToolTipMaskDevice->CreateContext( iToolTipMaskContext ) );
-        iToolTipMaskContext->SetPenColor(KRgbBlack);
-        iToolTipMaskContext->SetBrushColor(KRgbBlack);
-        iToolTipMaskContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
-        iToolTipMaskContext->SetPenStyle(CGraphicsContext::ESolidPen);
-        iToolTipMaskContext->DrawRoundRect(boundingRect,TSize(4,4));
+        TRAP( err, 
+            {
+            iToolTipMask = new (ELeave) CFbsBitmap;
+            if(KErrNone == iToolTipMask->Create( TSize(w,h), EColor16MA ))
+                {
+                iToolTipMaskDevice = CFbsBitmapDevice::NewL( iToolTipMask );
+                User::LeaveIfError( iToolTipMaskDevice->CreateContext( iToolTipMaskContext ) );
+                }
+            }
+        );
+        if( KErrNone != err)
+            {
+            delete iToolTipMask;
+            iToolTipMask = NULL;
+            delete iToolTipMaskDevice;
+            iToolTipMaskDevice = NULL;
+            }
+        else
+            {
+            iToolTipMaskContext->SetPenColor(KRgbBlack);
+            iToolTipMaskContext->SetBrushColor(KRgbBlack);
+            iToolTipMaskContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
+            iToolTipMaskContext->SetPenStyle(CGraphicsContext::ESolidPen);
+            iToolTipMaskContext->DrawRoundRect(boundingRect,TSize(4,4));
 
-        //bitmap
-        iToolTipBitmap = new (ELeave) CFbsBitmap;
-        User::LeaveIfError( iToolTipBitmap->Create( TSize(w,h), EColor16MA ) );
-        iToolTipBitmapDevice = CFbsBitmapDevice::NewL( iToolTipBitmap );
-        User::LeaveIfError( iToolTipBitmapDevice->CreateContext( iToolTipBitmapContext ) );
-        iToolTipBitmapContext->SetPenColor(KRgbBlack);
-        iToolTipBitmapContext->SetBrushColor(TRgb(0xfa,0xfa,0xd2));
-        iToolTipBitmapContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
-        iToolTipBitmapContext->SetPenStyle(CGraphicsContext::ESolidPen);
-        iToolTipBitmapContext->DrawRoundRect(boundingRect,TSize(4,4));
+            //bitmap
+            TRAP( err,
+                {
+                iToolTipBitmap = new (ELeave) CFbsBitmap;
+                if( KErrNone == iToolTipBitmap->Create( TSize(w,h), EColor16MA ))
+                    {
+                    iToolTipBitmapDevice = CFbsBitmapDevice::NewL( iToolTipBitmap );
+                    User::LeaveIfError( iToolTipBitmapDevice->CreateContext( iToolTipBitmapContext ) );
+                    }
+                }
+            );
+            if( KErrNone != err )
+                {
+                delete iToolTipBitmap;
+                iToolTipBitmap = NULL;
+                delete iToolTipBitmapDevice;
+                iToolTipBitmapDevice = NULL;
+                }
+            else
+                {
+                iToolTipBitmapContext->SetPenColor(KRgbBlack);
+                iToolTipBitmapContext->SetBrushColor(TRgb(0xfa,0xfa,0xd2));
+                iToolTipBitmapContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
+                iToolTipBitmapContext->SetPenStyle(CGraphicsContext::ESolidPen);
+                iToolTipBitmapContext->DrawRoundRect(boundingRect,TSize(4,4));
 
-        //add text
-        iToolTipBitmapContext->SetPenColor(KRgbBlack);
-        iToolTipBitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
+                //add text
+                iToolTipBitmapContext->SetPenColor(KRgbBlack);
+                iToolTipBitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
 
-        iToolTipBitmapContext->UseFont(myFont);
-        TPoint pt = boundingRect.iTl;
-        pt += TPoint(KToolTipBorder + KTextMargin,KToolTipBorder + KTextMargin);
-        iToolTipBitmapContext->DrawText(*visualText,
+                iToolTipBitmapContext->UseFont(myFont);
+                TPoint pt = boundingRect.iTl;
+                pt += TPoint(KToolTipBorder + KTextMargin,KToolTipBorder + KTextMargin);
+                iToolTipBitmapContext->DrawText(*visualText,
                     TPoint(pt.iX,pt.iY + myFont->AscentInPixels()));
-        iToolTipBitmapContext->DiscardFont();
+                iToolTipBitmapContext->DiscardFont();
 
-        CCoeControl& view = iParent->ToolBarCallback().View();
+                CCoeControl& view = iParent->ToolBarCallback().View();
 
-        iToolTipSprite = RWsSprite(view.ControlEnv()->WsSession());
-        RWindowTreeNode *window =  (RDrawableWindow* )iParent->ToolBarCallback().CCoeControlParent().DrawableWindow();
-        iToolTipSprite.Construct(*window,p, ESpriteNoChildClip);
+                iToolTipSprite = RWsSprite(view.ControlEnv()->WsSession());
+                RWindowTreeNode *window =  (RDrawableWindow* )iParent->ToolBarCallback().CCoeControlParent().DrawableWindow();
+                iToolTipSprite.Construct(*window,p, ESpriteNoChildClip);
 
-        TSpriteMember spriteMem;
-        spriteMem.iBitmap = iToolTipBitmap;
-        spriteMem.iMaskBitmap = iToolTipMask;
-        spriteMem.iInvertMask = ETrue;
+                TSpriteMember spriteMem;
+                spriteMem.iBitmap = iToolTipBitmap;
+                spriteMem.iMaskBitmap = iToolTipMask;
+                spriteMem.iInvertMask = ETrue;
 
-        iToolTipSprite.AppendMember(spriteMem);
-        iToolTipSprite.Activate();
-        delete visualText;//visual text
-
+                iToolTipSprite.AppendMember(spriteMem);
+                iToolTipSprite.Activate();
+                delete visualText;//visual text
+                }
+            }
         }
     else  // aVisible = false
         {

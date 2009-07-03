@@ -661,6 +661,9 @@ static int WindowsKeyCodeForKeyEvent(TKeyEvent aEvent)
 PlatformKeyboardEvent::PlatformKeyboardEvent( TKeyEvent event, TEventCode eventCode, bool forceAutoRepeat ) :
       m_keyIdentifier(KeyIdentifierForKeyEvent(event.iCode))
     , m_isKeyUp( eventCode == EEventKeyUp )
+    //***** FL added from r12765 *****//
+    , m_isKeyDown( eventCode == EEventKeyDown )
+    //**********//
     , m_autoRepeat(event.iRepeats>0 || forceAutoRepeat )
     , m_WindowsKeyCode(WindowsKeyCodeForKeyEvent(event))
     , m_shiftKey( event.iModifiers & EModifierShift )

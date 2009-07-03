@@ -218,7 +218,7 @@ namespace KJS {
     /**
      * Destructor.
      */
-    ~UString() {}
+    ~UString() {m_rep=0;}
 
     /**
      * Constructs a string from an int.
@@ -377,12 +377,12 @@ namespace KJS {
      * Static instance of a null string.
      */
     static const UString &null();
-#ifdef KJS_DEBUG_MEM
+//#ifdef KJS_DEBUG_MEM
     /**
      * Clear statically allocated resources.
      */
     static void globalClear();
-#endif
+//#endif
 
     Rep* rep() const { return m_rep.get(); }
     UString(PassRefPtr<Rep> r) : m_rep(r) { ASSERT(m_rep); }

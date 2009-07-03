@@ -24,6 +24,7 @@
 #ifndef CSSStyleSelector_h
 #define CSSStyleSelector_h
 
+#include "config.h"
 #include "DeprecatedString.h"
 #include "RenderStyle.h"
 #include <wtf/HashSet.h>
@@ -91,6 +92,11 @@ class StyledElement;
         ~CSSStyleSelector();
 
         static void loadDefaultStyle();
+
+#if PLATFORM(SYMBIAN)
+        static void deleteDefaultStyle();
+#endif
+
 
         void initElementAndPseudoState(Element* e);
         void initForStyleResolve(Element* e, RenderStyle* parentStyle);

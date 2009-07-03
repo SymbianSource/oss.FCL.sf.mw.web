@@ -23,7 +23,11 @@ UID 0x1000008d 0x10281B70
 #include <platform_paths.hrh>
 #include <platform/mw/Browser_platform_variant.hrh>
 
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 CAPABILITY  CAP_GENERAL_DLL
 VENDORID    VID_DEFAULT
 

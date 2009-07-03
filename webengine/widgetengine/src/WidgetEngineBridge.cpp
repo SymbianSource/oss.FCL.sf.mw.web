@@ -53,6 +53,7 @@ const TInt KMenuItemCommandIdBase = 20000;
 // ============================= LOCAL FUNCTIONS ===============================
 
 // ============================ MEMBER FUNCTIONS ===============================
+using namespace KJS;
 
 // ----------------------------------------------------------------------------
 // CreateWidgetEngineBridge
@@ -83,10 +84,30 @@ WidgetEngineBridge::WidgetEngineBridge() : m_menuclient(0), m_widgetclient(0), m
 //
 // ----------------------------------------------------------------------------
 WidgetEngineBridge::~WidgetEngineBridge()
-{    
-    delete m_menuclient;
-    delete m_widgetclient;    
+{
+    Clear();
     delete m_preferences;
+    m_preferences = NULL;
+}
+// ----------------------------------------------------------------------------
+// WidgetEngineBridge::Clear
+// 
+//
+//
+// ----------------------------------------------------------------------------
+void WidgetEngineBridge::Clear()
+{    
+	// unprotect objects
+	HashSet<JSValue*>::iterator end = m_protectedObjects.end();
+	for (HashSet<JSValue*>::iterator it = m_protectedObjects.begin(); it != end; ++it) {
+		Collector::unprotect(*it);
+	}
+	m_protectedObjects.clear();
+
+    delete m_menuclient;
+    m_menuclient = NULL;
+    delete m_widgetclient;    
+    m_widgetclient = NULL;
 }
 
 // ----------------------------------------------------------------------------
@@ -103,7 +124,7 @@ void* WidgetEngineBridge::Widget(MWidgetCallback& aWidgetCallback, MWidgetEngine
         if (!m_preferences)
             m_preferences = new (ELeave) WidgetPreferences();
         
-        m_widgetclient = CWidgetClient::NewL(aWidgetCallback,aWidgetEngineCallback,m_preferences);            
+        m_widgetclient = CWidgetClient::NewL(aWidgetCallback, this, aWidgetEngineCallback,m_preferences);            
     }    
     return m_widgetclient->jswidget();  
 }
@@ -120,7 +141,7 @@ void* WidgetEngineBridge::Menu(MWidgetCallback& aWidgetCallback, MWidgetEngineCa
     if (!m_menuclient){
         m_menuclient = CMenuClient::NewL(aWidgetCallback,aWidgetEngineCallback);      
     }    
-    return m_menuclient->jsmenu();  
+    return m_menuclient->jsmenu(this);  
 }
 
 // ----------------------------------------------------------------------------
@@ -135,7 +156,7 @@ void* WidgetEngineBridge::MenuItem(MWidgetCallback& aWidgetCallback, MWidgetEngi
     if (!m_menuclient){
         m_menuclient = CMenuClient::NewL(aWidgetCallback,aWidgetEngineCallback);      
     }    
-    return m_menuclient->jsmenuitem();      
+    return m_menuclient->jsmenuitem(this);      
 }
 
 // ----------------------------------------------------------------------------
@@ -284,6 +305,18 @@ void WidgetEngineBridge::DrawTransition(CWindowGc& gc, CFbsBitmap* fbsBm)
     }
 }
 
+
+void WidgetEngineBridge::Protect(JSValue* obj)
+{
+	m_protectedObjects.add(obj);
+	Collector::protect(obj);
+}
+
+void WidgetEngineBridge::Unprotect(JSValue* obj)
+{
+	m_protectedObjects.remove(obj);
+	Collector::unprotect(obj);
+}
 
 //END OF FILE
 

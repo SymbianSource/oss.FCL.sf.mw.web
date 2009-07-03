@@ -46,6 +46,7 @@ enum TMenuItemState
 
 // CLASS DECLARATION
 class CMenuItem;
+class MJSObjectProtector;
 
 namespace KJS {
     class JSMenu;
@@ -67,8 +68,8 @@ public:
     virtual ~CMenuClient();
     
 public:
-    KJS::JSMenu* jsmenu();
-    KJS::JSMenuItemConstructor* jsmenuitem();
+    KJS::JSMenu* jsmenu(MJSObjectProtector*);
+    KJS::JSMenuItemConstructor* jsmenuitem(MJSObjectProtector*);
     
     void addOptionMenuItemsL( CEikMenuPane& aMenuPane,TInt aResourceId );     
     void menuShowed();

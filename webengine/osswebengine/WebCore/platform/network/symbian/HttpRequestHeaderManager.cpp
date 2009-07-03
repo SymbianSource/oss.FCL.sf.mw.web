@@ -114,6 +114,8 @@ HttpRequestHeaderManager::~HttpRequestHeaderManager()
     m_AcceptLangStr = NULL;
     delete m_InstalledLangBuf;
     m_InstalledLangBuf = NULL;
+    delete m_CharsetBuf;
+    m_CharsetBuf = NULL;
 }
 
 //-----------------------------------------------------------------------------
@@ -418,8 +420,9 @@ void HttpRequestHeaderManager::ComposeMultipleLanguagesStringL(TLanguage aUserLa
     TPtrC8 userSelectedLangPtr(userSelectedLangString.DesC());
     //
     TInt xtraDataPerLang = KCommaSeperator().Length() + KLangStrLen + KQHalfValue().Length();
-    TInt reqdBufSize = userSelectedLangPtr.Length() +
-                       ((systemEpocLanguageCodes->Count()-1) * xtraDataPerLang);
+    TInt reqdBufSize = ((userSelectedLangPtr.Length() + xtraDataPerLang)
+	                     * (systemEpocLanguageCodes->Count()));
+
     delete m_InstalledLangBuf;
     m_InstalledLangBuf = NULL;
     m_InstalledLangBuf = HBufC8::NewL(reqdBufSize);

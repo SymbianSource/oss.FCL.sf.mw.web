@@ -36,8 +36,18 @@ namespace KJS {
 
 int Parser::sid = 0;
 
-static RefPtr<ProgramNode>* progNode;
+static RefPtr<ProgramNode>* progNode = 0;
 static HashSet<Node*>* nodeCycles;
+
+struct cleanupProgNode {
+    ~cleanupProgNode() {
+        if( progNode ) {
+            delete progNode;
+            progNode=0;
+        }
+    }
+};
+static cleanupProgNode cleanProgNode;
 
 void Parser::noteNodeCycle(Node *node)
 {

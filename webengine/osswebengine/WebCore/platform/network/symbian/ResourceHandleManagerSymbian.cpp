@@ -40,6 +40,15 @@ namespace WebCore {
 
 static CResourceHandleManager* s_self = 0;
 
+struct cleanupHandleManager {
+    ~cleanupHandleManager() {
+    	if(s_self){
+    		delete s_self;
+    		s_self = 0;
+    	}
+    }
+};
+static cleanupHandleManager deleteResourceHandleManager;
 
 CResourceHandleManager::CResourceHandleManager()
 {
@@ -131,7 +140,7 @@ void CResourceHandleManager::receivedData(ResourceHandle* resource, const TDesC8
         int needed = std::max(contentLength, std::max(client->receivedDataBufferSize(), data.Length()));
         OOM_PRE_CHECK(needed<<2, needed<<1, "CResourceHandleManager::receiveData()")        
         client->didReceiveData(resource, (const char*)data.Ptr(), data.Length(), data.Length());
-        OOM_POST_CHECK_FAILED(client->didFail(resource, ResourceError(String(), KErrNoMemory, String(), String()));)
+        OOM_POST_CHECK_FAILED(connection->handleError(KErrNoMemory);)
     }
 }
 

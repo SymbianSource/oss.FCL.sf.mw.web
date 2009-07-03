@@ -20,7 +20,6 @@
     Boston, MA 02110-1301, USA.
 */
 
-#include "config.h"
 #include "Cache.h"
 
 #include "CachedCSSStyleSheet.h"
@@ -44,9 +43,22 @@ static const int cDefaultCacheCapacity = 8192 * 1024;
 static const double cMinDelayBeforeLiveDecodedPrune = 1; // Seconds.
 static const float cTargetPrunePercentage = .95f; // Percentage of capacity toward which we prune, to avoid immediately pruning again.
 
+#if PLATFORM(SYMBIAN)
+static Cache* staticCache;
+static bool staticCacheInit = false;
+#endif
+
 Cache* cache()
 {
+#if PLATFORM(SYMBIAN)
+    if (!staticCacheInit)
+    {
+        staticCache = new Cache;
+        staticCacheInit = true;
+    }
+#else
     static Cache* staticCache = new Cache;
+#endif
     return staticCache;
 }
 
@@ -61,23 +73,23 @@ Cache::Cache()
 {
 }
 
-static CachedResource* createResource(CachedResource::Type type, DocLoader* docLoader, const KURL& url, const String* charset, bool skipCanLoadCheck = false, bool sendResourceLoadCallbacks = true)
+static CachedResource* createResource(CachedResource::Type type, const KURL& url, const String& charset)
 {
     switch (type) {
     case CachedResource::ImageResource:
         // User agent images need to null check the docloader.  No other resources need to.
-        return new CachedImage(docLoader, url.url(), true /* for cache */);
+        return new CachedImage(url.url());
     case CachedResource::CSSStyleSheet:
-        return new CachedCSSStyleSheet(docLoader, url.url(), *charset, skipCanLoadCheck, sendResourceLoadCallbacks);
+        return new CachedCSSStyleSheet(url.url(), charset);
     case CachedResource::Script:
-        return new CachedScript(docLoader, url.url(), *charset);
+        return new CachedScript(url.url(), charset);
 #if ENABLE(XSLT)
     case CachedResource::XSLStyleSheet:
-        return new CachedXSLStyleSheet(docLoader, url.url());
+        return new CachedXSLStyleSheet(url.url());
 #endif
 #if ENABLE(XBL)
     case CachedResource::XBLStyleSheet:
-        return new CachedXBLDocument(docLoader, url.url());
+        return new CachedXBLDocument(url.url());
 #endif
     default:
         break;
@@ -87,9 +99,9 @@ static CachedResource* createResource(CachedResource::Type type, DocLoader* docL
 }
 
 #if PRELOAD_SCANNER_ENABLED
-CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Type type, const KURL& url, const String* charset, bool skipCanLoadCheck, bool sendResourceLoadCallbacks, bool isPreload)
+CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Type type, const KURL& url, const String& charset, bool isPreload)
 #else
-CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Type type, const KURL& url, const String* charset, bool skipCanLoadCheck, bool sendResourceLoadCallbacks)
+CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Type type, const KURL& url, const String& charset)
 #endif
 {
     // FIXME: Do we really need to special-case an empty URL?
@@ -105,7 +117,7 @@ CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Typ
         if (isPreload && !resource->isPreloaded())
             return 0;
 #endif
-        if (!skipCanLoadCheck && FrameLoader::restrictAccessToLocal() && !FrameLoader::canLoad(*resource, docLoader->doc())) {
+        if (FrameLoader::restrictAccessToLocal() && !FrameLoader::canLoad(*resource, docLoader->doc())) {
             Document* doc = docLoader->doc();
             if(doc)
                 FrameLoader::reportLocalLoadFailed(doc->page(), resource->url());
@@ -113,7 +125,7 @@ CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Typ
             return 0;
         }
     } else {
-        if (!skipCanLoadCheck && FrameLoader::restrictAccessToLocal() && !FrameLoader::canLoad(url, docLoader->doc())) {
+        if (FrameLoader::restrictAccessToLocal() && !FrameLoader::canLoad(url, docLoader->doc())) {
             Document* doc = docLoader->doc();
 #if PRELOAD_SCANNER_ENABLED
             if(doc && !isPreload)
@@ -126,9 +138,14 @@ CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Typ
         }
 
         // The resource does not exist. Create it.
-        resource = createResource(type, docLoader, url, charset, skipCanLoadCheck, sendResourceLoadCallbacks);
+        resource = createResource(type, url, charset);
         ASSERT(resource);
-        ASSERT(resource->inCache());
+
+        // Pretend the resource is in the cache, to prevent it from being deleted during the load() call. 
+	        // FIXME: CachedResource should just use normal refcounting instead. 
+	        resource->setInCache(true); 	         
+	        resource->load(docLoader);
+
         if (!disabled()) {
             m_resources.set(url.url(), resource);  // The size will be added in later once the resource is loaded and calls back to us with the new size.
             
@@ -160,6 +177,26 @@ CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Typ
 
     return resource;
 }
+
+CachedCSSStyleSheet* Cache::requestUserCSSStyleSheet(DocLoader* docLoader, const String& url, const String& charset) 
+{
+    if (CachedResource* existing = m_resources.get(url)) 
+        return existing->type() == CachedResource::CSSStyleSheet ? static_cast<CachedCSSStyleSheet*>(existing) : 0;	
+
+    CachedCSSStyleSheet* userSheet = new CachedCSSStyleSheet(url, charset); 
+ 
+    // Pretend the resource is in the cache, to prevent it from being deleted during the load() call. 
+    // FIXME: CachedResource should just use normal refcounting instead. 
+    userSheet->setInCache(true); 
+    // Don't load incrementally, skip load checks, don't send resource load callbacks. 
+    userSheet->load(docLoader, false, true, false); 
+    if (!disabled()) 
+        m_resources.set(url, userSheet); 
+    else 
+        userSheet->setInCache(false); 
+ 
+    return userSheet; 
+} 
 
 CachedResource* Cache::resourceForURL(const String& url)
 {
@@ -302,6 +339,7 @@ void Cache::remove(CachedResource* resource)
         // Remove from the appropriate LRU list.
         removeFromLRUList(resource);
         removeFromLiveDecodedResourcesList(resource);
+        removeFromLiveResourcesSize(resource);
         
         // Notify all doc loaders that might be observing this object still that it has been
         // extracted from the set of resources.
@@ -313,7 +351,8 @@ void Cache::remove(CachedResource* resource)
         int delta = -static_cast<int>(resource->size());
         if (delta)
             adjustSize(resource->referenced(), delta);
-    }
+    } else 
+        ASSERT(m_resources.get(resource->url()) != resource);
 
     if (resource->canDelete())
         delete resource;
@@ -652,6 +691,13 @@ void Cache::clearImages()
         }
     }
 }
+
+void Cache::deleteStaticCache()
+{
+    delete staticCache;
+    staticCacheInit = false;
+}
+
 #endif
 
 } // namespace WebCore

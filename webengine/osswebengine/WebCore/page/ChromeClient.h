@@ -26,6 +26,7 @@
 
 namespace WebCore {
 
+    class Element;
     class FloatRect;
     class Frame;
     class HitTestResult;
@@ -106,6 +107,7 @@ namespace WebCore {
 #if PLATFORM(SYMBIAN)
         virtual void setElementVisibilityChanged(bool visibility) = 0;
         virtual bool elementVisibilityChanged() = 0;
+        virtual void focusedElementChanged(Element*) = 0;
 #endif
 };
 

@@ -117,8 +117,10 @@ WebCursor::WebCursor() :
 // -----------------------------------------------------------------------------
 WebCursor::~WebCursor()
     {
-    m_sprite.Close();
+    delete m_sprite;
     delete m_transarrowmask;
+    if ( m_transtimer ) 
+        m_transtimer->Cancel();
     delete m_transtimer;
     }
 
@@ -139,7 +141,7 @@ void WebCursor::setCurrentView(WebView& view)
     if (!m_view)
     {
         m_view = &view;
-        constructSprite();
+        TRAP_IGNORE( constructSpriteL() );
     }
     m_view = &view;
     setOpaqueUntil(KTransparencyTime);
@@ -147,9 +149,9 @@ void WebCursor::setCurrentView(WebView& view)
     }
 
 // -----------------------------------------------------------------------------
-// WebCursor::constructSprite
+// WebCursor::constructSpriteL
 // -----------------------------------------------------------------------------
-void WebCursor::constructSprite()
+void WebCursor::constructSpriteL()
     {
 
     //tot:fixme
@@ -180,17 +182,10 @@ void WebCursor::constructSprite()
     delete gc;
     CleanupStack::PopAndDestroy();
     /////////////////////////////////
-    m_sprite = RWsSprite(m_view->ControlEnv()->WsSession());
-    RWindowTreeNode *window =  (RDrawableWindow* )m_view->brCtl()->CCoeControlParent()->DrawableWindow();
-    m_sprite.Construct(*window,TPoint(KInitialOffset,KInitialOffset),ESpriteNoChildClip);
-
-    TSpriteMember spriteMem;
-    spriteMem.iBitmap = 0;
-    spriteMem.iMaskBitmap = 0;
-    spriteMem.iInvertMask = ETrue;
-
-    m_sprite.AppendMember(spriteMem);
-    m_sprite.Activate();
+ 
+    CCoeControl* parent = static_cast<CCoeControl*>(m_view);
+    TPoint pos = TPoint(KInitialOffset,KInitialOffset);
+    m_sprite = CWebSprite::NewL(parent, pos, m_arrow.m_img, m_arrow.m_msk, ETrue);
     }
 
 // -----------------------------------------------------------------------------
@@ -198,24 +193,25 @@ void WebCursor::constructSprite()
 // -----------------------------------------------------------------------------
 void WebCursor::setCursor(CursorTypes type)
 {
-    m_sprite.SetPosition( m_pos );
+    
     m_type = type;
-    if (m_visible && !(m_view->brCtl()->settings()->getTabbedNavigation())) {
-        TSpriteMember spriteMem;
+    if (m_visible && (m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeCursor)) {
+        CFbsBitmap*  img = NULL;
+        CFbsBitmap*  msk = NULL;
         switch( type )
             {
             case PointerCursor:
             default:
                 {
-                spriteMem.iBitmap = m_waiton ? m_wait.m_img : m_arrow.m_img;
-                spriteMem.iMaskBitmap = m_waiton ? m_wait.m_img :
+                img = m_waiton ? m_wait.m_img : m_arrow.m_img;
+                msk = m_waiton ? m_wait.m_img :
                     (m_transparent && m_transcount > KTransparencyMoveThreshold ? m_transarrowmask : m_arrow.m_msk);
                 break;
                 }
            case HandCursor:
                 {
-                spriteMem.iBitmap = m_hand.m_img;
-                spriteMem.iMaskBitmap = m_hand.m_msk;
+                img = m_hand.m_img;
+                msk = m_hand.m_msk;
                 break;
                 }
            case IBeamCursor:
@@ -232,27 +228,25 @@ void WebCursor::setCursor(CursorTypes type)
                     }
                 else*/
                     {
-                    spriteMem.iBitmap = m_ibeam.m_img;
-                    spriteMem.iMaskBitmap = m_ibeam.m_msk;
+                    img = m_ibeam.m_img;
+                    msk = m_ibeam.m_msk;
                     }
                 break;
                 }
            case SelectMultiCursor:
                {
-                    spriteMem.iBitmap = m_selectMulti.m_img;
-                    spriteMem.iMaskBitmap = m_selectMulti.m_msk;
+                    img = m_selectMulti.m_img;
+                    msk = m_selectMulti.m_msk;
                     break;
                }
             }
-        spriteMem.iOffset = KCursorOffset;
-        spriteMem.iInvertMask = ETrue;
-        m_sprite.UpdateMember( 0, spriteMem );
-    } else {
-        TSpriteMember spriteMem;
-        spriteMem.iBitmap = 0;
-        spriteMem.iMaskBitmap = 0;
-        spriteMem.iInvertMask = ETrue;
-        m_sprite.UpdateMember( 0, spriteMem );
+        TPoint pos = m_pos + KCursorOffset;
+        
+        m_sprite->Update(pos, img, msk);
+        
+    } 
+    else {
+        m_sprite->Hide();
     }
 }
 
@@ -264,7 +258,7 @@ void WebCursor::cursorUpdate(bool visible)
     if (!m_view || !m_view->brCtl()->settings())
         return;
     if ( m_view->showCursor() ) {
-        m_visible = visible && (!m_view->brCtl()->settings()->getTabbedNavigation() || m_view->focusedElementType() == TBrCtlDefs::EElementSelectMultiBox); // check for tabbedNavigation here because it is called from so many places.
+        m_visible = visible && ((m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeCursor)|| m_view->focusedElementType() == TBrCtlDefs::EElementSelectMultiBox); // check for tabbedNavigation here because it is called from so many places.
     }
 
     resetTransparency();
@@ -279,7 +273,7 @@ void WebCursor::cursorUpdate(bool visible)
         else if (    elType == TBrCtlDefs::EElementSmartLinkTel
                   || elType == TBrCtlDefs::EElementSmartLinkEmail )
             type = IBeamCursor;
-        else if (    elType == TBrCtlDefs::EElementSelectMultiBox && m_view->brCtl()->settings()->getTabbedNavigation() )
+        else if (    elType == TBrCtlDefs::EElementSelectMultiBox && m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed)
             type = SelectMultiCursor;
         else
             type = HandCursor;
@@ -713,7 +707,7 @@ void WebCursor::scrollAndMoveCursor(int dir, int scrollRange, bool autoscroll)
 void WebCursor::updatePositionAndElemType(const TPoint& pt)
 {
     m_pos = pt;
-    m_sprite.SetPosition(pt);
+    m_sprite->SetPos(pt);
     WebFrame* frame = getFrameAtPoint(pt);
     TBrCtlDefs::TBrCtlElementType elType;
     TRect r;

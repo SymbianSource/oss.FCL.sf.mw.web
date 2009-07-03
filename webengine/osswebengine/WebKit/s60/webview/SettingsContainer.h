@@ -28,11 +28,12 @@ class HistoryControllerInterface;
 class SettingsContainer
 {
 public:
+    enum NavigationType { NavigationTypeCursor, NavigationTypeTabbed, NavigationTypeNone };
     SettingsContainer(WebView* view, HistoryControllerInterface* historyProvider);
     unsigned int brctlSetting(TBrCtlDefs::TBrCtlSettings setting);
     void setBrctlSetting(TBrCtlDefs::TBrCtlSettings setting, unsigned int value);
-    void setTabbedNavigation(bool on_) { m_tabbedNaviOn = on_; }
-    bool getTabbedNavigation() const { return m_tabbedNaviOn; }
+    void setNavigationType(NavigationType type) { m_navigationType = type; }
+    NavigationType getNavigationType() const { return m_navigationType; }
 
 private:
     void updatePageSetting(TBrCtlDefs::TBrCtlSettings setting);
@@ -46,7 +47,7 @@ private:
     unsigned int brctlSettings[TBrCtlDefs::ESettingsMaxEnum];
     WebView* m_webView;
     HistoryControllerInterface* m_historyController;
-    bool m_tabbedNaviOn;
+    NavigationType m_navigationType;
 };
 
 #endif // __WEBDOCUMENTLOADER_H__

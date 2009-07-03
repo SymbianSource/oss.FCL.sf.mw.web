@@ -26,9 +26,8 @@ void WebInspectorClient::inspectorDestroyed()
 {
 /*
     [[m_windowController.get() webView] close];
-    delete this;
 */
-    notImplemented();
+    delete this;
 }
 
 Page* WebInspectorClient::createPage()

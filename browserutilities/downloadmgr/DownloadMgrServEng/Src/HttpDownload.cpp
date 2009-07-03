@@ -59,6 +59,7 @@ const TInt   KUrlFixChar = '_';
 const TInt KMaxHeaderOfMultipart = 32000;
 const TInt KRespSizeForRecognition = 1024;  //for THttpProgressState EHttpContTypeRecognitionAvail
 const TInt KMinDataSizeToSend = (32*1024);  //for Browser Control to call NewDownloadL     
+const TInt KErrCodHttpDownloadPaused = -20045;  //Error code set by the CodHandler if the download is paused by the client
 
 _LIT8( KHttpScheme, "http" );
 _LIT8( KHttpsScheme, "https" );
@@ -2440,7 +2441,19 @@ EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
                 	
                 if( iProgState != EHttpProgMovingContentFile )
                     {
-                    TriggerEvent( iDlState, aValue ? EHttpDlProgProgressive : EHttpDlProgNonProgressive);
+                    if (aValue && iDlState == EHttpDlMultipleMOCompleted )
+                        {
+                        /* 
+                        if the file size is small, by the time the music player is launched, DMgr already triggered EHttpDlCompleted.
+                        So if the download state is EHttpDlMultipleMOCompleted, we need to trigger EHttpDlCompleted so that music player understands download is completed already
+                        This is needed to ensure backward compatibility
+                        */
+                        TriggerEvent( EHttpDlCompleted, EHttpDlProgProgressive);
+                        }   
+                    else
+                        {    
+                        TriggerEvent( iDlState, aValue ? EHttpDlProgProgressive : EHttpDlProgNonProgressive);
+                        }
                     }
                 }
             else
@@ -3187,7 +3200,12 @@ EXPORT_C void CHttpDownload::SetTrackDataAttributeL( TInt aIndex, HBufC8* dlData
 	        	    iLastError = EGeneral;
 	           	    }
                 }
-    	    TriggerEvent( EHttpDlFailed, EHttpProgNone );
+            
+            //if the client pauses the download, Codhandler sets error code to KErrCodHttpDownloadPaused. In that case, no need to trigger EHttpDlFailed Event     
+            if ( result != KErrCodHttpDownloadPaused )
+                {    
+    	        TriggerEvent( EHttpDlFailed, EHttpProgNone );
+                }
             }
     	}
     }
@@ -3998,6 +4016,16 @@ void CHttpDownload::StoreDownloadInfoL()
 
     CLOG_WRITE("5");
 
+    
+    TInt size = GetHttpHeadersSize(iResponseHeaders)+ GetHttpHeadersSize(iRequestHeaders)+
+                GetHttpHeadersSize(iEntityHeaders)+ GetHttpHeadersSize(iGeneralHeaders) + newInfoPtr.Size();
+    
+    
+    if(size >= bufSz)
+        {
+    	User::LeaveIfError( KErrArgument );
+        }
+    
     AppendHeadersL( newInfoPtr, iResponseHeaders );
     AppendHeadersL( newInfoPtr, iRequestHeaders );
     AppendHeadersL( newInfoPtr, iEntityHeaders );
@@ -6150,7 +6178,7 @@ void CHttpDownload::TriggerEvent( THttpDownloadState aDlState,
     if( iSilentMode )
         {
         if( !((aDlState == EHttpDlInprogress && aProgState == EHttpStarted)
-            || aDlState == EHttpDlMultipleMOCompleted || aDlState == EHttpDlFailed ))
+            || aDlState == EHttpDlMultipleMOCompleted || aDlState == EHttpDlFailed || aDlState == EHttpDlCompleted ))
             // See EDlAttrSilent
             {
             return;
@@ -6512,6 +6540,35 @@ void CHttpDownload::AppendHeadersL( TPtr8& aBuf,
         }
     }
 
+// -----------------------------------------------------------------------------
+// CHttpDownload::GetHttpHeadersSize
+// -----------------------------------------------------------------------------
+//
+TInt CHttpDownload::GetHttpHeadersSize(CArrayPtrFlat<CHeaderField>* aHeaders )
+    {
+    TInt headers = aHeaders->Count();
+    CLOG_WRITE_1("Headers: %d", headers);
+
+    HBufC8* fieldName = NULL;
+    HBufC8* fieldRawData = NULL;
+    
+    TInt size  = 0;
+
+    for( TInt i = 0; i < headers; ++i )
+        {
+        fieldName = (*aHeaders)[i]->FieldName();
+        fieldRawData = (*aHeaders)[i]->FieldRawData();
+        
+        size = size + fieldName->Size() +  fieldRawData->Size();
+        
+        CLOG_WRITE8_1( "Size = %S:", size );
+        }
+
+    return size;
+    
+    }
+    
+    
 // -----------------------------------------------------------------------------
 // CHttpDownload::AddHeaderL
 // -----------------------------------------------------------------------------

@@ -909,14 +909,21 @@ char *UString::ascii() const
   return statBuffer;
 }
 
-#ifdef KJS_DEBUG_MEM
+struct cleanupUString {
+    ~cleanupUString() {
+        UString::globalClear();
+    }
+};
+static cleanupUString clearGlobal;
+
+//#ifdef KJS_DEBUG_MEM
 void UString::globalClear()
 {
   delete [] statBuffer;
   statBuffer = 0;
   statBufferSize = 0;
 }
-#endif
+//#endif
 
 EXPORT
 UString &UString::operator=(const char *c)

@@ -207,7 +207,7 @@ EXPORT_C void CCodDownloadImpl::StartL( const CAiwGenericParamList* aParams )
 
     if(iDownloadPaused)
     {
-        iEng->Start(aParams,&iStatus);
+        iEng->Start(iParams,&iStatus);
         SetActive();
         iState = ELoad;
         iProgress.iState = TCodDownloadProgress::EInProgress;

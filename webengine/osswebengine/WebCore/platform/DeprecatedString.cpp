@@ -117,6 +117,21 @@ const char * const DeprecatedString::null = 0;
 DeprecatedStringData *DeprecatedString::shared_null = 0;
 DeprecatedStringData **DeprecatedString::shared_null_handle = 0;
 
+void DeprecatedString::deleteSharedNull()
+	{
+  delete shared_null;
+  shared_null=0;	
+  freeHandle(shared_null_handle);
+	}
+
+struct cleanupSharedNull {
+    ~cleanupSharedNull() 
+    {
+		DeprecatedString::deleteSharedNull();
+    }
+};
+struct cleanupSharedNull cleanSharedNull;
+
 // -------------------------------------------------------------------------
 // Utility functions
 // -------------------------------------------------------------------------

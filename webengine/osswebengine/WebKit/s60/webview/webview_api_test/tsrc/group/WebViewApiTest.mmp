@@ -30,7 +30,11 @@ CAPABILITY      ALL -TCB
 /* Remove comments and replace 0x00000000 with correct secure id */
 // SECUREID     0x00000000
 
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 
 DEFFILE         WebViewApiTest.def
 

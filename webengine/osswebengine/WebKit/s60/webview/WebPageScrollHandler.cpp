@@ -251,10 +251,7 @@ void WebPageScrollHandler::updateScrolling(const TPointerEvent& pointerEvent)
         {
             m_scrollTimer->Cancel();
             if (m_scrollableView.m_scrollingElement) {
-                if (m_scrollableView.m_scrollingElement) {
-                    m_scrollableView.m_scrollingElement->deref();
-                    m_scrollableView.m_scrollingElement = NULL;
-                }
+                clearScrollingElement();
             }
             else {
                 if (m_lastMoveEventTime != 0)
@@ -281,10 +278,11 @@ void WebPageScrollHandler::updateScrolling(const TPointerEvent& pointerEvent)
 }
 
 void WebPageScrollHandler::setupScrolling(const TPoint& aNewPosition)
-{   
+{
     if (m_lastPosition == TPoint(0, 0)) {
         m_lastPosition = aNewPosition;
     }
+   
     if(m_lastPosition == aNewPosition)
         return; // no displacement -- means no need for scrolling    
 
@@ -305,19 +303,31 @@ void WebPageScrollHandler::setupScrolling(const TPoint& aNewPosition)
         m_webView->setViewIsScrolling(true);
         m_webView->toggleRepaintTimer(false);
     }
+}
 
 
-}    
+void WebPageScrollHandler::clearScrollingElement()
+{
+    if (m_scrollableView.m_scrollingElement) {
+        m_scrollableView.m_scrollingElement->deref();
+        m_scrollableView.m_scrollingElement = NULL;
+    }
+}
 
 void WebPageScrollHandler::scrollContent()
 {
     TPoint scrollDelta = m_lastPosition - m_currentPosition;
- 
+    scrollContent(scrollDelta);
+}
+
+void WebPageScrollHandler::scrollContent(TPoint& aScrollDelta)
+{
     if(!m_scrollableView.activeFrameView())
             return;
         
-    int absX = Abs(scrollDelta.iX);
-    int absY = Abs(scrollDelta.iY);
+    
+    int absX = Abs(aScrollDelta.iX);
+    int absY = Abs(aScrollDelta.iY);
                                        
     if(absX || absY) //move only if necessary
     {      
@@ -331,8 +341,8 @@ void WebPageScrollHandler::scrollContent()
         {           
             case ScrollDirectionX: //scroll in X dir
             {
-                scrollDelta.iY = 0;
-                scrollDelta.iX *= 100;
+                aScrollDelta.iY = 0;
+                aScrollDelta.iX *= 100;
                 //Fallback to XY state if the current position is out of bounds                
                 TPoint boundaryCheckpoint = m_focalPoint - m_currentPosition;                                
                 if(Abs(boundaryCheckpoint.iY) > KScrollDirectionBoundary)
@@ -341,8 +351,8 @@ void WebPageScrollHandler::scrollContent()
             }
             case ScrollDirectionY: //scroll in Y dir
             {                
-                scrollDelta.iX = 0;
-                scrollDelta.iY *= 100;
+                aScrollDelta.iX = 0;
+                aScrollDelta.iY *= 100;
                 //Fallback to XY state if the current position is out of bounds                
                 TPoint boundaryCheckpoint = m_focalPoint - m_currentPosition;                                
                 if(Abs(boundaryCheckpoint.iX) > KScrollDirectionBoundary)
@@ -351,8 +361,8 @@ void WebPageScrollHandler::scrollContent()
             }
             case ScrollDirectionXY: //scroll in XY
             {
-                scrollDelta.iX *= 100;
-                scrollDelta.iY *= 100;
+                aScrollDelta.iX *= 100;
+                aScrollDelta.iY *= 100;
                 m_scrollDirectionState = ScrollDirectionUnassigned;
                 break;
             }
@@ -360,17 +370,16 @@ void WebPageScrollHandler::scrollContent()
         if (m_scrollableView.m_scrollingElement) {
             bool shouldScrollVertically = false;
             bool shouldScrollHorizontally = false;
-            //WebFrameView* mfv = m_webView->mainFrame()->frameView();
             WebFrame* frame = kit(m_scrollableView.m_scrollingElement->document()->frame());
-            IntPoint currPoint = frame->frameView()->viewCoordsInFrameCoords(m_currentPosition);
             RenderObject* render = m_scrollableView.m_scrollingElement->renderer();
             __ASSERT_DEBUG(render->isScrollable(), User::Panic(_L(""), KErrGeneral));
-            if (scrollDelta.iY)
-                shouldScrollVertically = !render->scroll(ScrollDown, ScrollByPixel, frame->frameView()->toDocCoords(scrollDelta).iY / 100);
-            if (scrollDelta.iX)
-                shouldScrollHorizontally = !render->scroll(ScrollRight, ScrollByPixel, frame->frameView()->toDocCoords(scrollDelta).iX / 100);
+            if (aScrollDelta.iY)
+                shouldScrollVertically = !render->scroll(ScrollDown, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iY / 100);
+            if (aScrollDelta.iX)
+                shouldScrollHorizontally = !render->scroll(ScrollRight, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iX / 100);
+
             TPoint scrollPos = frame->frameView()->contentPos();
-            TPoint newscrollDelta = frame->frameView()->toDocCoords(scrollDelta);
+            TPoint newscrollDelta = frame->frameView()->toDocCoords(aScrollDelta);
             m_currentNormalizedPosition +=  newscrollDelta;     
 
             if (shouldScrollHorizontally) {
@@ -379,21 +388,25 @@ void WebPageScrollHandler::scrollContent()
             if (shouldScrollVertically) {
                 scrollPos.iY = m_currentNormalizedPosition.iY/100;
             }
-            frame->frameView()->scrollTo(scrollPos);
+            
+            
+            if (shouldScrollVertically || shouldScrollHorizontally){
+                if (m_scrollableView.m_frameView->needScroll(scrollPos)) {
+                    frame->frameView()->scrollTo(scrollPos);
+                    updateScrollbars(scrollPos, newscrollDelta);
+                    core(frame)->sendScrollEvent();
+                }
+            }
+            else {
+                m_webView->syncRepaint();
+            }
             m_lastPosition = m_currentPosition;
             m_currentNormalizedPosition.iX = frame->frameView()->contentPos().iX * 100;
             m_currentNormalizedPosition.iY = frame->frameView()->contentPos().iY * 100;
-            if (shouldScrollVertically || shouldScrollHorizontally)
-                updateScrollbars(scrollPos, newscrollDelta);
-            currPoint = frame->frameView()->viewCoordsInFrameCoords(m_currentPosition);
-            if (shouldScrollHorizontally || shouldScrollVertically) {
-                core(frame)->sendScrollEvent();
-                m_webView->DrawNow();
-            }
         }
         else {
             TPoint scrollPos;
-            TPoint newscrollDelta = m_scrollableView.m_frameView->toDocCoords(scrollDelta);
+            TPoint newscrollDelta = m_scrollableView.m_frameView->toDocCoords(aScrollDelta);
             m_currentNormalizedPosition +=  newscrollDelta;  
             scrollPos.iX = m_currentNormalizedPosition.iX/100;
             scrollPos.iY = m_currentNormalizedPosition.iY/100;
@@ -406,6 +419,7 @@ void WebPageScrollHandler::scrollContent()
                 m_currentNormalizedPosition.iY = m_scrollableView.contentPos().iY * 100;
             }
             else {
+          
                 m_scrollableView.m_frameView->scrollTo(scrollPos);
                 m_lastPosition = m_currentPosition;
 #ifndef BRDO_USE_GESTURE_HELPER                
@@ -420,7 +434,7 @@ void WebPageScrollHandler::scrollContent()
 
 bool WebPageScrollHandler::calculateScrollableFrameView(const TPoint& aNewPosition)
 {
-    if (calculateScrollableElement(aNewPosition)) return true;
+    calculateScrollableElement(aNewPosition);
     
     //First figure out the direction we are scrolling    
     bool x_r = false;
@@ -634,19 +648,11 @@ void WebPageScrollHandler::handleTouchUpGH(const TGestureEvent& aEvent)
     else {
         m_scrollTimer->Cancel();
         m_lastPosition = TPoint(0, 0);
-        if (m_scrollableView.m_scrollingElement) {
-            if (m_scrollableView.m_scrollingElement) {
-                m_scrollableView.m_scrollingElement->deref();
-                m_scrollableView.m_scrollingElement = NULL;
-            }
-        }
-        else {
-            decelDoesScrollbars = startDeceleration(aEvent);
+        decelDoesScrollbars = startDeceleration(aEvent);
                     
-            if (m_webView->viewIsScrolling()) {
-                Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
-                frame->bridge()->sendScrollEvent();                            
-            }
+        if (m_webView->viewIsScrolling()) {
+            Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
+            frame->bridge()->sendScrollEvent();                            
         }
     
         if (!decelDoesScrollbars) {

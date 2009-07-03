@@ -35,6 +35,7 @@
 
 // CLASS DECLARATION
 class MJSMenuItemCallbacks;
+class MJSObjectProtector;
 
 /**
 *  CMenuItem
@@ -46,17 +47,31 @@ namespace KJS {
 
 class WidgetEventHandler;
 
+struct MenuItemConstructorPrivate
+{
+	MenuItemConstructorPrivate(	MJSMenuItemCallbacks* callbacks, 
+								MJSObjectProtector* protector, 
+								int internalId) : m_callbacks(callbacks), m_protector(protector), m_internalId(internalId)
+	{
+	}
+
+	MJSMenuItemCallbacks*	m_callbacks;
+	MJSObjectProtector*		m_protector;
+    int						m_internalId;
+};
+
 class JSMenuItemConstructor : public JSObject 
 {
 
 public:
-    JSMenuItemConstructor(MJSMenuItemCallbacks* callbacks);
+    JSMenuItemConstructor(MJSMenuItemCallbacks* callbacks, MJSObjectProtector* protector);
     virtual bool implementsConstruct() const;    
     virtual JSObject* construct( ExecState *exec, const List &args );
 
+	virtual ~JSMenuItemConstructor();
+
 private:
-    MJSMenuItemCallbacks*  m_callbacks;
-    int m_internalId;
+    MenuItemConstructorPrivate*  d;
 
 };
 
@@ -64,13 +79,16 @@ private:
 struct MenuItemPrivate
 {
     MenuItemPrivate(MJSMenuItemCallbacks* callbacks,
+					MJSObjectProtector* protector,
                     int cmdId, int internalId,
-                    WidgetEventHandler* selectCallback = NULL) : m_callbacks(callbacks),
+                    WidgetEventHandler* selectCallback = NULL) 
+					: m_callbacks(callbacks),
                     m_cmdId(cmdId),
                     m_internalId(internalId),
                     m_dimmed(false),
                     m_show(false),
-                    m_onSelectCallback(selectCallback)
+                    m_onSelectCallback(selectCallback),
+					m_protector(protector)
     {        
     }
 
@@ -78,6 +96,7 @@ struct MenuItemPrivate
     virtual ~MenuItemPrivate() { delete m_onSelectCallback; }
     
     MJSMenuItemCallbacks*   m_callbacks;
+    MJSObjectProtector*		m_protector;
     const int               m_cmdId;
     bool                    m_dimmed;
     bool                    m_show;
@@ -90,7 +109,8 @@ struct MenuItemPrivate
 class JSMenuItem : public JSObject
 {
 public:
-    JSMenuItem(ExecState* exec, MJSMenuItemCallbacks* callbacks,
+    JSMenuItem(ExecState* exec, MJSMenuItemCallbacks* callbacks, 
+				MJSObjectProtector* protector,
                 TDesC& text, int cmdId, int internalId,
                 WidgetEventHandler* selectCallback = NULL );
 

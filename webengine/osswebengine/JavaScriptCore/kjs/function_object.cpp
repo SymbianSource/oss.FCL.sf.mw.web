@@ -36,12 +36,28 @@
 
 using namespace KJS;
 
+static const Identifier* applyPropertyName = 0; 
+static const Identifier* callPropertyName = 0; 
+	 
+struct cleanupStaticFunctionObject { 
+	~cleanupStaticFunctionObject()  
+	{ 
+	delete applyPropertyName; 
+	delete callPropertyName; 
+
+	applyPropertyName = 0; 
+	callPropertyName = 0; 
+	} 
+}; 
+static cleanupStaticFunctionObject deleteStaticFunctionObject; 
 // ------------------------------ FunctionPrototype -------------------------
 
 FunctionPrototype::FunctionPrototype(ExecState *exec)
 {
-  static const Identifier* applyPropertyName = new Identifier("apply");
-  static const Identifier* callPropertyName = new Identifier("call");
+  if(!applyPropertyName)
+      applyPropertyName = new Identifier("apply");
+  if(!callPropertyName)
+      callPropertyName = new Identifier("call");
 
   putDirect(exec->propertyNames().length, jsNumber(0), DontDelete | ReadOnly | DontEnum);
   putDirectFunction(new FunctionProtoFunc(exec, this, FunctionProtoFunc::ToString, 0, exec->propertyNames().toString), DontEnum);

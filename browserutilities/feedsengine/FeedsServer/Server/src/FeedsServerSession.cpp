@@ -619,7 +619,9 @@ void CFeedsServerSession::GetFeedL(const RMessage2& aMessage)
     TPckg<TFeedsServerResponseType>  typePkg(type);
     TInt    folderListId = KNoFolderListId;
     const TInt KAutoUpdatingOff = 0;
-	iCurrentRequest = 1;
+    const TInt KRootFolderId = 0;
+
+    iCurrentRequest = 1;
     // Note: The a packed feed is made up of two buffers, a buffer of tokens
     //       and a string table buffer.  The tokens define the structure of the 
     //       feed where the string table contains the feed's data. This
@@ -679,7 +681,10 @@ void CFeedsServerSession::GetFeedL(const RMessage2& aMessage)
             //Gyanendra TODO // should create entry into database
             if (!iFeedsServer.iFeedsDatabase->FeedIdFromUrlL(feedUrl, folderListId, feedId))
                 {
-                feedId = iFeedsServer.iFeedsDatabase->CommitFeedL(folderListId,KNullDesC,feedUrl, KAutoUpdatingOff);
+                //Find feed id from folder id
+                iFeedsServer.iFeedsDatabase->SetIsFolderTableUpdateNeeded(ETrue);
+                TInt entryId = iFeedsServer.iFeedsDatabase->FolderItemAddL(folderListId, feedUrl, feedUrl, EFalse, KRootFolderId, KAutoUpdatingOff);
+                iFeedsServer.iFeedsDatabase->FeedIdFromEntryId(entryId, folderListId, feedId);
                 updateNeeded = ETrue;
                 }
             }

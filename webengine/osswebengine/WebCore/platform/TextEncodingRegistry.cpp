@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-#include "config.h"
+
 #include "TextEncodingRegistry.h"
 
 #include "PlatformString.h"
@@ -247,5 +247,16 @@ bool noExtendedTextEncodingNameUsed()
 {
     return !didExtendTextCodecMaps;
 }
+
+#if PLATFORM(SYMBIAN)
+void deleteEncodingMaps()
+{
+    delete textEncodingNameMap;
+    textEncodingNameMap = NULL;
+    delete textCodecMap;
+    textCodecMap = NULL;
+    didExtendTextCodecMaps = false;
+}
+#endif
 
 } // namespace WebCore

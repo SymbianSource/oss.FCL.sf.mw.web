@@ -38,6 +38,7 @@ using KJS::UString;
 namespace WebCore {
 
 static HashSet<StringImpl*>* stringTable;
+static bool initialized = false;
 
 struct CStringTranslator 
 {
@@ -170,7 +171,9 @@ StringImpl* AtomicString::add(StringImpl* r)
 
 void AtomicString::remove(StringImpl* r)
 {
-    stringTable->remove(r);
+    if( stringTable ) {
+        stringTable->remove(r);
+    }
 }
 
 StringImpl* AtomicString::add(const KJS::Identifier& str)
@@ -203,27 +206,45 @@ DeprecatedString AtomicString::deprecatedString() const
     return m_string.deprecatedString();
 }
 
+static const char *textAtomStr = "#text";
+static const char *commentAtomStr = "#comment";
+static const char *starAtomStr = "*";
+
 DEFINE_GLOBAL(AtomicString, nullAtom)
 DEFINE_GLOBAL(AtomicString, emptyAtom, "")
-DEFINE_GLOBAL(AtomicString, textAtom, "#text")
-DEFINE_GLOBAL(AtomicString, commentAtom, "#comment")
-DEFINE_GLOBAL(AtomicString, starAtom, "*")
+DEFINE_GLOBAL(AtomicString, textAtom, textAtomStr)
+DEFINE_GLOBAL(AtomicString, commentAtom, commentAtomStr)
+DEFINE_GLOBAL(AtomicString, starAtom, starAtomStr)
 
 void AtomicString::init()
 {
-    static bool initialized;
     if (!initialized) {
         stringTable = new HashSet<StringImpl*>;
 
         // Use placement new to initialize the globals.
         new ((void*)&nullAtom) AtomicString;
         new ((void*)&emptyAtom) AtomicString("");
-        new ((void*)&textAtom) AtomicString("#text");
-        new ((void*)&commentAtom) AtomicString("#comment");
-        new ((void*)&starAtom) AtomicString("*");
+        new ((void*)&textAtom) AtomicString(textAtomStr);
+        new ((void*)&commentAtom) AtomicString(commentAtomStr);
+        new ((void*)&starAtom) AtomicString(starAtomStr);
 
         initialized = true;
     }
+}
+
+void AtomicString::remove()
+{
+    // Cleanup the string table array
+    if( stringTable )
+        {
+        stringTable->clear();
+        delete stringTable;
+        stringTable = NULL;
+        }
+	textAtomStr = "";
+	commentAtomStr = "";
+	starAtomStr = "";
+    initialized = false; 
 }
 
 }

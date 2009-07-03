@@ -60,6 +60,14 @@ namespace KJS {
 
 static Lexer* currLexer = 0;
 
+struct cleanupLexer {
+    ~cleanupLexer() {
+        delete currLexer;
+        currLexer=0;
+    }
+};
+static cleanupLexer clearLexer;
+
 static bool isDecimalDigit(int);
 
 Lexer::Lexer()

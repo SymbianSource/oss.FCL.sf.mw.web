@@ -71,6 +71,8 @@ HttpSessionManager::~HttpSessionManager()
     m_httpDownload = NULL;
     delete m_SelfDownloadContentHandler;
     m_SelfDownloadContentHandler = NULL;
+    delete m_SelfDownloadContentTypes;
+    m_SelfDownloadContentTypes = NULL;
     m_ClientAcceptHeaders.ResetAndDestroy();
     m_ClientAcceptHeaders.Close();
     closeHttpSession();

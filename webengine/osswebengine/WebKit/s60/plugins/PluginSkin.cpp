@@ -306,24 +306,28 @@ void PluginSkin::Close()
 // ----------------------------------------------------------------------------
 void PluginSkin::pluginFocusChanged(TBool focus) 
 { 
-	  //Trigger Webview to notify all plugins about current view set to foreground/background for playing/pausing swf files (resp.)
-	  control(m_frame)->webView()->notifyPlugins(focus);
     if (control(m_frame)->webView()->pageFullScreenHandler() && 
         !control(m_frame)->webView()->pageFullScreenHandler()->isFullScreenMode()) 
             return;
     
     if (focus && !m_flashContent)
         {
+        TRAP_IGNORE(
         control(m_frame)->webView()->LeaveFullscreenBrowsingL();
-        control(m_frame)->webView()->notifyFullscreenModeChangeL( EFalse );        
+        control(m_frame)->webView()->notifyFullscreenModeChangeL( EFalse );
+        );
         }
     else if (focus)
         {
+        TRAP_IGNORE(
         control(m_frame)->webView()->pageFullScreenHandler()->showEscBtnL();
+        );
         }
     else 
         {
+        TRAP_IGNORE(
         control(m_frame)->webView()->pageFullScreenHandler()->hideEscBtnL();
+        );
         }
 }
 
@@ -460,20 +464,22 @@ void PluginSkin::activate()
                 // Set right soft key
                 m_frame->frameView()->topView()->brCtl()->updateDefaultSoftkeys();
                 pluginHandler->setActivePlugin(this);
+                pluginHandler->setPluginToActivate(NULL);
                 }
             }
         else
             {
             m_active = ETrue;
             pluginHandler->setActivePlugin(this);
-            m_frame->frameView()->topView()->openPluginPlayer(m_pluginwin);
+            TRAP_IGNORE( m_frame->frameView()->topView()->openPluginPlayerL(m_pluginwin));
             consumed = ETrue;
             m_active = EFalse;
             pluginHandler->setActivePlugin(NULL);
             }
     } else {
         if ( m_pluginSupported ) {
-            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(*m_url, this, core(m_frame));
+            NetscapePlugInStreamLoaderClient* pluginloader = NULL;
+            TRAP_IGNORE( pluginloader = NetscapePlugInStreamLoaderClient::NewL(*m_url, this, core(m_frame)));
             if (pluginloader) {
                 pluginloader->start();                            
             }                                                            
@@ -619,18 +625,6 @@ void PluginSkin::createPluginWinL(TDesC8& url, TDesC& mimetype)
 }
 
 
-// -----------------------------------------------------------------------------
-// PluginSkin::ViewFocusChanged
-// From MViewFocusObserver
-// Callback from the view when the focus changes
-// -----------------------------------------------------------------------------
-void PluginSkin::viewFocusChanged(TBool focused)
-    {
-    if (m_pluginwin)
-        {
-        m_pluginwin->viewFocusChanged(focused);
-        }
-    }
 
 // -----------------------------------------------------------------------------
 // PluginSkin::PositionChanged
@@ -997,15 +991,6 @@ TInt PluginSkin::handleNetworkAccess() const
     
     return apId;
 }
-void PluginSkin::handlePluginForeground(TBool focus)
-{
-    // Send Plugin Visible/Invisible event
-    if (m_pluginwin)
-    {
-       m_pluginwin->NotifyPluginVisible(focus); 
-    }
-}
-
 
 TPluginLoadMode PluginSkin::GetLoadMode(const TDesC* aWindowType)
 {

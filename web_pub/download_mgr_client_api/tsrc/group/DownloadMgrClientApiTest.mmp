@@ -42,6 +42,10 @@ SYSTEMINCLUDE   ../../../download_mgr_ui_api/inc
 LIBRARY         euser.lib efsrv.lib downloadmgr.lib esock.lib
 LIBRARY         stiftestinterface.lib
 
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 
 // End of File

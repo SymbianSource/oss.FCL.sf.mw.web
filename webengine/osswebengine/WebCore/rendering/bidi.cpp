@@ -95,6 +95,19 @@ static bool isLineEmpty = true;
 static bool previousLineBrokeCleanly = true;
 static int numSpaces;
 
+struct cleanupMidpoints {
+    ~cleanupMidpoints() {
+    	if(smidpoints)
+    		{
+    		smidpoints->clear();
+    		delete smidpoints;
+    		smidpoints = 0;
+    		}
+    }
+};
+static cleanupMidpoints deleteMidPoints;
+
+
 static int getBPMWidth(int childValue, Length cssUnit)
 {
     if (!cssUnit.isIntrinsicOrAuto())

@@ -22,7 +22,7 @@
 //  INCLUDES
 #include <e32std.h>
 #include <eikscrlb.h>
-#include "platform/Shared.h"
+#include "platform\Shared.h"
 #include "BrCtlDefs.h"
 #include "PageScaler.h"
 #include "Timer.h"
@@ -64,6 +64,8 @@ class WebTabbedNavigation;
 class WebPageZoomHandler;
 class WebPointerEventHandler;
 class WebPageFullScreenHandler;
+class WebFrameView;
+class WebFrameBridge;
 
 class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, private MPageScalerCallback, public MOOMStopper
     {
@@ -184,7 +186,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
 
         PluginPlayer* pluginPlayer() { return m_pluginplayer; }
         void closePluginPlayer();
-        void openPluginPlayer(PluginWin* plugin);
+        void openPluginPlayerL(PluginWin* plugin);
 
         void setAccessPointId(TUint32 apid) {m_apid = apid;}
         TUint32 accessPointId() { return m_apid; }
@@ -384,7 +386,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         TBool TouchScrolling() ;
 
         CCoeControl& PageControlView();
-        void notifyPlugins(TBool focus);
 
      protected: // From CCoeControl
 
@@ -454,24 +455,27 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool handleInputElement(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
         bool handleEventKeyL(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
         void setFocusedNode(WebCore::Frame* frame);
-        void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
+
         bool handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
         bool handleEditable(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame );
         bool isNaviKey(const TKeyEvent& keyevent);
     public:
+        void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
         void fepTimerFired(WebCore::Timer<WebView>*);
         void fepVKBTimerFired(WebCore::Timer<WebView>*);
         bool isClosing() const { return m_isClosing; }
         void synchRequestPending(bool);
         bool isSynchRequestPending() const { return m_synchRequestPending; }
 
-        void setPluginFullscreen(bool val) { m_pluginFullscreen = val; }
-        bool isPluginFullscreen() { return m_pluginFullscreen; }
-        void setPluginActivated(bool option) {m_pluginActivated = option;}
         TInt getWidgetId();
+        void focusedElementChanged(WebCore::Element* element);
+        void windowObjectCleared() const;
+
     private:
-        WebCore::Page* m_page;
-        CBrCtl* m_brctl;
+        WebCore::Page*          m_page;
+        WebFrameView*           m_frameView;
+        WebFrameBridge*         m_bridge;
+        CBrCtl*                 m_brctl;
         RRegion                 m_repaints;
         CPeriodic*              m_repainttimer;
         WebCoreGraphicsContext* m_webcorecontext;   // owned
@@ -544,9 +548,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
 
         // synchronous requests
         bool                m_synchRequestPending;
-        bool                m_pluginFullscreen;
         //Indicates any plugin is activated/deactivated
-        bool                m_pluginActivated;
         bool                m_showCursor;
         bool                m_allowRepaints;
     };

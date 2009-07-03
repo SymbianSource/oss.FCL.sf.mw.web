@@ -78,6 +78,7 @@ public:
     bool isEmpty() const { return m_string.isEmpty(); }
 
     static void remove(StringImpl*);
+    static void remove();
     
 #ifdef __OBJC__
     AtomicString(NSString* s) : m_string(add(String(s).impl())) { }

@@ -38,7 +38,7 @@ class WebChromeClient : public WebCore::ChromeClient {
         WebView *webView() { return m_webView; }
 
         virtual ~WebChromeClient() {  }
-        virtual void chromeDestroyed() {}
+        virtual void chromeDestroyed();
 
         virtual void setWindowRect(const WebCore::FloatRect&) {}
         virtual WebCore::FloatRect windowRect();
@@ -106,6 +106,11 @@ class WebChromeClient : public WebCore::ChromeClient {
         bool elementVisibilityChanged() {
             return m_visibility;   
         }
+        virtual void focusedElementChanged(WebCore::Element*);
+        
+protected: // new functions
+        void addMessageToConsoleL(const WebCore::String& aMessage, WebCore::MessageLevel aMessageLevel, unsigned int aLine, const WebCore::String& aSourceURL);
+        
 private:
     WebView *m_webView;
     void GetDateAndTimeL(TDes& date, TDes& time) const;

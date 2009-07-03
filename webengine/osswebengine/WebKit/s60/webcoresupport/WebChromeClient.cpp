@@ -54,6 +54,11 @@ WebChromeClient::WebChromeClient(WebView *webView)
     m_visibility = false;
 }
 
+void WebChromeClient::chromeDestroyed()
+{
+    delete this;
+}
+
 FloatRect WebChromeClient::windowRect() { notImplemented(); return FloatRect(); }
 FloatRect WebChromeClient::pageRect() { notImplemented(); return FloatRect(); }
 float WebChromeClient::scaleFactor() { notImplemented(); return 1.0; }
@@ -72,7 +77,9 @@ Page* WebChromeClient::createWindow(Frame* frame, const WebCore::FrameLoadReques
     }
     if (name) {
     	bool userGesture = frame->scriptProxy()->interpreter()->wasRunByUserGesture();
+    	TRAP_IGNORE(
         newBrCtl = m_webView->brCtl()->getWindowL(*name, userGesture);
+        );
         delete name;
         if (newBrCtl) {
             page = newBrCtl->webView()->page();
@@ -136,6 +143,14 @@ void WebChromeClient::GetDateAndTimeL(TDes& date, TDes& time) const
 
 void WebChromeClient::addMessageToConsole(const WebCore::String& message, MessageLevel messageLevel, unsigned int line, const WebCore::String& sourceURL)
 {
+    TRAP_IGNORE(
+    addMessageToConsoleL(message, messageLevel, line, sourceURL);
+    );
+}
+
+void WebChromeClient::addMessageToConsoleL(const WebCore::String& message, MessageLevel messageLevel, unsigned int line, const WebCore::String& sourceURL)
+{
+
     RFs fsSession;
     User::LeaveIfError( fsSession.Connect());
 
@@ -337,4 +352,8 @@ IntRect WebChromeClient::windowResizerRect() const{ return IntRect();}
 void WebChromeClient::addToDirtyRegion(const IntRect&){}
 void WebChromeClient::scrollBackingStore(int dx, int dy, const IntRect& scrollViewRect, const IntRect& clipRect){}
 
+void WebChromeClient::focusedElementChanged(Element* element)
+{
+    m_webView->focusedElementChanged(element);
+}
 

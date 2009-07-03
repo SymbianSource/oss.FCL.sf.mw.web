@@ -49,14 +49,10 @@
 
 #ifdef __SERIES60_HELP
 // Context-Sensitve Help File
-#include <csxhelp/browser.hlp.hrh>
+#include <csxhelp/drm.hlp.hrh>
 #endif // __SERIES60_HELP
-//#include "browser.hlp.hrh" // replace with DRMUI.hlp.hrh when ready 
 
 // ================= CONSTANTS =======================
-/// For launching more info DRM_HLP_REGISTRATION
-_LIT(KDRM_HLP_REGISTRATION,"DRM_HLP_REGISTRATION"); 
-
 /// Temp file directory:
 _LIT( KRoapTempFilePath, "c:\\system\\temp\\" );
 
@@ -377,7 +373,7 @@ TInt CRoapAppUi::ShowRoapCallback( TAny* aPtr )
 {
     TInt err( KErrNone );    
     CRoapAppUi* self = static_cast<CRoapAppUi*>(aPtr);
-    TRAP( err, self->LaunchHelpL( KDRM_HLP_REGISTRATION ) ); // KOSS_HLP_SAVED_PAGES for testing       
+    TRAP( err, self->LaunchHelpL( KDRM_HLP_REGISTRATION ) );
     return err;        
 }
 
@@ -986,4 +982,5 @@ void CRoapAppUi::HandleDMgrEventL( RHttpDownload& aDownload, THttpDownloadEvent 
 		
 	CLOG(( 2, _L("<- CRoapAppUi::HandleDMgrEventL") ));
     }
+
 

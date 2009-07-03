@@ -134,6 +134,7 @@ RegularExpression::RegularExpression(const RegularExpression &re) : d (re.d)
 
 RegularExpression::~RegularExpression()
 {
+	d=0;
 }
 
 RegularExpression &RegularExpression::operator=(const RegularExpression &re)

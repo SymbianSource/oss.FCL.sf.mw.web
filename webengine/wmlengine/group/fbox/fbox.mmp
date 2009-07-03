@@ -29,7 +29,11 @@ MACRO NOKIA_MOBILE_BROWSER
 
 SOURCEPATH      ../../src/fbox/src/
 
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 
 #include  "../webkitcommon.mmpi"
 

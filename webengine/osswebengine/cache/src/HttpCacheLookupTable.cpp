@@ -233,6 +233,27 @@ TInt CHttpCacheLookupTable::Remove( const TDesC8& aUrl )
     }
 
 // -----------------------------------------------------------------------------
+// CHttpCacheLookupTable::RemoveByPosition
+//
+// -----------------------------------------------------------------------------
+//
+TInt CHttpCacheLookupTable::RemoveByPosition( TInt aPos )
+    {
+    TInt status( KErrNotFound );
+
+    if ( Valid( aPos ) )
+        {
+        CHttpCacheEntry* entry = iEntries->At( aPos );
+        SetDeleted( aPos );
+        delete entry;
+        iCount--;
+        status = KErrNone;
+        }
+
+    return status;
+    }
+       
+// -----------------------------------------------------------------------------
 // CHttpCacheLookupTable::EraseCacheEntry
 //
 // -----------------------------------------------------------------------------
@@ -350,21 +371,26 @@ void CHttpCacheLookupTable::InternalizeL(
             CHttpCacheEntry* entry = CHttpCacheEntry::NewLC( KNullDesC8, *iEvictionHandler );
             // read it
             err = entry->Internalize( aReadStream );
-            // leave only on no memory
-            if( err == KErrNone )
+
+            if ( err == KErrNone && entry->BodySize() > 0 )
                 {
-                // insert to the table
+                // cacheEntry is valid, insert into the table
                 InsertL( entry );
                 contentSize += entry->HeaderSize();
                 contentSize += entry->BodySize();
                 }
             else if ( err == KErrNoMemory )
                 {
+                // Only leave if no memory
                 User::Leave( KErrNoMemory );
                 }
-            else
+            else if ( entry->BodySize() == 0 )
                 {
-                // suggestions
+                // This is an empty cache entry, remove it from file system.
+				// Use CreateNewFilesL() to open file handles, so we can delete
+				// the files associated with the cache entry.
+                iStreamHandler->CreateNewFilesL( *entry );
+                iStreamHandler->EraseCacheFile( *entry );
                 }
 
             // takes ownership
@@ -690,8 +716,7 @@ void CHttpCacheLookupTable::Erase( TInt aPos )
 //
 // -----------------------------------------------------------------------------
 //
-TBool CHttpCacheLookupTable::Valid(
-    TInt aPos )
+TBool CHttpCacheLookupTable::Valid( TInt aPos )
     {
     return( BoundaryCheck( aPos ) && !Empty( aPos ) && !Deleted( aPos ) );
     }
@@ -701,8 +726,7 @@ TBool CHttpCacheLookupTable::Valid(
 //
 // -----------------------------------------------------------------------------
 //
-TBool CHttpCacheLookupTable::Empty(
-    TInt aPos )
+TBool CHttpCacheLookupTable::Empty( TInt aPos )
     {
     return( BoundaryCheck( aPos ) && iEntries->At( aPos ) == NULL );
     }
@@ -809,4 +833,30 @@ void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable
             }
         }
     }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheLookupTable::FindCacheEntryIndex
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheLookupTable::FindCacheEntryIndex(
+    const CHttpCacheEntry& aCacheEntry,
+    TInt* aIndex )
+    {
+    *aIndex = -1;
+    for ( TInt i = 0; i < iEntries->Count(); i++ )
+        {
+        CHttpCacheEntry* entry = iEntries->At( i );
+
+        if ( entry == &aCacheEntry )
+            {
+            if ( aIndex )
+                {
+                *aIndex = i;
+                }
+            break;
+            }
+        }
+    }
+
 //  End of File

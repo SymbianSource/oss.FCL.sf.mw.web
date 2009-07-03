@@ -253,6 +253,17 @@ static bool acceptsEditingFocus(Node *node)
 
 DeprecatedPtrList<Document>*  Document::changedDocuments = 0;
 
+struct cleanupChangedDocuments {
+    ~cleanupChangedDocuments() {
+    	if(Document::changedDocuments)
+    		{
+    		delete Document::changedDocuments;
+    		Document::changedDocuments = NULL;
+    		}
+    }
+};
+static cleanupChangedDocuments deleteChangedDocuments;
+
 // FrameView might be 0
 Document::Document(DOMImplementation* impl, Frame* frame, bool isXHTML)
     : ContainerNode(0)
@@ -821,10 +832,28 @@ Element* Document::elementFromPoint(int x, int y) const
 
 void Document::addElementById(const AtomicString& elementId, Element* element)
 {
-    if (!m_elementsById.contains(elementId.impl()))
-        m_elementsById.set(elementId.impl(), element);
-    else
-        m_duplicateIds.add(elementId.impl());
+typedef HashMap<AtomicStringImpl*, Element*>::iterator iterator;
+   if (!m_duplicateIds.contains(elementId.impl())) {
+       // Fast path. The ID is not already in m_duplicateIds, so we assume that it's
+       // also not already in m_elementsById and do an add. If that add succeeds, we're done.
+       pair<iterator, bool> addResult = m_elementsById.add(elementId.impl(), element);
+       if (addResult.second)
+           return;
+       // The add failed, so this ID was already cached in m_elementsById.
+       // There are multiple elements with this ID. Remove the m_elementsById
+       // cache for this ID so getElementById searches for it next time it is called.
+       m_elementsById.remove(addResult.first);
+       m_duplicateIds.add(elementId.impl());
+   } else {
+       // There are multiple elements with this ID. If it exists, remove the m_elementsById
+       // cache for this ID so getElementById searches for it next time it is called.
+       iterator cachedItem = m_elementsById.find(elementId.impl());
+       if (cachedItem != m_elementsById.end()) {
+           m_elementsById.remove(cachedItem);
+           m_duplicateIds.add(elementId.impl());
+       }
+   }
+   m_duplicateIds.add(elementId.impl());
 }
 
 void Document::removeElementById(const AtomicString& elementId, Element* element)

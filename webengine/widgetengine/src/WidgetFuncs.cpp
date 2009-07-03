@@ -100,7 +100,7 @@ JSValue* JSWidgetFunc::callAsFunction(ExecState *exec, JSObject *thisObj, const 
                 args[0]->toString(exec).size() >= 0 ) {
                 
                 TPtrC tstrKey(KNullDesC);
-                TPtrC tstrValue(KNullDesC);
+                HBufC* tstrValue(NULL);
                 TInt retCode = KErrNone;
 
                 if ( args[0]->type() == NumberType ) {
@@ -115,7 +115,13 @@ JSValue* JSWidgetFunc::callAsFunction(ExecState *exec, JSObject *thisObj, const 
 
 
                 if (retCode == KErrNone) {
-                    return jsString(UString((const UChar *)tstrValue.Ptr(),tstrValue.Length()));
+                    UString u((const UChar *)tstrValue->Ptr(),tstrValue->Length());
+                    JSCell* rtn=jsString(u);
+                    delete tstrValue;
+                    return rtn;
+                }
+                else {
+                    delete tstrValue;
                 }
 
         }
@@ -172,6 +178,13 @@ JSValue* JSWidgetFunc::callAsFunction(ExecState *exec, JSObject *thisObj, const 
         case setNavigationMode: {
             if ( args[0]->type() == BooleanType ) {
                 m_callbacks->setNavigationEnabled(args[0]->toBoolean(exec));
+            }
+        break;
+        }
+        case setNavigationType: {
+            if (  args[0]->type() == StringType && args[0]->toString(exec).size() > 0 ) {
+                TPtrC type((const TUint16 *)args[0]->toString(exec).data(), args[0]->toString(exec).size());
+                m_callbacks->setNavigationType(type);
             }
         break;
         }

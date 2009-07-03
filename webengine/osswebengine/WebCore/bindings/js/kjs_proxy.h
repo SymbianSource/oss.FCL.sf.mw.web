@@ -26,6 +26,8 @@
 namespace KJS {
     class JSValue;
     class ScriptInterpreter;
+    class JSObject;
+
 }
 
 namespace WebCore {
@@ -61,6 +63,7 @@ private:
     RefPtr<KJS::ScriptInterpreter> m_script;
     Frame* m_frame;
     int m_handlerLineno;
+    KJS::JSObject* m_globalObject;
 };
 
 }

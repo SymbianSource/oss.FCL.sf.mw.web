@@ -66,13 +66,14 @@ public:
     void setLeftSoftKeyLabel(const TDesC& aText);
     void setTabbednavigation(bool aOn);
     bool IsWidgetPublising(){ return m_isWidgetPublishing;}
+    void setNavigationType(const TDesC& aType);
+    void windowObjectCleared();
 
 private:
     void AddJSExtension(const TDesC& id, void* obj);
     CWidgetExtension(WebView& aWebKitView);
     void ConstructL(MWidgetCallback& aWidgetCallback);
 
-    RLibrary                 m_widgetLibrary;
     WebView*                 m_webview;
 
     MWidgetEngineBridge*     m_widgetengine;
@@ -81,7 +82,6 @@ private:
     bool                     m_isWidgetPublishing;
 
 #if defined(BRDO_LIW_FF)
-    RLibrary                 m_deviceLibrary;
     MDeviceBridge*           m_deviceBridge;
 #endif
 };

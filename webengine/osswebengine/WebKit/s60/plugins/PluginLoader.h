@@ -329,12 +329,12 @@ class CPluginLoadData : public CBase
         void SetRequestUrlL(const TDesC8& aRequestUrl);
 
         /**
-        * RequestUrlL
+        * RequestUrl
         * Return the request url
         * @since 3.1
         * @return void
         */
-        HBufC8* RequestUrlL() { return iRequestUrl; }
+        HBufC8* RequestUrl() { return iRequestUrl; }
 
         /**
         * SetURLLoader

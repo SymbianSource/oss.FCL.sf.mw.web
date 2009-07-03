@@ -503,7 +503,7 @@ void CWidgetUiWindow::SetCurrentWindow( TBool aCurrent )
 
         if (aCurrent)
             {
-            //UpdateCba();
+            UpdateCba();
             Engine()->MakeVisible( iWidgetLoaded );
             // redraw incase the orientation changed while in the background
             Relayout();
@@ -671,6 +671,7 @@ TBool CWidgetUiWindow::HasMiniviewL()
     RWidgetRegistryClientSession clientSession = iWindowManager.WidgetUIClientSession();
     CWidgetPropertyValue* propValue = clientSession.GetWidgetPropertyValueL( iUid, EMiniViewEnable );
     TInt hasMiniview = *propValue;
+    delete propValue;
     return hasMiniview;
     }
 
@@ -686,12 +687,15 @@ TBool CWidgetUiWindow::CheckNetworkAccessL()
     RWidgetRegistryClientSession& widgetRegistry
                 = iWindowManager.WidgetUIClientSession();
 
-    TInt networkAccess = *(widgetRegistry.GetWidgetPropertyValueL(
-                                        iUid, EAllowNetworkAccess ));
-    TInt fullAccess = *(widgetRegistry.GetWidgetPropertyValueL(
-                                        iUid, EAllowFullAccess ));
-    TInt blanketPermission = *(widgetRegistry.GetWidgetPropertyValueL(
-                                        iUid, EBlanketPermGranted ));
+    CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowNetworkAccess );
+    TInt networkAccess = *propValue;
+    delete propValue;
+    propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowFullAccess );
+    TInt fullAccess = *propValue;
+    delete propValue;
+    propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EBlanketPermGranted );
+    TInt blanketPermission = *propValue;
+    delete propValue;
     TInt inMiniView = widgetRegistry.IsWidgetInMiniView( iUid);
     if ( !( networkAccess || fullAccess )  ||
         ( inMiniView && !blanketPermission  ))

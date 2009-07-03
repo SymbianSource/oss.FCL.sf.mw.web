@@ -49,6 +49,16 @@ static bool deferringTimers;
 static Vector<TimerBase*>* timerHeap;
 static HashSet<const TimerBase*>* timersReadyToFire;
 
+struct timerCleaner {
+    ~timerCleaner() {
+        if( timerHeap ) {
+            delete timerHeap;
+            timerHeap = 0;
+        }
+    }
+};
+struct timerCleaner cleanTimer;
+
 // ----------------
 
 // Class to represent elements in the heap when calling the standard library heap algorithms.

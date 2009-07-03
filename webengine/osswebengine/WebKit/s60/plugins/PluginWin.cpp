@@ -227,8 +227,6 @@ void PluginWin::windowChangedL()
 void PluginWin::processEventL( TPluginEventType eventType,
                                 TBool& consumed )
 {
-	  CBrCtl*   brCtl = control(m_pluginskin->frame());
-	  WebView*  view = brCtl->webView();
     consumed = EFalse;
 
     switch ( eventType ) {
@@ -239,7 +237,6 @@ void PluginWin::processEventL( TPluginEventType eventType,
                     m_notifier->NotifyL( MPluginNotifier::EPluginActivated, (void*) &pt );
                 }
             consumed = ETrue;
-            view->setPluginActivated(true);   //Setting pluginactivated flag in webview
             setPluginFocusL( ETrue );
         break;
 
@@ -249,7 +246,6 @@ void PluginWin::processEventL( TPluginEventType eventType,
                     m_notifier->NotifyL( MPluginNotifier::EPluginDeactivated, (void*) 0 );
                 }
             consumed = ETrue;
-            view->setPluginActivated(false);
             setPluginFocusL( EFalse );
         break;
 
@@ -420,42 +416,6 @@ void PluginWin::HandleControlEventL( CCoeControl* /*aControl*/,
 {
 }
 
-// -----------------------------------------------------------------------------
-// PluginWin::ViewFocusChanged
-//
-// Invoked by CCoeControl to WebKitView to PluginWin when the Browser focus
-// changes. This method notifies all plugins of thier current focus state.
-// NOTES:
-// iBrowserBackground means that the browser app is not top application,
-// such as when bookmarks, idle screen, or another app/view is in foreground.
-// aFocused is true if browser has focus and false if browser is out of focus
-// and a plugin has taken focus.
-// -----------------------------------------------------------------------------
-void PluginWin::viewFocusChanged( TBool focused )
-{
-if (m_notifier)
-		{
-		if (focused)
-			{
-			// The browser brings back the focus, and so are plugins.
-			    HandleGainingForeground();
-			}
-		else
-			{
-			// The browser doesn't have focus and this plugin focus state is...
-			if ( m_pluginfocus )
-				{
-				// This plugin is selected to be activate, so the focus is on this plugin now.
-				   HandleGainingForeground();
-				}
-			else
-				{
-				// The focus on the plugin is cancelled. This happens when deactivate the selected plugin
-				   HandleLosingForeground();
-				}
-			}
-		}
-}
 
 // -----------------------------------------------------------------------------
 // PluginWin::SetPluginFocusL
@@ -575,18 +535,6 @@ void PluginWin::handlePluginCommandL(TInt id)
         }
     }
 
-// -----------------------------------------------------------------------------
-// PluginWin::FocusChanged
-//
-// virtual function from CCoeControl for plugin win
-// -----------------------------------------------------------------------------
-//
-void PluginWin::FocusChanged(TDrawNow aDrawNow)
-{
-    if(m_pluginfocus) {
-        m_pluginskin->pluginFocusChanged(IsFocused());
-    }
-}
 
 // -----------------------------------------------------------------------------
 //
@@ -725,11 +673,13 @@ void PluginWin::Draw( const TRect& /*rect*/ ) const
     }
 }
 
-void PluginWin::TogleScreenMode(bool aFullScreen)
+void PluginWin::ToggleScreenMode(bool aFullScreen)
 {
   m_fullscreen = aFullScreen;
   CBrCtl*   brCtl = control(m_pluginskin->frame());
-
+  WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+  
+  cursor->cursorUpdate(!aFullScreen && !AknLayoutUtils::PenEnabled());
   StaticObjectsContainer::instance()->setPluginFullscreen(aFullScreen);
   brCtl->reportStateChanged(TBrCtlDefs::EStatePluginFullScreen, m_fullscreen);
 }

@@ -340,6 +340,7 @@ WebCore::QualifiedName** getHTMLAttr(size_t* size);
 
 void init();
 
+void remove();
 } }
 
 #endif

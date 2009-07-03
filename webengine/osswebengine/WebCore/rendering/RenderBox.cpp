@@ -54,6 +54,17 @@ using namespace HTMLNames;
 typedef WTF::HashMap<const RenderBox*, int> OverrideSizeMap;
 static OverrideSizeMap* gOverrideSizeMap = 0;
 
+struct cleanOverridSizeMap {
+    ~cleanOverridSizeMap() {
+        if( gOverrideSizeMap ) {
+            gOverrideSizeMap->clear();
+            delete gOverrideSizeMap;
+            gOverrideSizeMap = 0;
+        }
+    }
+};
+struct cleanOverridSizeMap cleanOSizeMap;
+
 RenderBox::RenderBox(Node* node)
     : RenderObject(node)
     , m_width(0)

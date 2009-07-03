@@ -26,6 +26,8 @@
 #include <eikenv.h>
 #include "BrCtlDefs.h"
 #include "WidgetEngineCallbacks.h"
+#include "WidgetJSObjectProtector.h"
+#include "wtf/HashSet.h"
 
 // CONSTANTS
 
@@ -40,6 +42,10 @@ class CMenuClient;
 class CWidgetClient;
 class MWidgetCallback;
 class WidgetPreferences;
+
+namespace KJS {
+	class JSValue;
+}
 
 // CLASS DECLARATION
 class MWidgetEngineBridge
@@ -57,7 +63,8 @@ public:
     virtual void AddOptionMenuItemsL(CEikMenuPane& aMenuPane, TInt aResourceId) = 0;
     virtual void MenuItemSelected( TInt aInternalId ) = 0;
     virtual void MenuShowed() = 0;
-    virtual void DrawTransition(CWindowGc& gc, CFbsBitmap* fbsBm) = 0;    
+    virtual void DrawTransition(CWindowGc& gc, CFbsBitmap* fbsBm) = 0;
+    virtual void Clear() = 0;
 
 };
 
@@ -68,7 +75,7 @@ public:
 *  @since 3.1
 */
 
-NONSHARABLE_CLASS( WidgetEngineBridge ): public MWidgetEngineBridge
+NONSHARABLE_CLASS( WidgetEngineBridge ): public MWidgetEngineBridge, public MJSObjectProtector
 {
 public:
     WidgetEngineBridge();
@@ -87,12 +94,17 @@ public: //From MWidgetEngineBridge
     void AddOptionMenuItemsL(CEikMenuPane& aMenuPane, TInt aResourceId);
     void MenuItemSelected( TInt aInternalId );
     void MenuShowed();
-    void DrawTransition(CWindowGc& gc, CFbsBitmap* fbsBm);    
+    void DrawTransition(CWindowGc& gc, CFbsBitmap* fbsBm);
+    void Clear();
+    
+	void Protect(KJS::JSValue* obj);
+	void Unprotect(KJS::JSValue* obj);
 
 private:    
-    CMenuClient* m_menuclient;
-    CWidgetClient* m_widgetclient;                
-    WidgetPreferences* m_preferences;
+    CMenuClient*			m_menuclient;
+    CWidgetClient*			m_widgetclient;                
+    WidgetPreferences*		m_preferences;
+	WTF::HashSet<KJS::JSValue*>	m_protectedObjects;
  };
 
 

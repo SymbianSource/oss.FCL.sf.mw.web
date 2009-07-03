@@ -106,8 +106,14 @@ ReceivedFinished::~ReceivedFinished()
 
 void ReceivedFinished::RunL()
 {
+    m_done = true;    
+    /*
+     * this callback will call deRef on HttpConnection which
+     * will delete ReceivedFinished object since it's a 
+     * member of HttpConnection. Therefore this call has to 
+     * the last one.
+     */
     m_callback(m_ctx, m_error);
-    m_done = true;
 }
 
 TInt ReceivedFinished::RunError(TInt aError)
@@ -426,6 +432,32 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                 THTTPHdrVal hdrVal;
                 RHTTPHeaders httpHeaders = m_transaction->Response().GetHeaderCollection();
                 RStringPool stringPool = m_transaction->Session().StringPool();
+                
+                THTTPHdrFieldIter it = httpHeaders.Fields();  
+                
+                HBufC8* headerStr;  
+                TBool isRefresh = EFalse;
+                TPtrC8 headerValue;   ;
+                while( it.AtEnd() == EFalse )
+                {
+                // Get name of next header field
+                RStringTokenF fieldName = it();
+                RStringF fieldNameStr = stringPool.StringF( fieldName );
+                httpHeaders.GetRawField( fieldNameStr, headerValue );
+                headerStr = HBufC8::NewLC( fieldNameStr.DesC().Length() );
+                TPtr8 headerPtr( headerStr->Des() );
+                headerPtr.Copy( fieldNameStr.DesC() );
+                if (equalIgnoringCase(headerPtr, "refresh"))
+                {
+                  isRefresh = ETrue;
+                	CleanupStack::PopAndDestroy(); // headerStr
+                	break;
+                }
+
+                CleanupStack::PopAndDestroy(); // headerStr
+                ++it;
+                }            
+         
                 const TStringTable& stringTable = RHTTPSession::GetTable();
                 if( httpHeaders.GetField( stringPool.StringF( HTTP::EContentType, stringTable ), 0,
                     hdrVal) == KErrNone ) {
@@ -456,11 +488,19 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                 //HTTP status text
                 response.setHTTPStatusText(((m_transaction->Response()).StatusText().DesC()));
                 
+                
+
                 if (m_contentType && m_contentType->Length()) {
                     response.setHTTPHeaderField("Content-Type", *m_contentType);
                 }
-		
-				TPtrC8 result;
+                
+                // Add Refresh field only when Refresh existed in recieved header. 
+                if (isRefresh)
+                    {
+                        response.setHTTPHeaderField("Refresh",headerValue);
+                    }
+				
+                TPtrC8 result;
 
                 if( httpHeaders.GetRawField( stringPool.StringF( HTTP::EContentDisposition, stringTable ), result) == KErrNone )
                 	response.setHTTPHeaderField("Content-Disposition", result);

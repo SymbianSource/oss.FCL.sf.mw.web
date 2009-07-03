@@ -523,7 +523,10 @@ EXPORT_C void CToolBar::AnimateToolBarClosing(
 // ----------------------------------------------------------------------------
 CToolBar::~CToolBar()
     {
-    iToolBarCallback->SetAndUpdateCursorPosition(iOrigCursorPos);
+    if( iToolBarCallback )
+        {
+        iToolBarCallback->SetAndUpdateCursorPosition(iOrigCursorPos);
+        }
     if (iButtonArray != NULL)
         {
         iButtonArray->ResetAndDestroy();

@@ -124,8 +124,22 @@ class WebPageScrollHandler: public CBase
         * @since 5.0
         * param
         * return
+        */ 
+        void clearScrollingElement();
+        
+        /**
+        * @since 5.0
+        * param
+        * return
         */
         WebFrameView* currentScrollingFrameView() { return m_scrollableView.m_frameView;}
+        
+        /**
+        * @since 5.0
+        * param
+        * return
+        */
+        WebCore::Element* currentScrollingElement() { return m_scrollableView.m_scrollingElement;}
         
         /**
         * @since 5.0
@@ -140,6 +154,14 @@ class WebPageScrollHandler: public CBase
         * return
         */
         void scrollContent();
+        
+        /**
+        * @since 5.0
+        * param
+        * return
+        */
+        void scrollContent(TPoint& scrollDelta);
+        
         /**
         * @since 5.0
         * param

@@ -56,7 +56,8 @@ void FontData::platformInit()
 
 void FontData::platformDestroy()
 {
-    StaticObjectsContainer::instance()->fontCache()->ReleaseFont( m_font.Font() );
+    // Do Nothing. m_font is owned by the Font Cache 
+    // and maybe shared with other FontData instances
 }
 
 FontData* FontData::smallCapsFontData(const FontDescription& fontDescription) const

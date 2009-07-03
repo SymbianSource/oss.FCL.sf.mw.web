@@ -503,6 +503,11 @@ HBufC8* CDownloadSubSession::CreateAttribPackL( TBool aBuffered )
         iAttribs->AppendL( attrib );
         CleanupStack::Pop( attrib );          
         }
+    iDownload->GetIntAttributeL( EDlAttrActiveDownload, value );
+    attrib = CDefaultAttrib::NewL( EDlAttrActiveDownload, value );
+    CleanupStack::PushL( attrib );
+    iAttribs->AppendL( attrib );
+    CleanupStack::Pop( attrib ); 
 
     HBufC8* buf = TDMgrUtils::PackedAttributesL( iAttribs );
     iAttribs->ResetAndDestroy();

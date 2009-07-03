@@ -66,6 +66,22 @@ namespace KJS {
 static double parseDate(const UString&);
 static double timeClip(double);
 
+
+static const Identifier* parsePropertyName = 0;
+static const Identifier* UTCPropertyName = 0;
+
+struct cleanupStaticDateObject { 
+    ~cleanupStaticDateObject()  
+        { 
+        delete parsePropertyName; 
+        delete UTCPropertyName; 
+ 
+        parsePropertyName = 0; 
+        UTCPropertyName = 0; 
+    } 
+}; 
+static cleanupStaticDateObject deleteStaticDateObject; 
+
 inline int gmtoffset(const GregorianDateTime& t)
 {
     return t.utcOffset;
@@ -625,8 +641,10 @@ DateObjectImp::DateObjectImp(ExecState *exec,
                              DatePrototype *dateProto)
   : InternalFunctionImp(funcProto, dateProto->classInfo()->className )
 {
-  static const Identifier* parsePropertyName = new Identifier("parse");
-  static const Identifier* UTCPropertyName = new Identifier("UTC");
+	if(!parsePropertyName)
+        parsePropertyName = new Identifier("parse");
+    if(!UTCPropertyName)
+        UTCPropertyName = new Identifier("UTC");
 
   putDirect(exec->propertyNames().prototype, dateProto, DontEnum|DontDelete|ReadOnly);
   putDirectFunction(new DateObjectFuncImp(exec, funcProto, DateObjectFuncImp::Parse, 1, *parsePropertyName), DontEnum);

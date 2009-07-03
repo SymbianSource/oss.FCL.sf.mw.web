@@ -33,6 +33,7 @@
 #include "FontFallbackList.h"
 #include "FontPlatformData.h"
 #include "StringHash.h"
+#include "staticobjectscontainer.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {
@@ -99,8 +100,27 @@ struct FontPlatformDataCacheKeyTraits : WTF::GenericHashTraits<FontPlatformDataC
 };
 
 typedef HashMap<FontPlatformDataCacheKey, FontPlatformData*, FontPlatformDataCacheKeyHash, FontPlatformDataCacheKeyTraits> FontPlatformDataCache;
+typedef HashMap<FontPlatformDataCacheKey, FontPlatformData*, FontPlatformDataCacheKeyHash, FontPlatformDataCacheKeyTraits>::iterator FontPlatformDataCacheIterator;
 
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
+
+struct cleanupFontDataCache {
+    ~cleanupFontDataCache() {
+        if( gFontPlatformDataCache ) 
+        {
+			FontPlatformDataCacheIterator end = gFontPlatformDataCache->end();
+			for (FontPlatformDataCacheIterator it = gFontPlatformDataCache->begin(); it != end; ++it) 
+				{
+				FontPlatformData* obj = (*it).second;
+				delete obj;
+				}
+          gFontPlatformDataCache->clear();
+          delete gFontPlatformDataCache;
+          gFontPlatformDataCache=0;
+        }
+    }
+};
+static cleanupFontDataCache cleanFontDataCache;
 
 static const AtomicString& alternateFamilyName(const AtomicString& familyName)
 {
@@ -138,7 +158,6 @@ FontPlatformData* FontCache::getCachedFontPlatformData(const FontDescription& fo
 {
     if (!gFontPlatformDataCache) {
         gFontPlatformDataCache = new FontPlatformDataCache;
-        platformInit();
     }
 
     FontPlatformDataCacheKey key(familyName, fontDescription.computedPixelSize(), fontDescription.bold(), fontDescription.italic(),
@@ -197,7 +216,7 @@ struct FontDataCacheKeyTraits : WTF::GenericHashTraits<FontPlatformData> {
 };
 
 typedef HashMap<FontPlatformData, FontData*, FontDataCacheKeyHash, FontDataCacheKeyTraits> FontDataCache;
-
+typedef HashMap<FontPlatformData, FontData*, FontDataCacheKeyHash, FontDataCacheKeyTraits>::iterator FontDataCacheIterator;
 static FontDataCache* gFontDataCache = 0;
 
 FontData* FontCache::getCachedFontData(const FontPlatformData* platformData)
@@ -215,6 +234,19 @@ FontData* FontCache::getCachedFontData(const FontPlatformData* platformData)
     }
         
     return result;
+}
+
+void FontCache::deleteFontDataCache() 
+{
+    if( gFontDataCache ) {
+        FontDataCacheIterator end = gFontDataCache->end();
+        for (FontDataCacheIterator it = gFontDataCache->begin(); it != end; ++it) {
+            FontData* obj = (*it).second;
+            delete obj;
+        }
+    }
+    delete gFontDataCache;
+    gFontDataCache = NULL;
 }
 
 const FontData* FontCache::getFontData(const Font& font, int& familyIndex)

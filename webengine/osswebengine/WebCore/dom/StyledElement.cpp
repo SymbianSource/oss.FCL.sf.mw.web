@@ -67,8 +67,26 @@ struct MappedAttributeHash {
 //typedef HashMap<MappedAttributeKey, CSSMappedAttributeDeclaration*, MappedAttributeHash, MappedAttributeKeyTraits> MappedAttributeDecls;
 typedef MappedAttributeKey* MappedAttributeKeyPtr;
 typedef HashMap<MappedAttributeKeyPtr, CSSMappedAttributeDeclaration*, MappedAttributeHash, MappedAttributeKeyTraits> MappedAttributeDecls;
+typedef HashMap<MappedAttributeKeyPtr, CSSMappedAttributeDeclaration*, MappedAttributeHash, MappedAttributeKeyTraits>::iterator MappedAttributeDeclsIterator;
 
 static MappedAttributeDecls* mappedAttributeDecls = 0;
+
+struct mappedAttributeCleaner {
+    ~mappedAttributeCleaner() {
+        if( mappedAttributeDecls ) {
+        	MappedAttributeDeclsIterator end = mappedAttributeDecls->end();
+	        for (MappedAttributeDeclsIterator it = mappedAttributeDecls->begin(); it != end; ++it) 
+	        	{
+	        	MappedAttributeKey* obj = (*it).first;
+	        	delete obj;
+	        	}
+	        mappedAttributeDecls->clear();
+            delete mappedAttributeDecls;
+            mappedAttributeDecls = 0;
+        }
+    }
+};
+struct mappedAttributeCleaner mappedAttribute;
 
 CSSMappedAttributeDeclaration* StyledElement::getMappedAttributeDecl(MappedAttributeEntry entryType, Attribute* attr)
 {

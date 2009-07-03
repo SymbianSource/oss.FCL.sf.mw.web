@@ -48,20 +48,15 @@ using std::max;
 
 namespace WebCore {
 
-CachedImage::CachedImage(DocLoader* docLoader, const String& url, bool forCache)
-    : CachedResource(url, ImageResource, forCache)
+CachedImage::CachedImage(const String& url)
+    : CachedResource(url, ImageResource)
 {
     m_image = 0;
     m_status = Unknown;
-    if (!docLoader || docLoader->autoLoadImages())  {
-        m_loading = true;
-        cache()->loader()->load(docLoader, this, true);
-    } else
-        m_loading = false;
 }
 
 CachedImage::CachedImage(Image* image)
-    : CachedResource(String(), ImageResource, false /* not for cache */)
+    : CachedResource(String(), ImageResource)
 {
     m_image = image;
     m_status = Cached;
@@ -72,6 +67,14 @@ CachedImage::~CachedImage()
 {
     delete m_image;
 }
+
+void CachedImage::load(DocLoader* docLoader) 
+{ 
+    if (!docLoader || docLoader->autoLoadImages()) 
+        CachedResource::load(docLoader, true, false, true); 
+    else 
+        m_loading = false; 
+} 
 
 void CachedImage::ref(CachedResourceClient* c)
 {
@@ -92,10 +95,12 @@ void CachedImage::allReferencesRemoved()
 
 static Image* brokenImage()
 {
-    static Image* brokenImage;
-    if (!brokenImage)
-        brokenImage = Image::loadPlatformResource("missingImage");
-    return brokenImage;
+    static OwnPtr<Image*> brokenImage;
+    if (!brokenImage) {
+        brokenImage.set(Image::loadPlatformResource("missingImage"));
+    }
+    Image* ret = brokenImage.get();
+    return ret;
 }
 
 static Image* nullImage()
@@ -297,6 +302,7 @@ void CachedImage::animationFrameReady(int size_)
 {
     setDecodedSize(size_);
     notifyObservers();
+	checkNotify();
 }
 
 void CachedImage::setMimeType(const String& mime_)

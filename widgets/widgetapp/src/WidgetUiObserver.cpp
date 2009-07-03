@@ -190,8 +190,12 @@ void CWidgetUiObserver::UpdateSoftkeyL( TBrCtlKeySoftkey aKeySoftkey,
         TBrCtlDefs::TBrCtlElementType elementtype =
                       iWindow->WindowManager().ActiveWindow()->Engine()->FocusedElementType();
         // Check if focused element type is editing type
-        if ((elementtype != TBrCtlDefs::EElementActivatedInputBox) &&
-                       (elementtype != TBrCtlDefs::EElementActivatedObjectBox))
+        if ((elementtype == TBrCtlDefs::EElementActivatedInputBox) ||
+                       (elementtype == TBrCtlDefs::EElementActivatedObjectBox))
+            {
+            iWindow->WindowManager().View()->ShowActivatedObject( ETrue );
+            }
+        else 
             {
             iWindow->WindowManager().View()->ShowActivatedObject( EFalse );
             }        
@@ -459,7 +463,6 @@ HBufC* CWidgetUiObserver::RecognizeLC( const TDesC& aFileName, const TDesC8& aDa
     TDataRecognitionResult dataType;
     RApaLsSession apaSession;
     TInt ret;
-    HBufC* contentTypeString = KNullDesC().AllocL();
 
     CleanupClosePushL(apaSession);
     User::LeaveIfError( apaSession.Connect() );
@@ -469,19 +472,18 @@ HBufC* CWidgetUiObserver::RecognizeLC( const TDesC& aFileName, const TDesC8& aDa
     apaSession.Close();
     CleanupStack::PopAndDestroy(1, &apaSession);
     
+    TPtrC8 mimeTypePtr = dataType.iDataType.Des8();
+    TInt len = mimeTypePtr.Length() + 1;
+    HBufC* contentTypeString = HBufC::NewLC( len );;
+
     if ( ret == KErrNone &&
         ( dataType.iConfidence == CApaDataRecognizerType::ECertain ) ||
         ( dataType.iConfidence == CApaDataRecognizerType::EProbable ) )
         {
         // If the file type was found, try to match it to a known file type
-        TPtrC8 mimeTypePtr = dataType.iDataType.Des8();
-        TInt len = mimeTypePtr.Length() + 1;
-        contentTypeString = HBufC::NewL( len );
         contentTypeString->Des().Copy( mimeTypePtr );
         contentTypeString->Des().ZeroTerminate();
         }
-
-    CleanupStack::PushL( contentTypeString );
 
     return contentTypeString;
     }

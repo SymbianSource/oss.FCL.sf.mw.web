@@ -57,11 +57,23 @@ TDeviceBridge::TDeviceBridge() : m_device( 0 )
 //
 TDeviceBridge::~TDeviceBridge()
     {
+    Clear();
+    }    
+    
+// ----------------------------------------------------------------------------
+// TDeviceBridge::Clear
+//
+//
+// ----------------------------------------------------------------------------
+//
+void TDeviceBridge::Clear()
+    {
     if ( m_device )
         {
         m_device->Close();
         KJS::Collector::unprotect(m_device);
         }
+    m_device = NULL;
     }
 
 // ----------------------------------------------------------------------------

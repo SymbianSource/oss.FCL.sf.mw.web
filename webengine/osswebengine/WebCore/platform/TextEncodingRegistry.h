@@ -26,6 +26,7 @@
 #ifndef TextEncodingRegistry_h
 #define TextEncodingRegistry_h
 
+#include "config.h"
 #include <memory>
 #include <wtf/unicode/Unicode.h>
 
@@ -47,6 +48,10 @@ namespace WebCore {
 
     // Only TextEncoding should use this function directly.
     bool noExtendedTextEncodingNameUsed();
+
+#if PLATFORM(SYMBIAN)
+    void deleteEncodingMaps();
+#endif
 
 }
 

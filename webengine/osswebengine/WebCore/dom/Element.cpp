@@ -24,6 +24,8 @@
 #include "config.h"
 #include "Element.h"
 
+#include "Chrome.h"
+#include "ChromeClient.h"
 #include "CSSStyleSelector.h"
 #include "Document.h"
 #include "Editor.h"
@@ -994,8 +996,9 @@ void Element::focus(bool restorePreviousSelection)
     if (!supportsFocus())
         return;
     
-    if (Page* page = doc->page())
+    if (Page* page = doc->page()) {
         page->focusController()->setFocusedNode(this, doc->frame());
+    }
 
     if (!isFocusable()) {
         createRareData()->m_needsFocusAppearanceUpdateSoonAfterAttach = true;
@@ -1004,6 +1007,11 @@ void Element::focus(bool restorePreviousSelection)
         
     cancelFocusAppearanceUpdate();
     updateFocusAppearance(restorePreviousSelection);
+
+    if (Page* page = doc->page()) {
+        // must be last thing we do here    
+        page->chrome()->client()->focusedElementChanged(this);
+    }
 }
 
 void Element::updateFocusAppearance(bool restorePreviousSelection)

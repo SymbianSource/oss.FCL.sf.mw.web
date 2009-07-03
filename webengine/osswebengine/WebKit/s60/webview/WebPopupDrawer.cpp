@@ -82,10 +82,13 @@ void WebPopupDrawer::constructL(TPtrC& textToDraw)
         User::Leave(KErrArgument);
     }
     m_textToDraw = textToDraw.AllocL();
+    CleanupStack::PushL(m_textToDraw);
     m_removePopupPeriodic = CPeriodic::NewL( CActive::EPriorityLow );
+    CleanupStack::PushL(m_removePopupPeriodic);
     m_removePopupPeriodic->Start( KPopupTimeout, 0, TCallBack( &removePopupCallback, this ) );
     sizeChangedL();
     constructSprite();
+    CleanupStack::Pop(2, m_textToDraw); //m_removePopupPeriodic, m_textToDraw
 }
 
 // -----------------------------------------------------------------------------
@@ -105,6 +108,10 @@ WebPopupDrawer::~WebPopupDrawer()
     delete m_spriteMaskBitmapDevice;
     delete m_spriteMaskBitmapContext;
     delete m_spriteMaskBitmap;
+    delete m_icon;
+    delete m_spriteBitmapDevice;
+    delete m_spriteBitmapContext;
+    delete m_spriteBitmap; 
 }
 
 // -----------------------------------------------------------------------------
@@ -231,8 +238,10 @@ void WebPopupDrawer::createBitmapAndContextL()
     delete m_spriteBitmap;
     m_spriteBitmap = NULL;
     m_spriteBitmap = new (ELeave) CFbsBitmap;
+    CleanupStack::PushL(m_spriteBitmap);
     User::LeaveIfError( m_spriteBitmap->Create( m_size, EColor16MA ) );
     m_spriteBitmapDevice = CFbsBitmapDevice::NewL( m_spriteBitmap );
+    CleanupStack::PushL(m_spriteBitmapDevice);
     User::LeaveIfError( m_spriteBitmapDevice->CreateContext( m_spriteBitmapContext ) );
     //mask
     delete m_spriteMaskBitmapDevice;
@@ -242,8 +251,10 @@ void WebPopupDrawer::createBitmapAndContextL()
     delete m_spriteMaskBitmap;
     m_spriteMaskBitmap = NULL;
     m_spriteMaskBitmap = new (ELeave) CFbsBitmap;
+    CleanupStack::PushL(m_spriteMaskBitmap);
     User::LeaveIfError( m_spriteMaskBitmap->Create( m_size, EGray2 ) );
     m_spriteMaskBitmapDevice = CFbsBitmapDevice::NewL( m_spriteMaskBitmap );
+    CleanupStack::PushL(m_spriteMaskBitmapDevice);
     User::LeaveIfError( m_spriteMaskBitmapDevice->CreateContext( m_spriteMaskBitmapContext ) );
     TRect r( TPoint( 0, 0 ), m_spriteMaskBitmap->SizeInPixels());
     m_spriteMaskBitmapContext->SetBrushStyle( CGraphicsContext::ESolidBrush );
@@ -276,6 +287,8 @@ void WebPopupDrawer::createBitmapAndContextL()
         }
         m_spriteBitmapContext->DiscardFont();
     }
+    
+    CleanupStack::Pop(4, m_spriteBitmap);
 }
 
 void WebPopupDrawer::constructSprite()

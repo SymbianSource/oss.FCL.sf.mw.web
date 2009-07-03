@@ -114,6 +114,21 @@ static NodeCounter nodeCounter;
 static HashSet<Node*>* newNodes;
 static HashCountedSet<Node*>* nodeExtraRefCounts;
 
+struct cleanupNodes {
+    ~cleanupNodes() {
+    	if(nodeExtraRefCounts)
+    		nodeExtraRefCounts->clear();
+        delete nodeExtraRefCounts;
+        nodeExtraRefCounts = NULL;
+        
+        if(newNodes)
+            newNodes->clear();
+        delete newNodes;
+        newNodes = NULL;
+    }
+};
+static cleanupNodes deletenodeExtraRefCounts;
+
 Node::Node()
 {
 #ifndef NDEBUG

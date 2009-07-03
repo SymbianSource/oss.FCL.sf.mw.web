@@ -28,7 +28,11 @@ VENDORID        VID_DEFAULT
 MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER 1
 
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 
 SOURCEPATH      ../../src/wml1x/src/
 

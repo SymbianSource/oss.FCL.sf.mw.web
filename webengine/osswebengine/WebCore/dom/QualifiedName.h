@@ -64,7 +64,7 @@ public:
     
     // Init routine for globals
     static void init();
-
+    static void cleanup();
 private:
 
     void ref() { m_impl->ref(); } 

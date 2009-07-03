@@ -35,15 +35,16 @@
 
 namespace WebCore {
 
-CachedResource::CachedResource(const String& URL, Type type, bool forCache, bool sendResourceLoadCallbacks)
+CachedResource::CachedResource(const String& URL, Type type)
     : m_lastDecodedAccessTime(0)
-    , m_sendResourceLoadCallbacks(sendResourceLoadCallbacks)
+    , m_sendResourceLoadCallbacks(true)
 #if PRELOAD_SCANNER_ENABLED
     , m_preloadCount(0)
     , m_preloadResult(PreloadNotReferenced)
     , m_requestedFromNetworkingLayer(false)
 #endif
-    , m_inCache(forCache)
+    , m_inCache(false)
+	, m_loading(false)
     , m_docLoader(0)
 {
     m_url = URL;
@@ -74,6 +75,7 @@ CachedResource::~CachedResource()
 {
     ASSERT(!inCache());
     ASSERT(!m_deleted);
+	ASSERT(cache()->resourceForURL(url()) != this);
 #ifndef NDEBUG
     m_deleted = true;
 #endif
@@ -81,6 +83,13 @@ CachedResource::~CachedResource()
     if (m_docLoader)
         m_docLoader->removeCachedResource(this);
 }
+
+void CachedResource::load(DocLoader* docLoader, bool incremental, bool skipCanLoadCheck, bool sendResourceLoadCallbacks) 
+{ 
+    m_sendResourceLoadCallbacks = sendResourceLoadCallbacks; 
+    cache()->loader()->load(docLoader, this, incremental, skipCanLoadCheck, sendResourceLoadCallbacks); 
+    m_loading = true; 
+} 
 
 void CachedResource::finish()
 {

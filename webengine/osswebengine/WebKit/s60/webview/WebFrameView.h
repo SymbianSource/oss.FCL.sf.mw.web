@@ -75,7 +75,7 @@ public:
 
     // accessors
     WebFrame* frame() const          { return m_frame.get(); }
-    WebView* topView() const         { return m_topView.get(); }
+    WebView* topView() const         { return m_topView; }
     void setWebFrame(WebFrame*);
     void setTopView(WebView*);
     TPoint contentPos() { return m_contentPos; }
@@ -107,7 +107,7 @@ private:
     WebFrameView& operator=(const WebFrameView&); // not implemented
     
     RefPtr<WebFrame>        m_frame;            // the frame associated with this view
-    RefPtr<WebView>         m_topView;          // the top drawable view
+    WebView*                m_topView;          // the top drawable view
     WebFrameView*           m_parent;           // the parent view
 
     TRect   m_frameRect;                        // the location and size of this frame in its parent frame

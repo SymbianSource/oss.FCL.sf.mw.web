@@ -1175,7 +1175,7 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
 
         String key = static_cast<KeyboardEvent*>(evt)->keyIdentifier();
 
-        if (key == "U+0020") {
+        if (key == "U+0020" || key == "U+000020") {
             switch (inputType()) {
                 case BUTTON:
                 case CHECKBOX:
@@ -1206,7 +1206,6 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
         if (key == "Enter") {
             switch (inputType()) {
                 case BUTTON:
-                case CHECKBOX:
                 case HIDDEN:
                 case ISINDEX:
                 case PASSWORD:
@@ -1223,7 +1222,9 @@ void HTMLInputElement::defaultEventHandler(Event* evt)
                     // Simulate mouse click for enter for these types of elements.
                     clickElement = true;
                     break;
+                case CHECKBOX:
                 case RADIO:
+                    clickElement = true;
                     break; // Don't do anything for enter on a radio button.
             }
         }

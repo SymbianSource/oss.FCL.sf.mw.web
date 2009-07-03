@@ -533,43 +533,50 @@ TBool PluginHandler::loadPluginsL()
 // -----------------------------------------------------------------------------
 //
 TInt PluginHandler::findPlugin(const TDesC& mimeType) 
-{    
+   {    
     LOAD_PLUGINS
-    
-	HBufC*   newMimeType = NULL;
-	_LIT(KSeparator, "*");
-	TInt  pluginIndex;
+
+    TInt bufSize( KMimeTypeLength > mimeType.Length() ? KMimeTypeLength : mimeType.Length() );
+    HBufC* newMimeType = HBufC::New(bufSize);
+    if( newMimeType == NULL )
+        {
+        return KErrNoMemory;
+        }
+    _LIT(KSeparator, "*");
+    TInt  pluginIndex;
     TInt  mimeIndex;
 
-	if (mimeType.FindF(KMimeTypeAudio) != KErrNotFound){
-		newMimeType = HBufC::NewLC(KMimeTypeLength);
+    if( mimeType.FindF(KMimeTypeAudio) != KErrNotFound )
+        {
         newMimeType->Des().Copy(KMimeTypeAudio);
-		newMimeType->Des().Append(KSeparator);
-	}
-	else if (mimeType.FindF(KMimeTypeVideo) != KErrNotFound){
-		newMimeType = HBufC::NewLC(KMimeTypeLength);
+        newMimeType->Des().Append(KSeparator);
+        }
+    else if ( mimeType.FindF(KMimeTypeVideo) != KErrNotFound )
+        {
         newMimeType->Des().Copy(KMimeTypeVideo);
-		newMimeType->Des().Append(KSeparator);
-	}
-	else{
-		newMimeType = HBufC::NewLC(mimeType.Length());
-        newMimeType = mimeType.AllocL();
-	}
-	CleanupStack::Pop(); //pop newMimeType
-	
-    for (pluginIndex = 0; pluginIndex < m_pluginInfoArray.Count(); pluginIndex++) {
+        newMimeType->Des().Append(KSeparator);
+        }
+    else
+        {
+        newMimeType->Des().Copy(mimeType);
+        }
+
+    for (pluginIndex = 0; pluginIndex < m_pluginInfoArray.Count(); pluginIndex++) 
+        {
         for (mimeIndex = 0;
              mimeIndex < m_pluginInfoArray[pluginIndex]->m_mimeTypes.Count();
-             mimeIndex++) {
-            if (!m_pluginInfoArray[pluginIndex]->m_mimeTypes[mimeIndex]->CompareF(*newMimeType)) {
+             mimeIndex++) 
+            {
+            if (!m_pluginInfoArray[pluginIndex]->m_mimeTypes[mimeIndex]->CompareF(*newMimeType))
+                {
                 delete newMimeType;
-				return m_pluginInfoArray[pluginIndex]->m_handle;
+                return m_pluginInfoArray[pluginIndex]->m_handle;
+                }
             }
         }
-    }
-	delete newMimeType;
+    delete newMimeType;
     return KErrNotFound;
-}
+    }
 
 // -----------------------------------------------------------------------------
 // PluginHandler::findPluginByExtension

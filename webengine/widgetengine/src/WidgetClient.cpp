@@ -54,13 +54,15 @@ const TInt KWebBrowserUid = 0x10008D39;
 //
 // ----------------------------------------------------------------------------
 //
-CWidgetClient* CWidgetClient::NewL(MWidgetCallback& aWidgetCallback, 
-                                  MWidgetEngineCallbacks& aWidgetEngineCallback, 
-                                  WidgetPreferences* preferences)
+CWidgetClient* CWidgetClient::NewL(	MWidgetCallback& aWidgetCallback,
+									MJSObjectProtector* protector, 
+									MWidgetEngineCallbacks& aWidgetEngineCallback, 
+									WidgetPreferences* preferences
+								  )
 {
     CWidgetClient* self = new ( ELeave ) CWidgetClient(aWidgetCallback, aWidgetEngineCallback, preferences);
     CleanupStack::PushL( self );
-    self->ConstructL(aWidgetEngineCallback);
+    self->ConstructL(aWidgetEngineCallback, protector);
     CleanupStack::Pop();
     return self;
 }
@@ -92,10 +94,6 @@ CWidgetClient::CWidgetClient(MWidgetCallback& aWidgetCallback,
 //
 CWidgetClient::~CWidgetClient()
 {    
-    if (m_jswidget) {
-        KJS::Collector::unprotect(m_jswidget);        
-    }
-    
     delete m_renderer;
 }
 
@@ -107,11 +105,10 @@ CWidgetClient::~CWidgetClient()
 //
 // ----------------------------------------------------------------------------
 //
-void CWidgetClient::ConstructL(MWidgetEngineCallbacks& aWidgetEngineCallback)
+void CWidgetClient::ConstructL(MWidgetEngineCallbacks& aWidgetEngineCallback, MJSObjectProtector* protector)
 {    
-    m_jswidget = new KJS::JSWidget(this);     
+    m_jswidget = new KJS::JSWidget(this, protector);     
     m_renderer = new (ELeave) WidgetRenderer(aWidgetEngineCallback);    
-    KJS::Collector::protect(m_jswidget);
 }
 
 
@@ -280,6 +277,18 @@ void CWidgetClient::setNavigationEnabled( TBool aEnable )
 }
 
 // ----------------------------------------------------------------------------
+// CWidgetClient::setNavigationType
+//
+//
+//
+// ----------------------------------------------------------------------------
+//
+void CWidgetClient::setNavigationType( const TDesC& aType )
+{
+    m_widgetenginecallback->setNavigationType(aType);
+}
+
+// ----------------------------------------------------------------------------
 // CWidgetClient::prepareForTransition
 //
 //
@@ -310,7 +319,7 @@ void CWidgetClient::performTransition()
 //
 // ----------------------------------------------------------------------------
 //
-TInt CWidgetClient::preferenceForKey( const TDesC& aKey, TPtrC& aValue )
+TInt CWidgetClient::preferenceForKey( const TDesC& aKey, HBufC*& aValue )
 {    
     TInt ret = KErrNotFound;
     TRAP_IGNORE( ret = m_preferences->preferenceL( aKey, aValue ) );

@@ -40,6 +40,7 @@
 #include "SQLStatement.h"
 #include "SQLTransaction.h"
 #include "SystemTime.h"
+#include "WebKitUtilsSqlite.h"
 
 #if PLATFORM(WIN_OS)
 #include <windows.h>
@@ -230,6 +231,31 @@ void IconDatabase::close()
     for (; i != end; ++i)
         delete (*i).second;
     m_iconURLToRecordMap.clear();
+    
+    HashMap<String, PageURLRecord*>::iterator recordIter = m_pageURLToRecordMap.begin();
+    HashMap<String, PageURLRecord*>::iterator recordEnd = m_pageURLToRecordMap.end();
+    String recordString;
+    for (; recordIter != recordEnd; ++recordIter) {
+        recordString = (*recordIter).first;
+        recordString = String();
+    }
+    m_pageURLToRecordMap.clear();
+    
+    HashSet<String>::iterator retainedIter = m_retainedPageURLs.begin();
+    HashSet<String>::iterator retainedEnd = m_retainedPageURLs.end();
+    String* retainedString;
+    for (; retainedIter != retainedEnd; ++retainedIter) {
+        retainedString = retainedIter.get();
+        *retainedString = String();
+    }
+    m_retainedPageURLs.clear();
+    
+    delete m_client;
+    delete sharedIconDatabase;
+    m_syncLock.~Mutex();
+    m_urlAndIconLock.~Mutex();
+    m_pendingSyncLock.~Mutex();
+    m_pendingReadingLock.~Mutex();
 #endif
 }
 
@@ -989,7 +1015,9 @@ void* IconDatabase::iconDatabaseSyncThread()
     ASSERT_ICON_SYNC_THREAD();
     
     LOG(IconDatabase, "(THREAD) IconDatabase sync thread started");
-
+    // Create the Symbian SQL TLS
+    sqlite3SymbianLibInit();
+        
 #ifndef NDEBUG
     double startTime = currentTime();
 #endif
@@ -1784,6 +1812,10 @@ void* IconDatabase::cleanupSyncThread()
 #endif
     
     m_syncThreadRunning = false;
+    // Cleanup SQL TLS that was created from sqlite3SymbianLibInit() in iconDatabaseSyncThread()
+    sqlite3SymbianLibFinalize();
+    // Cleanup STDLIB TLS
+    CloseSTDLIB();
     return 0;
 }
 

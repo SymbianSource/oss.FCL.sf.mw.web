@@ -24,6 +24,7 @@
 #include "MenuItem.h"
 #include "MenuItemFuncs.h"
 #include "MenuItemCallbacks.h"
+#include "WidgetJSObjectProtector.h"
 
 using namespace KJS;
 
@@ -33,13 +34,16 @@ using namespace KJS;
 //
 //
 // ----------------------------------------------------------------------------
-JSMenuItemConstructor::JSMenuItemConstructor(MJSMenuItemCallbacks* callbacks)
-    : JSObject(), 
-    m_callbacks(callbacks),
-    m_internalId(0)
+JSMenuItemConstructor::JSMenuItemConstructor(MJSMenuItemCallbacks* callbacks, MJSObjectProtector* protector)
+    : JSObject(),
+	d(new MenuItemConstructorPrivate(callbacks, protector, 0))
 {
 }
 
+JSMenuItemConstructor::~JSMenuItemConstructor()
+{
+	delete d;
+}
 
 // ----------------------------------------------------------------------------
 // JSMenuItemConstructor::implementsConstruct
@@ -83,9 +87,9 @@ JSObject* JSMenuItemConstructor::construct( ExecState* exec, const List& aList)
 
             TPtrC tptrc((const unsigned short*)(text.data()), textlen);
 
-            JSMenuItem* mi = new JSMenuItem(exec, m_callbacks, tptrc, cmdId, m_internalId );
-            KJS::Collector::protect(mi); 
-            m_callbacks->createOptionsMenuItem( tptrc, cmdId, m_internalId++, (void*) mi );
+            JSMenuItem* mi = new JSMenuItem(exec, d->m_callbacks, d->m_protector, tptrc, cmdId, d->m_internalId, 0);
+			
+            d->m_callbacks->createOptionsMenuItem( tptrc, cmdId, d->m_internalId++, (void*) mi );
            
             return static_cast<KJS::JSObject*>(mi);
         }
@@ -119,13 +123,15 @@ const ClassInfo JSMenuItem::info = { "MenuItem", 0, &TMenuItemTable, 0 };
 JSMenuItem::JSMenuItem(  
     ExecState* exec,   
     MJSMenuItemCallbacks* callbacks,
+	MJSObjectProtector* protector,
     TDesC& text,
     int cmdId, 
     int internalId,
     WidgetEventHandler* onSelectCallback )
     : JSObject(exec->lexicalInterpreter()->builtinObjectPrototype()),      
-      d(new MenuItemPrivate(callbacks,cmdId,internalId,onSelectCallback))  
+      d(new MenuItemPrivate(callbacks, protector, cmdId, internalId, onSelectCallback))  
     {
+		d->m_protector->Protect(this);
     }
     
 // ----------------------------------------------------------------------------
@@ -199,7 +205,8 @@ void JSMenuItem::AddOptionsMenuItem(bool show)
 // ----------------------------------------------------------------------------
 void JSMenuItem::DeleteMenuItem()
 {
-    d->m_callbacks->deleteMenuItem( d->m_internalId );    
+    d->m_callbacks->deleteMenuItem( d->m_internalId );
+    d->m_protector->Unprotect(this);
 }
 
 // ----------------------------------------------------------------------------
@@ -242,7 +249,7 @@ void JSMenuItem::put(ExecState *exec, const Identifier &propertyName, JSValue *v
             case OnSelect: {
                 delete d->m_onSelectCallback;
                 d->m_onSelectCallback = NULL;
-                d->m_onSelectCallback = new WidgetEventHandler ( value, exec->lexicalInterpreter()->globalExec() );
+                d->m_onSelectCallback = new WidgetEventHandler(value, exec->lexicalInterpreter()->globalExec(), d->m_protector);
                 d->m_callbacks->setMenuItemObserver( d->m_internalId, d->m_onSelectCallback );
                 break;
             }

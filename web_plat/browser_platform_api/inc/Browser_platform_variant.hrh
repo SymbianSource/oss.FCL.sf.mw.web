@@ -1,5 +1,5 @@
 /*
-* Copyright (c) 2008 Nokia Corporation and/or its subsidiary(-ies).
+* Copyright (c) 2008 - 2009 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
 * under the terms of the License "Eclipse Public License v1.0"
@@ -26,12 +26,57 @@
 #ifndef BROWSER_PLATFORM_VARIANT_HRH
 #define BROWSER_PLATFORM_VARIANT_HRH
 
-/* NOTE:
 
-   Format of browser domain feature flags:
+/*
+* Establish which platform we are building on.
+* If required, un-comment correct platform macro as
+* described below  
+*
+*/
 
-   "BRDO_" | feature/component name | "_FF"
+#if defined(__S60_32__)
+//
+// this is the only supported platform that comes with unambiguous platform version flag
+#define __PLATFORM_VERSION_32__
+//
+#else
+// manually edit the following lines to enable definition for
+// whichever platform is in use
+//
+// un-comment following line for 5.0/5250 platforms
+//#define __PLATFORM_VERSION_50__
+//
+// un-comment following line for 5.1/TB9.1 platforms
+#define __PLATFORM_VERSION_51__
+//
+// un-comment following line for 5.2/TB9.2 platforms
+//#define __PLATFORM_VERSION_52__
+//
+#endif
 
+
+/*
+*
+* Define Browser Version
+*
+*/
+
+#define BRDO_APP_VERSION_MAJOR 7
+#define BRDO_APP_VERSION_MINOR 2
+#define BRDO_APP_VERSION BRDO_APP_VERSION_MAJOR##_##BRDO_APP_VERSION_MINOR
+
+
+/*
+*
+* Define feature flags
+*
+* Format of browser domain feature flags:
+*
+*   "BRDO_" | feature/component name | "_FF"
+*
+* Define default value of the flag in section below, and then modify it
+* by platform as it varies from that default.
+*
 */
 
 // Defines Language InterWork and SAPI availability
@@ -68,12 +113,20 @@ Default is WML support enabled
 
 // Gallery App is not present
 #undef BRDO_APP_GALLERY_SUPPORTED_FF
+
+// Defines if MultipartParser should be built
+#define BRDO_MULTIPART_PARSER_FF
+
+// Additional export location - to adapt to new header export location
+#undef BRDO_ADDED_EXPORT_LOCATION
+
+
 /*
 * ===================
 *        S60 3.23
 * ===================
 */ 
-#if defined(__S60_32__)
+#if defined(__PLATFORM_VERSION_32__)
 
 // Defines Language InterWork and SAPI availability
 #undef BRDO_LIW_FF
@@ -95,13 +148,6 @@ Default is WML support enabled
 
 // Gallery App is present
 #define BRDO_APP_GALLERY_SUPPORTED_FF
-// Missing from ProductVariant.hrh
-#ifndef LANGUAGE_IDS
-#define LANGUAGE_IDS LANG sc
-#endif
-
-#define BRDO_APP_VERSION_MAJOR 7
-#define BRDO_APP_VERSION_MINOR 1
 
 // Missing from 3.23 platform_paths.hrh
 
@@ -112,50 +158,52 @@ Default is WML support enabled
 #define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(##exported)
 
 
-
-
 /*
 * ===================
 *        S60 5.0
 * ===================
 */ 
-#elif defined(__S60_50__)
+#elif defined(__PLATFORM_VERSION_50__)
 
 // Defines must accumulate versions. ie for 5.01 you must define BRDO_BROWSER_50_FF and BRDO_BROWSER_501_FF(To be reviewed)
 // The assumption is that anything that worked in 3.2 will work in 5.0 and 5.01.  For anything doesn't work
 // in 3.2 but works in 5.0 and above, that code should be behind the BRDO_BROWSER_50_FF flag.
 #define BRDO_BROWSER_50_FF
 
-#define BRDO_APP_VERSION_MAJOR 7
-#define BRDO_APP_VERSION_MINOR 0
+#if __GNUC__ >= 3
+#define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../../platform/mw/exported)
+#else
+#define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../../platform/mw/##exported)
+#endif
+
+#define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
+#define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../ecom)
+#define APP_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../http)
+#define APP_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../connect)
+#define APP_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../swi)
+#define APP_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../kernel)
+#define APP_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
+#define APP_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
+
+#define MW_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
+#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../ecom)
+#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../http)
+#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../connect)
+#define MW_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../swi)
+#define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../kernel)
+#define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
+#define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
+
 
 /*
 * ===================
 *        S60 5.1
 * ===================
 */ 
-#else  // until __S60_51__ is defined
+#elif defined(__PLATFORM_VERSION_51__)
 
 #define BRDO_BROWSER_50_FF
-
-#define BRDO_APP_VERSION_MAJOR 7
-#define BRDO_APP_VERSION_MINOR 2
-
-#endif // S60 VERSION ID's
-
-
-#define BRDO_APP_VERSION BRDO_APP_VERSION_MAJOR##_##BRDO_APP_VERSION_MINOR
-
-// Generic run-time definitions -- see WmlBrowserBuild.h for similar feature related definitions
-
-// Browser Update - Independent Application Delivery
-#if defined( KFeatureIdIAUpdate )
-// Defines flag for activating changes to update Browser application - from the Browser application
-#define BRDO_BROWSER_UPDATE_UI_FF FeatureManager::FeatureSupported( KFeatureIdIAUpdate )
-#else
-#define BRDO_BROWSER_UPDATE_UI_FF 0
-#endif // KFeatureIdIAUpdate
-
+#define BRDO_BROWSER_51_FF
 
 #define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
 #define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
@@ -174,5 +222,54 @@ Default is WML support enabled
 #define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(kernel)
 #define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
 #define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
+
+
+/*
+* ===================
+*        S60 5.2
+* ===================
+*/ 
+#elif defined(__PLATFORM_VERSION_52__)
+
+#define BRDO_BROWSER_50_FF
+#define BRDO_BROWSER_51_FF
+#define BRDO_BROWSER_52_FF
+
+// BrDo MultipartParser not used from S60 5.2 onward
+//#undef BRDO_MULTIPART_PARSER_FF - TODO: un-comment this line for week21 release
+
+#define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
+#define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
+#define APP_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(http)
+#define APP_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
+#define APP_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(swi)
+#define APP_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(kernel)
+#define APP_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
+#define APP_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
+
+#define MW_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
+#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
+#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(http)
+#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
+#define MW_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(swi)
+#define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(kernel)
+#define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
+#define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
+
+
+#endif // PLATFORM VERSION ID's
+
+
+
+// Generic run-time definitions -- see WmlBrowserBuild.h for similar feature related definitions
+
+// Browser Update - Independent Application Delivery
+#if defined( KFeatureIdIAUpdate )
+// Defines flag for activating changes to update Browser application - from the Browser application
+#define BRDO_BROWSER_UPDATE_UI_FF FeatureManager::FeatureSupported( KFeatureIdIAUpdate )
+#else
+#define BRDO_BROWSER_UPDATE_UI_FF 0
+#endif // KFeatureIdIAUpdate
+
 
 #endif // BROWSER_PLATFORM_VARIANT_HRH

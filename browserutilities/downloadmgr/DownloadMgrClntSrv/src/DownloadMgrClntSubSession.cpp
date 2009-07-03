@@ -1395,6 +1395,10 @@ HBufC8* CRHttpDownloadExtension::AllocAttribBufL( TBool aIsBuffered )
         iAttribs->AppendL( attrib );
         CleanupStack::Pop( attrib );              
         }
+    attrib = CDefaultAttrib::NewL( EDlAttrActiveDownload, iMoIndex );
+    CleanupStack::PushL( attrib );
+    iAttribs->AppendL( attrib );
+    CleanupStack::Pop( attrib ); 
   
     HBufC8* buf = TDMgrUtils::PackedAttributesL( iAttribs );
     iAttribs->ResetAndDestroy();

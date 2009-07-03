@@ -284,110 +284,6 @@ void CBrCtl::updateScrollbars(int documentHeight, int displayHeight, int display
 
 void CBrCtl::Draw(const TRect& aRect) const
 {
-    if (m_webView->isPluginFullscreen()) return; //don't draw if in plugin fullscreen mode
-
-    if (!(m_capabilities & TBrCtlDefs::ECapabilityDisplayScrollBar) 
-          || (getMainScrollbarWidth() == 0)
-          || AknLayoutUtils::PenEnabled()) { //touch screen scrollbar is drawn
-        return;                         //by WebScrollbarDrawer
-    }
-    CWindowGc& gc = SystemGc();
-    TRect rect(Rect());
-    int documentHeight = (m_displayHeight > m_documentHeight) ? m_displayHeight : m_documentHeight;
-    int documentWidth = (m_displayWidth > m_documentWidth) ? m_displayWidth : m_documentWidth;
-    gc.SetDrawMode(CGraphicsContext::EDrawModePEN);
-    if (AknLayoutUtils::LayoutMirrored()) {
-        // rtl
-        if (m_hasHorizontalScrollbar) {
-            TRect vertical(0, 0, KMainScrollbarWidth, rect.Height() - KMainScrollbarWidth);
-            TRect horizontal(KMainScrollbarWidth, rect.Height() - KMainScrollbarWidth, rect.Width(), rect.Height());
-            TRect verticalThumb(0, (m_displayPosY * m_displayHeight) / documentHeight,
-                KMainScrollbarWidth, (m_displayPosY * m_displayHeight + m_displayHeight * m_displayHeight) / documentHeight);
-            TRect horizontalThumb(KMainScrollbarWidth + (m_displayPosX * m_displayWidth) / documentWidth, rect.Height() - KMainScrollbarWidth,
-                KMainScrollbarWidth + (m_displayPosX * m_displayWidth + m_displayWidth * m_displayWidth) / documentWidth, rect.Height());
-            TRect corner(0, rect.Height() - KMainScrollbarWidth, KMainScrollbarWidth, rect.Height());
-            vertical.Intersection(aRect);
-            horizontal.Intersection(aRect);
-            if (!(vertical.IsEmpty() || horizontal.IsEmpty())) {
-                gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
-                gc.SetBrushColor(KGray);
-                gc.SetPenStyle(CGraphicsContext::ESolidPen);
-                gc.SetPenSize(TSize(1, 1));
-                gc.SetPenColor(KBlack);
-                gc.DrawRect(vertical);
-                gc.DrawRect(horizontal);
-                gc.SetBrushColor(KDarkGray);
-                gc.DrawRect(verticalThumb);
-                gc.DrawRect(horizontalThumb);
-                gc.SetBrushColor(KWhite);
-                gc.SetPenColor(KWhite);
-                gc.DrawRect(corner);
-            }
-        }
-        else {
-            TRect vertical(0, 0, KMainScrollbarWidth, rect.Height());
-            TRect verticalThumb(0, (m_displayPosY * m_displayHeight) / documentHeight,
-                KMainScrollbarWidth, (m_displayPosY * m_displayHeight + m_displayHeight * m_displayHeight) / documentHeight);
-            vertical.Intersection(aRect);
-            if (!vertical.IsEmpty()) {
-                gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
-                gc.SetBrushColor(KGray);
-                gc.SetPenStyle(CGraphicsContext::ESolidPen);
-                gc.SetPenSize(TSize(1, 1));
-                gc.SetPenColor(KBlack);
-                gc.DrawRect(vertical);
-                gc.SetBrushColor(KDarkGray);
-                gc.DrawRect(verticalThumb);
-            }
-        }
-    }
-    else {
-        // ltr
-        if (m_hasHorizontalScrollbar) {
-            TRect vertical(rect.Width() - KMainScrollbarWidth, 0, rect.Width(), rect.Height() - KMainScrollbarWidth);
-            TRect horizontal(0, rect.Height() - KMainScrollbarWidth, rect.Width() - KMainScrollbarWidth, rect.Height());
-            TRect verticalThumb(rect.Width() - KMainScrollbarWidth, (m_displayPosY * m_displayHeight) / documentHeight,
-                rect.Width(), (m_displayPosY * m_displayHeight + m_displayHeight * m_displayHeight) / documentHeight);
-            TRect horizontalThumb((m_displayPosX * m_displayWidth) / documentWidth, rect.Height() - KMainScrollbarWidth,
-                (m_displayPosX * m_displayWidth + m_displayWidth * m_displayWidth) / documentWidth, rect.Height());
-            TRect corner(rect.Width() - KMainScrollbarWidth, rect.Height() - KMainScrollbarWidth, rect.Width(), rect.Height());
-            vertical.Intersection(aRect);
-            horizontal.Intersection(aRect);
-            if (!(vertical.IsEmpty() || horizontal.IsEmpty())) {
-                gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
-                gc.SetBrushColor(KGray);
-                gc.SetPenStyle(CGraphicsContext::ESolidPen);
-                gc.SetPenSize(TSize(1, 1));
-                gc.SetPenColor(KBlack);
-                gc.DrawRect(vertical);
-                gc.DrawRect(horizontal);
-                gc.SetBrushColor(KDarkGray);
-                gc.DrawRect(verticalThumb);
-                gc.DrawRect(horizontalThumb);
-                gc.SetBrushColor(KWhite);
-                gc.SetPenColor(KWhite);
-                gc.DrawRect(corner);
-            }
-        }
-        else
-        {
-            TRect vertical(rect.Width() - KMainScrollbarWidth, 0, rect.Width(), rect.Height());
-            TRect verticalThumb(rect.Width() - KMainScrollbarWidth, (m_displayPosY * m_displayHeight) / documentHeight,
-                rect.Width(), (m_displayPosY * m_displayHeight + m_displayHeight * m_displayHeight) / documentHeight);
-            vertical.Intersection(aRect);
-            if (!vertical.IsEmpty()) {
-                gc.SetBrushStyle(CGraphicsContext::ESolidBrush);
-                gc.SetBrushColor(KGray);
-                gc.SetPenStyle(CGraphicsContext::ESolidPen);
-                gc.SetPenSize(TSize(1, 1));
-                gc.SetPenColor(KBlack);
-                gc.DrawRect(vertical);
-                gc.SetBrushColor(KDarkGray);
-                gc.DrawRect(verticalThumb);
-            }
-        }
-    }
-
 }
 
 
@@ -548,9 +444,9 @@ void CBrCtl::ConstructL(
     m_webView = WebView::NewL(*aParent, this);
     m_historyHandler = HistoryHandler::initWithHandle(this);
     m_settingsContainer = new (ELeave) SettingsContainer(m_webView, m_historyHandler->historyController());
-    m_settingsContainer->setTabbedNavigation(!(capabilities()&TBrCtlDefs::ECapabilityCursorNavigation));
+    m_settingsContainer->setNavigationType((capabilities()&TBrCtlDefs::ECapabilityCursorNavigation) ? SettingsContainer::NavigationTypeCursor : SettingsContainer::NavigationTypeTabbed);
 
-  m_usrAgnt = CUserAgent::NewL();
+    m_usrAgnt = CUserAgent::NewL();
 
     if (m_brCtlLayoutObserver == NULL)
         {
@@ -1078,9 +974,6 @@ EXPORT_C void CBrCtl::LoadDataL(const TDesC& aUrl, const TDesC8& aData,
                                 TUid aCharsetUid)
 {
     const TText* charset = charsetForUid(aCharsetUid.iUid);
-    if (charset == NULL) {
-        charset = _S("iso-8859-1");
-    }
 
     HBufC8* url = HBufC8::NewLC(aUrl.Length());
     url->Des().Copy(aUrl);
@@ -1852,7 +1745,7 @@ void CBrCtl::MakeVisible(TBool visible)
 //
 void CBrCtl::SizeChanged()
 {
-    if (m_webView->isPluginFullscreen()) return;
+    if (StaticObjectsContainer::instance()->isPluginFullscreen()) return;
     TRect adjustedRect( Rect() );
     TBool callDoLayout = EFalse;
     TInt  scrollBarWidth = getMainScrollbarWidth();
@@ -2122,7 +2015,14 @@ CBrCtl* CBrCtl::getWindowL(TDesC& windowName, bool userGesture)
     if (m_brCtlWindowObserver) {
         newBrctl = m_brCtlWindowObserver->FindWindowL(windowName);
         if (!newBrctl)
-            newBrctl = m_brCtlWindowObserver->OpenWindowL(emptyUrl, &windowName, userGesture, 0);
+        {
+         if(StaticObjectsContainer::instance()->isPluginFullscreen())
+         {
+            PluginSkin* plugin=m_webView->mainFrame()->focusedPlugin();
+            plugin->deActivate();
+         }
+         newBrctl = m_brCtlWindowObserver->OpenWindowL(emptyUrl, &windowName, userGesture, 0);            
+        }
     }
     return static_cast<CBrCtl*>(newBrctl);
 }
@@ -2475,7 +2375,6 @@ void CBrCtl::SetScriptLogMode(TInt aMode)
 
 int CBrCtl::getMainScrollbarWidth() const
 {
-  //return (AknLayoutUtils::PenEnabled() ?  0  :  KMainScrollbarWidth);
   return 0;
 }
 
@@ -2486,6 +2385,9 @@ MBrCtlDownloadObserver* CBrCtl::brCtlDownloadObserver()
     }
     return m_brCtlDownloadObserver;
 }
+
+
+
 void CBrCtl::HandlePointerBufferReadyL()
 {
     m_webView->HandlePointerBufferReadyL();

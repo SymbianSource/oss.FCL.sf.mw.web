@@ -28,18 +28,34 @@
 
 using namespace KJS;
 
+    static const Identifier* hasOwnPropertyPropertyName = 0;
+    static const Identifier* propertyIsEnumerablePropertyName = 0;
+    static const Identifier* isPrototypeOfPropertyName = 0;
+    static const Identifier* defineGetterPropertyName = 0;
+    static const Identifier* defineSetterPropertyName = 0;
+    static const Identifier* lookupGetterPropertyName = 0;
+    static const Identifier* lookupSetterPropertyName = 0;
+
+
 // ------------------------------ ObjectPrototype --------------------------------
 
 ObjectPrototype::ObjectPrototype(ExecState* exec, FunctionPrototype* funcProto)
   : JSObject() // [[Prototype]] is null
 {
-    static const Identifier* hasOwnPropertyPropertyName = new Identifier("hasOwnProperty");
-    static const Identifier* propertyIsEnumerablePropertyName = new Identifier("propertyIsEnumerable");
-    static const Identifier* isPrototypeOfPropertyName = new Identifier("isPrototypeOf");
-    static const Identifier* defineGetterPropertyName = new Identifier("__defineGetter__");
-    static const Identifier* defineSetterPropertyName = new Identifier("__defineSetter__");
-    static const Identifier* lookupGetterPropertyName = new Identifier("__lookupGetter__");
-    static const Identifier* lookupSetterPropertyName = new Identifier("__lookupSetter__");
+	if(!hasOwnPropertyPropertyName)
+		hasOwnPropertyPropertyName = new Identifier("hasOwnProperty");
+	if(!propertyIsEnumerablePropertyName)
+		propertyIsEnumerablePropertyName = new Identifier("propertyIsEnumerable");
+	if(!isPrototypeOfPropertyName)
+		isPrototypeOfPropertyName = new Identifier("isPrototypeOf");
+	if(!defineGetterPropertyName)
+		defineGetterPropertyName = new Identifier("__defineGetter__");
+	if(!defineSetterPropertyName)
+		defineSetterPropertyName = new Identifier("__defineSetter__");
+	if(!lookupGetterPropertyName)
+		lookupGetterPropertyName = new Identifier("__lookupGetter__");
+	if(!lookupSetterPropertyName)
+		lookupSetterPropertyName = new Identifier("__lookupSetter__");
 
     putDirectFunction(new ObjectProtoFunc(exec, funcProto, ObjectProtoFunc::ToString, 0, exec->propertyNames().toString), DontEnum);
     putDirectFunction(new ObjectProtoFunc(exec, funcProto, ObjectProtoFunc::ToLocaleString, 0, exec->propertyNames().toLocaleString), DontEnum);
@@ -191,4 +207,27 @@ JSValue* ObjectObjectImp::callAsFunction(ExecState* exec, JSObject* /*thisObj*/,
 {
     return construct(exec, args);
 }
+
+struct cleanupStaticObjectObject {
+    ~cleanupStaticObjectObject() 
+	{
+	delete hasOwnPropertyPropertyName;
+	delete propertyIsEnumerablePropertyName;
+	delete isPrototypeOfPropertyName;
+	delete defineGetterPropertyName;
+	delete defineSetterPropertyName;
+	delete lookupGetterPropertyName;
+	delete lookupSetterPropertyName;
+
+	hasOwnPropertyPropertyName = 0;
+	propertyIsEnumerablePropertyName = 0;
+	isPrototypeOfPropertyName = 0;
+	defineGetterPropertyName = 0;
+	defineSetterPropertyName = 0;
+	lookupGetterPropertyName = 0;
+	lookupSetterPropertyName = 0;
+
+    }
+};
+static cleanupStaticObjectObject deleteStaticObjectObject;
 

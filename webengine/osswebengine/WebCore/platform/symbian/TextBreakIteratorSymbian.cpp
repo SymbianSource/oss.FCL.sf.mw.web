@@ -165,44 +165,55 @@ namespace WebCore {
        return -1;
     }
     
+static WordBreakIteratorSymbian *wordIterator = 0;
+static CharBreakIteratorSymbian *charIterator = 0;
+static LineBreakIteratorSymbian *lineIterator = 0;
+struct cleanupIterators {
+    ~cleanupIterators() {
+    		delete wordIterator;
+    		wordIterator = NULL;
+    		delete charIterator;
+    		charIterator = NULL;
+    		delete lineIterator;
+    		lineIterator = NULL;
+    }
+};
+static cleanupIterators deleteBreakIterator;
 
 TextBreakIterator* wordBreakIterator(const UChar* string, int length)
 {
-    static WordBreakIteratorSymbian *iterator = 0;
-    if (!iterator)
-        iterator = new WordBreakIteratorSymbian;
+    if (!wordIterator)
+        wordIterator = new WordBreakIteratorSymbian;
 
-    iterator->string = string;
-    iterator->length = length;
-    iterator->currentPos = 0;
+    wordIterator->string = string;
+    wordIterator->length = length;
+    wordIterator->currentPos = 0;
 
-    return iterator;
+    return wordIterator;
 }
 
 TextBreakIterator* characterBreakIterator(const UChar* string, int length)
 {
-    static CharBreakIteratorSymbian *iterator = 0;
-    if (!iterator)
-        iterator = new CharBreakIteratorSymbian;
+    if (!charIterator)
+        charIterator = new CharBreakIteratorSymbian;
 
-    iterator->string = string;
-    iterator->length = length;
-    iterator->currentPos = 0;
+    charIterator->string = string;
+    charIterator->length = length;
+    charIterator->currentPos = 0;
 
-    return iterator;
+    return charIterator;
 }
 
 TextBreakIterator* lineBreakIterator(const UChar* string, int length)
 {
-   static LineBreakIteratorSymbian *iterator = 0;
-    if (!iterator)
-        iterator = new LineBreakIteratorSymbian;
+    if (!lineIterator)
+        lineIterator = new LineBreakIteratorSymbian;
 
-    iterator->string = string;
-    iterator->length = length;
-    iterator->currentPos = 0;
+    lineIterator->string = string;
+    lineIterator->length = length;
+    lineIterator->currentPos = 0;
 
-    return iterator;
+    return lineIterator;
 }
 
 TextBreakIterator* sentenceBreakIterator(const UChar*, int)
@@ -243,4 +254,6 @@ bool isTextBreak(TextBreakIterator*, int)
 }
 
 }
+
+
 

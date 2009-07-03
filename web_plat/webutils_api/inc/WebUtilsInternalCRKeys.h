@@ -74,5 +74,11 @@ const TUint32 KWebUtilsBrowserVersionMinor =	0x00000010;
 // Browser Version SVN Rev 
 const TUint32 KWebUtilsBrowserVersionSVNRev =	0x00000011;
 
+// Browser Name
+const TUint32 KWebUtilsBrowserName =	0x00000012;
+
+// Ignore product program config when TRUE 
+const TUint32 KWebUtilsIgnoreConfig =	0x00000013;
+
 		
 #endif // WEBUTILSINTERNALCRKEYS_H

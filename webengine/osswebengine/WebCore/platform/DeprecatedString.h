@@ -289,7 +289,8 @@ public:
     DeprecatedString(const QString&);
     operator QString() const;
 #endif
-
+		static void deleteSharedNull();
+				
     static DeprecatedString fromLatin1(const char *);
     static DeprecatedString fromLatin1(const char *, int len);
     static DeprecatedString fromUtf8(const char *);

@@ -133,6 +133,7 @@ PlatformFontCache::~PlatformFontCache()
     }        
     iFontCache.clear();
     delete [] iSupportedNames;
+    iDeviceDefaultFont = "";
 }
 
 const AtomicString& PlatformFontCache::SystemFontFamily( const AtomicString& familyName )

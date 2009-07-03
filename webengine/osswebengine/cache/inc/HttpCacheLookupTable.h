@@ -94,6 +94,14 @@ class CHttpCacheLookupTable : public CBase
         * @param
         * @return
         */
+        TInt RemoveByPosition( TInt aPos );
+        
+        /**
+        *
+        * @since 3.1
+        * @param
+        * @return
+        */
         TInt RemoveAll();
         
         /**
@@ -144,6 +152,14 @@ class CHttpCacheLookupTable : public CBase
         */
         void MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable, RFs aRfs  );
         
+        /**
+        *
+        * @since 7.1
+        * @param
+        * @return
+        */
+        void FindCacheEntryIndex( const CHttpCacheEntry& aCacheEntry, TInt* aIndex );
+
     private:
         
         /**

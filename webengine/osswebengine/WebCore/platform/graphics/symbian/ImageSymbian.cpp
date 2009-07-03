@@ -60,7 +60,7 @@
 
 namespace WebCore {
 
-CMaskedBitmap* loadAknIcon(int id, float sizeAdjust);
+CMaskedBitmap* loadAknIconL(int id, float sizeAdjust);
 
 void FrameData::clear()
 {
@@ -126,9 +126,26 @@ BitmapImage::BitmapImage(CMaskedBitmap* bitmap)
 
 BitmapImage::~BitmapImage()
 {
+	//find if m_maskedbitmap is in m_frames so it wont get deleted twice
+	for(TInt i=0; i<m_frames.size(); i++)
+        {
+        if(m_maskedBitmap==m_frames[i].m_frame)
+        	{
+        	//masked bitmap gets deleted when decoded data is destroyed,
+        	m_maskedBitmap = NULL;
+        	}
+        }
     destroyDecodedData();
     stopAnimation();
+	delete m_maskedBitmap;
+	m_maskedBitmap = NULL;
     invalidatePlatformData();
+
+    for(TInt i=0; i<m_frames.size(); i++)
+        {
+        m_frames[i].clear();
+        }
+    m_frames.clear();
 }
 
 void BitmapImage::destroyDecodedData(bool)
@@ -313,7 +330,8 @@ Image* Image::loadPlatformResource(const char *name)
         resourceIds.set("checkBoxOff", &checkBoxOffData);
     }
     if (const IconData* data = resourceIds.get(name)) {
-        CMaskedBitmap* bm = loadAknIcon(data->m_id,data->m_sizeAdjust);
+	CMaskedBitmap* bm = NULL;
+        TRAP_IGNORE(bm = loadAknIconL(data->m_id,data->m_sizeAdjust));
         if (bm) {
             BitmapImage* im = new BitmapImage(bm);
             return im;
@@ -325,6 +343,7 @@ Image* Image::loadPlatformResource(const char *name)
 void BitmapImage::draw(GraphicsContext* ctxt, const FloatRect& dst, const FloatRect& src, CompositeOperator op)
 {
     WebCoreGraphicsContext* context = ctxt->platformContext();
+
 	if (!context) {
           return;
 	}
@@ -348,28 +367,37 @@ _LIT( KBrowserSvgFile, "Webkiticons_gcce.mif" );
 _LIT( KBrowserSvgFile, "webkiticons.mif" );
 #endif
 
+static HBufC* iconFileNameBuf = NULL;
+struct cleanupIconFileName {
+    ~cleanupIconFileName() {
+        delete iconFileNameBuf;
+        iconFileNameBuf = NULL;
+    }
+};
+struct cleanupIconFileName cleanIconFileName;
+
 TPtrC iconFileName()
 {
-    static HBufC* filename = 0;
-    if (!filename) {
+    if (!iconFileNameBuf) {
         TFileName mbmDrive;
         TParse parse;
         Dll::FileName( mbmDrive );
         Dll::FileName( mbmDrive );
         parse.Set( mbmDrive, NULL, NULL );
         mbmDrive = parse.Drive();
-        filename = HBufC::New( KMaxFileName );
-        filename->Des().Append( mbmDrive );
-        filename->Des().Append( KDC_APP_BITMAP_DIR );
-        filename->Des().Append( KBrowserSvgFile );
+        iconFileNameBuf = HBufC::New( KMaxFileName );
+        iconFileNameBuf->Des().Append( mbmDrive );
+        iconFileNameBuf->Des().Append( KDC_APP_BITMAP_DIR );
+        iconFileNameBuf->Des().Append( KBrowserSvgFile );
     }
-    return *filename;
+    return *iconFileNameBuf;
 }
 
-CMaskedBitmap* loadAknIcon(int id, float sizeAdjust)
+CMaskedBitmap* loadAknIconL(int id, float sizeAdjust)
 {
     CEikonEnv* eikEnv = CEikonEnv::Static();
     CWsScreenDevice& screenDev = *eikEnv->ScreenDevice();
+    CMaskedBitmap* result = NULL;
 
     int dpi = screenDev.VerticalTwipsToPixels(KTwipsPerInch);
     int px = (int)10*sizeAdjust;
@@ -386,19 +414,20 @@ CMaskedBitmap* loadAknIcon(int id, float sizeAdjust)
     CFbsBitmap* bitmap=0;
     CFbsBitmap* mask=0;
     MAknsSkinInstance* skin = AknsUtils::SkinInstance();
-    TRAPD(error, AknsUtils::CreateIconL( skin,
+
+    AknsUtils::CreateIconLC( skin,
                                    KAknsIIDDefault,
                                    bitmap,
                                    mask,
                                    iconFileName(),
                                    id,
-                                   id+1));
-    if (error!=KErrNone)
-        return 0;
+                                   id+1);
 
     AknIconUtils::SetSize(bitmap,TSize(px,px)); //rect.Rect().Size());
     AknIconUtils::SetSize(mask,TSize(px,px)); //rect.Rect().Size());
-    return new CMaskedBitmap(bitmap,mask);
+	result = new (ELeave) CMaskedBitmap(bitmap,mask);
+	CleanupStack::Pop( 2 );//bitmap, mask
+    return result;
 }
 
 CMaskedBitmap* BitmapImage::getMaskedBitmap()
@@ -406,8 +435,7 @@ CMaskedBitmap* BitmapImage::getMaskedBitmap()
     if (m_maskedBitmap)
         return m_maskedBitmap;
 
-    m_maskedBitmap = m_source.createFrameAtIndex(0);
-    return m_maskedBitmap;
+    return  m_source.createFrameAtIndex(0);
 }
 
 void BitmapImage::drawPattern(GraphicsContext* ctxt, const FloatRect& srcRect, const AffineTransform& patternTransform,

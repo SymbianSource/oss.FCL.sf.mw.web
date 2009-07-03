@@ -115,7 +115,7 @@ TDesC& WidgetPreferences::getWidgetBundleId()
 //
 //
 // ----------------------------------------------------------------------------
-TInt WidgetPreferences::preferenceL( const TDesC& akey, TPtrC& avalue)
+TInt WidgetPreferences::preferenceL( const TDesC& akey, HBufC*& avalue)
 {
 
     TInt rSuccess = KErrNotFound;
@@ -159,7 +159,7 @@ TInt WidgetPreferences::preferenceL( const TDesC& akey, TPtrC& avalue)
                         HBufC* v = HBufC::NewLC( len );
                         TPtr ptrvalue = v->Des();
                         readStream.ReadL( ptrvalue, len );    
-                        avalue.Set( *v );
+                        avalue = v; // ownership xfered
                         CleanupStack::Pop( v );
                         rSuccess = KErrNone;
                     }     
@@ -170,7 +170,7 @@ TInt WidgetPreferences::preferenceL( const TDesC& akey, TPtrC& avalue)
             }
         }        
         else if ( size >= 0 ) {
-            avalue.Set( pref->value() );
+            avalue = pref->value().AllocL();
             rSuccess = KErrNone;
         }
 

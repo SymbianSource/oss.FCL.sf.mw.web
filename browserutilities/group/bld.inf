@@ -24,7 +24,9 @@
 #include "../browsertelservice/group/bld.inf"
 #include "../favouritesengine/group/bld.inf"
 #include "../feedsengine/group/bld.inf"
+#ifdef BRDO_MULTIPART_PARSER_FF
 #include "../multipartparser/group/bld.inf"
+#endif
 #include "../schemehandler/group/bld.inf"
 #include "../webutils/group/bld.inf"
 #include "../aiwbrowserprovider/group/bld.inf"

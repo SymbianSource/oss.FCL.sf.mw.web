@@ -135,41 +135,44 @@ void CHttpHandler::LoadUrlL(const TDesC& aUrl, MLoadObserver& aObserver)
 
     // Create the transaction.
     iTransaction = iSession.OpenTransactionL(uriParser, *this,
-		iSession.StringPool().StringF(HTTP::EGET, RHTTPSession::GetTable()));
+        iSession.StringPool().StringF(HTTP::EGET, RHTTPSession::GetTable()));
 
     // TODO: Set the headers if any.
-	//++PK Add UA header code
-	
-	iUserAgentHeader = iTransaction.Request().GetHeaderCollection();
-	
-	CUserAgent* tWebUtilsStandardUA = CUserAgent::NewL();
+    //++PK Add UA header code
+
+    iUserAgentHeader = iTransaction.Request().GetHeaderCollection();
+
+    CUserAgent* tWebUtilsStandardUA = CUserAgent::NewL();
     CleanupStack::PushL(tWebUtilsStandardUA);
-	
-	HBufC8* tWebUtilsStandardUAHeaderValue = tWebUtilsStandardUA->UserAgentL();	
-	
-	RStringF tStringValue = iSession.StringPool().OpenFStringL(*tWebUtilsStandardUAHeaderValue);	
-	
-	THTTPHdrVal tHeaderValue( tStringValue );
-	
-	RStringF tStringUA = iSession.StringPool().StringF(HTTP::EUserAgent, RHTTPSession::GetTable());
-	
-	iUserAgentHeader.SetFieldL( tStringUA, tStringValue );
-	
-	//++PK
+
+    HBufC8* tWebUtilsStandardUAHeaderValue = tWebUtilsStandardUA->UserAgentL();
+    CleanupStack::PushL(tWebUtilsStandardUAHeaderValue);
+
+    RStringF tStringValue = iSession.StringPool().OpenFStringL(*tWebUtilsStandardUAHeaderValue);
+
+    THTTPHdrVal tHeaderValue( tStringValue );
+
+    RStringF tStringUA = iSession.StringPool().StringF(HTTP::EUserAgent, RHTTPSession::GetTable());
+
+    iUserAgentHeader.SetFieldL( tStringUA, tStringValue );
+
+    //++PK
     // Submit the request.
-	iTransaction.SubmitL();
+    iTransaction.SubmitL();
 
     // If the connection is available it is safe to tell to the observer
     // to display progress indicators (i.e. a wait-dialog).
     if (iHttpConnection->IsConnected())
         {
         iObserver->StartWait();
-        
+
         // Start the inactive connection timer as well.
         iTimer->Start(KTimerPeriod, KTimerPeriod, iTimerState);
         iLastActivity.HomeTime();
         }
 
+    tStringValue.Close();
+    CleanupStack::PopAndDestroy(tWebUtilsStandardUAHeaderValue);
     CleanupStack::PopAndDestroy(tWebUtilsStandardUA);
     CleanupStack::PopAndDestroy(url);
     }

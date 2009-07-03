@@ -37,7 +37,11 @@ deffile ../Bwinscw/WmlEngine.def
 deffile ../EABI/WmlEngine.def
 #endif
 
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 
 MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER

@@ -63,6 +63,9 @@ namespace WebCore {
         String unmodifiedText() const { return m_unmodifiedText; }
         String keyIdentifier() const { return m_keyIdentifier; }
         bool isKeyUp() const { return m_isKeyUp; }
+        //***** FL added from r12765 *****//
+        bool isKeyDown() const { return m_isKeyDown; }
+        //**********//
         bool isAutoRepeat() const { return m_autoRepeat; }
         void setIsAutoRepeat(bool in) { m_autoRepeat = in; }
         int WindowsKeyCode() const { return m_WindowsKeyCode; }
@@ -99,6 +102,9 @@ namespace WebCore {
         String m_unmodifiedText;
         String m_keyIdentifier;
         bool m_isKeyUp;
+        //***** FL added from r12765 *****//
+        bool m_isKeyDown;
+        //**********//
         bool m_autoRepeat;
         int m_WindowsKeyCode;
         bool m_isKeypad;

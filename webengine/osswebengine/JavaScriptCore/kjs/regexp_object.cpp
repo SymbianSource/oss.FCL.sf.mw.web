@@ -43,13 +43,31 @@ using namespace KJS;
 
 const ClassInfo RegExpPrototype::info = {"RegExpPrototype", 0, 0, 0};
 
+    static const Identifier* execPropertyName = 0; 
+    static const Identifier* testPropertyName = 0; 
+ 
+
+    struct cleanupStaticRegexpObject { 
+        ~cleanupStaticRegexpObject()  
+       { 
+          delete execPropertyName; 
+          delete testPropertyName; 
+	 
+          execPropertyName = 0; 
+          testPropertyName = 0; 
+        } 
+   }; 
+   static cleanupStaticRegexpObject deleteStaticRegexpObject; 
+
 RegExpPrototype::RegExpPrototype(ExecState *exec,
                                        ObjectPrototype *objProto,
                                        FunctionPrototype *funcProto)
   : JSObject(objProto)
 {
-  static const Identifier* execPropertyName = new Identifier("exec");
-  static const Identifier* testPropertyName = new Identifier("test");
+  if(!execPropertyName)
+		execPropertyName = new Identifier("exec");
+  if(!testPropertyName)
+        testPropertyName = new Identifier("test");
 
   putDirectFunction(new RegExpProtoFunc(exec, funcProto, RegExpProtoFunc::Exec, 0, *execPropertyName), DontEnum);
   putDirectFunction(new RegExpProtoFunc(exec, funcProto, RegExpProtoFunc::Test, 0, *testPropertyName), DontEnum);

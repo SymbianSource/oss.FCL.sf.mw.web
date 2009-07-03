@@ -35,7 +35,24 @@
 #include "WebCannedImages.h"
 #include "OOMHandler.h"
 #include "SharedTimer.h"
+#include "TextEncodingRegistry.h"
+#include "CSSStyleSelector.h"
+#include "RenderStyle.h"
+#include "Page.h"
+#include "Cache.h"
+#include "StreamingTextCodecSymbian.h"
+#include "HTMLNames.h"
+#include "XMLNames.h"
+#include "FontCache.h"
+#include "RenderThemeSymbian.h"
+#include "qualifiedname.h"
+#include "XMLTokenizer.h"
 #include <eikenv.h>
+
+#include "WidgetEngineBridge.h"
+#if defined(BRDO_LIW_FF)
+#include "DeviceBridge.h"
+#endif
 
 const TInt KLowResolutionDpi = 130;
 const TInt KMediumResolutionDpi = 200;
@@ -60,6 +77,7 @@ StaticObjectsContainer::StaticObjectsContainer() :
     ,m_oomHandler(0)
     ,m_fullScreenMode(false)
     ,m_pluginFullscreen(false)
+    ,m_symbianTheme(NULL)
 {
     // Check the device resolution
     CEikonEnv* eikEnv = CEikonEnv::Static();
@@ -83,7 +101,11 @@ StaticObjectsContainer::StaticObjectsContainer() :
 
 StaticObjectsContainer::~StaticObjectsContainer()
 {
+    // Run KJS collector to cleanup any remaining references
+    // This must be run before Cache::deleteStaticCache to properly free resources
+    KJS::Collector::collect();
     delete m_oomHandler;
+    FontCache::deleteFontDataCache();
     delete m_fontCache;
     delete m_formFillController;
     delete m_pictograph;
@@ -94,8 +116,27 @@ StaticObjectsContainer::~StaticObjectsContainer()
     delete m_cannedimg;
     delete m_cursor;
     delete m_pluginhandler;
+    delete m_symbianTheme;
     gInstance = NULL;
+    deletePageStaticData();
+    CSSStyleSelector::deleteDefaultStyle();
+    deleteEncodingMaps();
+    RenderStyle::deleteDefaultRenderStyle();
+    Cache::deleteStaticCache();
+    TextCodecSymbian::deleteStatAvailCharsets();
+    QualifiedName::cleanup();
+    XMLNames::remove();
+    // HTMLNames::remove() will destroy the AtomicString table
+    // All other atomic string destruction must be done before this call
+    //
+    HTMLNames::remove();
+    XMLTokenizer::cleanupXMLStringParser();
     shutdownSharedTimer();
+    m_widgetLibrary.Close();
+#if defined(BRDO_LIW_FF)
+    m_deviceLibrary.Close();
+#endif
+    CloseSTDLIB();
 }
 
 StaticObjectsContainer* StaticObjectsContainer::instance()
@@ -198,6 +239,40 @@ PluginHandler* StaticObjectsContainer::pluginHandler()
     return m_pluginhandler;
 }
 
+#if defined(BRDO_LIW_FF)
+MDeviceBridge* StaticObjectsContainer::getDeviceBridgeL()
+{
+    MDeviceBridge* device(NULL);
+    
+    if( !m_deviceLibrary.Handle() ) {
+        _LIT( KDeviceDLLName, "jsdevice.dll" );
+        User::LeaveIfError( m_deviceLibrary.Load(KDeviceDLLName) );
+    }
+    
+    TLibraryFunction device_entry = m_deviceLibrary.Lookup(1);
+    if (device_entry) {
+        device = (MDeviceBridge*) device_entry();
+    }
+    return device;
+}
+#endif 
+
+MWidgetEngineBridge* StaticObjectsContainer::getWidgetEngineBridgeL()
+{
+    MWidgetEngineBridge* widget(NULL);
+    
+    if( !m_widgetLibrary.Handle() ) {
+        _LIT( KBrowserWidgetEngineName, "widgetengine.dll" );
+        User::LeaveIfError( m_widgetLibrary.Load(KBrowserWidgetEngineName) );
+    }
+    
+    TLibraryFunction entry = m_widgetLibrary.Lookup(1);
+    if (entry) {
+        widget = (MWidgetEngineBridge*) entry(); 
+    }
+    return widget;    
+}
+
 CBrCtl* StaticObjectsContainer::brctl() const
 {
     if (m_activeBrCtls.size() > 0)
@@ -235,6 +310,13 @@ void StaticObjectsContainer::setFullScreenMode(bool mode)
 
 bool StaticObjectsContainer::fullScreenMode(void){
     return m_fullScreenMode;
+}
+
+RenderTheme* StaticObjectsContainer::theme()
+{
+    if(!m_symbianTheme)
+        m_symbianTheme = new RenderThemeSymbian();
+    return m_symbianTheme;
 }
 }
 

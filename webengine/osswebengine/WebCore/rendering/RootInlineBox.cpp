@@ -38,6 +38,17 @@ namespace WebCore {
 typedef WTF::HashMap<const RootInlineBox*, EllipsisBox*> EllipsisBoxMap;
 static EllipsisBoxMap* gEllipsisBoxMap = 0;
 
+struct EllipsisBoxCleanup {
+    ~EllipsisBoxCleanup() {
+        if( gEllipsisBoxMap ) {
+            gEllipsisBoxMap->clear();
+            delete gEllipsisBoxMap;
+            gEllipsisBoxMap = 0;
+        }
+    }
+};
+struct EllipsisBoxCleanup ellipsisCleaner;
+
 void* RootInlineBox::Overflow::operator new(size_t sz, RenderArena* renderArena) throw()
 {
     return renderArena->allocate(sz);

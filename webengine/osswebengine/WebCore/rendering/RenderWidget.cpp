@@ -41,11 +41,26 @@ namespace WebCore {
 
 using namespace EventNames;
 
+static HashMap<const Widget*, RenderWidget*>* staticWidgetRendererMap;
+
 static HashMap<const Widget*, RenderWidget*>& widgetRendererMap()
 {
-    static HashMap<const Widget*, RenderWidget*>* staticWidgetRendererMap = new HashMap<const Widget*, RenderWidget*>;
+    if( !staticWidgetRendererMap ) {
+        staticWidgetRendererMap = new HashMap<const Widget*, RenderWidget*>;
+    }
     return *staticWidgetRendererMap;
 }
+
+struct renderMapCleaner {
+    ~renderMapCleaner() {
+        if( staticWidgetRendererMap ) {
+            staticWidgetRendererMap->clear();
+            delete staticWidgetRendererMap;
+            staticWidgetRendererMap = 0;
+        }
+    }
+};
+struct renderMapCleaner renderMapClean;
 
 RenderWidget::RenderWidget(Node* node)
       : RenderReplaced(node)

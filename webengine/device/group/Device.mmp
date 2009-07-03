@@ -33,7 +33,11 @@ MACRO __CPLUSPLUS
 OPTION CW -warn noempty,nounused,nounwanted,nopedantic
 OPTION ARMCC --diag_suppress 111,177,1293,1,1299,830,550,427 --fpmode fast
 
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 
 VENDORID  VID_DEFAULT
 CAPABILITY  CAP_GENERAL_DLL

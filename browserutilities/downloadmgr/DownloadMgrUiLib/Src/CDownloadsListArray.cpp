@@ -109,8 +109,11 @@ void CDownloadsListArray::ConstructL()
     CLOG_WRITE(" iSavedToGalleryString OK");
 	iSavedToDownloadsFolderString=  iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_CONTENT_SAVED_TO_DOWNLOADS_FOLDER);
 	CLOG_WRITE(" iSavedToGalleryDownload OK");
-	iFileSavedString = iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_FILE_SAVED );
-	iFilesSavedString = iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_FILES_SAVED );
+	
+	#ifndef BRDO_APP_GALLERY_SUPPORTED_FF
+	    iFileSavedString = iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_FILE_SAVED );
+	    iFilesSavedString = iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_FILES_SAVED );
+	#endif
 
 	
     iNullDesC = KNullDesC().AllocL();
@@ -188,10 +191,14 @@ CDownloadsListArray::~CDownloadsListArray()
 	iSavedToGalleryString = 0;
 	delete iSavedToDownloadsFolderString;
 	iSavedToDownloadsFolderString=0;
-	delete iFileSavedString;
-	iFileSavedString = 0;
-	delete iFilesSavedString;
-	iFilesSavedString = 0;
+	
+	#ifndef BRDO_APP_GALLERY_SUPPORTED_FF
+	    delete iFileSavedString;
+	    iFileSavedString = 0;
+	    delete iFilesSavedString;
+	    iFilesSavedString = 0;
+	#endif
+	
     delete iNullDesC;
     iNullDesC = 0;
     iApaLsSess.Close();

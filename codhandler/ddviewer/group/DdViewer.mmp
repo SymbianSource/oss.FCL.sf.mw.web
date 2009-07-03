@@ -35,7 +35,11 @@ SOURCE          DdViewer.cpp
 START RESOURCE ../data/DdViewer.rss
 HEADER
 TARGETPATH APP_RESOURCE_DIR
-LANGUAGE_IDS
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
 END
 
 SYSTEMINCLUDE   ../../CodEng/inc

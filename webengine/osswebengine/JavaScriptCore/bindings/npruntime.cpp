@@ -41,13 +41,25 @@ using namespace KJS::Bindings;
 
 typedef HashMap<RefPtr<KJS::UString::Rep>, PrivateIdentifier*> StringIdentifierMap;
 
+static StringIdentifierMap* stringIdentifierMap = 0;
+    
 static StringIdentifierMap* getStringIdentifierMap()
 {
-    static StringIdentifierMap* stringIdentifierMap = 0;
     if (!stringIdentifierMap)
         stringIdentifierMap = new StringIdentifierMap;
     return stringIdentifierMap;
 }
+
+struct cleanupStringIdentifier {
+    ~cleanupStringIdentifier() {
+        if( stringIdentifierMap ) {
+            stringIdentifierMap->clear();
+            delete stringIdentifierMap;
+            stringIdentifierMap = 0;
+        }
+    }
+};
+struct cleanupStringIdentifier cleanup;
 
 typedef HashMap<int, PrivateIdentifier*> IntIdentifierMap;
 

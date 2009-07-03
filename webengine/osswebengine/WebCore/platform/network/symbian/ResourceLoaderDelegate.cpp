@@ -95,6 +95,11 @@ void ResourceLoaderDelegate::download(ResourceHandle* handle, const ResourceRequ
     connection->download(handle, request, response);
 }
 
+static void cleanupConnection( TAny* connection )
+{
+    delete (ResolvedConnection*) connection;
+}
+
 MUrlConnection* ResourceLoaderDelegate::checkLinkResolverL(ResourceHandle* handle, Frame* frame)
 {
     CBrCtl* brctl = control(frame);
@@ -117,9 +122,10 @@ MUrlConnection* ResourceLoaderDelegate::checkLinkResolverL(ResourceHandle* handl
                 }
             }            
             connection = new (ELeave) ResolvedConnection(handle, frame);
-            CleanupStack::PushL(connection);
+            TCleanupItem cleaner( cleanupConnection, connection );
+            CleanupStack::PushL(cleaner);
             TBool ret = brctl->brCtlLinkResolver()->ResolveLinkL(url->Des(), currentUrlPtr, *connection);
-            CleanupStack::Pop(); // connection
+            CleanupStack::Pop(); // cleaner( connection )
             if (!ret) {
                 delete connection;
                 connection = NULL;
@@ -141,10 +147,11 @@ MUrlConnection* ResourceLoaderDelegate::checkLinkResolverL(ResourceHandle* handl
                 }
             }            
             connection = new (ELeave) ResolvedConnection(handle, frame);
-            CleanupStack::PushL(connection);
+            TCleanupItem cleaner( cleanupConnection, connection );
+            CleanupStack::PushL(cleaner);
             TBool ret = brctl->brCtlLinkResolver()->ResolveEmbeddedLinkL(url->Des(), currentUrlPtr,
                 ELoadContentTypeAny, *connection);
-            CleanupStack::Pop(); // connection
+            CleanupStack::Pop(); // cleaner( connection )
             if (!ret) {
                 delete connection;
                 connection = NULL;

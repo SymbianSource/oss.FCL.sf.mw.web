@@ -21,6 +21,7 @@
 #include <e32base.h>
 #include "WebCoreWidget.h"
 #include "WebCannedImages.h"
+#include "WebSprite.h"
 #include <w32std.h>
 
 namespace WebCore {
@@ -34,6 +35,7 @@ class WebFrame;
 class CWindowGc;
 class WebFrame;
 class CFbsBitmap;
+class CWebSprite;
 
 class WebCursor : public CBase
     {
@@ -46,7 +48,7 @@ class WebCursor : public CBase
 
         const TPoint& position() const { return m_pos; }
         const TRect& nodeRect() const { return m_nodeRect; }
-        void setPosition(const TPoint& pt) { m_pos = pt; m_sprite.SetPosition(pt);}
+        void setPosition(const TPoint& pt) { m_pos = pt;}
         void updatePositionAndElemType(const TPoint& pt);
         void setCurrentView(WebView& view);
         void offsetCursor(const TPoint& offset);
@@ -66,11 +68,11 @@ class WebCursor : public CBase
         void scrollAndMoveCursor(int dir, int scrollRange, bool auto);
         WebFrame* getFrameUnderCursor();
         bool navigableNodeUnderCursor(WebFrame& webFrame, TPoint& aPoint, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect) const;
+        WebFrame* getFrameAtPoint(const TPoint& viewPos_);
         
 
   private:
         void moveCursor(int lr,int tb, int scrollRange);
-        WebFrame* getFrameAtPoint(const TPoint& viewPos_);
         bool determineCursorPosition(WebFrame& webFrame, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect, TRect& aSearchRect, 
             TPoint& aCursorPosition, bool aInitialize);
         void increaseSearchRect(int lr,int tb,TRect& aRect);
@@ -85,7 +87,7 @@ class WebCursor : public CBase
         WebCursor();
         void ConstructL();
         TRect calcSearchRect(int lr, int tb, int scrollRange);
-        void constructSprite();
+        void constructSpriteL();
         
 
         TPoint                          m_pos;
@@ -103,7 +105,8 @@ class WebCursor : public CBase
 
         WebView*                        m_view;
         bool                            m_visible;
-        RWsSprite                       m_sprite;
+        
+        CWebSprite*                     m_sprite;
         bool                            m_waiton;
         int                             m_flipcounter;
         bool                            m_transparent;
