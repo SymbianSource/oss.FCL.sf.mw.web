@@ -45,6 +45,9 @@ WebFrameBridge::WebFrameBridge() :
 WebFrameBridge::~WebFrameBridge() 
 {
     m_webFrame.release();
+    if (m_frame)
+        m_frame->setBridge(NULL);
+
 }
 
 WebView* WebFrameBridge::webView() const

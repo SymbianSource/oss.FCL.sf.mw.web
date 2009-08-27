@@ -139,8 +139,8 @@ void CFotaSaver::CheckResponseAttributesL( const CCodData& aData )
     //
     // There is a safety upper bound on the transaction size, that is already
     // applied. See SetMaxSize().
-    
-    if( iType != TDataType( (*aData[aData.ActiveDownload()]).Type()  ) )
+ 
+    if( iType.Des8().Find( (*aData[aData.ActiveDownload()]).Type() ) == KErrNotFound )
         {
         CLOG(( ECodEng, 4, _L(" content-type mismatch") ));
         User::Leave( KErrCodAttributeMismatch );

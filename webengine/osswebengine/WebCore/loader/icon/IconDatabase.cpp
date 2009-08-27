@@ -92,10 +92,13 @@ static String urlForLogging(const String& url)
 }
 #endif
 
+static IconDatabaseClient* defaultClientObj;
 static IconDatabaseClient* defaultClient() 
 {
-    static IconDatabaseClient* defaultClient = new IconDatabaseClient();
-    return defaultClient;
+    if( !defaultClientObj ) {
+        defaultClientObj = new IconDatabaseClient();
+    }
+    return defaultClientObj;
 }
 
 IconDatabase* iconDatabase()
@@ -250,12 +253,15 @@ void IconDatabase::close()
     }
     m_retainedPageURLs.clear();
     
-    delete m_client;
-    delete sharedIconDatabase;
     m_syncLock.~Mutex();
     m_urlAndIconLock.~Mutex();
     m_pendingSyncLock.~Mutex();
     m_pendingReadingLock.~Mutex();
+        
+    delete m_client;
+    defaultClientObj = NULL;
+    delete sharedIconDatabase;
+    sharedIconDatabase = NULL;
 #endif
 }
 

@@ -21,6 +21,7 @@
 
 //  INCLUDES
 #include <object.h>
+#include "Device.h"
 
 /**
 *  Device
@@ -33,10 +34,24 @@ class CLiwMap;
 namespace KJS
     {
     class CDeviceLiwBinding;
-    class DeviceLiwMapPrivate;
+    class DeviceLiwMap;
+    
+    class DeviceLiwMapPrivate : public DevicePrivateBase
+        {
+        friend class DeviceLiwMap;
+        friend class DeviceLiwMapFunc;
+        public:
+            DeviceLiwMapPrivate(DeviceLiwMap* jsobj, const CLiwMap* liwMap, CDeviceLiwBinding* liwBinding);
+            ~DeviceLiwMapPrivate();
+            CDeviceLiwBinding* m_liwBinding;                 // not Owned
+            Identifier m_propName;
+            CLiwMap* m_liwMap;                               // not owned 
+            DeviceLiwMap* m_jsobj;                           // not owned 
+        };
+   
     class DeviceLiwMap: public JSObject
         {
-
+        friend class DeviceLiwMapPrivate; 
         public: // constructor and destructor
 
            /**
@@ -82,14 +97,21 @@ namespace KJS
             * @return boolean
             * @since 5.0
             */
-            const bool isValid() const { return m_valid; }
-           
+            const TBool isValid() const { return m_valid; }
+            
+           /**
+            * getMapData
+            * @return DevicePrivateBase*
+            * @since 7.x
+            */
+            DevicePrivateBase* getMapData() { return m_privateData; }
+            
             /**
             * close jsobject array
             * @return 
             * @since 5.0
             **/
-            void Close(ExecState* exec, bool unmark );
+            void Close();
 
            /**
             * toString
@@ -107,22 +129,9 @@ namespace KJS
         private:
 
             DeviceLiwMapPrivate* m_privateData;   // private object to hold data
-            bool m_valid;                          // object is valid or not
+            TBool m_valid;                          // object is valid or not
         };
         
-    class DeviceLiwMapPrivate
-        {
-        friend class DeviceLiwMap;
-        friend class DeviceLiwMapFunc;
-        public:
-            DeviceLiwMapPrivate(const CLiwMap* liwMap, CDeviceLiwBinding* liwBinding);
-            ~DeviceLiwMapPrivate()   { Close(); }
-            void Close();
-            CDeviceLiwBinding* m_liwBinding;                 // not Owned
-            Identifier m_propName;
-            CLiwMap* m_liwMap;                               // not owned  
-        };
-
     class DeviceLiwMapFunc : public JSObject
         {
         public: // constructor and destructor

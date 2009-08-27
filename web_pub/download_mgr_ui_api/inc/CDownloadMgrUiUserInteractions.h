@@ -189,6 +189,11 @@ NONSHARABLE_CLASS( CDownloadMgrUiUserInteractions ) :
         * Schedule a postponed download for running.
         */
         void SchedulePostponedDownloadL();
+        
+        /**
+        * To Set the flag when progressive play is Launched
+        */
+        inline void SetProgressiveDownloadLaunched( TBool aProgressiveDownloadLaunched ) {iProgressiveDownloadLaunched = aProgressiveDownloadLaunched; }
 
     public: // Functions from CDownloadMgrUiBase
 
@@ -301,6 +306,8 @@ NONSHARABLE_CLASS( CDownloadMgrUiUserInteractions ) :
         CAsyncEventHandlerArray*    iEventHandlerArray; ///< Owned.
 
         TBool                       iDlgActive;
+        
+        TBool                       iProgressiveDownloadLaunched;  
 
     private: // Friend classes
 

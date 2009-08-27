@@ -116,8 +116,8 @@ class CWidgetUIHandler : public CBase,
         * information about the application to be uninstalled. The user may cancel the
         * uninstallation at this stage. This dialog must be shown in TrustedUI mode.
         */
-        TBool DisplayUninstallL( const TDesC& aWidgetName );
-
+        TBool DisplayUninstallL( const TDesC& aWidgetName, TBool aWidgetinHomeScreen );
+        
         /**
         * Prompt user to select a drive to install the widget
         * @param aDrive - returns user's drive selection

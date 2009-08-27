@@ -73,9 +73,9 @@ public:
     void setPluginFullscreen(bool val) { m_pluginFullscreen = val; }
     bool isPluginFullscreen() { return m_pluginFullscreen; }
 #if defined(BRDO_LIW_FF)
-    MDeviceBridge* getDeviceBridgeL();
+    RLibrary& getDeviceBridgeLibL();
 #endif     
-    MWidgetEngineBridge* getWidgetEngineBridgeL();
+    RLibrary& getWidgetEngineBridgeLibL();
     RenderTheme* theme();
     
     virtual ~StaticObjectsContainer();

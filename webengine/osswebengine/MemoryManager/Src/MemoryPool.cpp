@@ -620,30 +620,38 @@ CNewSymbianHeapPool::~CNewSymbianHeapPool()
 						// except at process end.
 	}
 
-const TInt KMaxHeapSize = 0x2000000; //32MB
-const TInt KHeapGrowSize = 0x10000;  //64KB
+#ifdef __WINSCW__
+const TInt KMaxHeapSize = 0x2000000; // 32MB, on emulator
+#else
+const TInt KMaxHeapSize = 0x4000000; // 64MB, on hardware
+#endif
+
+const TInt KHeapGrowSize = 0x10000;  // 64KB
 
 TBool CNewSymbianHeapPool::Create()
 	{
 	// need to know system page size
 	TInt page_size;
 	UserHal::PageSizeInBytes(page_size);
-
-	// Create the thread's heap chunk.
-	//
-	// The chunk needs reserve enough address space for twice the maximum allocation
-	// The heap object is instantiated exactly half way up the chunk, and initially is provided just 1 page of memory
-	// This memory can be committed as part of the call to creat the chunk
-	//
-	TInt maxChunkSize = 2 * KMaxHeapSize;
-	TInt offset = KMaxHeapSize;
+	
+    TInt maxmem = 0;
+    HAL::Get(HALData::EMemoryRAM, maxmem);
+    TInt maxHeapSize = Min(maxmem, KMaxHeapSize);
+        
+	/* Create the thread's heap chunk.
+	 * The chunk needs reserve enough address space for twice the maximum allocation
+	 * The heap object is instantiated exactly half way up the chunk, and initially is provided just 1 page of memory
+	 * This memory can be committed as part of the call to creat the chunk
+	 */
+	TInt maxChunkSize = 2 * maxHeapSize;
+	TInt offset = maxHeapSize;
 	TInt minLength = page_size;
 	RChunk c;
 	TInt r = c.CreateDisconnectedLocal(offset, offset+minLength, maxChunkSize, EOwnerProcess);
 	if (r!=KErrNone)
 		return EFalse;
 	
-	iAlloc = new (c.Base() + offset) RSymbianDLHeap(c.Handle(), offset, minLength, KMaxHeapSize, KHeapGrowSize, 8, EFalse /* not single threaded! */);
+	iAlloc = new (c.Base() + offset) RSymbianDLHeap(c.Handle(), offset, minLength, maxHeapSize, KHeapGrowSize, 8, EFalse /* not single threaded! */);
 	iAlloc->iHandles = &iAlloc->iChunkHandle;
 	iAlloc->iHandleCount = 2;
 	// chunk handle now 'owned' by iAlloc
@@ -655,5 +663,12 @@ TBool CNewSymbianHeapPool::Create()
 	return CMemoryPool::Create();
 	}
 
+#ifdef OOM_LOGGING   
+void CNewSymbianHeapPool::DumpHeapLogs()
+    {
+    iAlloc->dump_heap_logs(0);
+    iAlloc->dump_dl_free_chunks();
+    }
+#endif
 #endif
 // END OF FILE

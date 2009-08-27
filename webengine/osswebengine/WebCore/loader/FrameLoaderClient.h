@@ -191,6 +191,8 @@ namespace WebCore {
         virtual void setTitle(const String& title, const KURL&) = 0;
 
         virtual String userAgent(const KURL&) = 0;
+        virtual TInt widgetNetworkConstants(TInt aId) = 0;
+        virtual TInt widgetNetworkState() = 0;
         
         virtual void saveDocumentViewToCachedPage(CachedPage*) = 0;
         virtual bool canCachePage() const = 0;

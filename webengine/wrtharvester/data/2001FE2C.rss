@@ -31,7 +31,7 @@
 RESOURCE REGISTRY_INFO theInfo
     {
     // UID for the DLL
-    dll_uid = 0xA12345FD;
+    dll_uid = 0x2001FE2C;
     // Declare array of interface info
     interfaces = 
         {

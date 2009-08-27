@@ -137,7 +137,6 @@ NW_LMgr_Box_DumpBoxTree(NW_LMgr_Box_t* box);
 #endif /* DEBUG */
 #endif /* WINS */
 
-_LIT( KMessageTextFormat, "At least %U\ncharacters\nmust be entered" );
 
 // ============================= PRIVATE FUNCTIONS ===============================
 NW_Bool
@@ -770,9 +769,10 @@ TBrowserStatusCode CView::InputInvalidL(void* aCEpoc32View, TInt aMin)
         }
     else
         {
+        TBuf<8> aMinStr;
+        aMinStr.Format(_L("%U"),aMin);
         // We require a minimum number of chars
-        message = HBufC::NewLC(KMessageTextFormat().Length());
-        message->Des().Format( KMessageTextFormat(), aMin );
+        message = StringLoader::LoadLC(R_TEXT_MORE_INPUT_REQ,aMinStr);
         }
 
     TRAPD (err, ((CView*)aCEpoc32View)->iBrCtl->brCtlDialogsProvider()->DialogNoteL(message->Des()));

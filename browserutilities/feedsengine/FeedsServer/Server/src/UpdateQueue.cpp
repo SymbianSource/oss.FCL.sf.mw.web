@@ -154,3 +154,28 @@ TInt CUpdateQueue::Count()
     {
     return iFeedIds.Count();
     }
+
+// -----------------------------------------------------------------------------
+// CUpdateQueue::ResetTimers
+// 
+// Resets all the auto update timers
+// -----------------------------------------------------------------------------
+
+void CUpdateQueue::ResetTimers()
+{
+    iLastAutoUpdate.HomeTime();
+    TDateTime dateTime = iLastAutoUpdate.DateTime();
+    TInt mins;
+
+    switch(iFreq)
+        {
+        case 10080:
+            mins = iLastAutoUpdate.DayNoInWeek()*60*24 + dateTime.Hour() * 60 + dateTime.Minute();
+            break;
+        default:
+            mins = dateTime.Hour() * 60 + dateTime.Minute();
+            break;
+        }
+
+    iLastAutoUpdate = iLastAutoUpdate - TTimeIntervalMinutes(mins % iFreq);
+}

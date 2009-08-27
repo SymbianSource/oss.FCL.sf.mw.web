@@ -983,4 +983,3 @@ void CRoapAppUi::HandleDMgrEventL( RHttpDownload& aDownload, THttpDownloadEvent 
 	CLOG(( 2, _L("<- CRoapAppUi::HandleDMgrEventL") ));
     }
 
-

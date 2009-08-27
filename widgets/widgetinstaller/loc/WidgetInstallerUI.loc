@@ -95,3 +95,9 @@
 // l: popup_note_wait_window
 // r: 3.2
 #define qtn_swins_widget_finalize_install "Finalizing installation"
+
+// d: Text in confirmation query in widget installer.
+// d: Asks for the permission from the user to continue uninstallation of the widget in question (=%U).
+// l: popup_note_window
+// r: 3.2
+#define qtn_swins_widget_uninstall_hs_prompt "Removing %U will clear it from both the system and the homeScreen.Continue?"

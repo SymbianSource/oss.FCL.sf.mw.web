@@ -35,6 +35,7 @@
 #include "WebCannedImages.h"
 #include "OOMHandler.h"
 #include "SharedTimer.h"
+#include "TextEncoding.h"
 #include "TextEncodingRegistry.h"
 #include "CSSStyleSelector.h"
 #include "RenderStyle.h"
@@ -43,10 +44,22 @@
 #include "StreamingTextCodecSymbian.h"
 #include "HTMLNames.h"
 #include "XMLNames.h"
+#include "MediaFeatureNames.h"
+#include "EventNames.h"
 #include "FontCache.h"
 #include "RenderThemeSymbian.h"
 #include "qualifiedname.h"
 #include "XMLTokenizer.h"
+#include "Document.h"
+#include "StyleElement.h"
+#include "bidi.h"
+#include "RenderBox.h"
+#include "FontCache.h"
+#include "MIMETypeRegistry.h"
+#include "ImageSymbian.h"
+#include "ResourceHandleManagerSymbian.h"
+#include "TextBreakIteratorSymbian.h"
+#include "HTMLElementFactory.h"
 #include <eikenv.h>
 
 #include "WidgetEngineBridge.h"
@@ -97,6 +110,7 @@ StaticObjectsContainer::StaticObjectsContainer() :
         }
     }
     m_oomHandler = new OOMHandler();
+    initSharedTimer();
 }
 
 StaticObjectsContainer::~StaticObjectsContainer()
@@ -120,12 +134,29 @@ StaticObjectsContainer::~StaticObjectsContainer()
     gInstance = NULL;
     deletePageStaticData();
     CSSStyleSelector::deleteDefaultStyle();
+    deleteTextEncodings();
     deleteEncodingMaps();
     RenderStyle::deleteDefaultRenderStyle();
     Cache::deleteStaticCache();
     TextCodecSymbian::deleteStatAvailCharsets();
     QualifiedName::cleanup();
     XMLNames::remove();
+	cleanupChangedDocuments();
+	mappedAttributeCleaner();
+	cleanupMidpoints();
+	cleanOverridSizeMap();
+	cleanupFontDataCache();
+	cleanupMimeTypes();
+	cleanupHandleManager();
+	cleanupFuncMap();
+	cleanupIconFileName();
+	cleanupIterators();
+
+#ifndef __WINSCW__    
+    WebCore::MediaFeatureNames::remove();
+    WebCore::EventNames::remove();
+#endif  // __WINSCW__    
+    
     // HTMLNames::remove() will destroy the AtomicString table
     // All other atomic string destruction must be done before this call
     //
@@ -240,37 +271,23 @@ PluginHandler* StaticObjectsContainer::pluginHandler()
 }
 
 #if defined(BRDO_LIW_FF)
-MDeviceBridge* StaticObjectsContainer::getDeviceBridgeL()
+RLibrary& StaticObjectsContainer::getDeviceBridgeLibL()
 {
-    MDeviceBridge* device(NULL);
-    
     if( !m_deviceLibrary.Handle() ) {
         _LIT( KDeviceDLLName, "jsdevice.dll" );
         User::LeaveIfError( m_deviceLibrary.Load(KDeviceDLLName) );
     }
-    
-    TLibraryFunction device_entry = m_deviceLibrary.Lookup(1);
-    if (device_entry) {
-        device = (MDeviceBridge*) device_entry();
-    }
-    return device;
+    return m_deviceLibrary;
 }
 #endif 
 
-MWidgetEngineBridge* StaticObjectsContainer::getWidgetEngineBridgeL()
+RLibrary& StaticObjectsContainer::getWidgetEngineBridgeLibL()
 {
-    MWidgetEngineBridge* widget(NULL);
-    
     if( !m_widgetLibrary.Handle() ) {
         _LIT( KBrowserWidgetEngineName, "widgetengine.dll" );
         User::LeaveIfError( m_widgetLibrary.Load(KBrowserWidgetEngineName) );
     }
-    
-    TLibraryFunction entry = m_widgetLibrary.Lookup(1);
-    if (entry) {
-        widget = (MWidgetEngineBridge*) entry(); 
-    }
-    return widget;    
+    return m_widgetLibrary;    
 }
 
 CBrCtl* StaticObjectsContainer::brctl() const

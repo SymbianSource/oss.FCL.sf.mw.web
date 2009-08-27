@@ -212,6 +212,12 @@ NONSHARABLE_CLASS( CMediaDataServ ) : public CMediaDataBase
         */
         TBool SetTempFilenameL( const TDesC& aTempFilename );
         
+        /**
+        * Set StatusCode attribute.
+        * @param aStatusCode.
+        * @return void.
+        */
+        void SetStatusCode( TInt aStatusCode );
     private:    // implementation details
 
         /**

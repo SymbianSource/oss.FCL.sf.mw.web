@@ -29,6 +29,7 @@ void TraceChunkUsage(TInt aChunkHandle, TUint8* aBase, TInt aChunkSize)
 
 #ifdef __NEW_ALLOCATOR__
 
+#include "MemoryLogger.h"
 #include "SymbianDLHeap.h"
 
 _LIT(KDLHeapPanicCategory, "DL Heap");
@@ -45,6 +46,205 @@ void Panic(TCdtPanic aPanic)
 
 #undef UEXPORT_C
 #define UEXPORT_C 
+
+
+/* Purpose:     Map chunk memory pages from system RAM
+ * Arguments:   tp - tchunkptr in which memmory should be mapped
+ *              psize - incoming tchunk size
+ * Return:      KErrNone if successful, else KErrNoMemory  
+ * Note:        
+ */
+TInt RSymbianDLHeap::map_chunk_pages(tchunkptr tp, size_t psize)
+{
+    if(page_not_in_memory(tp, psize)) {
+        char *a_addr = tchunk_page_align(tp);
+        size_t npages = tp->npages;
+    
+#ifdef OOM_LOGGING
+        // check that npages matches the psize
+        size_t offset = address_offset(a_addr,tp);        
+        if(offset < psize && (psize - offset) >= mparams.page_size )
+        {               
+            size_t tpages = ( psize - offset) >> pageshift;            
+            if(tpages != tp->npages) //assert condition                
+                MEM_LOG("CHUNK_PAGE_ERROR:map_chunk_pages, error in npages");                        
+        }
+        else
+            MEM_LOG("CHUNK_PAGE_ERROR::map_chunk_pages: - Incorrect page-in-memmory flag");
+#endif        
+    
+        if(map(a_addr, npages*mparams.page_size)) {        
+            TRACE_DL_CHUNK_MAP(tp, psize, a_addr, npages*mparams.page_size);
+            ASSERT_RCHUNK_SIZE();
+            TRACE_UNMAPPED_CHUNK(-1*npages*mparams.page_size);
+            return KErrNone;
+        }
+        else { 
+            MEM_LOGF(_L8("CHUNK_PAGE_ERROR:: map_chunk_pages - Failed to Commit RAM, page_addr=%x, npages=%d, chunk_size=%d"), a_addr, npages, psize);
+            MEM_DUMP_OOM_LOGS(psize, "RSymbianDLHeap::map_chunk_pages - Failed to Commit RAM");
+            return KErrNoMemory;
+        }
+    }
+    return KErrNone;
+}
+
+/* Purpose:     Map partial chunk memory pages from system RAM
+ * Arguments:   tp - tchunkptr in which memmory should be mapped
+ *              psize - incoming tchunk size
+ *              r - remainder chunk pointer
+ *              rsize - remainder chunk size  
+ * Return:      Number of unmapped pages from remainder chunk if successful (0 or more), else KErrNoMemory
+ * Note:        Remainder chunk should be large enough to be mapped out (checked before invoking this function)    
+ *              pageout headers will be set from insert_large_chunk(), not here.
+ */
+TInt RSymbianDLHeap::map_chunk_pages_partial(tchunkptr tp, size_t psize, tchunkptr r, size_t rsize)
+{
+    if(page_not_in_memory(tp, psize)) {
+        size_t npages = tp->npages; // total no of pages unmapped in this chunk        
+        char *page_addr_map = tchunk_page_align(tp); // address to begin page map
+        char *page_addr_rem = tchunk_page_align(r);  // address in remainder chunk to remain unmapped
+        assert(address_offset(page_addr_rem, r) < rsize);
+        size_t npages_map = address_offset(page_addr_rem, page_addr_map) >> pageshift; // no of pages to be mapped
+        if(npages_map > 0) {
+            if(map(page_addr_map, npages_map*mparams.page_size)) {            
+                TRACE_DL_CHUNK_MAP(tp, psize, page_addr_map, npages_map*mparams.page_size);
+                ASSERT_RCHUNK_SIZE();
+                TRACE_UNMAPPED_CHUNK(-1*npages_map*mparams.page_size);    
+                return (npages - npages_map);
+            }
+            else { 
+                MEM_LOGF(_L8("CHUNK_PAGE_ERROR:: map_chunk_pages_partial - Failed to Commit RAM, page_addr=%x, npages=%d, chunk_size=%d"), page_addr_map, npages_map, psize);
+                MEM_DUMP_OOM_LOGS(psize, "RSymbianDLHeap::map_chunk_pages_partial - Failed to Commit RAM");
+                return KErrNoMemory;
+            }              
+        }
+        else {
+             // map not needed, first page is already mapped
+             return npages;
+        }
+    }
+    
+    return 0;
+}
+
+
+/* Purpose:     Release (unmap) chunk memory pages to system RAM
+ * Arguments:   tp - tchunkptr from which memmory may be released
+ *              psize - incoming tchunk size
+ *              prev_npages - number of pages that has been already unmapped from this chunk
+ * Return:      total number of pages that has been unmapped from this chunk (new unmapped pages + prev_npages)
+ * Note:        pageout headers will be set from insert_large_chunk(), not here.    
+ */
+TInt RSymbianDLHeap::unmap_chunk_pages(tchunkptr tp, size_t psize, size_t prev_npages)
+{
+    size_t npages = 0;
+    char *a_addr = tchunk_page_align(tp);
+    size_t offset = address_offset(a_addr,tp);    
+    if(offset < psize && (psize - offset) >= mparams.page_size)
+    { /* check for new pages to decommit */
+        npages = ( psize - offset) >> pageshift;
+        if(npages > prev_npages) {
+            unmap(a_addr, npages*mparams.page_size);    // assuming kernel takes care of already unmapped pages
+            TRACE_DL_CHUNK_UNMAP(tp, psize, a_addr, npages*mparams.page_size);
+            iChunkSize += prev_npages*mparams.page_size; //adjust actual chunk size
+            ASSERT_RCHUNK_SIZE();
+            TRACE_UNMAPPED_CHUNK((npages-prev_npages)*mparams.page_size);
+            assert((a_addr + npages*mparams.page_size - 1) < (char*)next_chunk(tp));
+        }        
+    }
+
+#ifdef OOM_LOGGING        
+    if(npages && (npages < prev_npages))
+        MEM_LOG("CHUNK_PAGE_ERROR:unmap_chunk_pages, error in npages");    
+    if(npages > prev_npages) {
+        /* check that end of decommited address lie within this chunk */      
+        if((a_addr + npages*mparams.page_size - 1) >= (char*)next_chunk(tp))
+            MEM_LOG("CHUNK_PAGE_ERROR:unmap_chunk_pages, error chunk boundary");
+    }
+#endif
+#ifdef DL_CHUNK_MEM_DEBUG 
+    mchunkptr next = next_chunk(tp);
+    do_check_any_chunk_access(next, chunksize(next));
+    if(!npages)  do_check_any_chunk_access((mchunkptr)tp, psize);
+#endif
+   
+    return (npages);
+}
+
+/* Purpose:     Unmap all pages between previously unmapped and end of top chunk 
+                and reset top to beginning of prev chunk
+ * Arguments:   fm - global malloc state
+ *              prev - previous chunk which has unmapped pages
+ *              psize - size of previous chunk
+ *              prev_npages - number of unmapped pages from previous chunk
+ * Return:      nonzero if sucessful, else 0
+ * Note:                    
+ */
+TInt RSymbianDLHeap::sys_trim_partial(mstate m, mchunkptr prev, size_t psize, size_t prev_npages)
+{
+    size_t released = 0;
+    size_t extra = 0;
+    if (is_initialized(m)) {
+      psize += m->topsize;
+      char *a_addr = tchunk_page_align(prev); // includes space for TOP footer 
+      size_t addr_offset = address_offset(a_addr, prev);
+      assert(addr_offset > TOP_FOOT_SIZE); //always assert?
+      assert((char*)iTop >= a_addr); //always assert?
+      if((char*)iTop > a_addr)
+          extra = address_offset(iTop, a_addr);
+
+#ifdef OOM_LOGGING      
+      if ((char*)iTop < a_addr)
+          MEM_LOGF(_L8("RSymbianDLHeap::sys_trim_partial - incorrect iTop value, top=%x, iTop=%x"), m->top, iTop);
+#endif            
+        msegmentptr sp = segment_holding(m, (TUint8*)prev);
+        if (!is_extern_segment(sp)) {
+          if (is_mmapped_segment(sp)) {
+            if (HAVE_MMAP &&  sp->size >= extra && !has_segment_link(m, sp)) { /* can't shrink if pinned */
+              size_t newsize = sp->size - extra;
+              /* Prefer mremap, fall back to munmap */
+              if ((CALL_MREMAP(sp->base, sp->size, newsize, 0) != MFAIL) ||
+                  (CALL_MUNMAP(sp->base + newsize, extra) == 0)) {
+                released = extra;
+              }
+            }
+          }
+          else if (HAVE_MORECORE) {
+            if (extra >= HALF_MAX_SIZE_T) /* Avoid wrapping negative */
+                extra = (HALF_MAX_SIZE_T) + SIZE_T_ONE - mparams.granularity;
+            ACQUIRE_MORECORE_LOCK(m);
+            {
+              /* Make sure end of memory is where we last set it. */
+              TUint8* old_br = (TUint8*)(CALL_MORECORE(0));
+              if (old_br == sp->base + sp->size) {
+                TUint8* rel_br = (TUint8*)(CALL_MORECORE(-extra));
+                TUint8* new_br = (TUint8*)(CALL_MORECORE(0));
+                if (rel_br != CMFAIL && new_br < old_br)
+                  released = old_br - new_br;
+              }
+            }
+            RELEASE_MORECORE_LOCK(m);
+          }
+        }
+        
+        if (released != 0) {
+          TRACE_DL_CHUNK_UNMAP(prev, psize, a_addr, released);
+          iChunkSize += prev_npages*mparams.page_size; // prev_unmapped was already unmapped
+          TRACE_UNMAPPED_CHUNK(-1*prev_npages*mparams.page_size);
+          ASSERT_RCHUNK_SIZE();
+          sp->size -= released;
+          m->footprint -= released;
+        }
+        
+        /* reset top to prev chunk */
+        init_top(m, prev, addr_offset - TOP_FOOT_SIZE);
+        check_top_chunk(m, m->top);
+    }
+
+    // DL region not initalized, do not reset top here
+    return (released != 0)? 1 : 0;
+}
+
 
 UEXPORT_C RSymbianDLHeap::RSymbianDLHeap(TInt aMaxLength, TInt aAlign, TBool aSingleThread)
 // constructor for a fixed heap. Just use DL allocator
@@ -84,7 +284,7 @@ UEXPORT_C RSymbianDLHeap::RSymbianDLHeap(TInt aChunkHandle, TInt aOffset, TInt a
 	if (aMinLength == aMaxLength)
 		Init(0, 0, 0);
 	else
-		Init(0x3fff, 16, 0x10000);	// all slabs, page {64KB}, trim {64KB}
+		Init(0x3fff, 15, 0x10000);	// all slabs, page {32KB}, trim {64KB}
 //		Init(0xabe, 16, iPageSize*4);	// slabs {48, 40, 32, 24, 20, 16, 12}, page {64KB}, trim {16KB}
 	}
 
@@ -112,6 +312,10 @@ void RSymbianDLHeap::Init(TInt aBitmapSlab, TInt aPagePower, size_t aTrimThresho
 
 	/*10-1K,11-2K,12-4k,13-8K,14-16K,15-32K,16-64K*/
 	paged_init(aPagePower);
+
+#ifdef OOM_LOGGING    
+    iUnmappedChunkSize = 0;
+#endif    
 	}
 
 UEXPORT_C RSymbianDLHeap::SCell* RSymbianDLHeap::GetAddress(const TAny* aCell) const
@@ -163,6 +367,9 @@ UEXPORT_C TAny* RSymbianDLHeap::Alloc(TInt aSize)
 	else
 		{
 		addr = paged_allocate(aSize);
+		if(!addr) { // paged_allocator failed, try in dlmalloc 
+            addr = dlmalloc(aSize);
+		}
 		}
 
 	Unlock();
@@ -417,18 +624,35 @@ void* RSymbianDLHeap::tmalloc_large(mstate m, size_t nb) {
     t = leftmost_child(t);
   }
   /*  If dv is a better fit, return 0 so malloc will use it */
-  if (v != 0 && rsize < (size_t)(m->dvsize - nb)) {
+    if (v != 0) {
     if (RTCHECK(ok_address(m, v))) { /* split */
       mchunkptr r = chunk_plus_offset(v, nb);
       assert(chunksize(v) == rsize + nb);
+      
+      /* check for chunk memory page-in */
+      size_t npages_out = 0;
+      if(page_not_in_memory(v, chunksize(v))) {
+          if(!is_small(rsize) && rsize>=CHUNK_PAGEOUT_THESHOLD) {
+              // partial chunk page mapping
+              TInt result = map_chunk_pages_partial(v, chunksize(v), (tchunkptr)r, rsize);
+              if (result < 0) return 0; // Failed to Commit RAM
+              else npages_out = (size_t)result;              
+          }          
+          else {
+              // full chunk page map needed
+              TInt err = map_chunk_pages(v, chunksize(v));
+              if(err != KErrNone)  return 0; // Failed to Commit RAM
+          }
+      }
+
       if (RTCHECK(ok_next(v, r))) {
         unlink_large_chunk(m, v);
-        if (rsize < MIN_CHUNK_SIZE)
+        if (rsize < free_chunk_threshold) // exaust if less than slab threshold
           set_inuse_and_pinuse(m, v, (rsize + nb));
         else {
           set_size_and_pinuse_of_inuse_chunk(m, v, nb);
           set_size_and_pinuse_of_free_chunk(r, rsize);
-          insert_chunk(m, r, rsize);
+          insert_chunk(m, r, rsize, npages_out);
         }
         return chunk2mem(v);
       }
@@ -460,14 +684,21 @@ void* RSymbianDLHeap::tmalloc_small(mstate m, size_t nb) {
   if (RTCHECK(ok_address(m, v))) {
     mchunkptr r = chunk_plus_offset(v, nb);
     assert(chunksize(v) == rsize + nb);
+    
+    /* check for chunk memory page-in */
+      if(page_not_in_memory(v, chunksize(v))) {
+          TInt err = map_chunk_pages(v, chunksize(v));
+          if(err != KErrNone)  return 0; // Failed to Commit RAM
+      }
+      
     if (RTCHECK(ok_next(v, r))) {
       unlink_large_chunk(m, v);
-      if (rsize < MIN_CHUNK_SIZE)
+      if (rsize < free_chunk_threshold) // exaust if less than slab threshold
         set_inuse_and_pinuse(m, v, (rsize + nb));
       else {
         set_size_and_pinuse_of_inuse_chunk(m, v, nb);
         set_size_and_pinuse_of_free_chunk(r, rsize);
-        replace_dv(m, r, rsize);
+        insert_chunk(m, r, rsize, 0);      
       }
       return chunk2mem(v);
     }
@@ -515,7 +746,7 @@ void* RSymbianDLHeap::internal_realloc(mstate m, void* oldmem, size_t bytes)
 	  if (oldsize >= nb) { /* already big enough */
         size_t rsize = oldsize - nb;
         newp = oldp;
-        if (rsize >= MIN_CHUNK_SIZE) {
+        if (rsize >= free_chunk_threshold) {
           mchunkptr remainder = chunk_plus_offset(newp, nb);
           set_inuse(m, newp, nb);
           set_inuse(m, remainder, rsize);
@@ -833,6 +1064,8 @@ void* RSymbianDLHeap::sys_alloc(mstate m, size_t nb)
     }
   }
   /*need to check this*/
+  MEM_DUMP_OOM_LOGS(nb, "sys_alloc:: FAILED to get more memory");
+  
   //errno = -1;
   return 0;
 }
@@ -883,12 +1116,12 @@ inline void RSymbianDLHeap::insert_small_chunk(mstate M,mchunkptr P, size_t S)
 }
 
 
-inline void RSymbianDLHeap::insert_chunk(mstate M,mchunkptr P,size_t S)
+inline void RSymbianDLHeap::insert_chunk(mstate M,mchunkptr P,size_t S,size_t NPAGES)
 {
 	if (is_small(S))
 		insert_small_chunk(M, P, S);
 	else{
-		tchunkptr TP = (tchunkptr)(P); insert_large_chunk(M, TP, S);
+		tchunkptr TP = (tchunkptr)(P); insert_large_chunk(M, TP, S, NPAGES);
 	 }
 }
 
@@ -896,6 +1129,7 @@ inline void RSymbianDLHeap::unlink_large_chunk(mstate M,tchunkptr X)
 {
   tchunkptr XP = X->parent;
   tchunkptr R;
+  reset_tchunk_mem_pageout(X); // clear chunk pageout flag
   if (X->bk != X) {
     tchunkptr F = X->fd;
     R = X->bk;
@@ -1016,7 +1250,7 @@ inline void RSymbianDLHeap::compute_tree_index(size_t S, bindex_t& I)
 /* ------------------------- Operations on trees ------------------------- */
 
 /* Insert chunk into tree */
-inline void RSymbianDLHeap::insert_large_chunk(mstate M,tchunkptr X,size_t S)
+inline void RSymbianDLHeap::insert_large_chunk(mstate M,tchunkptr X,size_t S,size_t NPAGES)
 {
   tbinptr* H;
   bindex_t I;
@@ -1024,6 +1258,10 @@ inline void RSymbianDLHeap::insert_large_chunk(mstate M,tchunkptr X,size_t S)
   H = treebin_at(M, I);
   X->index = I;
   X->child[0] = X->child[1] = 0;
+
+  if(NPAGES) { set_tchunk_mem_pageout(X, NPAGES) }
+  else  { reset_tchunk_mem_pageout(X) }
+  
   if (!treemap_is_marked(M, I)) {
     mark_treemap(M, I);
     *H = X;
@@ -1157,7 +1395,7 @@ void RSymbianDLHeap::add_segment(mstate m, TUint8* tbase, size_t tsize, flag_t m
     size_t psize = csp - old_top;
     mchunkptr tn = chunk_plus_offset(q, psize);
     set_free_with_pinuse(q, psize, tn);
-    insert_chunk(m, q, psize);
+    insert_chunk(m, q, psize, 0);
   }
 
   check_top_chunk(m, m->top);
@@ -1184,20 +1422,20 @@ void* RSymbianDLHeap::prepend_alloc(mstate m, TUint8* newbase, TUint8* oldbase,
     q->head = tsize | PINUSE_BIT;
     check_top_chunk(m, q);
   }
-  else if (oldfirst == m->dv) {
-    size_t dsize = m->dvsize += qsize;
-    m->dv = q;
-    set_size_and_pinuse_of_free_chunk(q, dsize);
-  }
   else {
     if (!cinuse(oldfirst)) {
       size_t nsize = chunksize(oldfirst);
+      
+      /* check for chunk memory page-in */
+      if(page_not_in_memory(oldfirst, nsize))
+        map_chunk_pages((tchunkptr)oldfirst, nsize);       //Err Ignored, branch not reachable.
+      
       unlink_chunk(m, oldfirst, nsize);
       oldfirst = chunk_plus_offset(oldfirst, nsize);
       qsize += nsize;
     }
     set_free_with_pinuse(q, qsize, oldfirst);
-    insert_chunk(m, q, qsize);
+    insert_chunk(m, q, qsize, 0);
     check_free_chunk(m, q);
   }
 
@@ -1321,14 +1559,9 @@ void* RSymbianDLHeap::mmap_alloc(mstate m, size_t nb) {
 	      /* Can unmap if first chunk holds entire segment and not pinned */
 	      if (!cinuse(p) && (TUint8*)p + psize >= base + size - TOP_FOOT_SIZE) {
 	        tchunkptr tp = (tchunkptr)p;
+	        size_t npages_out = tp->npages;
 	        assert(segment_holds(sp, (TUint8*)sp));
-	        if (p == m->dv) {
-	          m->dv = 0;
-	          m->dvsize = 0;
-	        }
-	        else {
-	          unlink_large_chunk(m, tp);
-	        }
+            unlink_large_chunk(m, tp);
 	        if (CALL_MUNMAP(base, size) == 0) {
 	          released += size;
 	          m->footprint -= size;
@@ -1337,7 +1570,7 @@ void* RSymbianDLHeap::mmap_alloc(mstate m, size_t nb) {
 	          sp->next = next;
 	        }
 	        else { /* back out if cannot unmap */
-	          insert_large_chunk(m, tp, psize);
+	          insert_large_chunk(m, tp, psize, npages_out);
 	        }
 	      }
 	    }
@@ -1404,18 +1637,12 @@ void* RSymbianDLHeap::dlmalloc(size_t bytes) {
      Basic algorithm:
      If a small request (< 256 bytes minus per-chunk overhead):
        1. If one exists, use a remainderless chunk in associated smallbin.
-          (Remainderless means that there are too few excess bytes to
-          represent as a chunk.)
-       2. If it is big enough, use the dv chunk, which is normally the
-          chunk adjacent to the one used for the most recent small request.
-       3. If one exists, split the smallest available chunk in a bin,
-          saving remainder in dv.
+          (Remainderless means that there are too few excess bytes to represent as a chunk.)
+       2. If one exists, split the smallest available chunk in a bin, saving remainder in bin.
        4. If it is big enough, use the top chunk.
        5. If available, get memory from system and use it
      Otherwise, for a large request:
-       1. Find the smallest available binned chunk that fits, and use it
-          if it is better fitting than dv chunk, splitting if necessary.
-       2. If better fitting than any binned chunk, use the dv chunk.
+       1. Find the smallest available binned chunk that fits, splitting if necessary.
        3. If it is big enough, use the top chunk.
        4. If request size >= mmap threshold, try to directly mmap this chunk.
        5. If available, get memory from system and use it
@@ -1443,9 +1670,7 @@ void* RSymbianDLHeap::dlmalloc(size_t bytes) {
         mem = chunk2mem(p);
         check_malloced_chunk(gm, mem, nb);
         goto postaction;
-      }
-
-      else if (nb > gm->dvsize) {
+      } else {
         if (smallbits != 0) { /* Use chunk in next nonempty smallbin */
           mchunkptr b, p, r;
           size_t rsize;
@@ -1459,25 +1684,24 @@ void* RSymbianDLHeap::dlmalloc(size_t bytes) {
           unlink_first_small_chunk(gm, b, p, i);
           rsize = small_index2size(i) - nb;
           /* Fit here cannot be remainderless if 4byte sizes */
-          if (SIZE_T_SIZE != 4 && rsize < MIN_CHUNK_SIZE)
+          if (rsize < free_chunk_threshold)
             set_inuse_and_pinuse(gm, p, small_index2size(i));
           else {
             set_size_and_pinuse_of_inuse_chunk(gm, p, nb);
             r = chunk_plus_offset(p, nb);
             set_size_and_pinuse_of_free_chunk(r, rsize);
-            replace_dv(gm, r, rsize);
+            insert_chunk(gm, r, rsize, 0);
           }
           mem = chunk2mem(p);
           check_malloced_chunk(gm, mem, nb);
           goto postaction;
         }
-
         else if (gm->treemap != 0 && (mem = tmalloc_small(gm, nb)) != 0) {
           check_malloced_chunk(gm, mem, nb);
           goto postaction;
         }
       }
-    }
+    } /* else - large alloc request */ 
     else if (bytes >= MAX_REQUEST)
       nb = MAX_SIZE_T; /* Too big to allocate. Force failure (in sys alloc) */
     else {
@@ -1488,27 +1712,7 @@ void* RSymbianDLHeap::dlmalloc(size_t bytes) {
       }
     }
 
-    if (nb <= gm->dvsize) {
-      size_t rsize = gm->dvsize - nb;
-      mchunkptr p = gm->dv;
-      if (rsize >= MIN_CHUNK_SIZE) { /* split dv */
-        mchunkptr r = gm->dv = chunk_plus_offset(p, nb);
-        gm->dvsize = rsize;
-        set_size_and_pinuse_of_free_chunk(r, rsize);
-        set_size_and_pinuse_of_inuse_chunk(gm, p, nb);
-      }
-      else { /* exhaust dv */
-        size_t dvs = gm->dvsize;
-        gm->dvsize = 0;
-        gm->dv = 0;
-        set_inuse_and_pinuse(gm, p, dvs);
-      }
-      mem = chunk2mem(p);
-      check_malloced_chunk(gm, mem, nb);
-      goto postaction;
-    }
-
-    else if (nb < gm->topsize) { /* Split top */
+    if (nb < gm->topsize) { /* Split top */
       size_t rsize = gm->topsize -= nb;
       mchunkptr p = gm->top;
       mchunkptr r = gm->top = chunk_plus_offset(p, nb);
@@ -1524,6 +1728,13 @@ void* RSymbianDLHeap::dlmalloc(size_t bytes) {
 
   postaction:
     POSTACTION(gm);
+#ifdef DL_CHUNK_MEM_DEBUG    
+    if(mem) {
+        mchunkptr pp = mem2chunk(mem);
+        do_check_any_chunk_access(pp, chunksize(pp));
+    }
+#endif   
+
     return mem;
   }
 
@@ -1539,6 +1750,8 @@ void RSymbianDLHeap::dlfree(void* mem) {
 
 	if (mem != 0)
 	{
+	    size_t unmapped_pages = 0;
+	    int prev_chunk_unmapped = 0;
 		mchunkptr p  = mem2chunk(mem);
 #if FOOTERS
 		mstate fm = get_mstate_for(p);
@@ -1565,41 +1778,23 @@ void RSymbianDLHeap::dlfree(void* mem) {
 					{
 						prevsize &= ~IS_MMAPPED_BIT;
 						psize += prevsize + MMAP_FOOT_PAD;
-						/*TInt tmp = TOP_FOOT_SIZE;
-						TUint8* top = (TUint8*)fm->top + fm->topsize + 40;
-						if((top == (TUint8*)p)&& fm->topsize > 4096)
-						{
-							fm->topsize += psize;
-							msegmentptr sp = segment_holding(fm, (TUint8*)fm->top);
-							sp->size+=psize;
-							if (should_trim(fm, fm->topsize))
-								sys_trim(fm, 0);
- 							goto postaction;
-						}
-						else*/
-						{
 							if (CALL_MUNMAP((char*)p - prevsize, psize) == 0)
 								fm->footprint -= psize;
 							goto postaction;
-						}
 					}
 					else
 					{
 						mchunkptr prev = chunk_minus_offset(p, prevsize);
+						if(page_not_in_memory(prev, prevsize)) {
+                            prev_chunk_unmapped = 1;
+                            unmapped_pages = ((tchunkptr)prev)->npages;
+						}
+						
 						psize += prevsize;
 						p = prev;
 						if (RTCHECK(ok_address(fm, prev)))
 						{ /* consolidate backward */
-							if (p != fm->dv)
-							{
-								unlink_chunk(fm, p, prevsize);
-							}
-							else if ((next->head & INUSE_BITS) == INUSE_BITS)
-							{
-								fm->dvsize = psize;
-								set_free_with_pinuse(p, psize, next);
-								goto postaction;
-							}
+						    unlink_chunk(fm, p, prevsize);							
 						}
 						else
 							goto erroraction;
@@ -1611,43 +1806,49 @@ void RSymbianDLHeap::dlfree(void* mem) {
 					if (!cinuse(next))
 					{  /* consolidate forward */
 						if (next == fm->top)
-						{
-							size_t tsize = fm->topsize += psize;
-							fm->top = p;
-							p->head = tsize | PINUSE_BIT;
-							if (p == fm->dv)
-							{
-								fm->dv = 0;
-								fm->dvsize = 0;
+						{							
+							if(prev_chunk_unmapped) { // previous chunk is unmapped
+                            /* unmap all pages between previously unmapped and end of top chunk 
+                               and reset top to beginning of prev chunk - done in sys_trim_partial() */
+                                sys_trim_partial(fm, p, psize, unmapped_pages);
+                                do_check_any_chunk_access(fm->top, fm->topsize);
+                                goto postaction;
 							}
-							if (should_trim(fm, tsize))
-								sys_trim(fm, 0);
-							goto postaction;
-						}
-						else if (next == fm->dv)
-						{
-							size_t dsize = fm->dvsize += psize;
-							fm->dv = p;
-							set_size_and_pinuse_of_free_chunk(p, dsize);
-							goto postaction;
+							else { // forward merge to top
+                                size_t tsize = fm->topsize += psize;
+                                fm->top = p;
+                                p->head = tsize | PINUSE_BIT;
+                                if (should_trim(fm, tsize))
+                                    sys_trim(fm, 0);
+                                do_check_any_chunk_access(fm->top, fm->topsize);
+                                goto postaction;							
+							}							    							    
 						}
 						else
 						{
-							size_t nsize = chunksize(next);
+                            size_t nsize = chunksize(next);
+                            int next_chunk_unmapped = 0;
+                            if( page_not_in_memory(next, nsize) ) {
+                                next_chunk_unmapped = 1;
+                                unmapped_pages += ((tchunkptr)next)->npages;
+                            }
+                            
 							psize += nsize;
 							unlink_chunk(fm, next, nsize);
 							set_size_and_pinuse_of_free_chunk(p, psize);
-							if (p == fm->dv)
-							{
-								fm->dvsize = psize;
-								goto postaction;
-							}
 						}
 					}
 					else
 						set_free_with_pinuse(p, psize, next);
-					insert_chunk(fm, p, psize);
+					
+ 		            /* check if chunk memmory can be released */
+				    size_t npages_out = 0;
+		            if(!is_small(psize) && psize>=CHUNK_PAGEOUT_THESHOLD)   
+		                npages_out = unmap_chunk_pages((tchunkptr)p, psize, unmapped_pages);
+
+					insert_chunk(fm, p, psize, npages_out);
 					check_free_chunk(fm, p);
+					do_chunk_page_release_check(p, psize, fm, npages_out);
 					goto postaction;
 				}
 			}
@@ -1959,6 +2160,8 @@ void RSymbianDLHeap::slab_init(unsigned slabbitmap)
 		}
 		sizemap[sz>>2] = ix;
 	}
+	
+    free_chunk_threshold = pad_request(slab_threshold);
 }
 
 void* RSymbianDLHeap::slab_allocate(slabset& ss)
@@ -2109,7 +2312,6 @@ ASSERT(sz > 0);
 		TInt r = chunk.Commit(iOffset + ptrdiff(p, this),sz);
 		if (r < 0)
 			return 0;
-		ASSERT(p = offset(this, r - iOffset));
 		iChunkSize += sz;	
 		return p;
 	}
@@ -2266,5 +2468,163 @@ pagecell* RSymbianDLHeap::paged_descriptor(const void* p) const
 		++c;
 	}
 }
+
+/* Only for debugging purpose - start*/
+#ifdef DL_CHUNK_MEM_DEBUG
+void RSymbianDLHeap::debug_check_small_chunk_access(mchunkptr p, size_t psize)
+{
+    size_t sz = chunksize(p);
+    char ch = *((char*)chunk_plus_offset(p, psize-1));
+}
+
+void RSymbianDLHeap::debug_check_any_chunk_access(mchunkptr p, size_t psize)
+{
+    if(p==0 || psize==0) return;
+    
+    mchunkptr next = chunk_plus_offset(p, psize);
+    char* t = (char*)chunk_plus_offset(p, mparams.page_size);
+    char ch = *((char*)p);
+    while((size_t)t<(size_t)next)
+    {
+        ch = *t;
+        t = (char*)chunk_plus_offset(t, mparams.page_size);
+    };
+}
+
+void RSymbianDLHeap::debug_check_large_chunk_access(tchunkptr p, size_t psize)
+{
+    mchunkptr next = chunk_plus_offset(p, psize);
+    char* t = (char*)chunk_plus_offset(p, mparams.page_size);
+    char ch = *((char*)p);
+    while((size_t)t<(size_t)next)
+    {
+        ch = *t;
+        t = (char*)chunk_plus_offset(t, mparams.page_size);
+    };
+}
+
+void RSymbianDLHeap::debug_chunk_page_release_check(mchunkptr p, size_t psize, mstate fm, int mem_released)
+{
+    if(mem_released)
+    {        
+        if(!page_not_in_memory(p, psize) )
+            MEM_LOG("CHUNK_PAGE_ERROR::dlfree, error - page_in_mem flag is corrupt");          
+        if(chunk_plus_offset(p, psize) > fm->top)
+            MEM_LOG("CHUNK_PAGE_ERROR: error Top chunk address invalid");
+        if(fm->dv >= p && fm->dv < chunk_plus_offset(p, psize))
+            MEM_LOG("CHUNK_PAGE_ERROR: error DV chunk address invalid");    
+    }
+}
+#endif
+
+#ifdef OOM_LOGGING
+#include <hal.h>
+void RSymbianDLHeap::dump_large_chunk(mstate m, tchunkptr t) {
+    tchunkptr u = t;
+    bindex_t tindex = t->index;
+    size_t tsize = chunksize(t);
+    bindex_t idx;
+    compute_tree_index(tsize, idx);
+
+    size_t free = 0;
+    int nfree = 0;
+    do
+        {   /* traverse through chain of same-sized nodes */
+        if (u->child[0] != 0)
+            {
+            dump_large_chunk(m, u->child[0]);
+            }
+
+        if (u->child[1] != 0)
+            {
+            dump_large_chunk(m, u->child[1]);
+            }
+
+        free += chunksize(u);
+        nfree++;
+        u = u->fd;
+        }
+    while (u != t);
+    C_LOGF(_L8("LARGE_BIN,%d,%d,%d"), tsize, free, nfree);
+}
+
+void RSymbianDLHeap::dump_dl_free_chunks()
+{ 
+    C_LOG("");    
+    C_LOG("------------ dump_dl_free_chunks start -------------");
+    C_LOG("BinType,BinSize,FreeSize,FreeCount");
+    
+    // dump small bins
+    for (int i = 0; i < NSMALLBINS; ++i)
+        {
+        sbinptr b = smallbin_at(gm, i);
+        unsigned int empty = (gm->smallmap & (1 << i)) == 0;
+        int nfree = 0;
+        if (!empty)
+            {
+            int nfree = 0;
+            size_t free = 0;
+            mchunkptr p = b->bk;
+            size_t size = chunksize(p);
+            for (; p != b; p = p->bk)
+                {
+                free += chunksize(p);
+                nfree++;
+                }
+
+            C_LOGF(_L8("SMALL_BIN,%d,%d,%d"), size, free, nfree);
+            }
+        }
+
+    // dump large bins
+    for (int i = 0; i < NTREEBINS; ++i)
+        {
+        tbinptr* tb = treebin_at(gm, i);
+        tchunkptr t = *tb;
+        int empty = (gm->treemap & (1 << i)) == 0;
+        if (!empty)
+            dump_large_chunk(gm, t);
+        }
+
+    C_LOG("------------ dump_dl_free_chunks end -------------");
+    C_LOG("");
+    }
+
+void RSymbianDLHeap::dump_heap_logs(size_t fail_size)
+{
+    MEM_LOG("");
+    if (fail_size) {
+        MEM_LOG("MEMDEBUG::RSymbianDLHeap OOM Log dump *************** start");
+        MEM_LOGF(_L8("Failing to alloc size: %d"), fail_size);
+    }
+    else
+        MEM_LOG("MEMDEBUG::RSymbianDLHeap Log dump *************** start");
+    
+    TInt dl_chunk_size = ptrdiff(iTop,iBase);
+    TInt slabp_chunk_size = iChunkSize + iUnmappedChunkSize - dl_chunk_size;
+    TInt freeMem = 0;    
+    HAL::Get(HALData::EMemoryRAMFree, freeMem);
+    MEM_LOGF(_L8("System Free RAM Size: %d"), freeMem);
+    MEM_LOGF(_L8("Allocator Commited Chunk Size: %d"), iChunkSize);
+    MEM_LOGF(_L8("DLHeap Arena Size=%d"), dl_chunk_size);
+    MEM_LOGF(_L8("DLHeap unmapped chunk size: %d"), iUnmappedChunkSize);
+    MEM_LOGF(_L8("Slab-Page Allocator Chunk Size=%d"), slabp_chunk_size);
+    
+    mallinfo info = dlmallinfo();   
+    TUint heapAlloc = info.uordblks;
+    TUint heapFree = info.fordblks;
+    MEM_LOGF(_L8("DLHeap allocated size: %d"), heapAlloc);
+    MEM_LOGF(_L8("DLHeap free size: %d"), heapFree);
+        
+    if (fail_size) {
+        MEM_LOG("MEMDEBUG::RSymbianDLHeap OOM Log dump *************** end");
+    }else {
+        MEM_LOG("MEMDEBUG::RSymbianDLHeap Log dump *************** end");
+    }
+    MEM_LOG("");
+}
+
+#endif
+/* Only for debugging purpose - end*/
 
 #endif

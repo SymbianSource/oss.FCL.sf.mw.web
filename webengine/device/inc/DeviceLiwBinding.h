@@ -99,7 +99,7 @@ namespace KJS
             * @since 5.0
             **/
             JSValue* LiwGenericParamList2JsArray( ExecState* exec,
-                CLiwGenericParamList* liwList );
+                CLiwGenericParamList* liwList, TBool managed = EFalse );
 
             /**
             * Convert Unload service provider
@@ -114,6 +114,11 @@ namespace KJS
             * @since 5.0
             **/
             void SetUid( const TUint& aValue);
+            
+            CRTSecMgrScriptSession* GetSecuritySession () 
+            {
+                return m_scriptSession;
+            }
 
         private:
 
@@ -160,7 +165,14 @@ namespace KJS
             **/
             TBool JsVal2LiwVariant( ExecState* exec, JSValue* value,
                 TLiwVariant& variant );
-
+#ifdef SECURITYMANAGER_PROMPT_ENHANCEMENT
+            /**
+            * Set Widget Display Name
+            * @return none
+            * @since 5.0
+            **/
+            void SetAppName();
+#endif            
         private:
 
             CLiwServiceHandler* m_serviceHandler;   // Owned

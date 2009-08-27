@@ -28,6 +28,8 @@
 
 // CONSTANTS
 const TInt CHttpCacheEntry::iOffset = _FOFF( CHttpCacheEntry, iSqlQueLink );
+const TInt KBufferSize32k = 32768;
+const TInt KBufferGranularity4k = 4096;
 
 // MACROS
 
@@ -63,7 +65,8 @@ CHttpCacheEntry::CHttpCacheEntry( CHttpCacheEvictionHandler& aEvictionHandler )
 void CHttpCacheEntry::ConstructL( const TDesC8& aUrl )
     {
     iUrl = aUrl.AllocL();
-    iFileName = KNullDesC().AllocL();
+    iHeaderBuffer = KNullDesC8().AllocL();
+    iCacheBuffer = CSegmentedHeapBuffer::NewL( KBufferSize32k, KBufferGranularity4k );
     }
 
 // -----------------------------------------------------------------------------
@@ -111,16 +114,14 @@ CHttpCacheEntry::~CHttpCacheEntry()
         }
 
     // Close files, this will commit changes
-    if ( iCacheFilesOpened )
-        {
-        iHeaderFile.Close();
-        iBodyFile.Close();
-        }
+    iBodyFile.Close();
 
     // Clean up our memory
     delete iUrl;
     delete iFileName;
+    delete iHeaderBuffer;
     delete iCacheBuffer;
+    delete iWriteHelper;
     }
 
 // -----------------------------------------------------------------------------
@@ -150,7 +151,7 @@ void CHttpCacheEntry::SetFileNameL( const TFileName& aFileName )
     {
     delete iFileName;
     iFileName = NULL;
-    
+
     iFileName = aFileName.AllocL();
     }
 
@@ -221,47 +222,80 @@ void CHttpCacheEntry::SetProtected()
 //
 // -----------------------------------------------------------------------------
 //
-TInt CHttpCacheEntry::Internalize( RFileReadStream& aReadStream )
+TInt CHttpCacheEntry::Internalize( RReadStream& aReadStream, const TDesC& aDirectory )
+    {
+    TRAPD( err, InternalizeL( aReadStream, aDirectory ) );
+    return err;
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::InternalizeL
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheEntry::InternalizeL( RReadStream& aReadStream, const TDesC& aDirectory )
     {
     // url length
-    TRAPD( err,
-     	TInt len;
-    
-    	// url length
-    	len = aReadStream.ReadInt32L();
-        delete iUrl;
-        iUrl=NULL;
-        iUrl = HBufC8::NewL( len );
-        TPtr8 ptr8( iUrl->Des() );
-        // url
-        aReadStream.ReadL( ptr8, len );
-        
-        // filename length
-        len = aReadStream.ReadInt32L();
-        HBufC* filename = HBufC::NewLC( len );
-        TPtr ptr( filename->Des() );
-        // url
-        aReadStream.ReadL( ptr, len );
-        //
-        SetFileNameL( filename->Des() );
-        //
-        CleanupStack::PopAndDestroy(); // filename
-        // la
-        TReal64 la;
-        la = aReadStream.ReadReal64L();
-        iLastAccessed = la;
-        // ref
-        iRef = aReadStream.ReadUint32L();
-        // size
-        iBodySize = aReadStream.ReadUint32L( );
-        // size
-        iHeaderSize = aReadStream.ReadUint32L( );
-        // protected
-        iProtected = aReadStream.ReadInt32L();
-        //
-        SetState( ECacheComplete );
-    );	// end of TRAPD
+    TInt len;
+    len = aReadStream.ReadInt32L();
+    delete iUrl;
+    iUrl=NULL;
+    iUrl = HBufC8::NewL( len );
+    TPtr8 ptr8( iUrl->Des() );
+    // url
+    aReadStream.ReadL( ptr8, len );
 
+    // calculate full path and filename length
+    // aDirectory/ + "x/xxxxxxxx" : note aDirectory has trailing '/'
+    len = aDirectory.Length() + KSubdirNameLength + KFilenameLength;
+    HBufC* filename = HBufC::NewLC( len );
+    TPtr ptr( filename->Des() );
+
+    // Read max char length of filename.
+    // NOTE: The filename and filename length is calculated by the code in
+    // HttpCacheUtil::GenerateNameLC. The sub directory is the same as the
+    // last char of the filename, e.g. ..\A\0123DCBA
+    TBuf<KFilenameLength> uniqueFilename;
+    aReadStream.ReadL( uniqueFilename , KFilenameLength );
+    TPtrC uniqueSubDir = uniqueFilename.Right(1);
+
+    // assemble path and filename
+    ptr.Format(_L("%S%S\\%S"), &aDirectory, &uniqueSubDir, &uniqueFilename);
+    //
+    SetFileNameL( filename->Des() );
+    //
+    CleanupStack::PopAndDestroy(); // filename
+    // la
+    TReal64 la;
+    la = aReadStream.ReadReal64L();
+    iLastAccessed = la;
+    // ref
+    iRef = aReadStream.ReadUint32L();
+    // size
+    iBodySize = aReadStream.ReadUint32L( );
+    // size
+    iHeaderSize = aReadStream.ReadUint32L( );
+    // protected
+    iProtected = aReadStream.ReadInt32L();
+    // header data
+    delete iHeaderBuffer;
+    iHeaderBuffer = NULL;
+    len = aReadStream.ReadInt32L();
+    iHeaderBuffer = HBufC8::NewL(len);
+    TPtr8 header_ptr( iHeaderBuffer->Des() );
+    aReadStream.ReadL( header_ptr, len );
+    //
+    SetState( ECacheComplete );
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::Externalize
+//
+// -----------------------------------------------------------------------------
+//
+TInt CHttpCacheEntry::Externalize( RWriteStream& aWriteStream, const TDesC& aDirectory )
+    {
+    TRAPD( err, ExternalizeL( aWriteStream, aDirectory ) );
     return err;
     }
 
@@ -270,30 +304,33 @@ TInt CHttpCacheEntry::Internalize( RFileReadStream& aReadStream )
 //
 // -----------------------------------------------------------------------------
 //
-TInt CHttpCacheEntry::Externalize( RFileWriteStream& aWriteStream )
+void CHttpCacheEntry::ExternalizeL( RWriteStream& aWriteStream, const TDesC& aDirectory )
     {
-    TRAPD( err,
-        // url length
-        aWriteStream.WriteInt32L( iUrl->Length() );
-        // url
-        aWriteStream.WriteL( iUrl->Des() );
-        // filename length
-        aWriteStream.WriteInt32L( iFileName->Length() );
-        // filename
-        aWriteStream.WriteL( iFileName->Des() );
-        // la
-        aWriteStream.WriteReal64L( iLastAccessed );
-        // ref
-        aWriteStream.WriteUint32L( iRef );
-        // size
-        aWriteStream.WriteUint32L( iBodySize );
-        // size
-        aWriteStream.WriteUint32L( iHeaderSize );
-        // protected
-        aWriteStream.WriteInt32L( iProtected );
-    );  // end of TRAPD
+    // check directory matches filename
+    ASSERT(aDirectory.CompareF(iFileName->Left(aDirectory.Length())) == 0);
 
-    return err;
+    // url length
+    aWriteStream.WriteInt32L( iUrl->Length() );
+    // url
+    aWriteStream.WriteL( iUrl->Des() );
+    // filename
+    // know that filenames are 8 chars and no extension. Can reconstruct on
+    // import from directory and last char. See HttpCacheUtil::GenerateNameLC.
+    aWriteStream.WriteL( iFileName->Des().Right( KFilenameLength ) );
+    // la
+    aWriteStream.WriteReal64L( iLastAccessed );
+    // ref
+    aWriteStream.WriteUint32L( iRef );
+    // size
+    aWriteStream.WriteUint32L( iBodySize );
+    // size
+    aWriteStream.WriteUint32L( iHeaderSize );
+    // protected
+    aWriteStream.WriteInt32L( iProtected );
+    // header data length
+    aWriteStream.WriteInt32L( iHeaderBuffer->Length() );
+    // header data
+    aWriteStream.WriteL( iHeaderBuffer->Des() );
     }
 
 // -----------------------------------------------------------------------------
@@ -320,18 +357,7 @@ void CHttpCacheEntry::Accessed( TInt64 aLastAccessed, TUint16 aRef )
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheEntry::SetCacheFilesOpened
-//
-// -----------------------------------------------------------------------------
-//
-void CHttpCacheEntry::SetCacheFilesOpened( TBool aCacheFilesOpened )
-    {
-    // Set our files open flag
-    iCacheFilesOpened = aCacheFilesOpened;
-    }
-
-// -----------------------------------------------------------------------------
-// CHttpCacheEntry::CacheBuffer
+// CHttpCacheEntry::SetCacheBufferL
 // NOTE: Cache buffer is created on:
 // 1. Normal content entrypoint into CacheManager
 //    CacheManager::ReceivedResponseHeadersL -> CacheHandler::ReceivedResponseHeadersL ->
@@ -339,42 +365,134 @@ void CHttpCacheEntry::SetCacheFilesOpened( TBool aCacheFilesOpened )
 //    accumulate body content on multiple CacheHandler::ReceivedBodyDataL calls)
 // 2. Multipart content entrypoint into CacheManager
 //    CacheManager::SaveL -> CacheHandler::SaveL -> CacheHandler::SaveBuffer ->
-//    CacheStreamHandler::SaveBodyData (calls this method - CacheBuffer, needed
-//    because cacheBuffer=null and single call made, no accumulation of body data) 
-// -----------------------------------------------------------------------------
-//
-TPtr8 CHttpCacheEntry::CacheBuffer()
-    {
-    if ( iCacheBuffer == NULL )
-        {
-        // Create the cache buffer, if needed
-        iCacheBuffer = HBufC8::New( KBufferSize32k );
-        if ( iCacheBuffer == NULL )
-			{
-			// OOM, return empty cache buffer
-			TPtr8 emptyCacheBuffer( NULL, 0, 0 );
-			return emptyCacheBuffer;
-			}
-		}
-
-    return iCacheBuffer->Des();
-    }
-
-// -----------------------------------------------------------------------------
-// CHttpCacheEntry::SetCacheBufferL
-//
+//    CacheStreamHandler::SaveBodyData (calls this method - SetCacheBufferL, needed
+//    because cacheBuffer=null and single call made, no accumulation of body data)
 // -----------------------------------------------------------------------------
 //
 void CHttpCacheEntry::SetCacheBufferL( TInt aCacheBufferSize )
     {
-    if ( aCacheBufferSize > 0 && iCacheBuffer == NULL )
+    // Delete cacheBuffer and null, a way to zero buffer and handle if NewL leave
+    delete iCacheBuffer;
+    iCacheBuffer = NULL;
+
+    if ( aCacheBufferSize > 0 )
         {
-        iCacheBuffer = HBufC8::NewL( aCacheBufferSize );
-        }
-    else if ( aCacheBufferSize <= 0 )
-        {
-        delete iCacheBuffer;
-        iCacheBuffer = NULL;
+        iCacheBuffer = CSegmentedHeapBuffer::NewL( aCacheBufferSize, KBufferGranularity4k );
         }
     }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::CreateHeaderBufferL
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheEntry::CreateHeaderBufferL( TInt aHeaderBufferSize )
+    {
+    // Delete cacheBuffer and null, a way to zero buffer and handle if NewL leave
+    delete iHeaderBuffer;
+    iHeaderBuffer = NULL;
+
+    if ( aHeaderBufferSize > 0 )
+        {
+        iHeaderBuffer = HBufC8::NewL( aHeaderBufferSize );
+        }
+    SetHeaderSize( aHeaderBufferSize );
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::CreateHeaderBufferL
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheEntry::CreateHeaderBufferL( const TDesC8& aHeaderData )
+    {
+    // Delete cacheBuffer and null, a way to zero buffer and handle if NewL leave
+    delete iHeaderBuffer;
+    iHeaderBuffer = NULL;
+
+    TInt aHeaderBufferSize = aHeaderData.Length();
+    if ( aHeaderBufferSize > 0 )
+        {
+        iHeaderBuffer = aHeaderData.AllocL();
+        }
+    SetHeaderSize( aHeaderBufferSize );
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::BodyData
+//
+// -----------------------------------------------------------------------------
+//
+CSegmentedHeapBuffer& CHttpCacheEntry::BodyData()
+    {
+    return *iCacheBuffer;
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::BodyFile
+//
+// -----------------------------------------------------------------------------
+//
+RFile& CHttpCacheEntry::BodyFile()
+    {
+    return iBodyFile;
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::HeaderData
+//
+// -----------------------------------------------------------------------------
+//
+TDesC8& CHttpCacheEntry::HeaderData()
+    {
+    return *iHeaderBuffer;
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::BodyWriteInProgress
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheEntry::BodyWriteInProgress()
+    {
+    SetBodyDataPartiallyWritten( ETrue );
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::BodyWriteComplete
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheEntry::BodyWriteComplete()
+    {
+    iCacheBuffer->Reset();
+    SetBodyDataPartiallyWritten( EFalse );
+    SetBodyDataCached( EFalse );
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::WriteBodyDataAsync
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheEntry::WriteBodyDataAsync(TRequestStatus& aStatus)
+    {
+    delete iWriteHelper;
+    iWriteHelper = NULL;
+    TRAP_IGNORE( iWriteHelper = CHttpCacheEntryAsyncWriteHelper::NewL( this, aStatus ) );
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheEntry::CancelBodyWrite
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheEntry::CancelBodyWrite()
+    {
+    if ( BodyDataPartiallyWritten() && iWriteHelper )
+        {
+        iWriteHelper->Cancel();
+        }
+    }
+
 //  End of File

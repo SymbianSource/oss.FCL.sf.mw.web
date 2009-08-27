@@ -53,6 +53,8 @@ enum TEncoding
     EEucJp,
     EIso2022Jp,
     EWindows874,
+    EEucKr,
+    EKsc5601,
     EDummyLast
     };
 

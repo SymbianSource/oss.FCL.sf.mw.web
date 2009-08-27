@@ -67,6 +67,16 @@ const TCharsetEntry supportedCharsetTable[] =
     {KCharacterSetIdentifierUnicodeBig, _S("ucs-2-big")},
     {KCharacterSetIdentifierUnicodeLittle,_S("ucs-2-little")},
     {0x1027508E,                        _S("iscii")},
+    {0x2000E526,                        _S("euc-kr")},
+    {0x2000E526,                        _S("csEUCKR")},
+    {0x200113CD,                        _S("ko")},
+    {0x200113CD,                        _S("ks_c_5601-1987")},
+    {0x200113CD,                        _S("iso-ir-149")},
+    {0x200113CD,                        _S("ks_c_5601-1989")},
+    {0x200113CD,                        _S("ksc_5601")},
+    {0x200113CD,                        _S("csksc56011987")},
+    {0x200100FF,                        _S("ms949")},
+    {0x200100FF,                        _S("cp949")},
     {0,                                 NULL}
 };
 

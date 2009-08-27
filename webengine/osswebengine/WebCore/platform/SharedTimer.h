@@ -40,6 +40,7 @@ namespace WebCore {
     void stopSharedTimer();
 
 #if PLATFORM(SYMBIAN)
+    void initSharedTimer();
     void shutdownSharedTimer();
 #endif
 }

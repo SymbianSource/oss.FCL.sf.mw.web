@@ -47,18 +47,15 @@ const ClassInfo DeviceLiwMap::info = { "DeviceLiwMap", 0/*&ArrayInstance::info*/
 DeviceLiwMap::DeviceLiwMap( JSValue* proto, const CLiwMap* liwMap, CDeviceLiwBinding* liwBinding)
     : JSObject(proto)
     {
-        m_privateData = new DeviceLiwMapPrivate(liwMap, liwBinding);
-        if (!m_privateData )
-            m_valid = false;
-        else
-            {
-            m_valid = true;
-            // protect this object
-            KJS::Collector::protect(this);   
-            }            
+    m_valid = EFalse;
+    m_privateData = NULL;
+    if (liwMap && liwBinding )
+        {
+        m_privateData = new DeviceLiwMapPrivate(this, liwMap, liwBinding);
+        if ( m_privateData )
+            m_valid = ETrue;
+        }
     }
-
-
 
 // ----------------------------------------------------------------------------
 // DeviceLiwMap::~DeviceLiwMap
@@ -67,8 +64,7 @@ DeviceLiwMap::DeviceLiwMap( JSValue* proto, const CLiwMap* liwMap, CDeviceLiwBin
 //
 DeviceLiwMap::~DeviceLiwMap()
     {
-        // only can be called by garbage collection after the 
-        // DeviceLiwMap::Close() was called
+    Close();
     }
     
 // ----------------------------------------------------------------------------
@@ -76,53 +72,14 @@ DeviceLiwMap::~DeviceLiwMap()
 //
 // ----------------------------------------------------------------------------
 //
-void DeviceLiwMap::Close( ExecState* exec, bool unmark )
+void DeviceLiwMap::Close()
     {
-    // avoid double close    
-    if(!m_valid) 
-        {   
-        if(unmark) 
-            {
-            // unprotect this to allow the garbage collection to release this jsobject
-            KJS::Collector::unprotect(this);
-            }
+    if ( !m_valid )
         return;
-        }        
     
-    if (exec) 
-        {
-        PropertyNameArray propertyNames;
-        this->getPropertyNames( exec, propertyNames );
-        unsigned size = static_cast<unsigned>(propertyNames.size());
-
-        for (unsigned i = 0; i < size; i++)
-            {
-            JSValue * jsvalue = this->get( exec, propertyNames[i] );
-            if(jsvalue->isObject()) 
-                {
-                JSObject * prop = jsvalue->toObject( exec );            
-                
-                if (prop->inherits( &DeviceLiwIterable::info ))
-                    {
-                    (static_cast<DeviceLiwIterable*>(prop))->Close(exec, true);
-                    }
-                else if (prop->inherits( &DeviceLiwMap::info ))
-                    {
-                    (static_cast<DeviceLiwMap*>(prop))->Close(exec, true);
-                    }
-                }        
-            }                
-        }    
-    
+    m_valid = EFalse;
     delete m_privateData;
     m_privateData = NULL;
-    m_valid = false;
-    
-    if(unmark) 
-        {
-        // unprotect this to allow the garbage collection to release this jsobject
-        KJS::Collector::unprotect(this);
-        }
     }
     
 // ----------------------------------------------------------------------------
@@ -253,11 +210,12 @@ JSValue* DeviceLiwMap::getValueProperty(ExecState *exec, int token) const
 // DeviceLiwMapPrivate constructor
 //
 // ---------------------------------------------------------------------------
-DeviceLiwMapPrivate::DeviceLiwMapPrivate(const CLiwMap* liwMap, CDeviceLiwBinding* liwBinding)
+DeviceLiwMapPrivate::DeviceLiwMapPrivate(DeviceLiwMap* jsobj, const CLiwMap* liwMap, CDeviceLiwBinding* liwBinding)
     {
     TRAP_IGNORE(
             m_liwBinding = liwBinding;    
             m_liwMap = (CLiwMap*) liwMap;
+            m_jsobj = jsobj;
             if ( m_liwMap )
                 m_liwMap->IncRef();
             )
@@ -267,10 +225,12 @@ DeviceLiwMapPrivate::DeviceLiwMapPrivate(const CLiwMap* liwMap, CDeviceLiwBindin
 // DeviceLiwMapPrivate::Close
 //
 // ---------------------------------------------------------------------------
-void DeviceLiwMapPrivate::Close()
+DeviceLiwMapPrivate::~DeviceLiwMapPrivate()
     {
-       m_liwBinding = NULL;
-        
+    // invalid the DeviceLiwMap
+    if (m_jsobj)
+        m_jsobj->m_valid = EFalse; 
+
     // release the map    
     if ( m_liwMap ) 
         {
@@ -278,7 +238,7 @@ void DeviceLiwMapPrivate::Close()
         m_liwMap = NULL;
         }        
     }
-    
+
 // ----------------------------------------------------------------------------
 // DeviceLiwMapFunc::DeviceLiwMapFunc
 //
@@ -297,17 +257,18 @@ DeviceLiwMapFunc::DeviceLiwMapFunc( ExecState* exec, int token )
 //
 JSValue* DeviceLiwMapFunc::callAsFunction(ExecState* exec, JSObject *thisObj, const List& aArgs )
     {
-        if (!thisObj->inherits(&DeviceLiwMap::info)) {
-            return throwError(exec, GeneralError);
+    if (!thisObj->inherits(&DeviceLiwMap::info))
+        {
+        return throwError(exec, GeneralError);
         }
 
-        DeviceLiwMap *map = static_cast<DeviceLiwMap *>(thisObj);
+    DeviceLiwMap *map = static_cast<DeviceLiwMap *>(thisObj);
 
-        if ( m_func == DeviceLiwMap::close ) 
-            {
-            map->Close(exec, false);
-            }
-        return jsUndefined();
+    if ( m_func == DeviceLiwMap::close ) 
+        {
+        map->Close();
+        }
+    return jsUndefined();
     }
 
 //END OF FILE

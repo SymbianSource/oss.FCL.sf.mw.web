@@ -21,6 +21,7 @@
 #include <config.h>
 #include "Device.h"
 #include "DeviceBridge.h"
+#include "DeviceBinding.h"
 
 using namespace KJS;
 // ============================ LOCAL FUNCTIONS ===============================
@@ -106,6 +107,20 @@ void TDeviceBridge::SetUid( const TUint& aValue)
     if(m_device)
         m_device->SetUid( aValue);
     }
+    
+    
+void* TDeviceBridge::GetSecuritySession()
+    {
+    if( m_device && (m_device->GetDeviceBinding()))
+        {
+        return static_cast<void*>(m_device->GetDeviceBinding()->GetSecuritySession());    
+        }
+    else
+        {
+        return NULL;
+        }   
+    }
+
 //END OF FILE
 
 

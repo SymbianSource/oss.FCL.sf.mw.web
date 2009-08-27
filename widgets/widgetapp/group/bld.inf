@@ -26,7 +26,7 @@ PRJ_EXPORTS
 // export localization files
 ../loc/WidgetUi.loc       MW_LAYER_LOC_EXPORT_PATH(WidgetUi.loc)
 
-../inc/widgetappdefs.rh   |../../../inc/widgetappdefs.rh
+../inc/widgetappdefs.rh   MW_LAYER_PLATFORM_EXPORT_PATH(widgetappdefs.rh)
 
 PRJ_MMPFILES
 

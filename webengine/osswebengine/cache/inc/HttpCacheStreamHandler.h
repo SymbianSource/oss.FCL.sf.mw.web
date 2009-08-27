@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:  Definition of CHttpCacheStreamHandler  
+* Description:  Definition of CHttpCacheStreamHandler
 *
 */
 
@@ -19,9 +19,11 @@
 #define CHTTPCACHESTREAMHANDLER_H
 
 //  INCLUDES
+
 #include <e32base.h>
 #include <f32file.h>
 #include <s32file.h>
+#include "HttpCacheHandler.h"
 
 // CONSTANTS
 
@@ -35,6 +37,8 @@
 class CHttpCacheEntry;
 class RFileWriteStream;
 class RFileReadStream;
+class CHttpCacheFileWriteHandler;
+class CSegmentedHeapBuffer;
 
 // CLASS DECLARATION
 
@@ -54,7 +58,7 @@ class CHttpCacheStreamHandler : public CBase
         * @param
         * @return CHttpCacheStreamHandler object.
         */
-        static CHttpCacheStreamHandler* NewL( const TDesC& aDirectory, TInt aCriticalLevel );
+        static CHttpCacheStreamHandler* NewL( const TDesC& aDirectory, TInt aCriticalLevel, RFs& aRFs );
 
         /**
         * Destructor.
@@ -62,6 +66,8 @@ class CHttpCacheStreamHandler : public CBase
         virtual ~CHttpCacheStreamHandler();
 
     public: // new functions
+
+        void InitialiseCacheEntryL(CHttpCacheEntry& aCacheEntry);
 
         /**
         *
@@ -85,23 +91,7 @@ class CHttpCacheStreamHandler : public CBase
         * @param
         * @return
         */
-        TBool AttachL( CHttpCacheEntry& aCacheEntry );
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        void Detach( CHttpCacheEntry& aCacheEntry );
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        void EraseCacheFile( CHttpCacheEntry& aCacheEntry );
+        void Erase( CHttpCacheEntry& aCacheEntry );
 
         /**
         *
@@ -160,20 +150,36 @@ class CHttpCacheStreamHandler : public CBase
         TBool Flush( CHttpCacheEntry& aCacheEntry );
 
         /**
-        *
-        * @since 3.1
+        * FlushL
+        * @since 7.1
         * @param
         * @return
         */
-        TBool OpenCacheFiles( CHttpCacheEntry& aCacheEntry );
+        TBool FlushL( CHttpCacheEntry& aCacheEntry );
+
+        /**
+        * FlushAsync
+        * @since 7.1
+        * @param
+        * @return
+        */
+        TBool FlushAsync( CHttpCacheEntry& aCacheEntry , TRequestStatus& aStatus);
 
         /**
         *
-        * @since 3.1
+        * @since 7.1
         * @param
         * @return
         */
-        TBool CreateNewFilesL( CHttpCacheEntry& aCacheEntry );
+        TBool OpenBodyFile( CHttpCacheEntry& aCacheEntry );
+
+        /**
+        *
+        * @since 7.1
+        * @param
+        * @return
+        */
+        TBool CreateNewBodyFile( CHttpCacheEntry& aCacheEntry );
 
     private:
 
@@ -184,7 +190,7 @@ class CHttpCacheStreamHandler : public CBase
         * @param
         * @return CacheHandler object.
         */
-        CHttpCacheStreamHandler();
+        CHttpCacheStreamHandler(RFs& aRFs);
 
         /**
         * By default Symbian 2nd phase constructor is private.
@@ -200,7 +206,7 @@ class CHttpCacheStreamHandler : public CBase
         * @return
         */
         TBool IsDiskSpaceAvailable( TInt aContentSize );
-        
+
         /**
         *
         * @since 7.1
@@ -212,7 +218,7 @@ class CHttpCacheStreamHandler : public CBase
     private:    // Data
 
         //
-        RFs                                 iRfs;               // owned
+        RFs                                 iRfs;
         // attached entries
         CArrayPtrFlat<CHttpCacheEntry>*     iActiveEntries;     // owned
         //

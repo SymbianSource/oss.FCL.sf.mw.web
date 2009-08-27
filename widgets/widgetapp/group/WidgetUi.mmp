@@ -60,6 +60,7 @@ SOURCE  WidgetUiWindowManager.cpp
 SOURCE  WidgetUiWindow.cpp
 SOURCE  WidgetUiAsyncExit.cpp
 SOURCE  WidgetUiDialogsProviderProxy.cpp
+SOURCE	WidgetUiNetworkListener.cpp
 #ifdef BRDO_WRT_HS_FF
 SOURCE  cpspublisher.cpp
 #endif
@@ -69,6 +70,7 @@ DEPENDS widgetui.rsg
 TARGETPATH /private/10003a3f/apps
 END
 
+MACRO OOM_WIDGET_CLOSEALL
 // INCLUDE PATHS
 
 USERINCLUDE .
@@ -114,10 +116,12 @@ LIBRARY aknnotify.lib
 #ifdef RD_SCALABLE_UI_V2
 LIBRARY cdlengine.lib 
 #endif
+LIBRARY esock.lib
 
 DEBUGLIBRARY flogger.lib 
 
 LIBRARY     browserengine.lib
+LIBRARY     oommonitor.lib
 
 #if defined( RD_PF_SEC_APPARC )
 LIBRARY         ServiceHandler.lib

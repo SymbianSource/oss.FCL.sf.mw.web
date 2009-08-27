@@ -40,6 +40,7 @@
 #include <wtf/ListHashSet.h>
 
 namespace WebCore {
+	void cleanupChangedDocuments();
 
     class AXObjectCache;
     class Attr;
@@ -489,6 +490,7 @@ public:
 
     virtual void defaultEventHandler(Event*);
     void handleWindowEvent(Event*, bool useCapture);
+    void handleNetworkEvent(const AtomicString &eventType, int param);
     void setHTMLWindowEventListener(const AtomicString &eventType, PassRefPtr<EventListener>);
     EventListener* getHTMLWindowEventListener(const AtomicString &eventType);
     void removeHTMLWindowEventListener(const AtomicString &eventType);

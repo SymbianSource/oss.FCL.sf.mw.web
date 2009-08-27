@@ -41,6 +41,7 @@ namespace WebCore {
         JSAbstractEventListener(bool html = false);
 
         virtual void handleEvent(Event*, bool isWindowEvent);
+        virtual void handleNetworkStateEvent(int param);
         virtual bool isHTMLEventListener() const;
         virtual KJS::JSObject* listenerObj() const = 0;
         virtual KJS::Window* windowObj() const = 0;

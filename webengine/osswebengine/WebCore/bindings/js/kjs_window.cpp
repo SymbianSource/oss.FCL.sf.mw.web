@@ -210,6 +210,8 @@ const ClassInfo Window::info = { "Window", 0, &WindowTable, 0 };
   onsubmit              Window::Onsubmit            DontDelete
   onunload              Window::Onunload            DontDelete
   onbeforeunload        Window::Onbeforeunload      DontDelete
+  ononline              Window::Ononline            DontDelete
+  onoffline             Window::Onoffline           DontDelete
 # -- Constructors --
   DOMException          Window::DOMException        DontDelete
   Image                 Window::Image               DontDelete
@@ -626,6 +628,10 @@ JSValue *Window::getValueProperty(ExecState *exec, int token) const
       return getListener(exec, beforeunloadEvent);
     case Onunload:
      return getListener(exec, unloadEvent);
+   case Ononline:
+     return getListener(exec, ononlineEvent);
+   case Onoffline:
+     return getListener(exec, onofflineEvent);
    }
    ASSERT(0);
    return jsUndefined();
@@ -845,6 +851,14 @@ void Window::put(ExecState* exec, const Identifier& propertyName, JSValue* value
     case Onunload:
       if (isSafeScript(exec))
         setListener(exec, unloadEvent, value);
+      return;
+    case Ononline:
+      if (isSafeScript(exec))
+        setListener(exec, ononlineEvent, value);
+      return;
+    case Onoffline:
+      if (isSafeScript(exec))
+        setListener(exec, onofflineEvent, value);
       return;
     default:
       break;

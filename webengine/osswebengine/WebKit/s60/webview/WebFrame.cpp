@@ -282,6 +282,7 @@ DocumentLoader* WebFrame::documentLoader()
 
 void WebFrame::notifyPluginsOfScrolling()
 {
+    setpluginToScroll(true);
     Frame* coreFrame = core(this);
     for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) {
         PassRefPtr<HTMLCollection> objects = frame->document()->objects();       
@@ -293,6 +294,7 @@ void WebFrame::notifyPluginsOfScrolling()
             notifyPluginOfScrolling(n->renderer()); 
 
         }
+    setpluginToScroll(false);
 }
 
 void WebFrame::notifyPluginOfScrolling(RenderObject* renderer)

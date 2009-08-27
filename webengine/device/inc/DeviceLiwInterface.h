@@ -20,18 +20,34 @@
 #define _KJS_LIWIINTERFACE_H_
 
 #include <object.h>
+#include "Device.h"
 
 namespace KJS
     {
     class MDeviceBinding;
     class MDevicePeer;
     class ServiceEventHandler;
-    class DeviceLiwInterfacePrivate;
+    class DeviceLiwInterface;
     class DeviceLiwResult;
+
+   class DeviceLiwInterfacePrivate : public DevicePrivateBase
+        {
+        friend class DeviceLiwInterface;
+        friend class DeviceLiwInterfaceFunc;
+        public:
+            DeviceLiwInterfacePrivate(DeviceLiwInterface* jsobj, MDeviceBinding* deviceBinding, MDevicePeer* devicePeer);
+            ~DeviceLiwInterfacePrivate();
+            MDeviceBinding* m_deviceBinding;                 // not owned
+            MDevicePeer* m_devicePeer;                       // owned
+            Identifier m_interfaceName;
+            ExecState* m_exec;                               // not owned
+            DeviceLiwInterface* m_jsobj;                     // not owned
+        };
     
     class DeviceLiwInterface : public JSObject
         {
-    friend class DeviceLiwInterfaceFunc;
+        friend class DeviceLiwInterfacePrivate;
+        friend class DeviceLiwInterfaceFunc;
         public: // constructor and destructor
 
            /**
@@ -82,14 +98,20 @@ namespace KJS
             /**
             * Close
             **/
-            void Close(ExecState* exec);
+            void Close();
             
             /**
             * isValid
             */
-            bool isValid() const { return m_valid; }
+            TBool isValid() const { return m_valid; }
 
-
+            /**
+            * getInterfaceData
+            * @return DevicePrivateBase*
+            * @since 7.x
+            */
+            DevicePrivateBase* getInterfaceData() { return m_privateData; }
+            
             /**
             * IsRunningCallBack
             */
@@ -106,26 +128,10 @@ namespace KJS
 
     private:
             DeviceLiwInterfacePrivate* m_privateData; // private object to hold data
-            bool m_valid;                             // object is valid or not
+            TBool m_valid;                             // object is valid or not
             
         };
         
-   class DeviceLiwInterfacePrivate
-        {
-        friend class DeviceLiwInterface;
-        friend class DeviceLiwInterfaceFunc;
-        public:
-            DeviceLiwInterfacePrivate(MDeviceBinding* deviceBinding, MDevicePeer* devicePeer);
-            ~DeviceLiwInterfacePrivate()   { Close(); }
-            void Close();            
-            MDeviceBinding* m_deviceBinding;                 // not owned
-            MDevicePeer* m_devicePeer;                       // owned
-            Identifier m_interfaceName;
-            RPointerArray<DeviceLiwResult>* m_resultObjArray;// owned
-            ExecState* m_exec;                               // not owned
-        };
-
-
     class DeviceLiwInterfaceFunc : public JSObject
         {
         public: // constructor and destructor

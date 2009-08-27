@@ -21,7 +21,7 @@
  *
  */
 
-#include "config.h"
+#include "TextBreakIteratorSymbian.h"
 #include "TextBreakIterator.h"
 #include <e32cmn.h>
 #include <KJS/ustring.h>
@@ -168,17 +168,15 @@ namespace WebCore {
 static WordBreakIteratorSymbian *wordIterator = 0;
 static CharBreakIteratorSymbian *charIterator = 0;
 static LineBreakIteratorSymbian *lineIterator = 0;
-struct cleanupIterators {
-    ~cleanupIterators() {
-    		delete wordIterator;
-    		wordIterator = NULL;
-    		delete charIterator;
-    		charIterator = NULL;
-    		delete lineIterator;
-    		lineIterator = NULL;
-    }
-};
-static cleanupIterators deleteBreakIterator;
+void cleanupIterators() 
+{
+    delete wordIterator;
+    wordIterator = NULL;
+    delete charIterator;
+    charIterator = NULL;
+    delete lineIterator;
+    lineIterator = NULL;
+}
 
 TextBreakIterator* wordBreakIterator(const UChar* string, int length)
 {

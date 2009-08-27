@@ -235,6 +235,14 @@ void CMediaDataClient::SetResult( TInt aResult )
     {
     iResult = aResult;
     }
+// ---------------------------------------------------------
+// CMediaDataClient::SetStatusCode()
+// ---------------------------------------------------------
+//
+void CMediaDataClient::SetStatusCode( TInt aStatusCode )
+    {
+    iStatusCode = aStatusCode;
+    }
 
 // ---------------------------------------------------------
 // CMediaDataClient::SetRedirUrlL()
@@ -504,6 +512,8 @@ void CMediaDataClient::ExternalizeL(RWriteStream& aStream) const
     
     // iPausable
     aStream.WriteInt32L(iPausable);
+    // iStatusCode
+    aStream.WriteInt32L(iStatusCode);
     }
 
 void CMediaDataClient::InternalizeL(RReadStream& /*aStream*/)

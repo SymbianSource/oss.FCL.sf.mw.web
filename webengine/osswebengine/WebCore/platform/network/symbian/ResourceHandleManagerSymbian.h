@@ -25,6 +25,8 @@ class MUrlConnection;
 
 namespace WebCore {
 
+void cleanupHandleManager();
+
 struct ResourceRequest;
 class ResourceResponse;
 
@@ -47,8 +49,6 @@ public :
 
 private:
     CResourceHandleManager();
-   
-
 };
 
 

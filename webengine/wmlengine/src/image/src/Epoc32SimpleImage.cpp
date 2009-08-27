@@ -367,9 +367,11 @@ _NW_Image_Epoc32Simple_DrawInRect (NW_Image_AbstractImage_t* image,
 
   /* If there is a decoder, then the image needs to be decoded before displaying
    * if not done already, or if "needsDecode" (animated image has moved on to
-   * next frame).
+   * next frame). Also, image is to be decoded based on the state of the decoder
    */
-  if (decoder != NULL && (thisObj->bitmap == NULL || thisObj->needsDecode))
+  if (decoder != NULL && (thisObj->bitmap == NULL || thisObj->needsDecode ||
+     (decoder->getDecoderState() != CEpoc32ImageDecoder::ID_DECODE_COMPLETE)&& 
+     (decoder->getDecoderState() != CEpoc32ImageDecoder::ID_DECODING)))
     {
     decoder->Decode();
     }

@@ -773,7 +773,8 @@ class TBrCtlDefs
         EWidgetIdentifier = 0,
         EWidgetBundleId,
         EWidgetBasePath,
-        EWidgetPublishState
+        EWidgetPublishState,
+        EWidgetNetworkState
         };
 
     /**

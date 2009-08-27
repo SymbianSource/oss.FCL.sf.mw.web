@@ -28,7 +28,6 @@ const TInt KMaxKeySize = 128;
 using namespace KJS;
 
 const ClassInfo DeviceLiwIterable::info = { "DeviceLiwIterable", 0, 0, 0 };
-const TInt INIT_JSOBJ_ARRAY_SIZE = 10;   // initial jsobject array
 // ============================= LOCAL FUNCTIONS ===============================
 /*
 @begin DeviceLiwIterableTable 1
@@ -60,14 +59,14 @@ DeviceLiwIterable::DeviceLiwIterable(
     CLiwIterable* variant)
     : JSObject(exec->lexicalInterpreter()->builtinObjectPrototype() )
     {
-        m_privateData = new DeviceLiwIterablePrivate(variant, binding);
-        if (!m_privateData || !m_privateData->m_jsobjArray )
-            m_valid = false;
-        else 
-            {
-            m_valid = true;
-            KJS::Collector::protect(this);            
-            }            
+    m_valid = EFalse;
+    m_privateData = NULL;
+    if ( binding && variant )
+        {
+        m_privateData = new DeviceLiwIterablePrivate(this, variant, binding);
+        if ( m_privateData )
+            m_valid = ETrue;
+        }            
     }
 
 // ----------------------------------------------------------------------------
@@ -77,8 +76,7 @@ DeviceLiwIterable::DeviceLiwIterable(
 //
 DeviceLiwIterable::~DeviceLiwIterable()
     {
-        // only can be called by garbage collection after the 
-        // DeviceLiwIterable::Close() was called
+    Close();
     }
 
 // ----------------------------------------------------------------------------
@@ -86,30 +84,14 @@ DeviceLiwIterable::~DeviceLiwIterable()
 //
 // ----------------------------------------------------------------------------
 //
-void DeviceLiwIterable::Close(ExecState* exec, bool unmark)
+void DeviceLiwIterable::Close()
     {
-    // avoid double close    
-    if(!m_valid) 
-        {   
-        if(unmark) 
-            {
-            // unprotect this to allow the garbage collection to release this jsobject
-            KJS::Collector::unprotect(this);
-            }
+    if ( !m_valid )
         return;
-        }
-    
-    // need exec to close other jsobject
-    m_privateData->m_exec = exec;
+        
+    m_valid = EFalse;
     delete m_privateData;
     m_privateData = NULL;
-    m_valid = false;
-    
-    if(unmark) 
-        {
-        // unprotect this to allow the garbage collection to release this jsobject
-        KJS::Collector::unprotect(this);
-        }
     }     
 
 // ----------------------------------------------------------------------------
@@ -216,13 +198,13 @@ JSValue* DeviceLiwIterable::getValueProperty(ExecState *exec, int token) const
 // DeviceLiwIterablePrivate constructor
 //
 // ---------------------------------------------------------------------------
-DeviceLiwIterablePrivate::DeviceLiwIterablePrivate(const CLiwIterable* liwIterable, CDeviceLiwBinding* liwBinding)
+DeviceLiwIterablePrivate::DeviceLiwIterablePrivate(DeviceLiwIterable* jsobj, const CLiwIterable* liwIterable, CDeviceLiwBinding* liwBinding)
     {
     TRAP_IGNORE(
             m_liwBinding = liwBinding;
-            m_jsobjArray = new RPointerArray<JSObject>( INIT_JSOBJ_ARRAY_SIZE );
             m_exec = NULL;    
             m_iterable = (CLiwIterable*) liwIterable;
+            m_jsobj = jsobj;
             if ( m_iterable )
                 m_iterable->IncRef();
             )
@@ -232,29 +214,11 @@ DeviceLiwIterablePrivate::DeviceLiwIterablePrivate(const CLiwIterable* liwIterab
 // DeviceLiwMapPrivate::Close
 //
 // ---------------------------------------------------------------------------
-void DeviceLiwIterablePrivate::Close()
+DeviceLiwIterablePrivate::~DeviceLiwIterablePrivate()
     {
-    // close the jsobject
-    if ( m_jsobjArray && m_exec )
-        {
-        // close all the DeviceLiwMap objects and DeviceLiwIterable objects
-        for (int i = 0; i < m_jsobjArray->Count(); i++)
-            {
-            JSObject * jsobj = (*m_jsobjArray)[i];
-            if (jsobj->inherits( &DeviceLiwIterable::info ))
-                {
-                (static_cast<DeviceLiwIterable*>(jsobj))->Close(m_exec, true);
-                }
-            else if (jsobj->inherits( &DeviceLiwMap::info ))
-                {
-                (static_cast<DeviceLiwMap*>(jsobj))->Close(m_exec, true);
-                }
-            }
-        m_jsobjArray->Close();
-        delete m_jsobjArray;
-        m_jsobjArray = NULL;
-        m_exec = NULL;
-        }
+    // invalid the DeviceLiwIterable
+    if (m_jsobj)
+        m_jsobj->m_valid = EFalse;
     
     // release the map    
     if ( m_iterable ) 
@@ -323,13 +287,19 @@ JSValue* DeviceLiwIterableFunc::callAsFunction(ExecState* exec, JSObject *thisOb
                 if(rval->isObject()) 
                     {
                     JSObject* obj =  static_cast<JSObject*> (rval);
-                    if(obj->inherits( &KJS::DeviceLiwIterable::info ) || obj->inherits( &KJS::DeviceLiwMap::info ))
+                    DevicePrivateBase* thisData = it->getIterableData();
+                    DevicePrivateBase* childData = NULL;
+                    if ( obj->inherits( &KJS::DeviceLiwIterable::info ) )
+                        childData = (static_cast<DeviceLiwIterable*> (obj))->getIterableData();
+                    else if ( obj->inherits( &KJS::DeviceLiwMap::info ) )
+                        childData = (static_cast<DeviceLiwMap*> (obj))->getMapData();   
+
+                    if ( childData ) 
                         {
-                        // insert into jsobject array
-                        it->m_privateData->m_jsobjArray->Append(obj);
+                        childData->SetParent( thisData ); 
+                        thisData->AddChild( childData );
                         }
-                    }                
-                
+                    }
                 vv.Reset();
                 }
         }
@@ -337,7 +307,7 @@ JSValue* DeviceLiwIterableFunc::callAsFunction(ExecState* exec, JSObject *thisOb
             it->m_privateData->m_iterable->Reset();
         }
         else if ( m_func == DeviceLiwIterable::close ){
-            it->Close(exec, false);
+            it->Close();
         }
         return rval;
     }

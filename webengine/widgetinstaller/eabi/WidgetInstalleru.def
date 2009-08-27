@@ -9,4 +9,6 @@ EXPORTS
 	_ZN16CWidgetInstaller8RunErrorEi @ 8 NONAME
 	_ZTI14CIconConverter @ 9 NONAME ; #<TI>#
 	_ZTV14CIconConverter @ 10 NONAME ; #<VT>#
+	_ZTI24CWidgetBackupRegistryXml @ 11 NONAME ; #<TI>#
+	_ZTV24CWidgetBackupRegistryXml @ 12 NONAME ; #<VT>#
 

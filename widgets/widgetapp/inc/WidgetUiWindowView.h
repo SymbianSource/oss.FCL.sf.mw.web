@@ -80,25 +80,15 @@ class CWidgetUiWindowView : public CAknView,
         */
         CWidgetUiWindowContainer* Container();
 
-        /**
-        * ShowActivatedObject
-        * show/hide the status pane and CBAs
-        * @since 3.1
-        * @param aVisible - ETrue to show; EFalse to hide
-        * @param aShowStatusPane - 
-        *        ETrue shows StatusPane and CBA
-        *        EFalse to show CBA only 
-        * @return void
-        */
-        void ShowActivatedObject(TBool aVisible, TBool aShowStatusPane = EFalse);
         
         /**
         * UpdateStatusPane
         * show/hide the status pane 
         * @since 3.1
+        * @param aVisible - ETrue to show; EFalse to hide
         * @return void
         */
-        void UpdateStatusPane();
+        void UpdateStatusPane( TBool aVisible );
 
         /**
         * CbaGroup
@@ -162,7 +152,14 @@ class CWidgetUiWindowView : public CAknView,
         * @return void
         */
         void StateChanged( TBrCtlDefs::TBrCtlState aState, TInt aValue );
-
+        
+        /**
+        * UpdateToolbar in case Orientation is changed
+        * @param aShow to define visibility of toolbar
+        * @return void
+        */        
+        void UpdateToolbar(TBool aShow);
+        
     private:
 
         /**

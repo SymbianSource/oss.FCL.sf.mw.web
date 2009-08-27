@@ -49,3 +49,4 @@ RESOURCE TBUF r_widgetui_no_memory          { buf = qtn_swins_widget_note_no_mem
 RESOURCE TBUF r_widgetui_uninstall_canceled { buf = qtn_swins_widget_uninst_cancel; }
 RESOURCE TBUF r_widgetui_install_canceled   { buf = qtn_swins_widget_install_cancel; }
 RESOURCE TBUF r_widgetui_finalize_install   { buf = qtn_swins_widget_finalize_install; }
+RESOURCE TBUF r_widgetui_uninstall_hs_prompt { buf = qtn_swins_widget_uninstall_hs_prompt; }

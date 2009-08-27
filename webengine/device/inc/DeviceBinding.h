@@ -23,6 +23,8 @@
 #include <object.h>
 #include <protect.h>
 
+class CRTSecMgrScriptSession;
+
 namespace KJS
     {
     class ServiceEventHandler;
@@ -53,6 +55,7 @@ namespace KJS
                 const Identifier& prop ) = 0;
             virtual JSValue* ListProviders( ExecState* exec, const List& args ) = 0;
             virtual void SetUid ( const TUint& aValue) = 0;
+            virtual CRTSecMgrScriptSession* GetSecuritySession () = 0;
         };
     }
 

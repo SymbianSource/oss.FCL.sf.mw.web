@@ -37,8 +37,3 @@
 // r: 3.2
 #define qtn_widgetui_oom_event "Out of Memory! Closing all widgets."
 
-// d: Pop up to grant access to phone information and network
-// l: popup_note_window
-// r: 5.0
-#define qtn_widgetui_blanketpermission_prompt "Do you want to allow the widget to access information on your phone and connect to the network? "
-// End of File

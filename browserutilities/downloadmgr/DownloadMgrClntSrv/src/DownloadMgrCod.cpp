@@ -233,8 +233,6 @@ void CCodObserver::CodEventL( CCodDownload& aDownload, TEvent aEvent )
 //    		    download->Delete();
     		    download->StopWaitingAS();
     		    }
-    		else
-    		    {
                 TBool doNextUrl( EFalse );
         		switch( progress.iState )
         		    {
@@ -339,7 +337,6 @@ void CCodObserver::CodEventL( CCodDownload& aDownload, TEvent aEvent )
                             }
                         }
                     }
-                }
     		}
     		break;
 

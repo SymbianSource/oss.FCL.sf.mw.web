@@ -15,43 +15,26 @@
 *
 */
 
+//  RESOURCE IDENTIFIER
+NAME    WHAR  // 4 letter resource identifier
 
 // INCLUDES
-#include <registryinfo.rh>
-#include <contentharvesterpluginuids.hrh>
+#include <eikon.rh>
+#include <avkon.rsg>
+#include <avkon.rh>
+#include <avkon.mbg>
+#include <avkon.loc>
+#include <wrtharvester.loc>
 
 //  RESOURCE DEFINITIONS 
-// -----------------------------------------------------------------------------
-//   
-// REGISTRY_INFO theInfo
-// Declares info for the "all" implementation
-//
-// -----------------------------------------------------------------------------
-//
-RESOURCE REGISTRY_INFO theInfo
-    {
-    // UID for the DLL
-    dll_uid = 0x2001FE2C;
-    // Declare array of interface info
-    interfaces = 
-        {
-        INTERFACE_INFO
-            {
-            // UID of interface that is implemented
-            interface_uid = KContentHarvesterPluginUid;
-            implementations = 
-                {
-                IMPLEMENTATION_INFO
-                    {
-                    implementation_uid = 0xA12345FE; 
-                    version_no = 1;
-                    display_name = "wrt";
-                    default_data = "wrt";
-                    opaque_data = "wrt";
-                    }
-                };
-            }
-        };
-    }
+
+RESOURCE RSS_SIGNATURE { }
+
+RESOURCE TBUF { buf = ""; }
+
+// ================== STRING RESOURCES =======================================
+
+// query to grant permission for phone information
+RESOURCE TBUF r_wrthrv_platform_access { buf = qtn_wrthrv_blanketpermission_prompt; }
 
 // End of File

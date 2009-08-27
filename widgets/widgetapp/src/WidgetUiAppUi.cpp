@@ -32,6 +32,10 @@
 #include <BrowserDialogsProvider.h>
 #include <e32property.h>
 
+#ifdef BRDO_WRT_HS_FF
+#include <AknToolbar.h>
+#endif
+
 // EXTERNAL DATA STRUCTURES
 
 // EXTERNAL FUNCTION PROTOTYPES
@@ -50,13 +54,12 @@
 
 // FORWARD DECLARATIONS
 
-// ============================= LOCAL FUNCTIONS ================================
-
-static void NotifyWidgetRunning()
+//LOCAL FUNCTION
+void NotifyCommandHandled()
     {
     const TUid KMyPropertyCat = { 0x10282E5A };
     enum TMyPropertyKeys { EMyPropertyState = 109 };
-    TInt state( 1 );
+    TInt state( 2 );
     RProperty::Set( KMyPropertyCat, EMyPropertyState , state );
     }
 
@@ -239,13 +242,7 @@ void CWidgetUiAppUi::LaunchWindowL( const TDesC8& aMessage )
     ProcessMessageArgumentsL( aMessage, uid, operation );
         
     iWindowManager->HandleWidgetCommandL( uid, operation );
-    
-    // Widget is up and running, notify that next one can be launched
-    // TODO magic numbers from Launcher.
-    if( operation == LaunchMiniview )
-        {
-        NotifyWidgetRunning();
-        }
+
     }
 
 // ------------------------------------------------------------------------------
@@ -377,13 +374,13 @@ void CWidgetUiAppUi::HandleApplicationSpecificEventL(TInt aEventType, const TWsE
     if ( iWindowManager )
         {
         if(aEventType == KAppOomMonitor_FreeRam )
-            {
+            {            
+#ifdef OOM_WIDGET_CLOSEALL            
+            CloseAllWidgetsAndExit();
+#else if    // OOM_WIDGET_CLOSEALL        
             iWindowManager->HandleOOMEventL(iIsForeground);
-            }
-        else if(aEventType == KAppOomMonitor_MemoryGood && iWindowManager->ActiveWindow())
-            {
-            iWindowManager->ActiveWindow()->Engine()->HandleCommandL( 
-                                (TInt)TBrCtlDefs::ECommandMemoryGood + (TInt)TBrCtlDefs::ECommandIdBase);
+            CloseAndExitIfNoneLeft();
+#endif            
             }
         }
     }
@@ -486,15 +483,28 @@ void CWidgetUiAppUi::SetDisplayAuto( )
 //
 // -----------------------------------------------------------------------------
 //
-void CWidgetUiAppUi::AsyncExit( TBool aAllWidgets )
+void CWidgetUiAppUi::AsyncExit( TBool /*aAllWidgets*/ )
     {
-    if (aAllWidgets && iWindowManager)
-        {
-        iWindowManager->CloseAllWindowsExceptCurrent();
-        }
     iWidgetUiAsyncExit->Start(); // close current and exits app if no widgets left running
     }
 
+// -----------------------------------------------------------------------------
+// CWidgetUiAppUi::CloseAndExitIfNoneLeft()
+//
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiAppUi::CloseAndExitIfNoneLeft()
+    {
+    if(iWindowManager)
+        {
+        if(iWindowManager->CloseWindowWithLeastClick())  
+            {
+            //Exit Application
+            NotifyCommandHandled();
+            Exit();
+            }            
+        }
+    }
 // -----------------------------------------------------------------------------
 // CWidgetUiAppUi::HandleDelayedForegroundEventCallback()
 // CIdle callback function to handle delayed foreground events for WidgetUI
@@ -532,10 +542,8 @@ void CWidgetUiAppUi::ProcessMessageArgumentsL(
     TUint32& aOperation )
     {
     __UHEAP_MARK;
-    CWidgetPropertyValue* value( NULL );
     TUint32 version( -1 );
     TPtrC ptr( NULL, 0 );
-    HBufC* tmp( NULL );
     
     RDesReadStream stream( aLine );
     CleanupClosePushL( stream );
@@ -586,5 +594,24 @@ void CWidgetUiAppUi::ProcessCommandL(TInt aCommand )
                 CAknViewAppUi::ProcessCommandL(aCommand);
             }
     }
+
+#ifdef OOM_WIDGET_CLOSEALL
+// -----------------------------------------------------------------------------
+// CWidgetUiAppUi::CloseAllWidgetsAndExit()
+// Close all widgets and exit in case of OOM
+//
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiAppUi::CloseAllWidgetsAndExit()
+{
+    if(iWindowManager->CloseAllWidgetsUnderOOM())
+        {
+        //Exit Application
+        NotifyCommandHandled();
+        Exit();
+        }
+}
+
+#endif
 
 // End of File

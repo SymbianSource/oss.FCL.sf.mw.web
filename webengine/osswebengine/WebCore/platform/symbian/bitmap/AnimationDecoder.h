@@ -224,7 +224,7 @@ class CAnimationDecoder  : public CActive
         TInt iSyncBitmapHandle;
         TBool iSyncMaskHandle;
         TBool iDecodeInProgress;
-        CSynDecodeThread* iSyncDecodeThread;
+        static CSynDecodeThread* iSyncDecodeThread; // sync decoder thread
         HBufC8* iDrmContent;
     };
 

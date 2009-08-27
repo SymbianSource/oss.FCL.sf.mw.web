@@ -11,18 +11,18 @@
 *
 * Contributors:
 *
-* Description:  
+* Description:
 *
 */
 #include <platform_paths.hrh>
 #include "../../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
-DEFAULT 
+DEFAULT
 
 PRJ_EXPORTS
 
-../conf/httpcachemanager.confml           	    MW_LAYER_CONFML(httpcachemanager.confml)
+../conf/httpcachemanager.confml                 MW_LAYER_CONFML(httpcachemanager.confml)
 ../conf/httpcachemanager_101F8557.crml          MW_LAYER_CRML(httpcachemanager_101F8557.crml)
 
 PRJ_MMPFILES

@@ -416,7 +416,17 @@ void CFeedsServerSession::DispatchMessageL(const RMessage2 &aMessage)
     // Ensure the server is ready.
     iFeedsServer.WakeupServerL();
     iCurrOp = aMessage.Function();
-    
+
+    if ( (!IsSpaceAvailableL()) && ((iCurrOp != EFeedsServerGetRootFolder) ||
+                                (iCurrOp != EFeedsServerWatchFolderList) || (iCurrOp != EFeedsServerGetSettings) ||
+                                (iCurrOp != EFeedsServerWatchSettings) || (iCurrOp != EFeedsServerSetConnection) ||
+                                (iCurrOp != EFeedsServerDisconnectManualUpdateConnection) ||
+                                (iCurrOp != EFeedsServerCancelAll) || (iCurrOp != EFeedsServerGetFeed) ||
+                                (iCurrOp != EFeedsServerPrintDBTables)))
+        {
+        User::Leave(KErrNoMemory);
+        }
+
     switch (iCurrOp)
         {
 	    case EFeedsServerGetRootFolder:
@@ -681,10 +691,16 @@ void CFeedsServerSession::GetFeedL(const RMessage2& aMessage)
             //Gyanendra TODO // should create entry into database
             if (!iFeedsServer.iFeedsDatabase->FeedIdFromUrlL(feedUrl, folderListId, feedId))
                 {
+
+                if (!IsSpaceAvailableL())
+                    {
+                    aMessage.Complete(KErrNoMemory);
+                    }
+
                 //Find feed id from folder id
                 iFeedsServer.iFeedsDatabase->SetIsFolderTableUpdateNeeded(ETrue);
                 TInt entryId = iFeedsServer.iFeedsDatabase->FolderItemAddL(folderListId, feedUrl, feedUrl, EFalse, KRootFolderId, KAutoUpdatingOff);
-                iFeedsServer.iFeedsDatabase->FeedIdFromEntryId(entryId, folderListId, feedId);
+                iFeedsServer.iFeedsDatabase->FeedIdFromEntryIdL(entryId, folderListId, feedId);
                 updateNeeded = ETrue;
                 }
             }
@@ -728,23 +744,8 @@ void CFeedsServerSession::GetFeedL(const RMessage2& aMessage)
         // Otherwise create a task to update the feed.
         else
             {
-
-            TInt drive( EDriveC );
-            TBool isSpace( EFalse );
-            RFs                 rfs;
-
-            User::LeaveIfError(rfs.Connect());
-            CleanupClosePushL(rfs);
-
-            TRAP_IGNORE( isSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
-                                                        &rfs,
-                                                        KMinFreebytes,
-                                                        drive ));
-
-            CleanupStack::PopAndDestroy();  //rfs
-            
             // Abort the updation of feeds under low memory.
-            if(isSpace)
+            if ( IsSpaceAvailableL() )
                 {
 
                 // If need be clean up the previous task.
@@ -2104,4 +2105,28 @@ TInt CFeedsServerSession::LazyCallBack(TAny* aPtr)
 		sessionPtr->iPackedFeed = NULL;
 	}
 	return EFalse;
+}
+
+// -----------------------------------------------------------------------------
+// CFeedsServerSession::IsSpaceAvailableL
+//
+// This function checks whether disk space has not gone below critical level
+// -----------------------------------------------------------------------------
+//
+TBool CFeedsServerSession::IsSpaceAvailableL()
+{
+    TInt drive( EDriveC );
+    RFs  rfs;
+    TBool isSpaceAvailable(EFalse);
+
+    User::LeaveIfError(rfs.Connect());
+    CleanupClosePushL(rfs);
+
+    TRAP_IGNORE( isSpaceAvailable = !SysUtil::DiskSpaceBelowCriticalLevelL(
+                                                        &rfs,
+                                                        KMinFreebytes,
+                                                        drive ));
+    CleanupStack::PopAndDestroy();  //rfs
+
+    return isSpaceAvailable;
 }

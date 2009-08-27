@@ -132,7 +132,13 @@ enum TWidgetPropertyId
     EWidgetPropertyIdCount,     // must be at end of properties
     EWidgetPropertyIdInvalid = 1000    // must be after EWidgetPropertyIdCount
     };
-
+    
+enum TWidgetBlanketPermissionState
+    {
+    EBlanketUnknown = 0,
+    EBlanketTrue,
+    EBlanketFalse
+    };
 
 typedef RArray<TUid>                RUidArray;
 

@@ -159,6 +159,8 @@ extern const char NW_Windows874_CharsetStr[];
 extern const char NW_Koi8r_CharsetStr[];
 extern const char NW_Koi8u_CharsetStr[];
 
+extern const char NW_EucKr_CharsetStr[];
+extern  const char NW_ksc5601_1987_CharsetStr[];
 
 /* Character set */
 #define HTTP_gb2312                 0x07E9
@@ -196,6 +198,8 @@ extern const char NW_Koi8u_CharsetStr[];
 #define HTTP_Koi8_r                 0x0824
 #define HTTP_Koi8_u                 0x0828
 
+ #define HTTP_euc_kr    0x0026
+ #define HTTP_ksc_5601    0x0024
                  
 #define HTTP_undefined              0xFD  /*  Nokia specific thingie */
 #define HTTP_unknown                0xFE  /*  Nokia specific thingie */
@@ -482,6 +486,8 @@ enum TEncoding
     EWindows874,
     EKoi8_r,
     EKoi8_u,
+     EEucKr,
+     EKsc_5601,
     EDummyLast
     };
 

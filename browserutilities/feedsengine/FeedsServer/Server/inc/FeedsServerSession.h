@@ -459,6 +459,14 @@ NONSHARABLE_CLASS(CFeedsServerSession): public CSession2, public MUpdateFeedTask
         static TInt LazyCallBack(TAny* aPtr);
 
         /**
+        * This function checks whether disk space has not gone below critical level
+        *
+        * @since 7.1
+        * @return ETrue if the there is sufficient space.
+        */
+        TBool IsSpaceAvailableL();
+
+        /**
         * Called upon completion of the task.
         *
         * @since 7.1
@@ -506,20 +514,20 @@ NONSHARABLE_CLASS(CFeedsServerSession): public CSession2, public MUpdateFeedTask
         // for GetRootFolder iCurrentRequest = 0
         // for GetFeed       iCurrentRequest = 1;
         TInt                  iCurrentRequest;
-        TBool                 iResponseTokensSent[2]; 
-        TInt                  iResponseOffset[2];     
-        
+        TBool                 iResponseTokensSent[2];
+        TInt                  iResponseOffset[2];
+
         CImportFeedsTask*     iOPMLImportTask;
-        
-        TInt 					iCurrOp;
-        TInt 					iPrevOp;
-        HBufC*				  iExportOPMLFileName;
-        CIdle*				  iLazyCaller; //To call SetTokenChunkL function;
-        TInt				  iPendingStatus;
-        TInt				  iPendingMessageHandle;
-        TBool				  iGetFeedCalled; 
-        
-        
+
+        TInt                  iCurrOp;
+        TInt                  iPrevOp;
+        HBufC*                iExportOPMLFileName;
+        CIdle*                iLazyCaller; //To call SetTokenChunkL function;
+        TInt                  iPendingStatus;
+        TInt                  iPendingMessageHandle;
+        TBool                 iGetFeedCalled;
+
+
     };
 
 

@@ -340,7 +340,8 @@ class PluginWin :  public CCoeControl,
         * @since 3.1
         * @return
         */
-        void pluginDeactivate();        
+        void pluginDeactivate(const TPoint& aCurPosition);        
+
         /**
         * zoom on double tap on the plugin
         * Sets the cursor poistion

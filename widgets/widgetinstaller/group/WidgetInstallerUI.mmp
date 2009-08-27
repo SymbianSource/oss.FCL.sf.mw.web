@@ -59,6 +59,7 @@ SOURCE          Iconconverter.cpp
 
 // Includes
 USERINCLUDE     ../Inc
+USERINCLUDE     ../../../Inc
 
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_LIBC_SYSTEMINCLUDE
@@ -88,5 +89,6 @@ LIBRARY         bitmaptransforms.lib
 LIBRARY         bitgdi.lib
 LIBRARY         WidgetRegistryClient.lib
 LIBRARY         charconv.lib 
+LIBRARY         apparc.lib
 
 // End of file

@@ -221,6 +221,12 @@ NONSHARABLE_CLASS( CMediaDataClient ) : public CMediaDataBase
         */
         void SetPausable( TBool aPausable );
         
+        /**
+        * Set StatusCode attribute.
+        * @param aStatusCode.
+        * @return void.
+        */
+        void SetStatusCode( TInt aStatusCode );
     private:    // implementation details
 
         /**

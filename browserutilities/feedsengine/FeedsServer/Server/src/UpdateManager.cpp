@@ -56,6 +56,7 @@ void CUpdateManager::ConstructL( TUint32 aAutoUpdateAP)
     iHttpConnection = CServerHttpConnection::NewL( aAutoUpdateAP );
     iRoamingInfo = CRoamingInfo::NewL(this);
     iAutoUpdateAp = aAutoUpdateAP;
+    iLastAutoUpdate.HomeTime();
     }
 
  // -----------------------------------------------------------------------------
@@ -121,6 +122,20 @@ void CUpdateManager::Stop()
 // -----------------------------------------------------------------------------  
 void CUpdateManager::RunL()
     {
+    TTime   currentTime;
+    currentTime.HomeTime();
+    TTimeIntervalMinutes diff;
+    currentTime.MinutesFrom(iLastAutoUpdate,diff);
+
+    if (diff.Int() < 0)
+        {
+        for(TInt i =0 ; i < iQueueArray.Count(); i++)
+            {
+            iQueueArray[i]->ResetTimers(); 
+            }
+        }
+    iLastAutoUpdate.HomeTime();
+
     if (iStatus.Int() == KErrNone || iStatus.Int() == KErrAbort)
         {      
         StartTimer();

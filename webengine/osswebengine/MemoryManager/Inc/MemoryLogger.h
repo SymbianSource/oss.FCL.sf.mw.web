@@ -30,6 +30,7 @@
 
 _LIT( KMEMLogDir,               "WebCore");
 _LIT( KMEMLogFile,              "Memory.log");
+_LIT( KChunkLogFile,             "freechunks.log");
 _LIT8( KFuncMemLogBegin, "BEGIN: %S @ %S/%d InSize -> %d" );
 _LIT8( KFuncMemLogEnd, "END: Peek -> %d Diff -> %d Accumulated Peek -> %d" );
 _LIT8( KTab, "\t" );
@@ -38,6 +39,8 @@ _LIT8( KTab, "\t" );
 
 #define MEM_LOG(a)		{ _LIT8(temp, a); RFileLogger::Write(KMEMLogDir, KMEMLogFile, EFileLoggingModeAppend, temp); }
 #define MEM_LOGF		FPrint
+#define C_LOG(a)      { _LIT8(temp, a); RFileLogger::Write(KMEMLogDir, KChunkLogFile, EFileLoggingModeAppend, temp); }
+#define C_LOGF        FPrint2
 
 // FUNCTION DECLARATIONS
 
@@ -46,6 +49,13 @@ inline void FPrint(const TRefByValue<const TDesC8> aFmt, ...)
     VA_LIST list;
     VA_START(list,aFmt);
     RFileLogger::WriteFormat(KMEMLogDir, KMEMLogFile, EFileLoggingModeAppend, aFmt, list);
+}
+
+inline void FPrint2(const TRefByValue<const TDesC8> aFmt, ...)
+{
+    VA_LIST list;
+    VA_START(list,aFmt);
+    RFileLogger::WriteFormat(KMEMLogDir, KChunkLogFile, EFileLoggingModeAppend, aFmt, list);
 }
 
 // CLASS DECLARATION
@@ -117,8 +127,10 @@ inline FunctionLogger::~FunctionLogger()
 				loggers[ i ]->_accum += _peek;
 	}
 #else // OOM_LOGGING
-#define MEM_LOG	{}
-#define MEM_LOGF	{}
+#define MEM_LOG(a)
+#define MEM_LOGF
+#define C_LOG(a)
+#define C_LOGF
 #endif
 
 #endif

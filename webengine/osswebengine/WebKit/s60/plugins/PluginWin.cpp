@@ -231,15 +231,33 @@ void PluginWin::processEventL( TPluginEventType eventType,
 
     switch ( eventType ) {
         case EEventActivate:
-                if ( m_notifier )
-                {
-                    TPoint pt = StaticObjectsContainer::instance()->webCursor()->position() - Position();
-                    m_notifier->NotifyL( MPluginNotifier::EPluginActivated, (void*) &pt );
+        {
+            WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+            CBrCtl*   brCtl = control(m_pluginskin->frame());    
+            WebView*  view = brCtl->webView();
+
+            if ( m_notifier )
+            {
+            TPoint pt = TPoint(0,0); 
+            if (cursor) {
+                pt = cursor->position() + view->PositionRelativeToScreen() - 
+                        m_control->PositionRelativeToScreen();
                 }
+            m_notifier->NotifyL( MPluginNotifier::EPluginActivated, (void*) &pt );
+            cursor->cursorUpdate(EFalse);
             consumed = ETrue;
             setPluginFocusL( ETrue );
-        break;
+            }
 
+            else
+            {
+            m_pluginskin->frame()->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementBrokenImage);
+            cursor->cursorUpdate(ETrue);
+            consumed = EFalse;     
+            setPluginFocusL( EFalse );
+            }
+            break;
+        }
         case EEventDeactivate:
                 if( m_notifier )
                 {
@@ -366,17 +384,7 @@ TInt PluginWin::refreshPlugin(CFbsBitGc& bitmapContext)
         rect = TRect(fv->viewCoordsInFrameCoords(Rect().iTl), fv->viewCoordsInFrameCoords(Rect().iBr));
         rect = fv->toViewCoords(rect);
         rect.SetSize(m_bitmap->SizeInPixels()); // toViewCoords sometimes grows the rect by 1, which wil cause the bitmap to not draw
-        if (m_transparentPlugin) {
-            m_bitmapContextMask->SetBrushStyle( CGraphicsContext::ESolidBrush );
-            m_bitmapContextMask->SetPenStyle( CGraphicsContext::ESolidPen );
-            m_bitmapContextMask->SetPenColor( TRgb( 30, 30, 30 ) );
-            m_bitmapContextMask->SetBrushColor( TRgb( 30, 30, 30 ) );
-            m_bitmapContextMask->DrawRect(m_mask->SizeInPixels() );
-            bitmapContext.DrawBitmapMasked(rect, m_bitmap, rect.Size(), m_mask, true);
-        }
-        else {
-            bitmapContext.DrawBitmap(rect, m_bitmap, rect.Size());
-        }
+        bitmapContext.DrawBitmap(rect, m_bitmap, rect.Size());
     }
     return KErrNone;
 }
@@ -600,10 +608,20 @@ void PluginWin::moveWindow(const TPoint& aOffset)
 // Deactivate the plugin
 // -----------------------------------------------------------------------------
 //
-void PluginWin::pluginDeactivate()
-    {
+void PluginWin::pluginDeactivate(const TPoint& aPosition)
+{
     m_pluginskin->deActivate();
+    if (!m_pluginskin->isActive()) {
+        CBrCtl*   brCtl = control(m_pluginskin->frame());
+        WebView*  view = brCtl->webView();
+        TPoint pos = aPosition + m_control->PositionRelativeToScreen() - 
+                     view->PositionRelativeToScreen();
+        WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+        TPoint offset = cursor->position() - pos;
+        cursor->offsetCursor( offset );
+        cursor->cursorUpdate(ETrue);        
     }
+}
 
 // -----------------------------------------------------------------------------
 // CPluginWin::HitRegionContains

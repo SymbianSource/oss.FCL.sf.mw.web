@@ -19,6 +19,7 @@
 #include "HttpCacheManager.h"
 #include "HttpCacheHandler.h"
 #include "HttpCacheUtil.h"
+#include "HttpCacheFileWriteHandler.h"
 #include <CenRepNotifyHandler.h>
 #include <HttpCacheManagerInternalCRKeys.h>
 #include <CoreApplicationUIsSDKCRKeys.h>
@@ -40,10 +41,13 @@
 // kbyte
 const TUint KDefaultCacheSize = 1048576; // 1MB = 1024*1024
 _LIT( KDefaultCacheDir, "c:\\cache\\");
+_LIT( KDefaultOperatorCacheDir, "c:\\cache\\op\\");
+_LIT( KDefaultVssCacheDir, "c:\\cache\\vss\\");
 _LIT( KDefaultIndexFile, "index.dat" );
 _LIT( KDefaultOpIndexFile, "index_op.dat" );
 _LIT( KDefaultVSSIndexFile, "index_vss.dat" );
 _LIT( KIndexFileExtension, ".dat" );
+_LIT( KValidationFileExtension, ".val" );
 _LIT8( KVSSHeaderFileldName, "X-Vodafone-Content" );
 _LIT8( KVSSHeaderFileldValue, "Portal" );
 
@@ -115,7 +119,9 @@ EXPORT_C CHttpCacheManager* CHttpCacheManager::NewL()
     return self;
     }
 
+// -----------------------------------------------------------------------------
 // Destructor
+// -----------------------------------------------------------------------------
 CHttpCacheManager::~CHttpCacheManager()
     {
     delete iOfflineNotifyHandler;
@@ -125,6 +131,7 @@ CHttpCacheManager::~CHttpCacheManager()
     delete iOpDomain;
     delete iphoneSpecificCache;
     delete iVSSWhiteList;
+    delete iFileWriteHandler;
     }
 
 // -----------------------------------------------------------------------------
@@ -132,9 +139,9 @@ CHttpCacheManager::~CHttpCacheManager()
 //
 // -----------------------------------------------------------------------------
 //
-TBool CHttpCacheManager::VSSRequestCheck( const RHTTPTransaction& aTrans,
-                                          const RHTTPHeaders& aHttpHeader,
-                                          const TDesC8& aUrl )
+TBool CHttpCacheManager::VSSRequestCheckL( const RHTTPTransaction& aTrans,
+                                           const RHTTPHeaders& aHttpHeader,
+                                           const TDesC8& aUrl )
     {
     TBool VSSTransaction ( EFalse );
     if ( iVSSCacheEnabled && HttpCacheUtil::VSSCacheContent( aUrl, iVSSWhiteList ) )
@@ -178,9 +185,9 @@ TBool CHttpCacheManager::VSSRequestCheck( const RHTTPTransaction& aTrans,
             }
         CleanupStack::PopAndDestroy(); // VSSnameStr
         } //end if( iVSSCacheEnabled && HttpCacheUtil::VSSCacheContent( aUrl, iVSSWhiteList ) )
-
     return VSSTransaction;
     }
+
 // -----------------------------------------------------------------------------
 // CHttpCacheManager::RequestL
 //
@@ -214,18 +221,18 @@ EXPORT_C TInt CHttpCacheManager::RequestL(
                  status = iphoneSpecificCache->RequestL( aTrans, aCacheMode, aCacheEntry );
                  if( (status  == KErrNotReady) || (status == KErrNone ) )
                  {
-                 aCacheEntry.iCacheHandler = iphoneSpecificCache; 
+                 aCacheEntry.iCacheHandler = iphoneSpecificCache;
                  }
                  else
                  {
                  // No entry found in any cache. Default to normal cache
-                 aCacheEntry.iCacheHandler = cache;   
+                 aCacheEntry.iCacheHandler = cache;
                  }
-                } 
+                }
             else
             {
-            aCacheEntry.iCacheHandler = cache;  
-            }                
+            aCacheEntry.iCacheHandler = cache;
+            }
            } //end if( cache )
 
         }//end  if( iCacheEnabled || iVSSCacheEnabled )
@@ -260,11 +267,11 @@ EXPORT_C HBufC8* CHttpCacheManager::RequestNextChunkL(
     THttpCacheEntry& aCacheEntry )
     {
     HBufC8* bodyStr = NULL;
-
     if( ( iCacheEnabled || iVSSCacheEnabled ) && aCacheEntry.iCacheHandler )
         {
         bodyStr = aCacheEntry.iCacheHandler->RequestNextChunkL( aTrans, aLastChunk, aCacheEntry );
         }
+
     return bodyStr;
     }
 
@@ -292,15 +299,16 @@ EXPORT_C void CHttpCacheManager::ReceivedResponseHeadersL(
   RHTTPTransaction& aTrans,
     THttpCacheEntry& aCacheEntry )
     {
-    if( iCacheEnabled || iVSSCacheEnabled )
+    if ( iCacheEnabled || iVSSCacheEnabled )
         {
-        if( iVSSCacheEnabled && VSSRequestCheck( aTrans, aTrans.Response().GetHeaderCollection(),
-            aTrans.Request().URI().UriDes() ) )
+        if ( iVSSCacheEnabled &&
+             VSSRequestCheckL( aTrans, aTrans.Response().GetHeaderCollection(),
+                               aTrans.Request().URI().UriDes() ) )
             {
             //Modify the cache handler if VSS specific
             aCacheEntry.iCacheHandler = iphoneSpecificCache;
             }
-        if( aCacheEntry.iCacheHandler )
+        if ( aCacheEntry.iCacheHandler )
             {
             aCacheEntry.iCacheHandler->ReceivedResponseHeadersL( aTrans, aCacheEntry );
             }
@@ -340,7 +348,7 @@ EXPORT_C void CHttpCacheManager::ResponseComplete(
 
 // -----------------------------------------------------------------------------
 // CHttpCacheManager::RemoveAllL
-// Removes all files from HTTP cache. Also tries to remove orphaned files, 
+// Removes all files from HTTP cache. Also tries to remove orphaned files,
 // i.e files found on disk, but not registered in the cache's lookup table
 // -----------------------------------------------------------------------------
 //
@@ -352,43 +360,46 @@ EXPORT_C TInt CHttpCacheManager::RemoveAllL()
         {
         numOfBytes = iCache->RemoveAllL();
         }
-        
+
     //failure here is not mission critical
-    TRAP_IGNORE( RemoveOrphanedFilesL() ); 
-    
+    TRAP_IGNORE( RemoveOrphanedFilesL() );
+
     return numOfBytes;
     }
 
-
+// -----------------------------------------------------------------------------
+// FilePathHash
 // Hash function for Symbian file paths: discards case first
+// -----------------------------------------------------------------------------
 static TUint32 FilepathHash(const TDesC& aDes)
 {
-    //since this function is intensively used by the HashMap, 
-    //keeping (slow) heap allocation out of it. 
-    TBuf<KMaxPath> normalized ( aDes ); 
-     
+    //since this function is intensively used by the HashMap,
+    //keeping (slow) heap allocation out of it.
+    TBuf<KMaxPath> normalized ( aDes );
+
     normalized.LowerCase();
     return DefaultHash::Des16( normalized );
 }
 
-// Comparator for Symbian file paths: Use case-insensitive compare  
+// -----------------------------------------------------------------------------
+// FilepathIdent
+// Comparator for Symbian file paths: Use case-insensitive compare
+// -----------------------------------------------------------------------------
 static TBool FilepathIdent(const TDesC& aL, const TDesC& aR)
 {
-    return ( aL.CompareF(aR) == 0 );  
+    return ( aL.CompareF(aR) == 0 );
 }
 
-
 // -----------------------------------------------------------------------------
-// CHttpCacheManager::RemoveOrphanedFilesL 
+// CHttpCacheManager::RemoveOrphanedFilesL
 // Removes header/body files that exist on the file-system, but are not known to the in-memory Cache lookup table(s)
-// We do this because cache performance degrades substantially if there are too many files in a Symbian FAT32 directory. 
-// Browser crash or out-of-battery situations may cause SaveLookuptable() to be not called, leading to such "orphaned files". 
-// Due to high file-server interaction, don't call this method from performance critical code. 
+// We do this because cache performance degrades substantially if there are too many files in a Symbian FAT32 directory.
+// Browser crash or out-of-battery situations may cause SaveLookuptable() to be not called, leading to such "orphaned files".
+// Due to high file-server interaction, don't call this method from performance critical code.
 // -----------------------------------------------------------------------------
 void CHttpCacheManager::RemoveOrphanedFilesL()
     {
-
-    //Map that contains pointers to fully-qualified file paths as Keys, and "to be deleted flag" as Value. 
+    //Map that contains pointers to fully-qualified file paths as Keys, and "to be deleted flag" as Value.
     RPtrHashMap<TDesC, TInt> onDiskFilesMap(&FilepathHash, &FilepathIdent);
     CleanupClosePushL( onDiskFilesMap );
 
@@ -397,7 +408,7 @@ void CHttpCacheManager::RemoveOrphanedFilesL()
     const TInt needsDelete( 1 );
     const TInt noDelete( 0 );
 
-    //collects objects that need to be deleted later on 
+    //collects objects that need to be deleted later on
     RPointerArray<HBufC> cleanupList;
     CleanupResetAndDestroyPushL( cleanupList );
 
@@ -411,20 +422,22 @@ void CHttpCacheManager::RemoveOrphanedFilesL()
     //Step 1. Find out all files on disk: by walking the directory hierarchy, one directory at a time
     for (;;)
         {
-        //1a. Get list of files in current directory, NULL if no directory left in tree 
+        //1a. Get list of files in current directory, NULL if no directory left in tree
         scanner->NextL( matchingFiles );
         if ( !matchingFiles )
             break;
 
-        TPtrC dir( scanner->FullPath() );       
-        
+        TPtrC dir( scanner->FullPath() );
+
         //1b. Add any files found to the HashTable
         const TInt nMatches = matchingFiles->Count();
         for ( TInt i = 0; i < nMatches; i++ )
             {
-            TEntry entry ( (*matchingFiles)[i] ) ; 
-            if (entry.iName.Right( KIndexFileExtension().Length() ).
-                    CompareF( KIndexFileExtension ) != 0) // ignore any .dat index files
+            TEntry entry ( (*matchingFiles)[i] ) ;
+            TPtrC ext( entry.iName.Right( KIndexFileExtension().Length() ));
+
+            if ( ext.CompareF( KIndexFileExtension ) != 0 && // ignore any .dat index files
+                 ext.CompareF( KValidationFileExtension ) != 0 ) // ignore any .val index files
                 {
                 HBufC* fullPath = HBufC::NewL( dir.Length() +  entry.iName.Length() );
                 cleanupList.Append( fullPath ); //keep object safe for later destruction
@@ -433,7 +446,6 @@ void CHttpCacheManager::RemoveOrphanedFilesL()
                 onDiskFilesMap.Insert( fullPath, &needsDelete ); //add to the hash
                 }
             }
-            
 
         delete matchingFiles;
         } // End of step 1: adding all known files on disk to Map
@@ -442,29 +454,29 @@ void CHttpCacheManager::RemoveOrphanedFilesL()
 
 #ifdef __CACHELOG__
     {
-    RDebug::Print(_L("-----------START PRINTING MAP OF SIZE %d---------"), onDiskFilesMap.Count());
+    HttpCacheUtil::WriteFormatLog(0, _L("-----------START PRINTING MAP OF SIZE %d---------"), onDiskFilesMap.Count());
     TPtrHashMapIter<TDesC, TInt> iter(onDiskFilesMap);
     const TDesC* key;
     while ((key = iter.NextKey()) != 0)
         {
         const TInt val = *(iter.CurrentValue());
-        RDebug::Print(_L("MAP WALK: %S, with value = %d "), key, val);
+        HttpCacheUtil::WriteFormatLog(0, _L("MAP WALK: %S, with value = %d "), key, val);
         }
-    RDebug::Print(_L("-----------DONE PRINTING MAP-------------"));
+    HttpCacheUtil::WriteFormatLog(0, _L("-----------DONE PRINTING MAP-------------"));
     }
 #endif
-    
+
     //Step 2. Get list of known (non-orphaned) files in each Cache's in-memory lookup table. Flag them as DO NOT DELETE
-    RPointerArray<TDesC> knownFiles; 
+    RPointerArray<TDesC> knownFiles;
     CleanupClosePushL( knownFiles );
-    //Ask CacheHandlers to add their KNOWN files to this array. No ownership transfer occurs. 
+    //Ask CacheHandlers to add their KNOWN files to this array. No ownership transfer occurs.
     //Don't go ahead if any of the cache handlers choke to insure correct deletion of files.
     if (iCache)
-        User::LeaveIfError( iCache->ListFiles( knownFiles ) ); 
+        User::LeaveIfError( iCache->ListFiles( knownFiles ) );
     if (iOperatorCache)
         User::LeaveIfError( iOperatorCache->ListFiles( knownFiles ) );
     if (iphoneSpecificCache)
-        User::LeaveIfError( iphoneSpecificCache->ListFiles( knownFiles ) ); 
+        User::LeaveIfError( iphoneSpecificCache->ListFiles( knownFiles ) );
 
     //2a. HashTable lookup, and modification of flag
     for (TInt i = 0; i < knownFiles.Count(); i++)
@@ -474,18 +486,19 @@ void CHttpCacheManager::RemoveOrphanedFilesL()
         if (ptr)
             {
             // Reinsert into Map, this time with NO DELETE
-            onDiskFilesMap.Insert( knownFiles[i], &noDelete ); 
-            
+            onDiskFilesMap.Insert( knownFiles[i], &noDelete );
+#if 0 // no header files any more.
             // Add the header file to HashMap
-            HBufC* headerFile = HBufC::NewL( KHttpCacheHeaderExt().Length() +  (*(knownFiles[i])).Length() ); 
+            HBufC* headerFile = HBufC::NewL( KHttpCacheHeaderExt().Length() +  (*(knownFiles[i])).Length() );
             cleanupList.Append( headerFile ); //keep for later destruction
-            TPtr ptr( headerFile->Des() ); 
+            TPtr ptr( headerFile->Des() );
             HttpCacheUtil::GetHeaderFileName( *(knownFiles[i]), ptr );
             onDiskFilesMap.Insert( headerFile, &noDelete ); // register Header files as NO DELETE
+#endif
             }
         }
 
-    knownFiles.Close(); 
+    knownFiles.Close();
     CleanupStack::Pop( 1, &knownFiles );
 
     //Step 3. Delete all files on disk that don't belong to any of the Cache Handlers.
@@ -501,12 +514,12 @@ void CHttpCacheManager::RemoveOrphanedFilesL()
         }
     delete fileMan;
 
-    CleanupStack::Pop(1, &cleanupList); 
+    CleanupStack::Pop(1, &cleanupList);
     cleanupList.ResetAndDestroy(); //should delete all HBufC objects
-    
+
     CleanupStack::Pop(1, &onDiskFilesMap);
     onDiskFilesMap.Close(); // doesn't own any K,V object
-    
+
     }
 
 // -----------------------------------------------------------------------------
@@ -667,6 +680,17 @@ void CHttpCacheManager::CreateCacheHandlersL()
     CRepository* repositoryDiskLevel = CRepository::NewLC( KCRUidDiskLevel );
     TInt err;
 
+    // Get Cache Postpone Parameters.
+    //
+    THttpCachePostponeParameters postpone;
+
+    if (KErrNone == repository->Get(KCacheWritePostponeEnabled, postpone.iEnabled) )
+        {
+        User::LeaveIfError( repository->Get( KCacheWritePostponeFreeRAMThreshold, postpone.iFreeRamThreshold ) );
+        User::LeaveIfError( repository->Get( KCacheWritePostponeImmediateWriteThreshold, postpone.iImmediateWriteThreshold ) );
+        User::LeaveIfError( repository->Get( KCacheWritePostponeWriteTimeout, postpone.iWriteTimeout ) );
+        }
+
     // cache on/off
     TInt cacheEnabled( 0 );
     err = repository->Get( KCacheManagerHttpCacheEnabled, cacheEnabled );
@@ -684,61 +708,62 @@ void CHttpCacheManager::CreateCacheHandlersL()
             {
             iCacheFolder.Append( _L("\\") );
             }
-        
-	// get drive letter for sysutil
-	TParsePtrC pathParser( iCacheFolder );
-	TDriveUnit drive = pathParser.Drive();
-	// get critical level
-	// RAM drive can have different critical level
-	TVolumeInfo vinfo;
-	User::LeaveIfError( CCoeEnv::Static()->FsSession().Volume( vinfo, drive ) );
-	//
-	TInt criticalLevel;
-	User::LeaveIfError( repositoryDiskLevel->Get( ( vinfo.iDrive.iType == EMediaRam ? KRamDiskCriticalLevel : KDiskCriticalThreshold ),
-		criticalLevel ) );
 
-    if( (err == KErrNone) && iCacheEnabled )
+    // get drive letter for sysutil
+    TParsePtrC pathParser( iCacheFolder );
+    TDriveUnit drive = pathParser.Drive();
+    // get critical level
+    // RAM drive can have different critical level
+    TVolumeInfo vinfo;
+    User::LeaveIfError( CCoeEnv::Static()->FsSession().Volume( vinfo, drive ) );
+    //
+    TInt criticalLevel;
+    User::LeaveIfError( repositoryDiskLevel->Get( ( vinfo.iDrive.iType == EMediaRam ? KRamDiskCriticalLevel : KDiskCriticalThreshold ),
+        criticalLevel ) );
+
+    if ( (err == KErrNone) && iCacheEnabled )
         {
         // create cache handler
-        iCache = CHttpCacheHandler::NewL( cacheSize, iCacheFolder, KDefaultIndexFile(), criticalLevel );
+        iCache = CHttpCacheHandler::NewL( cacheSize, iCacheFolder, KDefaultIndexFile(), criticalLevel, postpone);
 
         // create operator cache. same settings
-        if( FeatureManager::FeatureSupported( KFeatureIdOperatorCache ) )
+        if ( FeatureManager::FeatureSupported( KFeatureIdOperatorCache ) )
             {
             TBuf<512> url;
             // if domain is missing, then no need to read further
-            if( repository->Get( KOperatorDomainUrl, url ) == KErrNone )
+            if ( repository->Get( KOperatorDomainUrl, url ) == KErrNone )
                 {
 
                 HBufC8* opDomain8 = HBufC8::NewL( url.Length() );
-            CleanupStack::PushL(opDomain8);
-            opDomain8->Des().Append( url );
+                CleanupStack::PushL(opDomain8);
+                opDomain8->Des().Append( url );
 
-            TInt slashPos = opDomain8->LocateReverse('/');
-            if(slashPos == -1)
-            {
-                slashPos = 0;
-            }
-            TPtrC8 temp = opDomain8->Left(slashPos);
-            iOpDomain = temp.AllocL();
-            CleanupStack::PopAndDestroy(opDomain8);
+                TInt slashPos = opDomain8->LocateReverse('/');
+                if (slashPos == -1)
+                    {
+                    slashPos = 0;
+                    }
+
+                TPtrC8 temp = opDomain8->Left(slashPos);
+                iOpDomain = temp.AllocL();
+                CleanupStack::PopAndDestroy(opDomain8);
 
                 // op cache size
                 TInt opCacheSize( KDefaultCacheSize );
                 repository->Get( KOperatorCacheSize, opCacheSize );
 
                 // op cache folder
-                TFileName opCacheFolder( KDefaultCacheDir );
+                TFileName opCacheFolder( KDefaultOperatorCacheDir );
                 repository->Get( KOperatorCacheFolder, opCacheFolder );
 
-                if( opCacheFolder.LocateReverse( '\\' ) != opCacheFolder.Length() - 1  )
+                if ( opCacheFolder.LocateReverse( '\\' ) != opCacheFolder.Length() - 1  )
                     {
                     opCacheFolder.Append( _L("\\") );
                     }
 
                 // create op cache
-                iOperatorCache = CHttpCacheHandler::NewL( opCacheSize, opCacheFolder, KDefaultOpIndexFile(), criticalLevel );
-        }
+                iOperatorCache = CHttpCacheHandler::NewL( opCacheSize, opCacheFolder, KDefaultOpIndexFile(), criticalLevel, postpone);
+                }
             } //end if( FeatureManager::FeatureSupported( KFeatureIdOperatorCache ) )
         } //end if( iCacheEnabled )
 
@@ -746,15 +771,15 @@ void CHttpCacheManager::CreateCacheHandlersL()
     err = repository->Get( KPhoneSpecificCacheEnabled, VSScacheEnabled );
 
     iVSSCacheEnabled = VSScacheEnabled;
- 
-    if( (err == KErrNone) && iVSSCacheEnabled )
+
+    if ( (err == KErrNone) && iVSSCacheEnabled )
         {
         // cache size
         TInt VSScacheSize( KDefaultCacheSize );
         repository->Get( KPhoneSpecificCacheSize, VSScacheSize );
 
         // cache folder
-        TFileName VSScacheFolder( KDefaultCacheDir );
+        TFileName VSScacheFolder( KDefaultVssCacheDir );
         // ignore cache folder. use c:\ to save memory. (same for operator cache. see below)
         repository->Get( KPhoneSpecificCacheFolder, VSScacheFolder );
         // fix folder by appending trailing \\ to the end -symbian thing
@@ -767,7 +792,7 @@ void CHttpCacheManager::CreateCacheHandlersL()
         //Get the white list
         TBuf<2048> whiteList;
 
-        if( repository->Get( KPhoneSpecificCacheDomainUrl, whiteList ) == KErrNone )
+        if ( repository->Get( KPhoneSpecificCacheDomainUrl, whiteList ) == KErrNone )
             {
             iVSSWhiteList = HBufC8::NewL( whiteList.Length() );
             iVSSWhiteList->Des().Append( whiteList );
@@ -778,8 +803,9 @@ void CHttpCacheManager::CreateCacheHandlersL()
             }
 
         // create cache handler
-        iphoneSpecificCache = CHttpCacheHandler::NewL( VSScacheSize, VSScacheFolder, KDefaultVSSIndexFile(), criticalLevel );
+        iphoneSpecificCache = CHttpCacheHandler::NewL( VSScacheSize, VSScacheFolder, KDefaultVSSIndexFile(), criticalLevel, postpone);
         }
+
     CleanupStack::PopAndDestroy(2); // repository, , repositoryDiskLevel
     }
 
@@ -804,4 +830,3 @@ CHttpCacheHandler* CHttpCacheManager::CacheHandler(
     return cache;
     }
 //  End of File
-

@@ -1845,31 +1845,30 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
                ( currDownload.GetStringAttribute( EDlAttrDestFilename, fileNamePtr ) );
             CLOG_WRITE_FORMAT(" EDlAttrDestFilename: %S", &fileNamePtr);
 
+            HBufC* fileName1 = HBufC::NewLC(fileName->Length());
+            TPtr fileNamePtr1 = fileName1->Des();
+            fileNamePtr1.Copy(fileNamePtr);
+            RFs fs;
+            User::LeaveIfError(fs.Connect());
+            CleanupClosePushL(fs);
+            TFindFile file(fs);
+            TPtrC ptr(KNullDesC);
+            TInt found = file.FindByPath(fileNamePtr1,&ptr); //when second parameter to the API is Null then the it searches for the file in the Dir specified in the first parameter
+            CleanupStack::PopAndDestroy(&fs);
+            CleanupStack::PopAndDestroy(fileName1);
             // Delete in DMgr
             TBool deleted = iUiUtils->DeleteWithUserConfirmL( currDownload );
             if ( deleted )
                 {
-                                
                 if(!iUiUtils->IsCodDownload())
                 	{
-                	HBufC* fileName1 = HBufC::NewLC(fileName->Length());
-                TPtr fileNamePtr1 = fileName1->Des();
-                fileNamePtr1.Copy(fileNamePtr);
-                RFs fs;
-                User::LeaveIfError(fs.Connect());
-                CleanupClosePushL(fs);
-                TFindFile file(fs);
-                TPtrC ptr(KNullDesC);
-                TInt found = file.FindByPath(fileNamePtr1,&ptr); //when second parameter to the API is Null then the it searches for the file in the Dir specified in the first parameter
-                if(found == KErrNotFound)
-                    {
-                        HBufC* infoPrompt = StringLoader::LoadLC( R_DMUL_ERROR_FILE_NOT_FOUND);
-                        CAknInformationNote* note = new(ELeave)  CAknInformationNote();
-                        note->ExecuteLD(*infoPrompt);
-                        CleanupStack::PopAndDestroy(infoPrompt);
-                    }
-               CleanupStack::PopAndDestroy(&fs);
-               CleanupStack::PopAndDestroy(fileName1);
+                      if(found == KErrNotFound)
+                         {
+                          HBufC* infoPrompt = StringLoader::LoadLC( R_DMUL_ERROR_FILE_NOT_FOUND);
+                          CAknInformationNote* note = new(ELeave)  CAknInformationNote();
+                          note->ExecuteLD(*infoPrompt);
+                          CleanupStack::PopAndDestroy(infoPrompt);
+                         }
     			   // Do not wait until the delete event is reported through the 
     			   // observer callback, but update the list right now, 
     			   // so the user will not be able to access and modify an already
@@ -2016,12 +2015,16 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 	            	User::LeaveIfError(err);
 	            	}
 	            TInt count = Count();
-	            for ( TInt i = 0; i < count; i++ )
+	            TInt i = 0;
+	            while((count>0) && (i < count))
 	                {
 	                RHttpDownload& download = iListModel->Download(i);
+                    i++;
 	                if ( cancelled )
 	                    {
 	                    DeleteDownloadL( download );
+	                    i--;
+	                    count--;
 	                    }
 	                }
 	            iIsCancelInProgress = EFalse;

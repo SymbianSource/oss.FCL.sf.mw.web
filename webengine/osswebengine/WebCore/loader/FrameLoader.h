@@ -338,6 +338,8 @@ namespace WebCore {
 
         void handledOnloadEvents();
         String userAgent(const KURL&) const;
+        TInt widgetNetworkConstants(TInt aId);
+        TInt widgetNetworkState();
 
         Widget* createJavaAppletWidget(const IntSize&, Element*, const HashMap<String, String>& args);
 

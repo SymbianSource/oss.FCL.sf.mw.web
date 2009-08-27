@@ -62,6 +62,7 @@ namespace WebCore {
 #endif
 
         void init();
+        void remove();
 
     } // namespace MediaFeatureNames
 } // namespace WebCore

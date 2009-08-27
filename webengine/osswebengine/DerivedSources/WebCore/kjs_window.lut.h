@@ -67,7 +67,7 @@ static const struct HashEntry WindowTableEntries[] = {
    { "onmousemove", Window::Onmousemove, DontDelete, 0, &WindowTableEntries[122] }/* 1053316302 */ ,
    { "onmouseout", Window::Onmouseout, DontDelete, 0, 0 }/* 708315430 */ ,
    { 0, 0, 0, 0, 0 },
-   { 0, 0, 0, 0, 0 },
+   { "ononline", Window::Ononline, DontDelete, 0, 0 }/* 1415647862 */ ,
    { "btoa", Window::BToA, DontDelete|Function, 1, &WindowTableEntries[119] }/* 3147832331 */ ,
    { 0, 0, 0, 0, 0 },
    { "onload", Window::Onload, DontDelete, 0, 0 }/* 3960668140 */ ,
@@ -124,19 +124,20 @@ static const struct HashEntry WindowTableEntries[] = {
    { 0, 0, 0, 0, 0 },
    { 0, 0, 0, 0, 0 },
    { 0, 0, 0, 0, 0 },
-   { "setTimeout", Window::SetTimeout, DontDelete|Function, 2, &WindowTableEntries[127] }/* 3937824660 */ ,
+   { "setTimeout", Window::SetTimeout, DontDelete|Function, 2, &WindowTableEntries[128] }/* 3937824660 */ ,
    { "onabort", Window::Onabort, DontDelete, 0, 0 }/* 495556821 */ ,
    { "onkeydown", Window::Onkeydown, DontDelete, 0, &WindowTableEntries[123] }/* 118358195 */ ,
-   { "onmousewheel", Window::OnWindowMouseWheel, DontDelete, 0, &WindowTableEntries[128] }/* 2004718922 */ ,
-   { "onreset", Window::Onreset, DontDelete, 0, 0 }/* 2148355157 */ ,
+   { "onmousewheel", Window::OnWindowMouseWheel, DontDelete, 0, &WindowTableEntries[129] }/* 2004718922 */ ,
+   { "onreset", Window::Onreset, DontDelete, 0, &WindowTableEntries[127] }/* 2148355157 */ ,
    { "onresize", Window::Onresize, DontDelete, 0, 0 }/* 4050308757 */ ,
    { "onsearch", Window::Onsearch, DontDelete, 0, 0 }/* 2178040503 */ ,
    { "onselect", Window::Onselect, DontDelete, 0, 0 }/* 2628083475 */ ,
+   { "onoffline", Window::Onoffline, DontDelete, 0, 0 }/* 3213228680 */ ,
    { "DOMException", Window::DOMException, DontDelete, 0, 0 }/* 2633742454 */ ,
    { "XMLHttpRequest", Window::XMLHttpRequest, DontDelete, 0, 0 }/* 760114463 */ 
 };
 
-const struct HashTable WindowTable = { 2, 129, WindowTableEntries, 119 };
+const struct HashTable WindowTable = { 2, 130, WindowTableEntries, 119 };
 
 } // namespace
 

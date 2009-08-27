@@ -40,6 +40,7 @@ enum TEnterStatus
     ERedirectConfirmation,
     ERepostConfirmation,
     ESecureItemInNonSecurePage,
+    EReEnteringSecurePage,
     // add new items here        
     EEnterStatusNone
     };
@@ -147,7 +148,8 @@ public: // MBrCtlDownloadObserver
         */
         virtual void HandleDownloadEventL(TUint aTransactionID, 
                                           TBrCtlDownloadEvent aDownloadEvent,
-                                          TUint aValue) {}             
+                                          TUint aValue) {}     
+        void SetBrowserControl(CBrCtl* aBrctl)                                                  ;
 
 private:
     void handleError();
@@ -165,6 +167,7 @@ private:
 private: // data
     CPeriodic* m_scheduler;
     int m_error;
+    CBrCtl* m_brctl;
 
 };
 

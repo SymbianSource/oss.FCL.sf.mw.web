@@ -101,7 +101,7 @@ const String& ImageSource::getMimeType()
 {
     return m_mimeType;    
 }
-void ImageSource::setData(SharedBuffer* data, bool allDataReceived)
+void ImageSource::setDataL(SharedBuffer* data, bool allDataReceived)
 {
     // Make the decoder by sniffing the bytes.
     // This method will examine the data and instantiate an instance of the appropriate decoder plugin.
@@ -110,11 +110,11 @@ void ImageSource::setData(SharedBuffer* data, bool allDataReceived)
     if( !allDataReceived ) return;
     if( !m_decoder )
         // sync decoding if no observer is passed
-        TRAP_IGNORE( m_decoder = CAnimationDecoder::NewL( NULL ) );
+        m_decoder = CAnimationDecoder::NewL( NULL );
     if( m_decoder ) {
         TPtrC8 ptr( (const TUint8*)data->data(), data->size() );
         TPtrC16 ptr16(m_mimeType.des());        
-        TRAP_IGNORE( m_decoder->OpenL( ptr, &ptr16, ETrue ) );
+        m_decoder->OpenL( ptr, &ptr16, ETrue );
     }
 }
 

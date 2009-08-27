@@ -23,6 +23,9 @@
 
 #include "config.h"
 #include "CachedImage.h"
+#include "StaticObjectsContainer.h"
+#include "ResourceLoaderDelegate.h"
+#include "HttpCacheManager.h"
 
 #include "BitmapImage.h"
 #include "Cache.h"
@@ -191,10 +194,31 @@ void CachedImage::data(PassRefPtr<SharedBuffer> data, bool allDataReceived)
     // received all the data or the size is known.  Each chunk from the
     // network causes observers to repaint, which will force that chunk
     // to decode.
-    if (sizeAvailable || allDataReceived) {
-        if (m_image->isNull()) {
-            // FIXME: I'm not convinced this case can even be hit.
+    if (allDataReceived) {
+        if (!m_image || !sizeAvailable || m_image->isNull()) {
+            // This case is hit under OOM and lower layer is unable to set sizeAvailable = true
+            // even when allDataReceived is True.
             error();
+#if PLATFORM(SYMBIAN) 
+            TBool found( EFalse );  
+            CHttpCacheManager* cacheManager = WebCore::StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cacheManager();
+            if ( cacheManager )
+            {
+                // call cache manager to check for url in cache
+                TPtrC ptr = url().des();
+                HBufC8* aUrl = HBufC8::New(ptr.Length());
+                if ( aUrl )
+                {
+                    aUrl->Des().Copy(ptr);
+                    found = cacheManager->Find( *aUrl );
+                    if ( found )
+                    {
+                        cacheManager->RemoveL(*aUrl);
+                    } 
+                    delete aUrl;
+                }
+            }
+#endif
             if (inCache())
                 cache()->remove(this);
             return;

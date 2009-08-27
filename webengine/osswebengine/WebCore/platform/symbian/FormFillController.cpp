@@ -80,8 +80,7 @@ void FormFillController::updatePopupView()
             // system font to be used by popup
 
             float newFont = 12.0f * zoomFactor /100.0f;
-            int textSize = 2;
-            FontPlatformData* font = FontCache::getDeviceDefaultFont(textSize*newFont);
+            FontPlatformData* font = FontCache::getDeviceDefaultFont(newFont);
             m_popup = m_callback->createFormFillPopup(font->Font());
         }
         if (!m_popup) {

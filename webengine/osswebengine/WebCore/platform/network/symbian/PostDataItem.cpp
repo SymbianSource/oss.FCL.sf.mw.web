@@ -111,7 +111,7 @@ int PostDataItem::pendingContentSize() const
 //
 FileDataItem::~FileDataItem()
 {
-    if(m_fileLocked) {
+    if(m_fileLocked && m_fileSize > 0 ) {
         m_file.UnLock(0, m_fileSize);
     }
     m_file.Close();
@@ -132,8 +132,11 @@ void FileDataItem::initL(const FormDataElement* formDataElement)
     // size of the file
     User::LeaveIfError(m_file.Open(rfs, fileName->Des(), EFileRead | EFileShareReadersOnly));
     User::LeaveIfError(m_file.Size(m_fileSize));
+    if (m_fileSize > 0)
+        {
     User::LeaveIfError(m_file.Lock(0, m_fileSize));
     m_fileLocked = ETrue;
+        }
     CleanupStack::PopAndDestroy();// fileName
 }
 

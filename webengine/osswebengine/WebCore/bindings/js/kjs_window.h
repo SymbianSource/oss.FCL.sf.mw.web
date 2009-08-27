@@ -162,7 +162,7 @@ namespace KJS {
         Onmousemove, Onmouseout, Onmouseover, Onmouseup,
         OnWindowMouseWheel, Onreset, Onresize, Onscroll,
         Onsearch, Onselect, Onsubmit, Onunload,
-        Onbeforeunload,
+        Onbeforeunload, Ononline, Onoffline,
 
         // Constructors
         DOMException, Image, Option, XMLHttpRequest,

@@ -36,6 +36,7 @@ USERINCLUDE ../../../WebCore/bridge
 USERINCLUDE ../../../WebCore/bridge/symbian 
 USERINCLUDE ../../../WebCore/platform
 USERINCLUDE ../../../WebCore/platform/symbian
+USERINCLUDE ../../../WebCore/platform/graphics/symbian
 USERINCLUDE ../../../WebCore/platform/symbian/bitmap
 USERINCLUDE ../../../WebCore/loader/symbian
 USERINCLUDE ../../../WebCore/loader

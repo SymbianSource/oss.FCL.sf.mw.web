@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:  Definition of CHttpCacheEvictionHandler  
+* Description:  Definition of CHttpCacheEvictionHandler
 *
 */
 
@@ -38,77 +38,77 @@ typedef  TSglQueIter<CHttpCacheEntry> TBucketIter;
 // CLASS DECLARATION
 
 /**
-*  
-*  @lib 
+*
+*  @lib
 *  @since 3.1
 */
 class CHttpCacheEvictionHandler : public CBase
     {
-    public:  // Constructors and destructor        
+    public:  // Constructors and destructor
 
         /**
         * Two-phased constructor.
         * @since 3.1
-        * @param 
-        * @param 
+        * @param
+        * @param
         * @return CHttpCacheEvictionHandler object.
         */
         static CHttpCacheEvictionHandler* NewL();
-      
+
         /**
         * Destructor.
         */
         virtual ~CHttpCacheEvictionHandler();
-        
+
     public: // new functions
-        
-        /**
-        * 
-        * @since 3.1
-        * @param 
-        * @return 
-        */
-        void Insert( CHttpCacheEntry& aCacheEntry ); 
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
-        void Accessed( CHttpCacheEntry& aCacheEntry ); 
+        void Insert( CHttpCacheEntry& aCacheEntry );
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
-        void Remove( CHttpCacheEntry& aCacheEntry ); 
+        void Accessed( CHttpCacheEntry& aCacheEntry );
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
+        */
+        void Remove( CHttpCacheEntry& aCacheEntry );
+
+        /**
+        *
+        * @since 3.1
+        * @param
+        * @return
         */
         void RemoveAll();
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         CArrayPtrFlat<CHttpCacheEntry>* EvictL( TInt aSpaceNeeded );
 
     private:
-        
+
         /**
         * Construct.
         * @since 3.1
-        * @param 
-        * @param 
+        * @param
+        * @param
         * @return CHttpCacheEvictionHandler object.
         */
         CHttpCacheEvictionHandler();
@@ -116,57 +116,57 @@ class CHttpCacheEvictionHandler : public CBase
         /**
         * By default Symbian 2nd phase constructor is private.
         */
-        void ConstructL();    
+        void ConstructL();
 
     private:
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         TBucket* Bucket( TInt aBucketIndex );
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         TInt BucketIndex( TInt aSizeFrequencyValue );
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         TBool ItemIsInBucket( TInt aBucketIndex, const CHttpCacheEntry& aCacheEntry );
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         TInt FastLog2( TUint aNum );
 
         /**
         * Used for debugging
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         void LogBuckets();
 
     private:    // Data
 
-        // array of 5 buckets each bucket is a linked list of 
+        // array of 5 buckets each bucket is a linked list of
         // cached items
         CArrayPtrFlat<TBucket>*            iBuckets;          // owned
     };
 
 #endif      // CHTTPCACHEEVICTIONHANDLER_H
-            
+
 // End of File

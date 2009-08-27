@@ -89,6 +89,10 @@ WebPageZoomHandler::~WebPageZoomHandler()
 
     if ( m_zoomSlider )
         {
+        if( m_zoomSlider->IsVisible()) 
+            {
+            m_zoomSlider->CloseVolumePopup();
+            }
         delete m_zoomSlider;
         }
 }

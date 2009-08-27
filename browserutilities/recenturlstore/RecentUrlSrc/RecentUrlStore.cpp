@@ -140,56 +140,52 @@ EXPORT_C TInt CRecentUrlStore::GetData (CDesCArray& aUrls, CDesCArray& aTitles, 
 void CRecentUrlStore::GetDataL (RDbNamedDatabase& aDataBase, 
 			CDesCArray& aUrls, CDesCArray& aTitles, const TDesC& aUrl)
     {
-	
-    TInt rowCount(0);
+    // shouldn't happen but if it's too long just skip it!
+    if ( aUrl.Length() <= KUrlSize)
+		{	
+		TInt rowCount(0);
 
-	// select values from the database filtered by url
-	if (aUrl.Length())
-		{
-		HBufC* domain = aUrl.AllocLC();
-		domain->Des().LowerCase();
-		iSQLStatement.Format(KSQLSelect, domain, domain);
-		CleanupStack::PopAndDestroy();
+		// select values from the database filtered by url
+		if (aUrl.Length())
+			{
+			HBufC* domain = aUrl.AllocLC();
+			domain->Des().LowerCase();
+			iSQLStatement.Format(KSQLSelect, domain, domain);
+			CleanupStack::PopAndDestroy();
+			}
+		else
+			{
+			iSQLStatement.Format(KSQLSelectAll);
+			}
+		
+		RDbView view;    
+		CleanupClosePushL( view );
+		User::LeaveIfError( view.Prepare(aDataBase, TDbQuery(iSQLStatement)) );
+		User::LeaveIfError( view.EvaluateAll() ); 
+		view.FirstL();
+			// loop through rows and build the list
+		while (view.AtRow() && rowCount++ < KMaxRows)
+			{
+			view.GetL();
+			aUrls.AppendL(view.ColDes(KUrlCol));
+			aTitles.AppendL(view.ColDes(KTitleCol));
+			view.NextL();
+			}
+		/*
+		* This loop will keep the number of rows in the database at a reasonable size by
+		* deleting old rows (deletes rows beyond KMaxRows).  Should be at most 1 row deleted.
+		* Its more efficiant to delete it here than in the SaveData because in this function
+		* we already have the list and know its size
+		*/
+		while (view.AtRow())
+			{
+			view.GetL();
+			iSQLStatement.Format(KSQLDelete, &aUrl);
+			aDataBase.Execute(iSQLStatement);
+			view.NextL();
+			}
+		CleanupStack::PopAndDestroy( &view );
 		}
-	else
-		{
-		iSQLStatement.Format(KSQLSelectAll);
-		}
-	
-
-    RDbView view;
-    
-    TInt err = view.Prepare(aDataBase, TDbQuery(iSQLStatement));
-    if (err == KErrNone)
-    	{
-    	err = view.EvaluateAll();
-    	if (err == KErrNone)
-    		{
-    		view.FirstL();
-    		// loop through rows and build the list
-    		while (view.AtRow() && rowCount++ < KMaxRows)
-    			{
-    			view.GetL();
-				aUrls.AppendL(view.ColDes(KUrlCol));
-				aTitles.AppendL(view.ColDes(KTitleCol));
-    			view.NextL();
-    			}
-    		/*
-    		* This loop will keep the number of rows in the database at a reasonable size by
-    		* deleting old rows (deletes rows beyond KMaxRows).  Should be at most 1 row deleted.
-    		* Its more efficiant to delete it here than in the SaveData because in this function
-    		* we already have the list and know its size
-    		*/
-    		while (view.AtRow())
-    			{
-    			view.GetL();
-    			iSQLStatement.Format(KSQLDelete, &aUrl);
-				aDataBase.Execute(iSQLStatement);
-    			view.NextL();
-    			}
-       		}
-    	}
-    view.Close();
     }
 
 //-----------------------------------------------------------------------------
@@ -197,68 +193,69 @@ void CRecentUrlStore::GetDataL (RDbNamedDatabase& aDataBase,
 // Deletes a single row from the database.
 //-----------------------------------------------------------------------------
 EXPORT_C void CRecentUrlStore::DeleteData (const TDesC& aUrl)
-    {
-    RDbNamedDatabase dataBase;
-    if (OpenDatabase(dataBase) == KErrNone)
-    	{
-		iSQLStatement.Format(KSQLDelete, &aUrl);
-		dataBase.Execute(iSQLStatement);
-    	dataBase.Close();
-    	}
-    }
+    {  
+    // shouldn't happen but if it's too long just skip it!
+     if ( aUrl.Length() <= KUrlSize)
+		{		
+		RDbNamedDatabase dataBase;
+		if (OpenDatabase(dataBase) == KErrNone)
+			{
+			iSQLStatement.Format(KSQLDelete, &aUrl);
+			dataBase.Execute(iSQLStatement);
+			dataBase.Close();
+			}
+		}
+	}
 
 //-----------------------------------------------------------------------------
 // CRecentUrlStore::SaveDataL
 // Save the url in store.
 //-----------------------------------------------------------------------------
-EXPORT_C void CRecentUrlStore::SaveData (const TDesC& aUrl, const TDesC& aTitle)
+EXPORT_C void CRecentUrlStore::SaveDataL (const TDesC& aUrl, const TDesC& aTitle)
 	{
-	RDbNamedDatabase dataBase;
-	TInt urlLength (aUrl.Length());
-	
+	TInt urlLength (aUrl.Length());	
 	// shouldn't happen but if it's too long for the data store just skip it!
-	if (urlLength > KUrlSize)
+	if (urlLength <= KUrlSize)
 		{
-		return;
-		}
-	
-	if (OpenDatabase(dataBase) == KErrNone)
-		{
-		// find the point where the domain starts and ends
-		TInt domainLength(urlLength);
-		TInt domainStart(0);
-		
-		TInt startPos = aUrl.Find(KDomainDelim);
-		if (startPos != KErrNotFound)
+		RDbNamedDatabase dataBase;
+		CleanupClosePushL( dataBase );
+		if (OpenDatabase(dataBase) == KErrNone)
 			{
-			domainStart = startPos + (KDomainDelim().Length()); // first char after delim
-			TInt len = aUrl.Right(urlLength - domainStart).Find(KDomainDelim);
-			if (len > 0) // ignore delim following delim.  we don't want an empty string
+			// find the point where the domain starts and ends
+			TInt domainLength(urlLength);
+			TInt domainStart(0);
+			
+			TInt startPos = aUrl.Find(KDomainDelim);
+			if (startPos != KErrNotFound)
 				{
-				domainLength = len;
+				domainStart = startPos + (KDomainDelim().Length()); // first char after delim
+				TInt len = aUrl.Right(urlLength - domainStart).Find(KDomainDelim);
+				if (len > 0) // ignore delim following delim.  we don't want an empty string
+					{
+					domainLength = len;
+					}
+				else
+					{
+					domainLength -= domainStart;
+					}
 				}
-			else
-				{
-				domainLength -= domainStart;
-				}
+				
+			// make sure it's not too big for the data store
+			domainLength = (domainLength > KDomainSize) ? KDomainSize : domainLength;
+			TInt titleLength = (aTitle.Length() > KTitleSize) ? KTitleSize : aTitle.Length();
+				
+			HBufC* domain = aUrl.Mid(domainStart,domainLength).AllocLC();
+			domain->Des().LowerCase();
+			HBufC* title = aTitle.Left(titleLength).AllocLC();
+	
+			// delete and re-insert
+			iSQLStatement.Format(KSQLDelete, &aUrl);
+			dataBase.Execute(iSQLStatement);
+			iSQLStatement.Format(KSQLInsert, domain, &aUrl, title);
+			dataBase.Execute(iSQLStatement);
+			
+			CleanupStack::PopAndDestroy(3, &dataBase );
 			}
-			
-		// make sure it's not too big for the data store
-		domainLength = (domainLength > KDomainSize) ? KDomainSize : domainLength;
-		TInt titleLength = (aTitle.Length() > KTitleSize) ? KTitleSize : aTitle.Length();
-			
-		HBufC* domain = aUrl.Mid(domainStart,domainLength).AllocLC();
-		domain->Des().LowerCase();
-		HBufC* title = aTitle.Left(titleLength).AllocLC();
-
-		// delete and re-insert
-		iSQLStatement.Format(KSQLDelete, &aUrl);
-		dataBase.Execute(iSQLStatement);
-		iSQLStatement.Format(KSQLInsert, domain, &aUrl, title);
-		CleanupStack::PopAndDestroy(2); // domain, title
-		
-		dataBase.Execute(iSQLStatement);
-		dataBase.Close();
 		}
 	}
 	
@@ -279,34 +276,27 @@ EXPORT_C void CRecentUrlStore::ClearData ()
 //-----------------------------------------------------------------------------
 void CRecentUrlStore::DeleteOldRowsL (RDbNamedDatabase& aDataBase)
     {
-	
     TInt rowCount(0);
-
 	iSQLStatement.Format(KSQLSelectAll);
 	
     RDbView view;
+    CleanupClosePushL( view );
     
-    TInt err = view.Prepare(aDataBase, TDbQuery(iSQLStatement));
-    if (err == KErrNone)
-    	{
-    	err = view.EvaluateAll();
-    	if (err == KErrNone)
-    		{
-    		view.FirstL();
-    		// loop through rows we want to keep
-    		while (view.AtRow() && rowCount++ < KMaxRows)
-    			{
-    			view.NextL();
-    			}
-    		// delete the rows that are old
-    		while (view.AtRow())
-    			{
-    			view.DeleteL();
-    			view.NextL();
-    			}
-       		}
-    	}
-    view.Close();
+    User::LeaveIfError( view.Prepare(aDataBase, TDbQuery(iSQLStatement)));
+    User::LeaveIfError(  view.EvaluateAll() );
+	view.FirstL();
+	// loop through rows we want to keep
+	while (view.AtRow() && rowCount++ < KMaxRows)
+		{
+		view.NextL();
+		}
+	// delete the rows that are old
+	while (view.AtRow())
+		{
+		view.DeleteL();
+		view.NextL();
+		}
+    CleanupStack::PopAndDestroy( &view );	
     }
 
 //-----------------------------------------------------------------------------

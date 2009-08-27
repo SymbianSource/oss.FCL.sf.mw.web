@@ -372,6 +372,19 @@ THTTPHdrVal THttpConnUtils::ConvertCharset(
                 HttpFilterCommonStringsExt::GetTable());
             break;
             }
+        case EEucKr:
+            {
+            charsetHdr = aStringPool.StringF(HttpFilterCommonStringsExt::EEucKr,
+                HttpFilterCommonStringsExt::GetTable());
+            break;
+            }
+
+        case EKsc5601:
+            {
+            charsetHdr = aStringPool.StringF(HttpFilterCommonStringsExt::EKsc5601,
+                HttpFilterCommonStringsExt::GetTable());
+            break;
+            }
         case EIso2022Jp: // This value can be in the settings only if Japanese is supported, no variation needed
             {
             charsetHdr = aStringPool.StringF(HttpFilterCommonStringsExt::EIso2022Jp,

@@ -70,9 +70,12 @@ void HTMLMetaElement::process()
     String str = name();
     if(!str.isEmpty()) {
         String v = content();
+        Frame* frame = document()->frame();
+        // frame null check added for fix of bug AJPA-7SWFS2, JS Document doesnot have frame assosicated so check has 
+        // been added to avoid unnecessary metadata notification.
         //Inform the bridge about this meta value;
-        if (inDocument()) {
-            static_cast<WebCoreFrameBridge*>(document()->frame()->bridge())->notifyMetaData(str,v);
+        if (inDocument() && frame != NULL) {
+            static_cast<WebCoreFrameBridge*>(frame->bridge())->notifyMetaData(str,v);
         }
     }
 #endif

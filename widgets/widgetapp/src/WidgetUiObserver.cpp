@@ -193,11 +193,11 @@ void CWidgetUiObserver::UpdateSoftkeyL( TBrCtlKeySoftkey aKeySoftkey,
         if ((elementtype == TBrCtlDefs::EElementActivatedInputBox) ||
                        (elementtype == TBrCtlDefs::EElementActivatedObjectBox))
             {
-            iWindow->WindowManager().View()->ShowActivatedObject( ETrue );
+            iWindow->WindowManager().View()->UpdateStatusPane( ETrue );
             }
         else 
             {
-            iWindow->WindowManager().View()->ShowActivatedObject( EFalse );
+            iWindow->WindowManager().View()->UpdateStatusPane( EFalse );
             }        
         }
     }

@@ -35,7 +35,6 @@
 #endif
 
 #include "HTMLNames.h"
-
 #include "StaticConstructors.h"
 namespace WebCore { namespace HTMLNames {
 
@@ -1251,11 +1250,29 @@ void init()
 
 void remove()
 {
+#ifndef __WINSCW__
+    if( initialized ) {
+        size_t num(0);
+        QualifiedName** array = getHTMLTags(&num);
+        for( int i=0; i<num; ++i ) {
+            // Items are not void*, so we explicitly call the destructor to clean them up
+            // These pointers are not deletable because they are new'ed to a fixed address
+            QualifiedName* item = array[i];
+            item->~QualifiedName();
+        }
+        array = getHTMLAttrs(&num);
+        for( int i=0; i<num; ++i ) {
+            // Items are not void*, so we explicitly call the destructor to clean them up
+            // These pointers are not deletable because they are new'ed to a fixed address
+            QualifiedName* item = array[i];
+            item->~QualifiedName();
+        }
+    }
+#endif //__WINSCW__
     
     xhtmlNSString = "";
     aTagString = "";
     abbrTagString = "";
-
     acronymTagString = "";
     addressTagString = "";
     appletTagString = "";

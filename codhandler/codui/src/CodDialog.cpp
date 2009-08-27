@@ -24,6 +24,8 @@
 #include "CodDialog.h"
 #include "CodLogger.h"
 #include <pathinfo.h>
+#include <SysUtil.h>
+
 #ifndef RD_MULTIPLE_DRIVE
 _LIT(KBackSlash,"\\");
 #endif
@@ -107,23 +109,33 @@ void CodDialog::GetRootPathL( TDes& aRootPath )
 	        }
         User::LeaveIfError( PathInfo::GetRootPath( aRootPath, drive ) );
 #else
-	TBuf<KMaxDrives> driveList;
-	TInt drive( EDriveC );
-
-	if( repository->Get(KBrowserDrivePrefListForDownloadedContent, driveList) == KErrNone )
-        {
-	    TPtrC drives(driveList);
-	    TInt err(KErrNone);
-	    for( TInt i = 0; i < drives.Length(); i = i + 2 )
-	        {
-	            err = fs.CharToDrive( drives[i], drive );
-	            if (err == KErrNone)
-	            		break;	            
-	        }
-	    TDriveUnit driveUnit(drive);
-	    aRootPath = driveUnit.Name();
-	    aRootPath.Append(KBackSlash);
-        }
+        TBool mmcOk = EFalse;
+        TRAP_IGNORE( mmcOk = !SysUtil::MMCSpaceBelowCriticalLevelL
+        			       ( &fs, 0 ); )
+        if(!mmcOk)
+        	{
+        	CLOG(( 2, _L("void CodDialog::GetRootPathL  No mmc") ));
+        	TDriveUnit driveUnit(EDriveC);
+	        aRootPath = driveUnit.Name();
+	        aRootPath.Append(KBackSlash);
+        
+        	}
+       else
+           {
+             CLOG(( 2, _L("void CodDialog::GetRootPathL  No mmc") ));
+       	    TVolumeInfo volInfoC;
+            TVolumeInfo volInfoE;
+            fs.Volume(volInfoC,EDriveC);
+            fs.Volume(volInfoE,EDriveE);
+            TInt64 freeC = volInfoC.iFree;//free memory available in that drive
+            TInt64 freeE = volInfoE.iFree;
+            
+            TDriveUnit driveUnit(freeC>=freeE?EDriveC:EDriveE);
+	        aRootPath = driveUnit.Name();
+	        aRootPath.Append(KBackSlash);
+           }
+        
+     
 #endif
     fs.Close();
 	CleanupStack::PopAndDestroy(repository);   

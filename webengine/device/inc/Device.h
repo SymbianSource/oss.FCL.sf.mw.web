@@ -35,10 +35,42 @@ namespace KJS
 
     class MDeviceBinding;
     class ServiceObject;
-    class DevicePrivate;
+    class Device;
+    
+    class DevicePrivateBase
+        {
+        public:
+            DevicePrivateBase();
+            virtual ~DevicePrivateBase();
+            void AddChild( DevicePrivateBase* aValue );
+            void RemoveChild( DevicePrivateBase* aValue );
+            void SetParent( DevicePrivateBase* aValue );
 
+        private: 
+            TBool m_isDeleting;   
+            DevicePrivateBase* m_parent;
+            RPointerArray<DevicePrivateBase>* m_children;
+        };
+        
+    class DevicePrivate : public DevicePrivateBase
+        {
+        friend class Device;
+        friend class DeviceFunc;
+        public:
+            DevicePrivate(Device* jsobj);
+            ~DevicePrivate();
+            void SetUid( const TUint& aValue);
+
+        private:
+            MDeviceBinding* m_deviceBinding;                 // Owned
+            Identifier m_propName;
+            ExecState* m_exec;                               // not owned
+            Device* m_jsobj;                                 // not owned
+        };
+    
     class Device: public JSObject
         {
+        friend class DevicePrivate;
         friend class DeviceFunc;
         public: // constructor and destructor
 
@@ -92,8 +124,15 @@ namespace KJS
             * @return boolean
             * @since 5.0
             */
-            const bool valid() const { return m_valid; }
+            const TBool valid() const { return m_valid; }
 
+            /**
+            * getServiceData
+            * @return DevicePrivateBase*
+            * @since 7.x
+            */
+            DevicePrivateBase* getDeviceData() { return m_privateData; }
+            
             static const ClassInfo info;
 
            /**
@@ -118,28 +157,12 @@ namespace KJS
             * @since 5.0
             **/
             void SetUid( const TUint& aValue);
+            
+            MDeviceBinding* GetDeviceBinding();
 
         private:
             DevicePrivate* m_privateData;   // private object to hold data
-            bool m_valid;                   // object is valid or not
-        };
-
-    class DevicePrivate
-        {
-        friend class Device;
-        friend class DeviceFunc;
-        public:
-            DevicePrivate();
-            ~DevicePrivate()   { Close(); }
-            void Close();
-            void SetUid( const TUint& aValue);
-
-        private:
-            MDeviceBinding* m_deviceBinding;                 // Owned
-            Identifier m_propName;
-            RPointerArray<ServiceObject>* m_serviceObjArray; // owned
-            ExecState* m_exec;                               // not owned
-
+            TBool m_valid;                   // object is valid or not
         };
 
     class DeviceFunc : public JSObject

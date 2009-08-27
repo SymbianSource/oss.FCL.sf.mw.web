@@ -30,6 +30,8 @@
 
 namespace WebCore {
 
+void mappedAttributeCleaner();
+
 class CSSMappedAttributeDeclaration;
 class MappedAttribute;
 

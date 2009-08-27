@@ -53,7 +53,8 @@ const TInt KHttpCacheChunkSize = 2048;
 // might leave.
 // -----------------------------------------------------------------------------
 //
-CHttpCacheStreamHandler::CHttpCacheStreamHandler()
+CHttpCacheStreamHandler::CHttpCacheStreamHandler(RFs& aRFs)
+    : iRfs( aRFs )
     {
     }
 
@@ -64,11 +65,8 @@ CHttpCacheStreamHandler::CHttpCacheStreamHandler()
 //
 void CHttpCacheStreamHandler::ConstructL(
     const TDesC& aDirectory,
-    TInt aCriticalLevel )
+    TInt aCriticalLevel)
     {
-    User::LeaveIfError( iRfs.Connect() );
-    // set path for the entries
-    iRfs.SetSessionPath( aDirectory );
     iActiveEntries = new( ELeave )CArrayPtrFlat<CHttpCacheEntry>( KHttpCacheActiveCount );
     // get drive letter for sysutil
     TParsePtrC pathParser( aDirectory );
@@ -83,9 +81,10 @@ void CHttpCacheStreamHandler::ConstructL(
 //
 CHttpCacheStreamHandler* CHttpCacheStreamHandler::NewL(
     const TDesC& aDirectory ,
-    TInt aCriticalLevel)
+    TInt aCriticalLevel,
+    RFs& aRFs)
     {
-    CHttpCacheStreamHandler* self = new( ELeave ) CHttpCacheStreamHandler();
+    CHttpCacheStreamHandler* self = new( ELeave ) CHttpCacheStreamHandler(aRFs);
 
     CleanupStack::PushL( self );
     self->ConstructL( aDirectory , aCriticalLevel);
@@ -105,150 +104,90 @@ CHttpCacheStreamHandler::~CHttpCacheStreamHandler()
         iActiveEntries->ResetAndDestroy();
         }
     delete iActiveEntries;
-
-    iRfs.Close();
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheStreamHandler::AttachL
-//
+// CHttpCacheStreamHandler::InitialiseCacheEntryL
 // -----------------------------------------------------------------------------
 //
-TBool CHttpCacheStreamHandler::AttachL( CHttpCacheEntry& aCacheEntry )
+void CHttpCacheStreamHandler::InitialiseCacheEntryL(CHttpCacheEntry& aCacheEntry)
     {
-#ifdef __CACHELOG__
-    // check for duplicates
-    for ( TInt i = 0; i < iActiveEntries->Count(); i++ )
-        {
-        __ASSERT_DEBUG( iActiveEntries->At( i ) != &aCacheEntry,
-        User::Panic( _L("cacheStreamHandler Panic"), KErrCorrupt )  );
-        }
-#endif // __CACHELOG__
-   
-    TBool cacheFilesOpened( EFalse );
+    // create a filename for the cache entry.
+    TPath sessionPath;
+    User::LeaveIfError( iRfs.SessionPath( sessionPath ) );
 
-    if ( aCacheEntry.CacheFilesOpened() )
-        {
-        // Cache files already opened, no need to reopen
-        cacheFilesOpened = ETrue;
-        }
-    else if ( aCacheEntry.State() == CHttpCacheEntry::ECacheUninitialized )
-        {
-        // Create new cache files, they don't already exist
-        cacheFilesOpened = CreateNewFilesL( aCacheEntry );
-        }
-    else
-        {
-        // Open existing cache files
-        cacheFilesOpened = OpenCacheFiles( aCacheEntry );
-        }
-    
-    if ( cacheFilesOpened )
-        {
-        // Add to our active array, if not already there
-        TInt index( -1 );
-        FindCacheEntryIndex( aCacheEntry, &index );
-        if ( index == -1 )
-            {
-            iActiveEntries->AppendL( &aCacheEntry );
-            }
-        }
+    // Given the full URL, generates a fully qualified path for saving the HTTP response
+    HBufC* bodyFileName = HttpCacheUtil::GenerateNameLC( aCacheEntry.Url(), sessionPath );
+    TPtrC bodyFileNamePtr( *bodyFileName );
+    aCacheEntry.SetFileNameL(bodyFileNamePtr);
 
-    aCacheEntry.SetCacheFilesOpened( cacheFilesOpened );
+    CleanupStack::PopAndDestroy(bodyFileName);
 
-    // Return ETrue, if files opened and attached
-    return cacheFilesOpened;
+    // any more one-time initialisation to go here.
+    aCacheEntry.SetState( CHttpCacheEntry::ECacheInitialized );
+
+    // since this only happens one time, we can check if we have files left over with no index entry
+    // we're too late to reuse any information stored in there, so lets just delete them.  This might prevent any
+    // problems later down the line..
+    iRfs.Delete(aCacheEntry.Filename());
+    // header filename
+    TFileName headerFileName;
+    HttpCacheUtil::GetHeaderFileName( aCacheEntry.Filename(), headerFileName );
+    iRfs.Delete(headerFileName);
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheStreamHandler::Detach
+// CHttpCacheStreamHandler::Erase
 //
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheStreamHandler::Detach( CHttpCacheEntry& aCacheEntry )
-    {
-    // Close the files, this will commit changes
-    if ( aCacheEntry.CacheFilesOpened() )
-        {
-        aCacheEntry.BodyFile().Close();
-        aCacheEntry.HeaderFile().Close();
-        aCacheEntry.SetCacheFilesOpened( EFalse );
-        }
-
-    // Delete from our active array
-    TInt index( -1 );
-    FindCacheEntryIndex( (const CHttpCacheEntry&)aCacheEntry, &index );
-    if ( index >= 0 )
-        {
-        iActiveEntries->Delete( index );
-        }
-    }
-
-// -----------------------------------------------------------------------------
-// CHttpCacheStreamHandler::EraseCacheFile
-//
-// -----------------------------------------------------------------------------
-//
-void CHttpCacheStreamHandler::EraseCacheFile( CHttpCacheEntry& aCacheEntry )
+void CHttpCacheStreamHandler::Erase( CHttpCacheEntry& aCacheEntry )
     {
     HttpCacheUtil::WriteUrlToLog( 0, _L( "CHttpCacheStreamHandler::Erase - erase files associated with" ), aCacheEntry.Url() );
 
-    aCacheEntry.HeaderFile().Close();
-    aCacheEntry.BodyFile().Close();
-    aCacheEntry.SetCacheFilesOpened( EFalse );
+    // just in case it's busy being written out...
+    aCacheEntry.CancelBodyWrite();
 
-    // Get body filename
-    TFileName bodyFileName = aCacheEntry.Filename();
-
-    // Get header filename
-    TFileName headerFileName;
-    HttpCacheUtil::GetHeaderFileName( bodyFileName, headerFileName );
-
+    // Delete body file
+#ifndef __CACHELOG__
+    iRfs.Delete( aCacheEntry.Filename() );
+#else
     TInt statusBody( KErrNotFound );
-    statusBody = iRfs.Delete( bodyFileName );
-
-    TInt statusHeader( KErrNotFound );
-    statusHeader = iRfs.Delete( headerFileName );
-
+    statusBody = iRfs.Delete( aCacheEntry.Filename() );
+#endif
     // Adjust the size
     iContentSize -= aCacheEntry.BodySize();
     iContentSize -= aCacheEntry.HeaderSize();
 
 #ifdef __CACHELOG__
-    if ( statusBody != KErrNone ) {
+    if ( statusBody == KErrNone )
+        {
         HttpCacheUtil::WriteLogFilenameAndUrl( 0,
-                                           _L("CCHttpCacheStreamEntry::Erase - ERROR bodyFile delete"),
+                                           _L("CHttpCacheStreamHandler::Erase - SUCCESS bodyFile delete"),
+                                           aCacheEntry.Filename(),
+                                           aCacheEntry.Url(),
+                                           aCacheEntry.BodySize(),
+                                           ELogEntrySize );
+        }
+    else if ( statusBody == KErrNotFound )
+        {
+        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                           _L("CHttpCacheStreamHandler::Erase - CHECK bodyFile not found."),
                                            aCacheEntry.Filename(),
                                            aCacheEntry.Url(),
                                            statusBody,
                                            ELogFileErrorCode );
         }
-    else {
-        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
-                                           _L("CCHttpCacheStreamEntry::Erase - SUCCESS bodyFile delete"),
-                                           aCacheEntry.Filename(),
-                                           aCacheEntry.Url(),
-                                           aCacheEntry.BodySize(),
-                                           ELogEntrySize );
-        }
-    if ( statusHeader != KErrNone ) {
-        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
-                                           _L("CCHttpCacheStreamEntry::Erase - ERROR headerFile delete"),
-                                           aCacheEntry.Filename(),
-                                           aCacheEntry.Url(),
-                                           statusHeader,
-                                           ELogFileErrorCode );
-        }
-    else {
-        HttpCacheUtil::WriteLogFilenameAndUrl( 0,
-                                           _L("CCHttpCacheStreamEntry::Erase - SUCCESS headerFile delete"),
-                                           aCacheEntry.Filename(),
-                                           aCacheEntry.Url(),
-                                           aCacheEntry.BodySize(),
-                                           ELogEntrySize );
+    else
+        {
+    HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                       _L("CHttpCacheStreamHandler::Erase - ERROR bodyFile delete"),
+                                       aCacheEntry.Filename(),
+                                       aCacheEntry.Url(),
+                                       statusBody,
+                                       ELogFileErrorCode );
         }
 #endif //__CACHELOG__
-
     }
 
 // -----------------------------------------------------------------------------
@@ -258,25 +197,7 @@ void CHttpCacheStreamHandler::EraseCacheFile( CHttpCacheEntry& aCacheEntry )
 //
 HBufC8* CHttpCacheStreamHandler::HeadersL( CHttpCacheEntry& aCacheEntry )
     {
-    HBufC8* headerStr = NULL;
-    TInt headerLen( 0 );
-    TInt err( KErrNone );
-
-    if ( !aCacheEntry.CacheFilesOpened() )
-        {
-        OpenCacheFiles( aCacheEntry );
-        }
-
-    err = aCacheEntry.HeaderFile().Size( headerLen );
-    if ( err == KErrNone && headerLen > 0 )
-        {
-        headerStr = HBufC8::NewL( headerLen );
-        TPtr8 ptr( headerStr->Des() );
-        // read headers
-        aCacheEntry.HeaderFile().Read( 0, ptr, headerLen );
-        }
-
-    return headerStr;
+    return aCacheEntry.HeaderData().AllocL();
     }
 
 // -----------------------------------------------------------------------------
@@ -288,47 +209,60 @@ HBufC8* CHttpCacheStreamHandler::NextChunkL(
     CHttpCacheEntry& aCacheEntry,
     TBool& aLastChunk )
     {
-    HBufC8* bodyStr = NULL;
-    // Read whole body
-    TInt size( 0 );
-    TInt sizeErr( KErrNone );
+    HBufC8 *bodyStr = NULL;
 
-    if ( !aCacheEntry.CacheFilesOpened() )
+    if ( !aCacheEntry.BodyDataCached() && OpenBodyFile(aCacheEntry) )
         {
-        OpenCacheFiles( aCacheEntry );
-        }
+        CleanupClosePushL( aCacheEntry.BodyFile() );
 
-    sizeErr = aCacheEntry.BodyFile().Size( size );
-    if ( sizeErr == KErrNone && size > 0 )
-        {
-        bodyStr = HBufC8::NewL( size );
-        TPtr8 ptr( bodyStr->Des() );
-
-        TInt readErr( KErrNone );
-        readErr = aCacheEntry.BodyFile().Read( ptr, size );
-
+        // read body
+        TInt size;
+        TInt err( aCacheEntry.BodyFile().Size( size ) );
+        if ( err == KErrNone && size > 0 )
+            {
+            bodyStr = HBufC8::NewL( size );
+            TPtr8 ptr( bodyStr->Des() );
+            //
+            err = aCacheEntry.BodyFile().Read( ptr, size );
 #ifdef __CACHELOG__
-        if ( readErr != KErrNone ) {
-            HttpCacheUtil::WriteLogFilenameAndUrl( 0,
-                                               _L("CCHttpCacheStreamEntry::NextChunkL - bodyFile.read"),
-                                               aCacheEntry.Filename(),
-                                               aCacheEntry.Url(),
-                                               readErr,
-                                               ELogFileErrorCode );
-            }
-        else {
-            HttpCacheUtil::WriteLogFilenameAndUrl( 0,
-                                               _L("CCHttpCacheStreamEntry::NextChunkL - bodyFile.read"),
-                                               aCacheEntry.Filename(),
-                                               aCacheEntry.Url(),
-                                               ptr.Length(),
-                                               ELogEntrySize );
-            }
+            if ( err != KErrNone ) {
+                HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                                   _L("CCHttpCacheStreamEntry::NextChunkL - bodyFile.read"),
+                                                   aCacheEntry.Filename(),
+                                                   aCacheEntry.Url(),
+                                                   err,
+                                                   ELogFileErrorCode );
+                }
+            else {
+                HttpCacheUtil::WriteLogFilenameAndUrl( 0,
+                                                   _L("CCHttpCacheStreamEntry::NextChunkL - bodyFile.read"),
+                                                   aCacheEntry.Filename(),
+                                                   aCacheEntry.Url(),
+                                                   ptr.Length(),
+                                                   ELogEntrySize );
+                }
 #endif  // __CACHELOG__
+            }
+        // Close body file
+        CleanupStack::PopAndDestroy(1);
+        }
+    else
+        {
+        // reuse stored data if we have any.
+        CSegmentedHeapBuffer& buffer = aCacheEntry.BodyData();
+        TInt size = buffer.Length();
+        bodyStr = HBufC8::NewL( size );
+        TPtr8 ptr(bodyStr->Des());
 
+        TInt readSegment = 0;
+        TInt count = buffer.Count();
+        while(readSegment < count)
+            {
+            TPtrC8 source = buffer.GetSegmentData(readSegment);
+            ptr.Append(source);
+            }
         }
     aLastChunk = ETrue;
-
     return bodyStr;
     }
 
@@ -342,26 +276,17 @@ TBool CHttpCacheStreamHandler::SaveHeaders(
     const TDesC8& aHeaderStr )
     {
     TBool headerSaved( EFalse );
+    TInt headerLen = aHeaderStr.Length();
 
-    if ( !aCacheEntry.CacheFilesOpened() )
+    if ( headerLen && IsDiskSpaceAvailable( headerLen ) )
         {
-        OpenCacheFiles( aCacheEntry );
-        }
-
-    if ( aHeaderStr.Length() && IsDiskSpaceAvailable( aHeaderStr.Length() ) )
-        {
-        // We have space on disk, save headers. Don't force a flush, as the
-        // File Server takes care of write and read consistency.
-        TInt writeErr = aCacheEntry.HeaderFile().Write( aHeaderStr );
-
-        if ( writeErr == KErrNone )
+        TRAPD(err, aCacheEntry.CreateHeaderBufferL(aHeaderStr));
+        if ( err == KErrNone )
             {
-            aCacheEntry.SetHeaderSize( aHeaderStr.Length() );
-            iContentSize += aHeaderStr.Length();
+            iContentSize += aCacheEntry.HeaderSize();
             headerSaved = ETrue;
             }
         }
-
     return headerSaved;
     }
 
@@ -374,9 +299,7 @@ void CHttpCacheStreamHandler::RemoveHeaders( CHttpCacheEntry& aCacheEntry )
     {
     iContentSize -= aCacheEntry.HeaderSize();
 
-    // Destroy data
-    aCacheEntry.HeaderFile().SetSize( 0 );
-    aCacheEntry.SetHeaderSize( 0 );
+    TRAP_IGNORE( aCacheEntry.CreateHeaderBufferL( 0 ) );
     }
 
 // -----------------------------------------------------------------------------
@@ -388,101 +311,67 @@ TBool CHttpCacheStreamHandler::SaveBodyData(
     CHttpCacheEntry& aCacheEntry,
     const TDesC8& aBodyStr )
     {
-    TInt bodySaved( EFalse );
+    TInt bodySaved( KErrNone );
     TInt newBodyLength( aBodyStr.Length() );
-    TPtr8 buffer( aCacheEntry.CacheBuffer() );
 
-    if ( newBodyLength && buffer.MaxLength() )
+    if ( newBodyLength )
         {
-        // Calculate if we have enough space in the buffer for incoming body
-        if ( buffer.Length() + newBodyLength > buffer.MaxLength() )
+        TInt remainder = 0;
+        CSegmentedHeapBuffer& cacheBuffer = aCacheEntry.BodyData();
+
+        // Add data to the buffer
+        TRAPD( err, cacheBuffer.AppendL(remainder, aBodyStr) );
+        if ( err == KErrNone )
             {
-            // Incoming data is too big for the buffer
-            HBufC8* overflowBuffer = NULL;
-            TInt bufferSpaceLeft( -1 );
-            TPtrC8 writePtr;
-
-            if ( buffer.Length() == 0 )
-                {
-                // Buffer is empty and the body is bigger than the buffer,
-                // just take all of the incoming data
-                writePtr.Set( aBodyStr );
-                }
-            else
-                {
-                // We have some data in buffer, how much space do we have left
-                bufferSpaceLeft = buffer.MaxLength() - buffer.Length();
-                
-                if ( newBodyLength - bufferSpaceLeft > buffer.MaxLength() )
-                    {
-                    // Not enough space, so lets put the buffer and the new
-                    // body together and write it in one go.
-                    overflowBuffer = HBufC8::New( buffer.Length() + newBodyLength );
-                    if ( !overflowBuffer )
-                        {
-                        return EFalse;
-                        }
-
-                    TPtr8 overflowPtr( overflowBuffer->Des() );
-                    overflowPtr.Copy( buffer );
-                    overflowPtr.Append( aBodyStr );
-                    writePtr.Set( overflowBuffer->Des() );
-
-                    // empty buffer
-                    buffer.Zero();
-                    // no leftover left
-                    bufferSpaceLeft = -1;
-                    }
-                else
-                    {
-                    // Copy what we have enough space for
-                    buffer.Append( aBodyStr.Left( bufferSpaceLeft ) );
-                    writePtr.Set( buffer );
-                    }
-                }
-
-            // Write to the disk, if we have disk space
-            TInt writeErr( KErrNone );
-            if ( IsDiskSpaceAvailable( writePtr.Length() ) )
-                {
-
-                if ( !aCacheEntry.CacheFilesOpened() )
-                    {
-                    OpenCacheFiles( aCacheEntry );
-                    }
-
-                // We have enough disk space, save body
-                TInt writeErr = aCacheEntry.BodyFile().Write( writePtr );
-                bodySaved = ETrue;
-                }
-            else
-                {
-                // We don't have enough disk space, clean up 
-                bodySaved = EFalse;
-                buffer.Zero();
-                }
-
-            if ( writeErr == KErrNone && bufferSpaceLeft >= 0 )
-                {
-                // Copy what we can of the leftover in to the buffer
-                buffer.Copy( aBodyStr.Mid( bufferSpaceLeft ) );
-                }
-            delete overflowBuffer;
+            aCacheEntry.SetBodyDataCached(ETrue);
             }
         else
             {
-            // We have enough space in buffer, add and wait for next body
-            // before writing to file
-            buffer.Append( aBodyStr );
-            bodySaved = ETrue;
-            }
+            // We failed to allocate memory to store the new data in the current buffer.
+            // Check to see if it's possible to write it to disk instead.
+            TBool bodyFileCreated = CreateNewBodyFile( aCacheEntry );
+            if ( !bodyFileCreated )
+                {
+                return EFalse;
+                }
 
-        // Body saved, update state
+            TBool enoughSpace;
+            enoughSpace = IsDiskSpaceAvailable( cacheBuffer.Length() + remainder );
+            if ( enoughSpace )
+                {
+                // In this case, we have not been able to store all the data.
+                // if there is enough space on disk to write everything we know
+                // about now, we will flush the current buffer out synchronously.
+                TInt block=0;
+                TInt count = cacheBuffer.Count();
+                while ( bodySaved == KErrNone && count > block )
+                    {
+                    TPtrC8 buf = cacheBuffer.GetSegmentData(block);
+                    bodySaved = aCacheEntry.BodyFile().Write(buf);
+                    }
+                }
+            else
+                {
+                // disk too full, drop the cache data
+                bodySaved = KErrDiskFull;
+                // reset buffers
+                cacheBuffer.Reset();
+                }
+
+            if ( bodySaved == KErrNone )
+                {
+                // We have completed writing out the cached data, now
+                // try to save the new data if we haven't run out of disk space.
+                bodySaved = aCacheEntry.BodyFile().Write(aBodyStr.Right(remainder));
+                }
+            aCacheEntry.SetBodyDataCached(EFalse);
+            aCacheEntry.BodyFile().Close();
+            }
+        // update size information
         aCacheEntry.SetBodySize( aCacheEntry.BodySize() + newBodyLength );
         iContentSize += aBodyStr.Length();
         }
-
-    return bodySaved;
+    return ( bodySaved == KErrNone );
     }
 
 // -----------------------------------------------------------------------------
@@ -501,11 +390,15 @@ void CHttpCacheStreamHandler::RemoveBodyData( CHttpCacheEntry& aCacheEntry )
                                            ELogEntrySize );
 #endif
 
-    // Remove data 
+    // Remove data
     iContentSize -= aCacheEntry.BodySize();
     aCacheEntry.SetBodySize( 0 );
-    aCacheEntry.CacheBuffer().Zero();
-    aCacheEntry.BodyFile().SetSize( 0 );
+    aCacheEntry.BodyData().Reset();
+    if ( OpenBodyFile(aCacheEntry) )
+        {
+        aCacheEntry.BodyFile().SetSize( 0 );
+        aCacheEntry.BodyFile().Close();
+        }
     }
 
 // -----------------------------------------------------------------------------
@@ -515,64 +408,141 @@ void CHttpCacheStreamHandler::RemoveBodyData( CHttpCacheEntry& aCacheEntry )
 //
 TBool CHttpCacheStreamHandler::Flush( CHttpCacheEntry& aCacheEntry )
     {
-    TBool saved( EFalse );
-    TInt writeErr( KErrGeneral );
-    TInt cacheBufferLen( aCacheEntry.CacheBuffer().Length() );
+    TInt err( KErrNone );
+    TBool bFlushed( EFalse );
 
-    if ( cacheBufferLen && IsDiskSpaceAvailable( cacheBufferLen ) )
+    TRAP( err, bFlushed = FlushL( aCacheEntry ) );
+    if ( err || !bFlushed )
         {
-        // We have enough space, save cache buffer
-        TPtr8 bufferPtr( aCacheEntry.CacheBuffer() );
-        if ( bufferPtr.Length() )
-            {
-            if ( !aCacheEntry.CacheFilesOpened() )
-                {
-                OpenCacheFiles( aCacheEntry );
-                }
-
-            writeErr = aCacheEntry.BodyFile().Write( bufferPtr );
-            if ( writeErr == KErrNone )
-                {
-                saved = ETrue;
-                }
-            }
-
-        // Clear the buffer
-        bufferPtr.Zero();
+        return EFalse;
         }
 
-    return saved;
+    return ETrue;
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheStreamHandler::OpenCacheFiles
+// CHttpCacheStreamHandler::FlushL
 //
 // -----------------------------------------------------------------------------
 //
-TBool CHttpCacheStreamHandler::OpenCacheFiles( CHttpCacheEntry& aCacheEntry )
+TBool CHttpCacheStreamHandler::FlushL( CHttpCacheEntry& aCacheEntry )
     {
-    TInt statusHeader( KErrNotFound );
+    TInt saveOk( KErrNone );
+
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE:  >>StreamHander::Flush object %08x"), &aCacheEntry );
+#endif
+    CSegmentedHeapBuffer& cacheBuffer = aCacheEntry.BodyData();
+
+    TInt dataLength = cacheBuffer.Length() + aCacheEntry.HeaderData().Length();
+
+    if ( !IsDiskSpaceAvailable( dataLength ) || !CreateNewBodyFile( aCacheEntry ) )
+        {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteLog(0, _L("CACHEPOSTPONE:    Flush failed: not enough space or cannot create file."));
+#endif
+        // can't flush if not enough space, or cannot create new files
+        return EFalse;
+        }
+
+    // files are open, push them onto cleanup stack.
+    CleanupClosePushL( aCacheEntry.BodyFile() );
+
+    if ( aCacheEntry.BodyDataCached() )
+        {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteLog(0, _L("CACHEPOSTPONE:    Body Data is Cached"));
+#endif
+        // append body
+        TInt segment=0;
+        TInt count=cacheBuffer.Count();
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE:    %d segments stored"), count);
+#endif
+        while ( saveOk == KErrNone && count > segment )
+            {
+            TPtrC8 segBuf = cacheBuffer.GetSegmentData(segment);
+            saveOk = aCacheEntry.BodyFile().Write( segBuf );
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE:    segment %d write returned %d"), (segment-1), saveOk );
+#endif
+            }
+
+        cacheBuffer.Reset();
+        aCacheEntry.SetBodyDataCached(EFalse);
+        }
+    // close files
+    CleanupStack::PopAndDestroy(1);
+
+    return ( saveOk == KErrNone );
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheStreamHandler::FlushAsync
+//
+// -----------------------------------------------------------------------------
+//
+TInt CHttpCacheStreamHandler::FlushAsync(CHttpCacheEntry& aEntry, TRequestStatus& aStatus)
+    {
+    TInt saveOk( KErrNone );
+
+    TInt datalen = aEntry.BodyData().Length() + aEntry.HeaderData().Length();
+
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE: CHttpCacheStreamEntry::FlushAsync called on object %08x. Cached data %d bytes"), &aEntry, datalen );
+#endif
+
+    if ( datalen && aEntry.BodyData().Length() ) // don't bother writing files which have no body data
+        {
+        if ( IsDiskSpaceAvailable( datalen ) && CreateNewBodyFile( aEntry ) )
+            {
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE:   Triggering Async write for object 0x%08x."), &aEntry);
+#endif
+            // trim any spare space available.
+            aEntry.BodyData().Compress();
+            aEntry.WriteBodyDataAsync(aStatus);
+            aEntry.SetDelayedWriteInProgress(ETrue);
+            }
+        else
+            {
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteLog(0, _L("CACHEPOSTPONE:   FAILED FlushAsync."));
+#endif
+            // !enoughSpace
+            saveOk = KErrDiskFull;
+            aEntry.BodyData().Reset();
+            }
+        }
+    else
+        {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE:  Not writing file %S for entry %08x since it has no data."), &(aEntry.Filename()), &aEntry );
+#endif
+        TRequestStatus* stat = &aStatus;
+        User::RequestComplete(stat, KErrNone);
+        }
+
+    return ( saveOk == KErrNone );
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpCacheStreamHandler::OpenBodyFile
+// -----------------------------------------------------------------------------
+//
+TBool CHttpCacheStreamHandler::OpenBodyFile( CHttpCacheEntry& aCacheEntry )
+    {
     TInt statusBody( KErrNotFound );
 
     // get body filename
     TFileName bodyFileName = aCacheEntry.Filename();
 
-    // header filename
-    TFileName headerFileName;
-    HttpCacheUtil::GetHeaderFileName( bodyFileName, headerFileName );
-
-    statusHeader = aCacheEntry.HeaderFile().Open( iRfs, headerFileName, EFileShareExclusive | EFileWrite );
     statusBody = aCacheEntry.BodyFile().Open( iRfs, bodyFileName, EFileShareExclusive | EFileWrite );
 
-    TBool fileOk( statusHeader == KErrNone && statusBody == KErrNone );
-    if ( fileOk )
-        {
-        aCacheEntry.SetCacheFilesOpened( ETrue );
-        }
-
-    return fileOk;
+    return ( statusBody == KErrNone );
     }
 
+#if 0
 // -----------------------------------------------------------------------------
 // CHttpCacheStreamHandler::CreateNewFilesL
 //
@@ -582,40 +552,28 @@ TBool CHttpCacheStreamHandler::CreateNewFilesL( CHttpCacheEntry& aCacheEntry )
     {
     TInt statusHeader( KErrNotFound );
     TInt statusBody( KErrNotFound );
-    TPath sessionPath;
-    User::LeaveIfError( iRfs.SessionPath( sessionPath ) );
-    
-    // Given the full URL, generates a fully qualified path for saving the HTTP response
-    HBufC* bodyFileName = HttpCacheUtil::GenerateNameLC( aCacheEntry.Url(), sessionPath );
-    TPtrC bodyFileNamePtr( *bodyFileName );
- 
+
     // Create header file name from body file name
     TFileName headerFileName;
-    HttpCacheUtil::GetHeaderFileName( bodyFileNamePtr, headerFileName );
+    HttpCacheUtil::GetHeaderFileName( aCacheEntry.Filename(), headerFileName );
 
-    // Create the body file or replace it, if it exists. 
-    statusBody = aCacheEntry.BodyFile().Replace( iRfs, bodyFileNamePtr, EFileShareExclusive | EFileWrite );
+    // Create the body file or replace it, if it exists.
+    statusBody = aCacheEntry.BodyFile().Replace( iRfs, aCacheEntry.Filename(), EFileShareExclusive | EFileWrite );
     if ( statusBody == KErrNone )
         {
         // Header file should not fail
         statusHeader = aCacheEntry.HeaderFile().Replace( iRfs, headerFileName, EFileShareExclusive | EFileWrite );
         }
 
-#ifdef __CACHELOG__ 
+#ifdef __CACHELOG__
     HttpCacheUtil::WriteUrlToLog( 0, bodyFileNamePtr, aCacheEntry.Url() );
-#endif 
+#endif
 
     TBool fileOk( statusHeader == KErrNone && statusBody == KErrNone );
-    if ( fileOk )
+    if ( !fileOk )
         {
-        // Both body and header files created correctly 
-        aCacheEntry.SetFileNameL( bodyFileNamePtr );
-        aCacheEntry.SetState( CHttpCacheEntry::ECacheInitialized );
-        }
-    else
-        {
-        // Only the body file created, no header file, delete body file 
-        iRfs.Delete( bodyFileNamePtr );
+        // Only the body file created, no header file, delete body file
+        iRfs.Delete( aCacheEntry.Filename() );
         iRfs.Delete( headerFileName );
 
         aCacheEntry.SetBodySize( 0 );
@@ -627,9 +585,35 @@ TBool CHttpCacheStreamHandler::CreateNewFilesL( CHttpCacheEntry& aCacheEntry )
 //        __ASSERT_DEBUG( EFalse, User::Panic( _L("CHttpCacheHandler::CreateNewFilesL Panic"), KErrCorrupt )  );
         }
 
-    CleanupStack::PopAndDestroy( bodyFileName );
-
     return fileOk;
+    }
+#endif
+
+// -----------------------------------------------------------------------------
+// CHttpCacheStreamHandler::CreateNewBodyFile
+//
+// -----------------------------------------------------------------------------
+//
+TBool CHttpCacheStreamHandler::CreateNewBodyFile( CHttpCacheEntry& aCacheEntry )
+    {
+    TInt statusBody( KErrNotFound );
+
+    // Create the body file or replace it, if it exists.
+    statusBody = aCacheEntry.BodyFile().Replace( iRfs, aCacheEntry.Filename(), EFileShareExclusive | EFileWrite );
+
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteUrlToLog( 0, aCacheEntry.Filename(), aCacheEntry.Url() );
+#endif
+
+    if ( statusBody != KErrNone )
+        {
+        aCacheEntry.SetBodySize( 0 );
+        aCacheEntry.BodyData().Reset();
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheEntry::CreateNewBodyFileL - create body file failed!" ) );
+#endif
+        }
+    return ( statusBody == KErrNone );
     }
 
 // -----------------------------------------------------------------------------
@@ -641,7 +625,6 @@ void CHttpCacheStreamHandler::FindCacheEntryIndex(
     const CHttpCacheEntry& aCacheEntry,
     TInt* aIndex )
     {
-    *aIndex = -1;
     for ( TInt i = 0; i < iActiveEntries->Count(); i++ )
         {
         CHttpCacheEntry* entry = iActiveEntries->At( i );

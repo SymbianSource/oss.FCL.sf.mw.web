@@ -47,17 +47,14 @@ ServiceObject::ServiceObject(
     MDeviceBinding* deviceBinding)
     : JSObject( exec->lexicalInterpreter()->builtinObjectPrototype() )
     {
-        m_privateData = new ServiceObjectPrivate(svcName, deviceBinding);
-        if (m_privateData && m_privateData->m_deviceBinding)
-            {
-            m_valid = true;
-            // protect this object
-            KJS::Collector::protect(this);  
-            }            
-        else
-            {
-             m_valid = false;
-            }  
+    m_valid = EFalse;
+    m_privateData = NULL;
+    if ( deviceBinding )
+        {
+        m_privateData = new ServiceObjectPrivate(this, svcName, deviceBinding);
+        if ( m_privateData )
+            m_valid = ETrue;
+        }
     }
 
 
@@ -69,59 +66,22 @@ ServiceObject::ServiceObject(
 // ----------------------------------------------------------------------------
 ServiceObject::~ServiceObject()
     {
-        // only can be called by garbage collection after the 
-        // ServiceObject::Close() was called
+    Close();
     }
 
 // ----------------------------------------------------------------------------
 // ServiceObject::Close
 //
 // ----------------------------------------------------------------------------
-void ServiceObject::Close( ExecState* exec, bool unmark )
+void ServiceObject::Close()
     {
     // avoid double close    
-    if(!m_valid) 
-        {   
-        if(unmark) 
-            {
-            // unprotect this to allow the garbage collection to release this jsobject
-            KJS::Collector::unprotect(this);
-            }
+    if ( !m_valid ) 
         return;
-        }        
 
-    // set isClosing flag to true
-    m_privateData->isClosing = true;
-
-    if ( exec )
-        {
-        PropertyNameArray propertyNames;
-        this->getPropertyNames( exec, propertyNames );
-        unsigned size = static_cast<unsigned>(propertyNames.size());
-
-        for (unsigned i = 0; i < size; i++)
-            {
-            JSValue * jsvalue = this->get( exec, propertyNames[i] );
-            if(jsvalue->isObject()) 
-                {          
-                JSObject * prop = jsvalue->toObject( exec );
-                if (prop->inherits( &DeviceLiwInterface::info ))
-                    {
-                    (static_cast<DeviceLiwInterface*>(prop))->Close(exec);
-                    }
-                }
-            }
-        }
-
+    m_valid = EFalse; 
     delete m_privateData;
-    m_privateData = NULL;
-    m_valid = false;    
-    
-    if(unmark) 
-        {
-        // unprotect this to allow the garbage collection to release this jsobject
-        KJS::Collector::unprotect(this);
-        }
+    m_privateData = NULL;   
    }
 
 // ----------------------------------------------------------------------------
@@ -164,13 +124,13 @@ bool ServiceObject::getOwnPropertySlot(ExecState* exec, const Identifier& proper
         m_privateData->m_propName = propertyName;
         JSValue* val = getDirect( propertyName );
 
-        // if the property is an interface and interface is closed
+        // if the property is an interface which has been closed
         bool need_recreate = false;
         if ( val && val->isObject() &&
              val->toObject(exec)->inherits( &KJS::DeviceLiwInterface::info ) )
             {
             DeviceLiwInterface* interface = static_cast<DeviceLiwInterface*>(val);
-            if ( !interface->isValid() && !m_privateData->isClosing)
+            if ( !interface->isValid() )
                 {
                 need_recreate = true;
                 }
@@ -183,14 +143,16 @@ bool ServiceObject::getOwnPropertySlot(ExecState* exec, const Identifier& proper
                 // 1.3 check prototypes
                 JSObject *proto = static_cast<JSObject *>(this->prototype());
 
-                while (!proto->isNull() && proto->isObject()) {
+                while (!proto->isNull() && proto->isObject()) 
+                    {
                     if (proto->getOwnPropertySlot(exec, propertyName, slot))
                         return true;
 
                     proto = static_cast<JSObject *>(proto->prototype());
                     }
                 }
-
+            
+            // Create an interface for me, please!
             // Store the interface in the object so we get the same one each time.
             JSValue* resultVal = m_privateData->m_deviceBinding->CreateInterface(
                 exec, m_privateData->m_svcName, m_privateData->m_propName );
@@ -200,6 +162,11 @@ bool ServiceObject::getOwnPropertySlot(ExecState* exec, const Identifier& proper
             else
                 {
                 JSValue* s = resultVal->toObject(exec)->get( exec, m_privateData->m_propName );
+                DeviceLiwInterface* ifObj = static_cast<DeviceLiwInterface*>(s);
+                DevicePrivateBase* ifData = ifObj->getInterfaceData();
+                DevicePrivateBase* soData = this->getServiceData();
+                ifData->SetParent( soData ); 
+                soData->AddChild( ifData );
                 this->putDirect( propertyName, s, DontDelete|ReadOnly );
                 }
 
@@ -210,7 +177,7 @@ bool ServiceObject::getOwnPropertySlot(ExecState* exec, const Identifier& proper
                 if(jsobj->inherits( &KJS::DeviceLiwResult::info ))
                     {
                     DeviceLiwResult* result = static_cast<DeviceLiwResult*>(jsobj);
-                    result->quickClose();
+                    result->Close();
                     }
                 }
             }
@@ -317,7 +284,7 @@ JSValue* ServiceObjectFunc::callAsFunction(ExecState *exec, JSObject *thisObj, c
             {
             return throwError(exec, GeneralError, "Can not close service object in callback function.");
             }
-        so->Close( exec, false );
+        so->Close();
         }
     return ret;
     }
@@ -326,24 +293,28 @@ JSValue* ServiceObjectFunc::callAsFunction(ExecState *exec, JSObject *thisObj, c
 // DeviceLiwMapPrivate constructor
 //
 // ---------------------------------------------------------------------------
-ServiceObjectPrivate::ServiceObjectPrivate(HBufC8* svcName, MDeviceBinding* deviceBinding )
+ServiceObjectPrivate::ServiceObjectPrivate(ServiceObject* jsobj, HBufC8* svcName, MDeviceBinding* deviceBinding )
     {
-     m_svcName = svcName;    
-     m_deviceBinding = deviceBinding;
-     isClosing = false;
+    m_svcName = svcName;    
+    m_deviceBinding = deviceBinding;
+    m_jsobj = jsobj;
     }
     
 // ---------------------------------------------------------------------------
-// DeviceLiwMapPrivate::Close
+// DeviceLiwMapPrivate::destructor
 //
 // ---------------------------------------------------------------------------
-void ServiceObjectPrivate::Close()
+ServiceObjectPrivate::~ServiceObjectPrivate()
     {
+    // invalid the ServiceObject
+    if (m_jsobj)
+        m_jsobj->m_valid = EFalse;
+        
     m_deviceBinding->UnloadServiceProvider(KWildChar(), m_svcName->Des());
     m_deviceBinding = NULL;
         
     delete m_svcName;
-    m_svcName = NULL;    
+    m_svcName = NULL;
     }
 
 //END OF FILE

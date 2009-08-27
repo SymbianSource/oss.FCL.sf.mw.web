@@ -57,13 +57,13 @@ CWrtHarvesterPublisherObserver::CWrtHarvesterPublisherObserver( CWrtHarvester* a
 // ----------------------------------------------------------------------------
 //
 CWrtHarvesterPublisherObserver* CWrtHarvesterPublisherObserver::NewLC( 
-        const TDesC& aName, CWrtHarvester* aHarvester )
+        const TDesC& aBundleId, CWrtHarvester* aHarvester )
     {
     CWrtHarvesterPublisherObserver* self( 
         new( ELeave ) CWrtHarvesterPublisherObserver( aHarvester ) );
         
     CleanupStack::PushL( self );
-    self->ConstructL( aName );
+    self->ConstructL( aBundleId );
     return self;
     }
 
@@ -74,16 +74,16 @@ CWrtHarvesterPublisherObserver* CWrtHarvesterPublisherObserver::NewLC(
 CWrtHarvesterPublisherObserver::~CWrtHarvesterPublisherObserver()
     {
     ReleaseLiw();
-    delete iName;
+    delete iBundleId;
     }
 
 // ----------------------------------------------------------------------------
 // Symbian 2nd phase constructor can leave.
 // ----------------------------------------------------------------------------
 //
-void CWrtHarvesterPublisherObserver::ConstructL( const TDesC& aName )
+void CWrtHarvesterPublisherObserver::ConstructL( const TDesC& aBundleId )
     {
-    iName = aName.AllocL();
+    iBundleId = aBundleId.AllocL();
     InitLiwL();
     }
 
@@ -178,9 +178,9 @@ void CWrtHarvesterPublisherObserver::RegisterL( CLiwDefaultMap* aFilter )
 // CWrtHarvesterPublisherObserver::Name
 // ---------------------------------------------------------------------------
 //
-const TDesC& CWrtHarvesterPublisherObserver::Name()
+const TDesC& CWrtHarvesterPublisherObserver::BundleId()
     {
-    return *iName;
+    return *iBundleId;
     }
 
 // ---------------------------------------------------------------------------

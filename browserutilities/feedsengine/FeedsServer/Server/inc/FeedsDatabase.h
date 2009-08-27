@@ -90,7 +90,7 @@ NONSHARABLE_CLASS(CFeedsDatabase): public CBase
         * @return ETrue if the feed was resolved.
         */
 
-        TBool CFeedsDatabase::FeedIdFromEntryId(const TInt& aEntryId, TInt aFolderListId, TInt& aFeedId);
+        TBool CFeedsDatabase::FeedIdFromEntryIdL(const TInt& aEntryId, TInt aFolderListId, TInt& aFeedId);
 
         /**
         * Returns the feed id of the entry id with the given feed.
@@ -101,7 +101,7 @@ NONSHARABLE_CLASS(CFeedsDatabase): public CBase
         * @param aEntryId The feed's folder item id
         * @return ETrue if the feed was resolved.
         */
-        TBool CFeedsDatabase::EntryIdFromFeedId(const TInt& aFeedId, TInt aFolderListId, TInt& aEntryId);
+        TBool CFeedsDatabase::EntryIdFromFeedIdL(const TInt& aFeedId, TInt aFolderListId, TInt& aEntryId);
 
         /**
         * Return the folder list ID of the feed with the given feed-id.

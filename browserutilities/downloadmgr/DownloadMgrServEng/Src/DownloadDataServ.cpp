@@ -193,6 +193,14 @@ void CMediaDataServ::SetResult( TInt aResult )
     {
     iResult = aResult;
     }
+// ---------------------------------------------------------
+// CMediaDataServ::SetStatusCode()
+// ---------------------------------------------------------
+//
+void CMediaDataServ::SetStatusCode( TInt aStatusCode )
+    {
+    iStatusCode = aStatusCode;
+    }
 
 // ---------------------------------------------------------
 // CMediaDataServ::SetRedirUrlL()
@@ -379,6 +387,7 @@ void CMediaDataServ::InternalizeL(RReadStream& aStream)
     
     
     iTempFilename = HBufC::NewL(KMaxFileName);
+    iStatusCode = aStream.ReadInt32L();
     }  
     
 // ---------------------------------------------------------

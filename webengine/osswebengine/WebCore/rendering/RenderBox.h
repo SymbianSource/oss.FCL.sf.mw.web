@@ -27,6 +27,8 @@
 
 namespace WebCore {
 
+	void cleanOverridSizeMap();
+
     enum WidthType { Width, MinWidth, MaxWidth };
 
 class RenderBox : public RenderObject {

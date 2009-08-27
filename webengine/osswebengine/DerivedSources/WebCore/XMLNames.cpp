@@ -26,7 +26,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
  */
 
-
 #include "config.h"
 #ifdef AVOID_STATIC_CONSTRUCTORS
 #define DOM_XMLNAMES_HIDE_GLOBALS 1
@@ -48,13 +47,12 @@ DEFINE_GLOBAL(QualifiedName, baseAttr, nullAtom, "base", xmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, langAttr, nullAtom, "lang", xmlNamespaceURI);
 DEFINE_GLOBAL(QualifiedName, spaceAttr, nullAtom, "space", xmlNamespaceURI);
 
-static bool initialized = false; 
-// Attributes 
-static const char *xmlNSString = "http://www.w3.org/XML/1998/namespace"; 
-static const char *baseAttrString = "base"; 
-static const char *langAttrString = "lang"; 
-static const char *spaceAttrString = "space"; 
-
+static bool initialized = false;
+// Attributes
+static const char *xmlNSString = "http://www.w3.org/XML/1998/namespace";
+static const char *baseAttrString = "base";
+static const char *langAttrString = "lang";
+static const char *spaceAttrString = "space";
 
 WebCore::QualifiedName** getXMLAttrs(size_t* size)
 {
@@ -86,20 +84,23 @@ void init()
     new ((void*)&spaceAttr) QualifiedName(nullAtom, spaceAttrString, xmlNS);
 }
 
-void remove() 
-{ 
+void remove()
+{
+#ifndef __WINSCW__
     if( initialized ) {
-        xmlNamespaceURI.~AtomicString();
-        baseAttr.~QualifiedName();
-        langAttr.~QualifiedName();
-        spaceAttr.~QualifiedName();
+        ((AtomicString*)&xmlNamespaceURI)->~AtomicString();
+        ((QualifiedName*)&baseAttr)->~QualifiedName();
+        ((QualifiedName*)&langAttr)->~QualifiedName();
+        ((QualifiedName*)&spaceAttr)->~QualifiedName();
     }
-        xmlNSString = ""; 
-        baseAttrString = ""; 
-        langAttrString = ""; 
-        spaceAttrString = ""; 
-        initialized = false; 
-} 
+#endif // __WINSCW__
+    
+	xmlNSString = "";
+	baseAttrString = "";
+	langAttrString = "";
+	spaceAttrString = "";
+	initialized = false;
+}
 
 } }
 

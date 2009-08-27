@@ -190,7 +190,7 @@ TBool CWidgetUIHandler::DisplayUpgradeL( const Swi::CAppInfo& /*aAppInfo*/,
 // @since 3.1
 // ============================================================================
 //
-TBool CWidgetUIHandler::DisplayUninstallL( const TDesC& aWidgetName )
+TBool CWidgetUIHandler::DisplayUninstallL( const TDesC& aWidgetName , TBool aWidgetinHomeScreen )
     {
     iShowingDialog = ETrue;
 
@@ -199,7 +199,9 @@ TBool CWidgetUIHandler::DisplayUninstallL( const TDesC& aWidgetName )
 
     TBool result( EFalse );
 
-    HBufC* prompt = StringLoader::LoadLC( R_WIDGETUI_UNINSTALL_PROMPT, aWidgetName );
+    HBufC* prompt = StringLoader::LoadLC( aWidgetinHomeScreen ? R_WIDGETUI_UNINSTALL_HS_PROMPT : 
+                                          R_WIDGETUI_UNINSTALL_PROMPT , aWidgetName );
+    
     if ( iCommonDialogs->ShowConfirmationQueryL( *prompt, R_AVKON_SOFTKEYS_YES_NO ) )
         {
         result = ETrue;

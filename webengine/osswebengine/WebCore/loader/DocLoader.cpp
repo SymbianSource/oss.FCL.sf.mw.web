@@ -118,9 +118,32 @@ CachedCSSStyleSheet* DocLoader::requestUserCSSStyleSheet(const String& url, cons
     return cache()->requestUserCSSStyleSheet(this, url, charset);
 }
 
+/* DocLoader::requestScript
+ *
+ * If we've been given the charset, just pass it on.
+ * Otherwise, get it from the enclosing frame.
+ *
+ * Notes:
+ *
+ *   o We do this because some oddly-programmed web pages
+ *     and/or servers deliver JavaScript that doesn't bear
+ *     any obvious character set selection but the intended
+ *     character set isn't the ISO-Latin-1 that will later
+ *     be defaulted-in.
+ *
+ *   o We don't conditionalize this code for S60/Symbian
+ *     because it should be either benign or even helpful
+ *     to the other platforms as well.
+ *
+ */
+
 CachedScript* DocLoader::requestScript(const String& url, const String& charset)
 {
-    return static_cast<CachedScript*>(requestResource(CachedResource::Script, url, charset));
+
+    if (!!charset)
+        return static_cast<CachedScript*>(requestResource(CachedResource::Script, url, charset));
+    else
+        return static_cast<CachedScript*>(requestResource(CachedResource::Script, url, frame()->loader()->encoding() ));
 }
 
 #if ENABLE(XSLT)

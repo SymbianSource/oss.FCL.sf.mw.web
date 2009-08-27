@@ -60,6 +60,8 @@ DeviceLiwPeer::~DeviceLiwPeer()
     delete m_serviceName;
     m_callbackArray->ResetAndDestroy();
     m_callbackArray->Close();
+    delete m_callbackArray;
+    m_callbackArray = NULL;
     m_interface->Close();
     m_interface = NULL; // in majority cases, the interface close methods delete them selves.
 }
@@ -126,7 +128,7 @@ TInt DeviceLiwPeer::HandleNotifyL(
             List params;
             JSLock::lock();
             JSValue* vEventParams = m_binding->LiwGenericParamList2JsArray(
-                                                m_globalExecState, &eventParamList );
+                                                m_globalExecState, &eventParamList, ETrue );
             JSLock::unlock();
             params.append( jsNumber( cmdId ) );
             params.append( jsNumber( eventId ) );

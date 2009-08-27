@@ -42,6 +42,14 @@ enum TMiniViewState
     EPublishStart,
     EPublishSuspend
     };
+
+enum TNetworkState
+    {
+    ENetworkNotAllowed = 0,
+    ENetworkAccessAllowed,
+    ENetworkAccessible
+    };
+
 struct TWidgetState
     {
     TBool               iFullViewState; //  full view or not
@@ -64,7 +72,7 @@ class CCpsPublisher;
 class CFbsBitmap;
 class CSchemeHandler;
 class CBrCtlInterface;
-
+class CJpgSaver;
 // CLASS DECLARATION
 
 /**
@@ -231,6 +239,7 @@ class CWidgetUiWindow :  public CBase,
         * @param none
         * @return CBrCtlInterface*
         */
+        void Done();
         CBrCtlInterface* Engine() const { return iEngine; }
 
         /**
@@ -348,6 +357,14 @@ class CWidgetUiWindow :  public CBase,
         void SetWidgetLoaded( TBool aWidgetLoaded );
         
         /**
+        * IsWidgetLoaded
+        * Return ETrue if widget has finished loading, else EFalse
+        * @since 5.0
+        * @return none
+        */
+        TBool IsWidgetLoaded( ) { return iWidgetLoaded; }
+        
+        /**
         * GetBundleName
         * Gets the Bundle name for Uid
         * @since 5.0
@@ -410,24 +427,60 @@ class CWidgetUiWindow :  public CBase,
         * @since 5.0
         * @return none
         */
-        void SetIsCurrentWindow(TBool aIsCurrent){ iIsCurrent = aIsCurrent;}
+        void SetIsCurrentWindow(TBool aIsCurrent){ iIsCurrent = aIsCurrent;} 
+        /**
+        * GetClickCount
+        * Get the count for widget being selected from homescreen
+        * @since 5.0
+        * @return TInt
+        */              
+        TInt GetClickCount(){ return iClickCount;}  
+                
+        /**
+        * IncrementClickCount
+        * Increase the click count for widgets being selected from homescreen
+        * @since 5.0
+        * @return none
+        */              
+        void IncrementClickCount(){ ++iClickCount;} 
+        
+        /**
+        * SetTime
+        * Set the time when widget is ReStarted after OOM
+        * @since 5.0
+        * @return none
+        */
+        void SetTime(){iOOMWidgetStartTime.HomeTime();}
 
-        /** 
-        * GetBlanketPromptDisplayed 
-        * Get whether blanketprompt is displayed 
-        * @since 5.0 
-        * @return TBool 
-        */                 
-        TBool GetBlanketPromptDisplayed(){ return iBlanketPromptDisplayed;}   
-         
-        /** 
-        * SetBlanketPermissionDisplayed 
-        * Sets  Blanket Permission Prompt when displayed 
-        * @since 5.0 
-        * @return none 
-        */               
-        void SetBlanketPromptDisplayed(TBool aBlanketPromptDisplayed){ iBlanketPromptDisplayed = aBlanketPromptDisplayed;}          
- 		                 
+        /**
+        * GetTime when widget was started after OOM 
+        * @since 5.0
+        * @return TTime
+        */        
+        TTime GetTime(){return iOOMWidgetStartTime;}
+        
+       /**
+        * IsWidgetLoadStarted 
+        * @since 5.0
+        * @return TBool
+        */
+        TBool IsWidgetLoadStarted(){return iWidgetLoadStarted;}
+        
+        /**
+        * CheckUserPermissionChanged
+        * Checks if the user permission to access network has changed
+        * @since 5.0
+        * @return none
+        */              
+        void CheckUserPermissionChanged(TBool iCurrUserPerm);
+        
+        /**
+        * DetermineNetworkState
+        * Determine the current network state
+        * @since 5.0
+        * @return none
+        */              
+        void DetermineNetworkState();
         
     protected:
 
@@ -493,7 +546,8 @@ class CWidgetUiWindow :  public CBase,
     private:
         CWidgetUiObserver*              iWidgetUiObserver;  // owned, responsible for deleting
         CWidgetUiWindowManager&         iWindowManager;
-
+        
+        CCpsPublisher*                  iCpsPublisher; // Interface to publish bitmap
         CWidgetUiDialogsProviderProxy*  iWidgetUiDialogsProviderProxy; // owned, responsible for deleting
         HBufC*                          iUrl;               // owned, responsible for deleting
         CBrCtlInterface*                iEngine;            // owned, responsible for deleting
@@ -513,13 +567,18 @@ class CWidgetUiWindow :  public CBase,
         TBool                           iPenEnabled; // For touch
         TInt                            iCount;
         TWidgetState                    iWidgetWindowState;
-        TBool                           iSchemeProcessing;
-        // Interface to publish bitmap
-        CCpsPublisher*                  iCpsPublisher;
+        TBool                           iSchemeProcessing;  
+        TNetworkState                   iNetworkState;
+        TBool                           iUserPermission;    // ETrue if user chooses to allow network access when prompted, else EFalse
         
         //Download transaction ID
-        long                            iDlId;
-        TBool                           iBlanketPromptDisplayed;         
+        long                            iDlId;  
+		TInt                            iClickCount;
+        CFbsBitmap*                     iMiniviewBitmap ;
+        TTime                           iOOMWidgetStartTime; 
+        TBool                           iWidgetLoadStarted; // Set to true when widget load starts
+        CJpgSaver*                       iJpgSaver; 
+                            
    };
 
 #endif  //

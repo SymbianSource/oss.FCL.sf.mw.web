@@ -38,7 +38,11 @@ class CHttpCacheEvictionHandler;
 class CHttpCacheStreamHandler;
 
 // CLASS DECLARATION
-
+struct THttpCacheLookupTableEntryIterator
+    {
+    TInt iPos;
+    TInt iCount;
+    };
 /**
 *
 *  @lib
@@ -47,7 +51,7 @@ class CHttpCacheStreamHandler;
 class CHttpCacheLookupTable : public CBase
     {
     public:  // Constructors and destructor
-        
+
         /**
         * Two-phased constructor.
         * @since 3.1
@@ -56,14 +60,14 @@ class CHttpCacheLookupTable : public CBase
         * @return CHttpCacheLookupTable object.
         */
         static CHttpCacheLookupTable* NewL( CHttpCacheEvictionHandler& aEvictionHandler, CHttpCacheStreamHandler& aStreamHandler );
-        
+
         /**
         * Destructor.
         */
         virtual ~CHttpCacheLookupTable();
-        
+
     public: // new functions
-    
+
         /**
         *
         * @since 3.1
@@ -71,7 +75,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         CHttpCacheEntry* InsertL( const TDesC8& aUrl );
-        
+
         /**
         *
         * @since 3.1
@@ -79,7 +83,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         CHttpCacheEntry* Find( const TDesC8& aUrl );
-        
+
         /**
         *
         * @since 3.1
@@ -87,15 +91,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TInt Remove( const TDesC8& aUrl );
-        
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        TInt RemoveByPosition( TInt aPos );
-        
+
         /**
         *
         * @since 3.1
@@ -103,7 +99,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TInt RemoveAll();
-        
+
         /**
         *
         * @since 7.1
@@ -111,7 +107,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TInt CHttpCacheLookupTable::ListFiles( RPointerArray<TDesC>& aFilenameList );
-        
+
         /**
         *
         * @since 3.1
@@ -119,7 +115,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         const CArrayPtrFlat<CHttpCacheEntry>& Entries() const { return *iEntries; }
-        
+
         /**
         *
         * @since 3.1
@@ -127,23 +123,23 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         void EraseCacheEntry( const TDesC8& aUrl );
-        
+
         /**
         *
         * @since 3.1
         * @param
         * @return
         */
-        void InternalizeL( RFileReadStream& aReadStream, const TDesC& aDirectory );
-        
+        void InternalizeL( RReadStream& aReadStream, const TDesC& aDirectory );
+
         /**
         *
         * @since 3.1
         * @param
         * @return
         */
-        void ExternalizeL( RFileWriteStream& aWriteStream );
-        
+        void ExternalizeL( RWriteStream& aWriteStream, const TDesC& aDirectory );
+
         /**
         *
         * @since 3.1
@@ -151,17 +147,25 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         void MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable, RFs aRfs  );
-        
+
         /**
-        *
-        * @since 7.1
-        * @param
-        * @return
-        */
-        void FindCacheEntryIndex( const CHttpCacheEntry& aCacheEntry, TInt* aIndex );
+         *
+         * @since 7.1
+         * @param
+         * @return
+         */
+        void BeginEntryIteration(THttpCacheLookupTableEntryIterator& aIter);
+
+        /**
+         *
+         * @since 7.1
+         * @param
+         * @return
+         */
+        const CHttpCacheEntry* NextEntry(THttpCacheLookupTableEntryIterator& aIter);
 
     private:
-        
+
         /**
         * Construct.
         * @since 3.1
@@ -170,14 +174,14 @@ class CHttpCacheLookupTable : public CBase
         * @return CHttpCacheLookupTable object.
         */
         CHttpCacheLookupTable( CHttpCacheEvictionHandler& aEvictionHandler, CHttpCacheStreamHandler& aStreamHandler );
-        
+
         /**
         * By default Symbian 2nd phase constructor is private.
         */
         void ConstructL();
-        
+
     private: //
-        
+
         /**
         *
         * @since 3.1
@@ -185,7 +189,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TInt InsertL( CHttpCacheEntry* aCacheEntry );
-        
+
         /**
         *
         * @since 3.1
@@ -193,7 +197,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TInt Probe( const TDesC8& aKey, TBool aInsert );
-        
+
         /**
         *
         * @since 3.1
@@ -201,7 +205,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TInt HashUrl( const TDesC8& aUrl );
-        
+
         /**
         *
         * @since 3.1
@@ -209,7 +213,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         void ReHashL();
-        
+
         /**
         *
         * @since 3.1
@@ -217,7 +221,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TUint NextPrime( TUint aNum );
-        
+
         /**
         *
         * @since 3.1
@@ -225,7 +229,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         void Erase( TInt aPos );
-        
+
         /**
         *
         * @since 3.1
@@ -233,7 +237,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TBool Valid( TInt aPos );
-        
+
         /**
         *
         * @since 3.1
@@ -241,7 +245,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TBool Empty( TInt aPos );
-        
+
         /**
         *
         * @since 3.1
@@ -249,7 +253,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TBool Deleted( TInt aPos );
-        
+
         /**
         *
         * @since 3.1
@@ -257,7 +261,7 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         void SetDeleted( TInt aPos );
-        
+
         /**
         *
         * @since 3.1
@@ -265,9 +269,9 @@ class CHttpCacheLookupTable : public CBase
         * @return
         */
         TBool BoundaryCheck( TInt aPos );
-        
+
     private:    // Data
-        
+
         // hash table for cache entries
         CArrayPtrFlat<CHttpCacheEntry>* iEntries;
         // number of entries in the hashtable
@@ -277,7 +281,7 @@ class CHttpCacheLookupTable : public CBase
         //
         CHttpCacheStreamHandler*        iStreamHandler;           // not owned
     };
-    
+
 #endif      // CHTTPCACHELOOKUPTABLE_H
-    
+
     // End of File

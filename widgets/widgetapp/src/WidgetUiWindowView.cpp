@@ -44,8 +44,6 @@
 #endif
 
 // CONSTANTS
-    const TInt KRightSoftkeyPosition = 2;
-    const TInt KLeftSoftkeyPosition = 0;
 
 // EXTERNAL DATA STRUCTURES
 
@@ -102,7 +100,7 @@ void CWidgetUiWindowView::ConstructL( )
         AppUi()->CurrentFixedToolbar()->SetToolbarVisibility(EFalse);
         }
 #endif
-    ShowActivatedObject(EFalse);
+    UpdateStatusPane(EFalse);
 
     // Navipane
     iNaviCont = (CAknNavigationControlContainer*)StatusPane()->ControlL(
@@ -200,18 +198,18 @@ void CWidgetUiWindowView::HandleCommandL( TInt aCommand )
         case EAknCmdExit:
         case EEikCmdExit: // Options->Exit
         case EAknSoftkeyExit: // Right Softkey (Exit or JS defined)
-            ShowActivatedObject(EFalse); // deactivates any open edit boxes
+        	UpdateStatusPane(EFalse); // deactivates any open edit boxes
             iWindowManager.Exit( aCommand, iWindowManager.ActiveWindow()->Uid());
             break;
         case EAknSoftkeyCancel:
             // cancel must be handled before hiding status pane
             iContainer->HandleCommandL( (TInt)TBrCtlDefs::ECommandCancel + (TInt)TBrCtlDefs::ECommandIdBase );
-            ShowActivatedObject(EFalse); // deactivates any open edit boxes
+            UpdateStatusPane(EFalse); // deactivates any open edit boxes
         	break;
         case EAknSoftkeyDone:
             // accept must be handled before hiding status pane
             iContainer->HandleCommandL( (TInt)TBrCtlDefs::ECommandAccept + (TInt)TBrCtlDefs::ECommandIdBase );
-            ShowActivatedObject(EFalse); // deactivates any open edit boxes
+            UpdateStatusPane(EFalse); // deactivates any open edit boxes
         	break;
         case ECmdMsk:
             if (editing)
@@ -252,7 +250,7 @@ void CWidgetUiWindowView::DoActivateL( const TVwsViewId& /*aPrevViewId*/,
                                     TUid /*aCustomMessageId*/,
                                     const TDesC8& /*aCustomMessage*/ )
     {
-    StatusPane()->SwitchLayoutL(R_AVKON_STATUS_PANE_LAYOUT_SMALL);
+    //StatusPane()->SwitchLayoutL(R_AVKON_STATUS_PANE_LAYOUT_SMALL);
 
     //Cba()->MakeVisible(EFalse);
 
@@ -289,46 +287,6 @@ void CWidgetUiWindowView::HandleStatusPaneSizeChange()
         }
     }
 
-// ---------------------------------------------------------------------------
-// CWidgetUiContentView::ShowActivatedObject
-// Show the StatusPane and Softkeys - needed for text boxes
-// Or just Softkeys for flash etc...
-//
-// ---------------------------------------------------------------------------
-//
-void CWidgetUiWindowView::ShowActivatedObject(TBool aVisible, TBool aShowStatusPane)
-    {
-    if (iActivatedObjectVisible == aVisible)
-        {
-        return;
-        }
-    iActivatedObjectVisible = aVisible;
-    iStatusPaneVisible = (aVisible && aShowStatusPane);
-
-    if ( iWindowManager.ActiveWindow() )
-        {
-        // Override Right Softkey with Cancel when editing
-        if (iActivatedObjectVisible)
-            {
-            iCbaVisible = Cba()->IsVisible();// hold state
-            TRAPD(err,Cba()->AddCommandToStackL(KRightSoftkeyPosition,R_WIDGETUI_WINDOW_VIEW_SOFTKEYS_CANCEL));
-            if (err == KErrNone)
-                {
-                TRAP(err,Cba()->AddCommandToStackL(KLeftSoftkeyPosition,R_WIDGETUI_WINDOW_VIEW_SOFTKEYS_DONE));
-                }
-            iWindowManager.ActiveWindow()->SetSoftkeysVisible(ETrue);
-            }
-        else
-            {
-            // remove the cancel softkey and hide softkeys if they were previously hidden
-            Cba()->RemoveCommandFromStack(KRightSoftkeyPosition,EAknSoftkeyCancel);
-            Cba()->RemoveCommandFromStack(KLeftSoftkeyPosition,EAknSoftkeyDone);
-
-            iWindowManager.ActiveWindow()->SetSoftkeysVisible(iCbaVisible);
-            }
-        }
-    UpdateStatusPane();
-    }
 
 // ---------------------------------------------------------------------------
 // CWidgetUiContentView::UpdateStatusPane
@@ -336,8 +294,9 @@ void CWidgetUiWindowView::ShowActivatedObject(TBool aVisible, TBool aShowStatusP
 //
 // ---------------------------------------------------------------------------
 //
-void CWidgetUiWindowView::UpdateStatusPane()
+void CWidgetUiWindowView::UpdateStatusPane( TBool aVisible )
     {
+    iStatusPaneVisible = aVisible;
 #ifdef RD_SCALABLE_UI_V2
     // no need for the status pane on touch phones
     if (PenEnabled())
@@ -443,4 +402,17 @@ void CWidgetUiWindowView::DeActivateOptionsMenu()
  	iIsOptionsMenuActivated = EFalse;
  	}
 
+// ---------------------------------------------------------------------------
+// CWidgetUiWindowView::UpdateToolbar
+// ---------------------------------------------------------------------------
+//
+void CWidgetUiWindowView::UpdateToolbar(TBool aShow)
+    {
+#ifdef RD_SCALABLE_UI_V2    
+    if(Layout_Meta_Data::IsLandscapeOrientation() && aShow)
+    	AppUi()->CurrentFixedToolbar()->SetToolbarVisibility(ETrue);
+    else
+        AppUi()->CurrentFixedToolbar()->SetToolbarVisibility(EFalse);
+#endif
+    }
 // End of File

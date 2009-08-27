@@ -3305,9 +3305,11 @@ void RHttpDownload::InitPausedCodDownloadL( const TUid aAppUid )
 	SDMgrCodUserData* userData = new (ELeave) SDMgrCodUserData;
 	userData->iHandle = iHandle;
 	userData->iPrevCodEvent = (MCodDownloadObserver::EDone);
-	iCodDownload->SetUserData( (TAny*)userData );
-	iDownloadMgr->IncrementEventPriorityFlag();	    	
-	
+	if(iCodDownload)
+	    {
+	    iCodDownload->SetUserData( (TAny*)userData );
+	    iDownloadMgr->IncrementEventPriorityFlag();
+	    }
 	
 	}
 // ---------------------------------------------------------

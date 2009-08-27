@@ -26,7 +26,7 @@
 #include "WidgetRegistry.h"
 #include "WidgetInstaller.h"
 #include <libxml2_globals.h>
-#include <libc\stdlib.h>
+#include <libc/stdlib.h>
 #include <libxml2_parser.h>
 #include <libxml2_tree.h>
 #include <xmlengxestd.h>

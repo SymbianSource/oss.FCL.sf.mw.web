@@ -1838,24 +1838,6 @@ void CCodEngBase::CapabilityCheckL()
 #endif
         }
 
-#ifdef __SYNCML_DM_FOTA
-    if ( fota )
-        {
-        // Transient FOTA session is used to check store space -> waste.
-        // Pre-allocate FOTA saver to avoid this (??) makes the saver's
-        // lifespan hard to follow, error-prone. TODO (??)
-        CLOG(( ECodEng, 2, _L("  FOTA check (%d)"), size ));
-        RFotaEngineSession fotaEng;
-        CleanupClosePushL<RFotaEngineSession>( fotaEng );
-        fotaEng.OpenL();
-        if ( !fotaEng.IsPackageStoreSizeAvailable( size ) )
-            {
-            User::Leave( KErrCodInsufficientSpace );
-            }
-        CleanupStack::PopAndDestroy( &fotaEng );
-        }
-#endif /*def __SYNCML_DM_FOTA */
-
 	//When reached here, it is assured that capability check is done successfully
 	//for the active download.
 	//Content type check is done for this track
@@ -1880,7 +1862,7 @@ CCodSaver* CCodEngBase::CreateSaverL( const TDesC8& aType )
     	}
     
 // DD1 and DD2 cases
-    if (( aType.Find( KOma2TriggerContentType ) != KErrNotFound) || ( aType.Find( KDd2DataType ) != KErrNotFound )|| ( aType.Find( KOma1WbxmlRoContentType ) != KErrNotFound ))
+    if (( aType.Find( KOma2TriggerContentType ) != KErrNotFound) || ( aType.Find( KDd2DataType ) != KErrNotFound )|| ( aType.Find( KOma1WbxmlRoContentType ) != KErrNotFound )|| ( aType.Find( KOma1XmlRoContentType ) != KErrNotFound ))
         {
         iSaver = CRoapSaver::NewL( aType, iRoapData, iProgress, KRoapProgressMax, (*iData)[iData->ActiveDownload()]->iTempPath, (*iData)[iData->ActiveDownload()]->iRootPath, KNullDesC());
         iSaver->SetObserver( iObserver );
@@ -2697,6 +2679,7 @@ void CCodEngBase::ConvertMOToMediaDataL( CMediaDataClient*& aMOData, TInt aMOInd
     
     for (TInt type = 0; type < objMedia->TypesCount(); ++type)
         aMOData->AddTypeL( objMedia->Types().MdcaPoint(type) );
+    aMOData->SetStatusCode( objMedia->iStatusCode );
     }
 
 //------------------------------------------------------------------------

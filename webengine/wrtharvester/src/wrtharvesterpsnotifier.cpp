@@ -19,7 +19,8 @@
 #include "wrtharvesterpsnotifier.h"
 #include "wrtharvester.h"
 #include <UikonInternalPSKeys.h>//For MMC Observing
-    
+#include <usbmsshared.h>//For USB monitor
+
 // ============================ MEMBER FUNCTIONS =============================
 
 // ---------------------------------------------------------------------------
@@ -85,6 +86,10 @@ void CWrtHarvesterPSNotifier::ConstructL()
 		{
 		User::LeaveIfError( iProperty.Attach( KPSUidUikon,KUikMMCInserted ));
 		}
+    else if( iKey == EWidgetMassStorageMode )
+        {
+        User::LeaveIfError( iProperty.Attach( KUsbMsDriveState_Category,EUsbMsDriveState_DriveStatus ));
+        }    	
     else
     	{
     	User::LeaveIfError( iProperty.Attach( KPropertyCat, iKey));
@@ -123,28 +128,57 @@ void CWrtHarvesterPSNotifier::RunL()
     
     TInt value( 0 );
     TInt r (KErrNone);
-    if( iKey != EWidgetMMCAltered )
+    TUsbMsDrivesStatus allDrivesStatus;
+    if( iKey != EWidgetMMCAltered && iKey != EWidgetMassStorageMode )
     	{
     	iProperty.Get( KPropertyCat, iKey, value );	
     	}
+    else if( iKey == EWidgetMMCAltered )
+        {        
+        r = iProperty.Get( KPSUidUikon, KUikMMCInserted , value );   
+        }    
     else
-        {
-        iProperty.Get( KPSUidUikon, KUikMMCInserted , value );   
+        {        
+        r = iProperty.Get( allDrivesStatus );
         }
-  
     if( r == KErrNone )
         {
         if( iKey == EWidgetUIState && value == 1 )
             {
-            iHarvester->TryLaunchNextWidgetL();
+            iHarvester->TryLaunchNextOperationL();
+            }
+        else if(iKey == EWidgetUIState && value == 2)
+            {
+            iHarvester->ClearAllOperations();
+            SetValue(1);
             }
         else if( iKey == EWidgetRegAltered && value == 1 )
             {
             iHarvester->UpdateL();
             }
-        else if( iKey ==EWidgetMMCAltered )
-            {
+        else if( iKey == EWidgetMMCAltered )
+            {            
             iHarvester->UpdateL();    
+            } 
+        else if( iKey == EWidgetMassStorageMode )
+            {            
+            TInt count = allDrivesStatus.Length()/2;
+             for ( TInt i = 0; i < count; i++ )
+                 {
+                 TInt driveNumber = allDrivesStatus[2*i];
+                 TInt driveStatus = allDrivesStatus[2*i+1];
+                 switch( driveStatus )
+                     {
+                     case EUsbMsDriveState_Connected:
+                     case EUsbMsDriveState_Disconnected:
+                         {                           
+                         iHarvester->UpdateL();
+                         }
+                         break;                     
+                     default:
+                         break;
+                     }
+                 }            
             }
         }
     }

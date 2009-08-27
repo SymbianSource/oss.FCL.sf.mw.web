@@ -25,6 +25,7 @@
 
 class BmElem;
 class CMaskedBitmap;
+class CSynDecoder;
 // CLASS DECLARATION
 /**
 *  CSynDecodeThread
@@ -43,7 +44,7 @@ class CSynDecodeThread  : public CBase
 
   public:
 
-        TInt Decode(const TDesC8& aData, TRequestStatus* aRequestStatus);
+        TInt Decode(const TDesC8& aData);
         void Handle( TInt& aBitmapHandle, TInt& aMaskHandle );
         
   private: // Private constructors
@@ -55,9 +56,8 @@ class CSynDecodeThread  : public CBase
   private: // Data
 
         // Image status & state
-        BmElem* iElem;
         RThread iDecoderThread;
-        TBool iUp;
+        static CSynDecoder* iSyncDecoder;
     };
 
 #endif   // SYNCDECODETHREAD_H

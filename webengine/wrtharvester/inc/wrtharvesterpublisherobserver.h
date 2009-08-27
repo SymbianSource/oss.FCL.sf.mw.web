@@ -41,7 +41,7 @@ class CWrtHarvesterPublisherObserver : public CBase, public MLiwNotifyCallback
 		/**
 		 * Two-phased constructor.
 		 */
-		static CWrtHarvesterPublisherObserver* NewLC( const TDesC& aName, CWrtHarvester* aHarvester );
+		static CWrtHarvesterPublisherObserver* NewLC( const TDesC& aBundleId, CWrtHarvester* aHarvester );
 		
 		/**
 		 * Destructor.
@@ -80,14 +80,19 @@ class CWrtHarvesterPublisherObserver : public CBase, public MLiwNotifyCallback
 	    /**
 	    *
 	    */
-	    const TDesC& Name();
+	    const TDesC& BundleId();
 
-	    
+	    /**
+	    * Cancel all the registered notifications. 
+	    * @return void.
+	    */
+	    void ReleaseL();
+
 	private:
 	    /**
         * Perform the second phase construction 
         */      
-        void ConstructL( const TDesC& aName );
+        void ConstructL( const TDesC& aBundleId );
         
         /**
 		* Default constructor.
@@ -96,12 +101,6 @@ class CWrtHarvesterPublisherObserver : public CBase, public MLiwNotifyCallback
 		
 		// Prhohibited
 		CWrtHarvesterPublisherObserver();
-
-	    /**
-	    * Cancel all the registered notifications. 
-	    * @return void.
-	    */
-	    void ReleaseL();
 	    
 	    /**
 	    * Initialise Liw connection to Content publishing service.
@@ -129,7 +128,7 @@ class CWrtHarvesterPublisherObserver : public CBase, public MLiwNotifyCallback
 	    
 	    // Name of the observed publisher
 	    // Owned
-	    HBufC* iName;
+	    HBufC* iBundleId;
 	    
 	    // Call back error code
 	    TInt iError;

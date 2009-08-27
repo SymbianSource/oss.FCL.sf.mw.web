@@ -199,6 +199,20 @@ bool WebTextFormatMask::checkText( const String& text, ErrorBlock& eb )
     return (eb.m_start == -1);
 }
 
+MaskBase* WebTextFormatMask::getMask(int aOffset)
+{
+    MaskBase* m = m_masks;
+    int i = 0; 
+    while(m) {
+        if (i == aOffset) {
+            return m;    
+        }
+        m = m->nextMask();
+        ++i;              
+    }
+    return NULL;
+}
+
 int WebTextFormatMask::getMultitude()
 {
     int count = 0;
@@ -230,24 +244,6 @@ TInputFormatMaskType WebTextFormatMask::getInputFormatMaskType(Frame* frame, int
         else if (i==aOffset) {
 
             TInputFormatMaskType ifmt = m->getInputFormatMaskType();
-            if (ifmt == EStatic){
-                MaskStatic* ms = static_cast<MaskStatic*>(m);
-                if (ms) {                
-                    //make sure not to re-write the static text if it already exists
-                    if (frame->document() &&
-                        frame->document()->focusedNode() &&
-                        frame->document()->focusedNode()->hasTagName(HTMLNames::inputTag) ) {         
-                    
-                        HTMLInputElement* ie = static_cast<HTMLInputElement*>(frame->document()->focusedNode());                      
-                        int len = ie->value().length();
-
-                        if (len<=aOffset) {                            
-                            UChar c = ms->getStatic();                            
-                            frame->editor()->insertTextWithoutSendingTextEvent(String(&c,1), false);
-                        }
-                    }
-                }            
-            }
             return ifmt;            
         }
         m = m->nextMask();

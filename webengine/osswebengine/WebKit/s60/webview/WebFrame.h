@@ -108,6 +108,9 @@ public:
     bool executeScript(const WebCore::String& script);
     WebCore::Node* getClosestAnchorElement(const TPoint& pt, TPoint& newPos);
     
+    void setpluginToScroll(bool pluginScroll){m_pluginToScroll=pluginScroll;}
+    bool pluginToScroll(){return m_pluginToScroll;}
+    
 private:
     WebFrame(const WebFrame&);                    // not implemented
     WebFrame& operator=(const WebFrame&);         // not implemented    
@@ -115,6 +118,7 @@ private:
     WebFrameView*                   m_view;              // the frame view
     RefPtr<WebFrameLoaderClient>    m_loaderClient;      // the loader client
     WebFrameBridge*                 m_bridge;        // the bridge
+    bool                            m_pluginToScroll;
 };
 
 // utility functions

@@ -30,26 +30,39 @@ SOURCE          wrtharvesterpsnotifier.cpp
 SOURCE          wrtharvesterpublisherobserver.cpp
 SOURCE          wrtharvesterregistryaccess.cpp
 
-
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_ECOM_SYSTEMINCLUDE
 USERINCLUDE     ../inc
-USERINCLUDE     ../../../inc
 
-SOURCEPATH      ../data
-START RESOURCE  wrtharvester.rss 
-HEADER
-TARGET          wrtharvester.rsc
-TARGETPATH      resource/plugins 
+START RESOURCE  ../data/2001FE2C.rss
+TARGET           wrtharvester.rsc
 END
 
-LIBRARY         ecom.lib
-LIBRARY         euser.lib
-LIBRARY         bafl.lib
-LIBRARY         apgrfx.lib
-LIBRARY         apparc.lib
-LIBRARY         estor.lib
-LIBRARY         liwservicehandler.lib
-LIBRARY         widgetregistryclient.lib
+START RESOURCE  ../data/wrtharvester.rss 
+HEADER
+TARGET          wrtharvester.rsc
+TARGETPATH      resource 
+END
+
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
+
+LIBRARY	      ecom.lib
+LIBRARY	      euser.lib
+LIBRARY       bafl.lib
+LIBRARY       apgrfx.lib
+LIBRARY       apparc.lib
+LIBRARY       estor.lib
+LIBRARY		  liwservicehandler.lib
+LIBRARY       widgetregistryclient.lib
+LIBRARY		  efsrv.lib
+LIBRARY		  aknnotify.lib
+LIBRARY		  eiksrv.lib
+LIBRARY		  cone.lib 		    // CoeControl
+LIBRARY		  CommonEngine.lib
+LIBRARY       ws32.lib
 
 //end of file

@@ -23,10 +23,22 @@
 #include <bautils.h>
 #include <e32cmn.h>
 
+#include <libxml2_globals.h>
+#include <libc/stdlib.h>
+#include <libxml2_parser.h>
+#include <libxml2_tree.h>
+
+#include "Browser_platform_variant.hrh"
+
+#ifdef BRDO_SYMBIAN_LIBXML_FF
+#include <xmlengxestd.h>
+#endif
+
 #include "WidgetInstaller.h"
 #include "WidgetConfigHandler.h" // info.plist parser
 #include "WidgetRegistrationManager.h" // interface to "shell"
 #include "IconConverter.h"
+#include "WidgetBackupRegistryXml.h" 
 
 // CONSTANTS
 _LIT( KInfoPList,"Info.plist" );
@@ -34,6 +46,18 @@ _LIT( KIconFile, "Icon.png" );
 _LIT( KMBMExt, ".mbm");
 _LIT( KLprojExt, ".lproj" );
 _LIT( KInfoPlistStrings, "InfoPlist.strings" );
+_LIT( KWidgetPropFile, "\\private\\10282822\\WidgetEntryStore.xml" );
+	
+// For parsing backedup registration file 
+_LIT8( KWidgetRegistry, "widgetregistry" );
+_LIT8( KEntry, "entry" );
+_LIT8( KXmlPropTag, "prop" );
+_LIT8( KXmlValTag, "val" );
+_LIT8( KXmlTypeTag, "type" );
+_LIT( KXmlDataTypeBool, "bool" );
+_LIT( KXmlDataTypeInt, "int" );
+_LIT( KXmlDataTypeString, "string" );
+_LIT( KXmlDataTypeUid, "uid" );
 
 // TODO MW has a hard dependency to APP domain. Not very good...
 // TODO Hard-coded UID.
@@ -250,6 +274,273 @@ TInt CWidgetInstaller::SearchWidgetRootL( const TDesC& aDir, TFileName& aFoundNa
 
     return found;
     }
+	
+// ============================================================================
+// CWidgetInstaller::FixWidgetPropsL()
+// Handles preprocessing of widget properties 
+//
+// @since 5.0
+// ============================================================================
+//
+void CWidgetInstaller::FixWidgetPropsL()
+    {
+	TInt  backupBlanketPerm = -1; 
+    
+    CWidgetBackupRegistryXml* aXmlProcessor = CWidgetBackupRegistryXml::NewL();
+    RPointerArray<CWidgetPropertyValue>  backupPropertyValues;
+   
+    TInt i = 0;
+    // empty values
+    for ( ; i < EWidgetPropertyIdCount; ++i )
+        {
+        CWidgetPropertyValue* value = CWidgetPropertyValue::NewL();
+        CleanupStack::PushL( value );
+        User::LeaveIfError( backupPropertyValues.Insert( value, i ) );
+        CleanupStack::Pop( value );
+        }
+               
+// Algorithm
+// 1. Look for the entry 
+// 2. Check if the EBundleIdentifier is what we are looking for
+// 3. If so, looking for the value of EBlanketPermGranted
+// 4. If exist, then we fix it 
+    // hardcode the filename first
+    RFile file;
+    TFileName propFile( KWidgetPropFile );
+    User::LeaveIfError( file.Open( iRfs, propFile, EFileRead )); 
+    CleanupClosePushL( file ); 
+	
+    TInt size;
+    User::LeaveIfError ( file.Size ( size )); 
+    HBufC8* buf = HBufC8::NewLC ( size ); 
+    TPtr8 bufPtr ( buf->Des() );
+    User::LeaveIfError( file.Read( bufPtr ) );
+
+    // initialize the parser and check compiled code matches lib version
+    LIBXML_TEST_VERSION
+
+    xmlDocPtr doc; 
+    doc = xmlReadMemory( (const char *)bufPtr.Ptr(), bufPtr.Length(),
+                         NULL, 
+                         NULL, 
+                         0); 
+    if ( !doc )
+        {
+        User::Leave( KErrCorrupt );
+        }
+
+    xmlNode* rootElement = xmlDocGetRootElement( doc );
+    TPtrC8 rootTag( rootElement->name );
+    if ( 0 != rootTag.Compare( KWidgetRegistry() ) )
+    {
+        User::Leave( KErrCorrupt );
+    }
+
+    for ( xmlNode* m = rootElement->children;
+          m;
+          m = m->next )
+        {
+        if ( m->type == XML_ELEMENT_NODE )
+            {
+            TPtrC8 element( m->name );
+
+            if ( 0 == element.Compare( KEntry() ) )
+                {
+                backupBlanketPerm = -1;  // reset this value for every entry 	
+                if ( NULL == m->children )
+                    {
+                    // malformed? should we require entry to have
+                    // some minimal info?
+                    continue;
+                    }
+
+                // extract one entry
+                xmlNode* n;
+                n = m->children;  
+                for ( ; 
+                      n; 
+                    )
+                    { 
+                    while ( n && ( n->type != XML_ELEMENT_NODE )) 
+                        {
+                        n = n->next; 
+                        }
+                    if ( NULL == n ) 
+                        {
+                        break; 
+                        }
+
+                TPtrC8 propTag( n->name );
+                if ( 0 != propTag.Compare( KXmlPropTag() ) )
+                    {
+                    // unrecognized subtree?
+                    break;
+                    }
+                // validate n->children != NULL and type XML_TEXT_NODE
+                HBufC* name;
+                aXmlProcessor->GetContentL( iRfs, doc, n->children, &name );
+
+                // get value array index (TWidgetPropertyId) for name
+                TPtr namePtr( name->Des() );
+                TInt propId =
+                    aXmlProcessor->GetPropertyId( namePtr );
+                delete name;
+                name = NULL;
+                if ( EWidgetPropertyIdInvalid == propId )
+                    {
+                    User::Leave( KErrNoMemory );
+                    }
+					
+                n = n->children->next; // down to val
+                if ( NULL == n )
+                {
+                    User::Leave( KErrCorrupt );
+                }
+                TPtrC8 valTag( n->name );
+                if ( 0 != valTag.Compare( KXmlValTag() ) )
+                    {
+                    User::Leave( KErrCorrupt );
+                    }
+                if (propId >= EWidgetPropertyIdCount) // unsupported property
+                    {
+                    HBufC* value = NULL;
+                    if (n->children)
+                        {
+                        aXmlProcessor->GetTextContentAsStringL( iRfs, doc, n->children, &value );
+                        }
+                    else
+                       {
+                       value = KNullDesC().AllocL();
+                       }
+
+                n = (n->parent)->next; // up two and next sibling
+                continue;
+                }
+                HBufC* value;
+                aXmlProcessor->GetContentL( iRfs, doc, n->children, &value );
+                CleanupStack::PushL( value );
+
+                n = n->children->next; // down to type
+                if ( NULL == n )
+                {
+                User::Leave( KErrCorrupt );
+                }
+                TPtrC8 typeTag( n->name );
+                if ( 0 != typeTag.Compare( KXmlTypeTag() ) )
+                {
+                    User::Leave( KErrCorrupt );
+                }
+                // validate n->children != NULL and type XML_TEXT_NODE
+                HBufC* type;
+                aXmlProcessor->GetContentL( iRfs, doc, n->children, &type );
+                CleanupStack::PushL( type );
+                //
+                // assume void/unknown is not put in XML format so anything
+                // not recognized should be handled like other unrecognized
+                // subtree
+                TWidgetPropertyType typeEnum = EWidgetPropTypeUnknown;
+                if ( 0 == type->Des().Compare( KXmlDataTypeBool() ) )
+                    {
+                    typeEnum = EWidgetPropTypeBool;
+                    }
+                else if ( 0 == type->Des().Compare( KXmlDataTypeInt() ) )
+                    {
+                    typeEnum = EWidgetPropTypeInt;
+                    }
+                else if ( 0 == type->Des().Compare( KXmlDataTypeString() ) )
+                    {
+                    typeEnum = EWidgetPropTypeString;
+                    }
+                else if ( 0 == type->Des().Compare( KXmlDataTypeUid() ) )
+                    {
+                    typeEnum = EWidgetPropTypeUid;
+                    }
+                CleanupStack::PopAndDestroy( type );
+
+                // set prop according to type
+                switch ( typeEnum )
+                    {
+                    case EWidgetPropTypeBool:
+                    if ( 0 == value->Des().Compare( _L("0") ) )
+                        {
+                        *backupPropertyValues[propId] = 0;
+                        }
+                    else
+                        {
+                        *(backupPropertyValues[propId]) = 1;
+                        }        
+                    break;
+                    
+                    case EWidgetPropTypeInt:
+                    TLex toInt( value->Des() );
+                    TInt k;
+                    if ( KErrNone != toInt.Val( k ) )
+                       {
+                       User::Leave( KErrCorrupt );
+                       }
+                    if ( propId ==  EBlanketPermGranted )
+                        backupBlanketPerm = k;        
+                    break;                    
+					          
+					          case EWidgetPropTypeString:
+                    *(backupPropertyValues[propId]) = *value; 
+                    break;
+                    
+                    case EWidgetPropTypeUid:
+                        {
+                        TLex toUid( value->Des() );
+                        TInt u;
+                        if ( KErrNone != toUid.Val( u ) )
+                            {
+                            User::Leave( KErrCorrupt );
+                            }
+                       *(backupPropertyValues[propId])  = TUid::Uid( u );
+                       }
+                    break;        
+                    };
+
+                   CleanupStack::Pop( value );
+                   if ( EWidgetPropTypeString != typeEnum )
+                       {
+                       delete value;
+                       }
+        
+                   n = ((n->parent)->parent)->next; // up two and next sibling
+                   }                     
+                   // Compare to see if it's this widget 
+                   if ( 0 == (iPropertyValues[EBundleIdentifier]->iValue.s)->Compare(*backupPropertyValues[EBundleIdentifier]->iValue.s) )
+                       {
+                       if ( backupBlanketPerm != -1 ) 
+                           {                       	
+                           (*iPropertyValues[EBlanketPermGranted]) = backupBlanketPerm; 
+                           }
+                       break;
+                       }
+                } // if <entry>
+            } // if n is element
+        } // for
+
+ 
+    TInt j = 0; 
+    for ( ; j < EWidgetPropertyIdCount; ++j )
+        {
+        delete backupPropertyValues[j];
+        }
+    backupPropertyValues.Close();
+           
+    // cleanup 
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+    
+#ifdef BRDO_SYMBIAN_LIBXML_FF
+    XmlEngineCleanup();
+#else    
+    xmlCleanupGlobalData();
+#endif
+    CleanupStack::PopAndDestroy( 2, &file ); // buf, file    
+
+    delete aXmlProcessor; 
+	}
 
 // ============================================================================
 // CWidgetInstaller::PreprocessWidgetBundleL()
@@ -325,6 +616,9 @@ TBool CWidgetInstaller::PreprocessWidgetBundleL( TDesC& aRestoreDir )
         bufferPtr, iPropertyValues, iRfs );
 
     CleanupStack::PopAndDestroy( 2, &rFile ); // rFile, buffer
+
+    // Fix the widget properties from restored file 
+    TRAP_IGNORE (FixWidgetPropsL());  // Even the fixing leaves, it should not stop the process going 
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // EXISTING WIDGET?

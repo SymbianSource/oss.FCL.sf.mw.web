@@ -413,8 +413,8 @@ TInt CInternetConnectionManager::ConnectL
     CLOG_WRITE_1( "ConnMan connAllowed: %d", connAllowed );
     if( !connAllowed && ( KErrNone == err ) )
         {
-        CLOG_WRITE( "ConnMan SetBearerSet: EApBearerTypeWLAN"  );
-        overrides->SetBearerSet( EApBearerTypeWLAN );
+        CLOG_WRITE( "ConnMan SetBearerSet: ECommDbBearerWLAN"  );
+        overrides->SetBearerSet( ECommDbBearerWLAN );
         }
 
 
@@ -1391,10 +1391,11 @@ CApAccessPointItem* CInternetConnectionManager::APItemFromAPIdLC( TUint32 aAPId 
         iVpnItem = CVpnApItem::NewLC();
         CleanupStack::Pop();
 
-        iVpnEngine->VpnDataL( aAPId, *iVpnItem );
+        TRAP_IGNORE(iVpnEngine->VpnDataL( aAPId, *iVpnItem ));
 
         // get real WAP id
-        iVpnItem->ReadUint( EApVpnRealWapID, aAPId );
+        if( NULL != iVpnItem )
+          iVpnItem->ReadUint( EApVpnRealWapID, aAPId );
         }
 
     TRAP_IGNORE(iApDataHandler->AccessPointDataL( aAPId, *apItem ));

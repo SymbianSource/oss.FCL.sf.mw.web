@@ -396,16 +396,16 @@ static void addTag(const QualifiedName& tag, ConstructorFunc func)
     gFunctionMap->set(tag.localName().impl(), func);
 }
 
-struct cleanupFuncMap {
-    ~cleanupFuncMap() {
-        if( gFunctionMap ) {
-            gFunctionMap->clear();
-            delete gFunctionMap;
-            gFunctionMap=0;
-        }
+void cleanupFuncMap() 
+{
+    if( gFunctionMap ) {
+        gFunctionMap->clear();
+        delete gFunctionMap;
+        gFunctionMap=0;
+
     }
-};
-static cleanupFuncMap cleanup;
+}
+
 static void createFunctionMap()
 {
     // Create the table.

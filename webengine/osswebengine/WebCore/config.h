@@ -100,7 +100,9 @@
 #define WTF_USE_NPOBJECT 1
 #undef WIN32
 #undef _WIN32
+#ifdef __WINSCW__
 #undef AVOID_STATIC_CONSTRUCTORS
+#endif // __WINSCW__
 #define USE_SYSTEM_MALLOC 1
 #define U_HAVE_INT8_T 0
 #define U_HAVE_INT16_T 0

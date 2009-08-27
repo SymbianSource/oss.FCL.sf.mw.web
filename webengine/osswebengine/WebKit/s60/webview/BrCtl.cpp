@@ -77,7 +77,10 @@
 #include "focusController.h"
 #include "IconDatabase.h"
 #include "httpDownload.h"
+#include "BrCtlSoftkeysObserverImpl.h"
+#include "BrCtlSpecialLoadObserverImpl.h"
 #include "BrCtlLayoutObserverImpl.h"
+#include "BrCtlWindowObserverImpl.h"
 #include "WidgetExtension.h"
 #include "PluginSkin.h"
 #include "HttpUiCallbacks.h"
@@ -410,6 +413,7 @@ CBrCtl::CBrCtl(
    , m_suspendTimers(false)
    , m_wmlEngineInterface(NULL)
    , m_brCtlDownloadObserver(aBrCtlDownloadObserver)
+   , m_windoCloseTimer(NULL)
 {
     m_documentHeight = 0;
     m_displayHeight = 0;
@@ -418,8 +422,11 @@ CBrCtl::CBrCtl(
     m_displayWidth = 0;
     m_displayPosX = 0;
     m_hasHorizontalScrollbar = false;
+    m_ownsSpecialLoadObserver = false;
+    m_ownsSoftkeysObserver = false;    
     m_ownsLayoutObserver = false;
     m_ownsDialogsProvider = false;
+    m_ownsWindowObserver = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -448,16 +455,42 @@ void CBrCtl::ConstructL(
 
     m_usrAgnt = CUserAgent::NewL();
 
+    // Create and initialize the Special Load Observer
+    if (m_brCtlSpecialLoadObserver == NULL)
+        {
+        m_brCtlSpecialLoadObserver = new (ELeave) CBrCtlSpecialLoadObserver();
+        m_ownsSpecialLoadObserver = true;
+        }
+        
+        
+    // Setup default support, if it wasn't passed into the constructor...
+    // Create and initialize the Softkey Observer
+    if (m_brCtlSoftkeysObserver == NULL)
+        {
+        m_brCtlSoftkeysObserver = new (ELeave) CBrCtlSoftkeysObserver();
+        m_ownsSoftkeysObserver = true;
+        }
+        
+    // Create and initialize the Layout Observer
     if (m_brCtlLayoutObserver == NULL)
         {
         m_brCtlLayoutObserver = new (ELeave) CBrCtlLayoutObserver();
         m_ownsLayoutObserver = true;
         }
+    // Create and initialize the Dialog Provider
     if (m_brCtlDialogsProvider == NULL)
         {
         m_brCtlDialogsProvider = CBrowserDialogsProvider::NewL(NULL);
         m_ownsDialogsProvider = true;
         }
+        
+  // window observer
+    if(m_brCtlWindowObserver == NULL)
+        {
+        m_brCtlWindowObserver = new (ELeave) CBrCtlWindowObserver();
+        m_ownsWindowObserver = true;
+        }
+    
     LoadResourceFileL();
     // Set the rect for BrowserControl (a CCoeControl).
     SetRect(aRect);
@@ -478,7 +511,6 @@ EXPORT_C CBrCtl::~CBrCtl()
     iLoadEventObserversArray.Close();
     iLoadEventObserversArray.Close();
     m_stateChangeObserverArray.Close();
-    m_commandObserverArray.ResetAndDestroy();
     m_commandObserverArray.Close();
     m_subscribeToItems.ResetAndDestroy();
     m_subscribeToItems.Close();
@@ -489,6 +521,18 @@ EXPORT_C CBrCtl::~CBrCtl()
     delete m_historyHandler;
     delete m_settingsContainer;
     delete m_usrAgnt;
+    
+    if (m_ownsSpecialLoadObserver) {
+        delete (CBrCtlSpecialLoadObserver*)m_brCtlSpecialLoadObserver;
+    }
+    
+    if (m_ownsSoftkeysObserver) {
+        delete (CBrCtlSoftkeysObserver*)m_brCtlSoftkeysObserver;
+    }
+    
+    if (m_ownsWindowObserver) {
+        delete (CBrCtlWindowObserver*)m_brCtlWindowObserver;
+    }
 
     if (m_ownsLayoutObserver) {
         delete (CBrCtlLayoutObserver*)m_brCtlLayoutObserver;
@@ -500,6 +544,11 @@ EXPORT_C CBrCtl::~CBrCtl()
         m_timer->Cancel();
         delete m_timer;
     }
+    if (m_windoCloseTimer) {
+        m_windoCloseTimer->Cancel();
+        delete m_windoCloseTimer;
+    }
+    
     if (m_dataLoadConsumer) {
         m_dataLoadConsumer->stopDataLoad();
         endLoadData();
@@ -507,6 +556,9 @@ EXPORT_C CBrCtl::~CBrCtl()
     m_brCtlLayoutObserver = NULL;
     m_brCtlDialogsProvider = NULL;
     m_brCtlDownloadObserver = NULL;
+    m_brCtlWindowObserver = NULL;
+    m_brCtlSoftkeysObserver = NULL; 
+    m_brCtlSpecialLoadObserver = NULL;
 
     UnloadDllWmlEngine();
 
@@ -545,6 +597,8 @@ void CBrCtl::HandleBrowserLoadEventL( TBrCtlDefs::TBrCtlLoadEvent aLoadEvent, TU
                 UnloadDllWmlEngine();
             }
 #endif
+            if (m_webView->formFillPopup() && m_webView->formFillPopup()->IsVisible()) 
+                m_webView->formFillPopup()->handleCommandL(TBrCtlDefs::ECommandCancel);    
             break;
     }
 }
@@ -2036,13 +2090,19 @@ void CBrCtl::showWindow()
 
 void CBrCtl::closeWindowSoon()
 {
-    m_timer = CPeriodic::NewL(CActive::EPriorityIdle);
-    m_timer->Start( 20, 0, TCallBack( &doCloseCb, this ) );
+    if( m_windoCloseTimer ) {
+        m_windoCloseTimer->Cancel();
+    }
+    else {
+        m_windoCloseTimer = CPeriodic::NewL(CActive::EPriorityIdle);
+    }
+    
+    m_windoCloseTimer->Start( 20, 0, TCallBack( &doCloseCb, this ) );
 }
 
 void CBrCtl::doCloseWindowSoon()
 {
-    m_timer->Cancel();
+    m_windoCloseTimer->Cancel();
     if (brCtlWindowObserver())
         TRAP_IGNORE(brCtlWindowObserver()->HandleWindowCommandL(KNullDesC(), ECloseWindow));
 }

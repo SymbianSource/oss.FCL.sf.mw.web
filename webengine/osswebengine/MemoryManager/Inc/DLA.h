@@ -616,6 +616,8 @@ struct malloc_tree_chunk {
   struct malloc_tree_chunk* child[2];
   struct malloc_tree_chunk* parent;
   bindex_t                  index;
+  size_t            pageout;  /* chunk pageout flag  */
+  size_t            npages;   /* chunk pageout size */
 };
 
 typedef struct malloc_tree_chunk  tchunk;
@@ -652,10 +654,10 @@ typedef struct malloc_segment* msegmentptr;
 struct malloc_state {
   binmap_t   smallmap;
   binmap_t   treemap;
-  size_t     dvsize;
+  size_t     dvsize; // unused
   size_t     topsize;
   TUint8*      least_addr;
-  mchunkptr  dv;
+  mchunkptr  dv; // unused
   mchunkptr  top;
   size_t     trim_check;
   size_t     magic;
@@ -1045,4 +1047,46 @@ struct malloc_params {
 		unsigned size;
 	};
 	/******CODE TO SUPORT SLAB ALLOCATOR******/
+	
+	/****** COMMON DEFS CHUNK PAGE MAP/UNMAP *****/
+#define CHUNK_PAGEOUT_THESHOLD (12*1024U)
+#define CHUNK_PAGE_OUT_FLAG (98989U)
+#define tchunk_page_align(p)    (char*)page_align((size_t)(p) + sizeof(tchunk) + TOP_FOOT_SIZE)
+#define address_offset(HIGH, LOW)    (size_t)((char*)(HIGH) - (char*)(LOW))
+
+/* tree_malloc_chunk pageout header operations */
+#define set_tchunk_mem_pageout(TP, NPAGES) \
+    { (TP)->pageout = CHUNK_PAGE_OUT_FLAG; (TP)->npages = (NPAGES); }
+#define reset_tchunk_mem_pageout(TP) \
+    { (TP)->pageout = 0;  (TP)->npages = 0; }  
+#define page_not_in_memory(P, S) \
+    (  !is_small(S) &&  ( (((tchunkptr)(P))->pageout==CHUNK_PAGE_OUT_FLAG)?1:0 )  )    
+
+	
+#ifdef DL_CHUNK_MEM_DEBUG
+#define ASSERT_RCHUNK_SIZE() \
+    {RChunk rchunk; rchunk.SetHandle(iChunkHandle); assert(iChunkSize == rchunk.Size());}
+#define TRACE_DL_CHUNK_MAP(c_addr, csize, page_addr, page_size) \
+    MEM_LOGF(_L8("DL_CHUNK_MAP$$:: chunk_addr=%x, chunk_size=%d, page_addr=%x, page_size=%d"), c_addr, csize, page_addr, (page_size));
+#define TRACE_DL_CHUNK_UNMAP(c_addr, csize, page_addr, page_size) \
+    MEM_LOGF(_L8("DL_CHUNK_UNMAP:: chunk_addr=%x, chunk_size=%d, page_addr=%x, page_size=%d"), c_addr, csize, page_addr, (page_size));
+#else
+#define ASSERT_RCHUNK_SIZE()
+#define TRACE_DL_CHUNK_MAP(c_addr, csize, p_addr, psize)
+#define TRACE_DL_CHUNK_UNMAP(c_addr, csize, p_addr, psize)
+#endif	
+
+#ifdef OOM_LOGGING	
+#define TRACE_UNMAPPED_CHUNK(SZ) \
+    iUnmappedChunkSize += (SZ);	
+#define MEM_DUMP_OOM_LOGS(NB, MSG) \
+    MEM_LOG(MSG); \
+    C_LOG(MSG); \
+    dump_heap_logs(NB)
+#else
+#define MEM_DUMP_OOM_LOGS(NB, MSG)
+#define TRACE_UNMAPPED_CHUNK(SZ)
+#endif
+	
+	/****** COMMON DEFS PAGE MAP/UNMAP *****/
 #endif/*__DLA__*/

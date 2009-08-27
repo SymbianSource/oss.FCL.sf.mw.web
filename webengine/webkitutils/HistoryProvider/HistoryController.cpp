@@ -399,11 +399,11 @@ void HistoryController::deleteEntry(int index)
         HistoryEntry* deadEntry = m_historyStack[index];
         m_historyStack.Remove(index);
         delete deadEntry;
-		// Shift current page if removing previous pages
-        if (index <= m_currentIndex && m_currentIndex > 0)
-        	{
-        	m_currentIndex--;
-        	}
+        // Shift current page if removing previous pages
+        if (index <= m_currentIndex && m_currentIndex >= 0)
+            {
+            m_currentIndex--;
+            }
     }
 }
 
@@ -418,20 +418,23 @@ void HistoryController::setCurrentL ( THistoryStackDirection direction )
 */
 void HistoryController::updateGlobalHistoryForReload()
 {
-    HistoryEntry* entry = m_historyStack[m_currentIndex];
-    entry->touch();
-    updateCurrentEntryPositionIfNeeded();
+	HistoryEntry* entry = entryByIndex(m_currentIndex);
+	if ( entry )
+		{
+		entry->touch();
+		updateCurrentEntryPositionIfNeeded();
+		}
 }
 
 /**
 */
 void HistoryController::goBackOrForward(int distance)
-{
-    m_tempCurrentIndex = m_currentIndex;
-    m_currentIndex += distance;
-    m_historyLoadOffset = distance;
-    const HistoryEntry* currentEntry = entryByIndex(m_currentIndex);
+{    
+    const HistoryEntry* currentEntry = entryByIndex(m_currentIndex+distance);
     if (currentEntry) {
+		m_tempCurrentIndex = m_currentIndex;
+        m_currentIndex += distance;
+        m_historyLoadOffset = distance;
         TPtrC8 url = currentEntry->requestUrl();
         m_historyCallback->doHistoryGet( url, TBrCtlDefs::ECacheModeHistory );
     }

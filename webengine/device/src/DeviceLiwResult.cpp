@@ -48,15 +48,10 @@ const ClassInfo DeviceLiwResult::info = { "DeviceLiwResult", 0/*&ArrayInstance::
 DeviceLiwResult::DeviceLiwResult( JSValue* proto)
     : JSObject(proto)
     {
-        m_privateData = new DeviceLiwResultPrivate();
-        if (!m_privateData)
-            m_valid = false;
-        else 
-            {
-            m_valid = true;
-            // protect this object
-            KJS::Collector::protect(this);
-            }            
+    m_valid = EFalse;
+    m_privateData = new DeviceLiwResultPrivate(this);
+    if ( m_privateData )
+        m_valid = ETrue;
     }
 
 // ----------------------------------------------------------------------------
@@ -66,75 +61,21 @@ DeviceLiwResult::DeviceLiwResult( JSValue* proto)
 //
 DeviceLiwResult::~DeviceLiwResult()
     {
-        // only can be called by garbage collection after the 
-        // DeviceLiwResult::Close() was called
+    Close();
     }
 
 // ----------------------------------------------------------------------------
 // DeviceLiwResult::Close
 //
 // ----------------------------------------------------------------------------
-void DeviceLiwResult::Close( ExecState* exec, bool unmark )
+void DeviceLiwResult::Close()
     {
-    
-    // avoid double close    
     if(!m_valid) 
-        {   
-        if(unmark) 
-            {
-            // unprotect this to allow the garbage collection to release this jsobject
-            KJS::Collector::unprotect(this);
-            }
         return;
-        }
-    
-    // close thDeviceLiwIterable
-    if ( exec )
-        {
-        PropertyNameArray propertyNames;
-        this->getPropertyNames( exec, propertyNames );
-        unsigned size = static_cast<unsigned>(propertyNames.size());
-
-        for (unsigned i = 0; i < size; i++)
-            {
-            JSValue * jsvalue = this->get( exec, propertyNames[i] );
-            if(jsvalue->isObject()) 
-                {            
-                JSObject * prop = jsvalue->toObject( exec );
-                if (prop && prop->inherits( &DeviceLiwIterable::info ))
-                    {
-                    (static_cast<DeviceLiwIterable*>(prop))->Close(exec, true);
-                    }
-                }                
-            }            
-        }
-    
+        
+    m_valid = EFalse;
     delete m_privateData;
     m_privateData = NULL;
-    m_valid = false;
-   
-    if(unmark) 
-        {
-        // unprotect this to allow the garbage collection to release this jsobject
-        KJS::Collector::unprotect(this);
-        }
-    }
-
-// ----------------------------------------------------------------------------
-// DeviceLiwResult::QuickClose
-//
-// ----------------------------------------------------------------------------
-void DeviceLiwResult::quickClose()
-    { 
-    if(!m_valid) 
-        return
- 
-    delete m_privateData;
-    m_privateData = NULL;
-    m_valid = false;
-   
-    // unprotect this to allow the garbage collection to release this jsobject
-    KJS::Collector::unprotect(this);
     }
     
 // ----------------------------------------------------------------------------
@@ -238,18 +179,20 @@ JSValue* DeviceLiwResult::getValueProperty(ExecState *exec, int token) const
 // DeviceLiwIterablePrivate constructor
 //
 // ---------------------------------------------------------------------------
-DeviceLiwResultPrivate::DeviceLiwResultPrivate()
+DeviceLiwResultPrivate::DeviceLiwResultPrivate(DeviceLiwResult* jsobj)
     {
-        // currently, do nothing
+    m_jsobj = jsobj;
     }
     
 // ---------------------------------------------------------------------------
 // DeviceLiwMapPrivate::Close
 //
 // ---------------------------------------------------------------------------
-void DeviceLiwResultPrivate::Close()
+DeviceLiwResultPrivate::~DeviceLiwResultPrivate()
     {
-        // currently, do nothing
+    // invalid the DeviceLiwResult
+    if (m_jsobj)
+        m_jsobj->m_valid = EFalse; 
     }
     
 // ----------------------------------------------------------------------------
@@ -278,7 +221,7 @@ JSValue* DeviceLiwResultFunc::callAsFunction(ExecState* exec, JSObject *thisObj,
 
     if ( m_func == DeviceLiwResult::close )
         {
-        result->Close(exec, false);
+        result->Close();
         }
     return jsUndefined();
     }

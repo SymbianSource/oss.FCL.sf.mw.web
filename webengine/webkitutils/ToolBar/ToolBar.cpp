@@ -390,7 +390,7 @@ void CToolBar::DrawButtonsToBitmap()
 // ----------------------------------------------------------------------------
 void CToolBar::UpdateCursorPosition()
 {
-    if (iButtonArray->Length() > 0 && iButtonArray->Length() >= iFocusedButtonIndex) {
+    if (iButtonArray->Count() > iFocusedButtonIndex) {
         CToolBarButton* b = iButtonArray->At(iFocusedButtonIndex);
         if (b) {
             TPoint pt = iPosition + b->Position() + TPoint(b->Size().iWidth/2,b->Size().iHeight/2);
@@ -731,6 +731,7 @@ void CToolBar::HandleButtonActivation()
             case EToolBarViewImages:
                 {
                 TRAP_IGNORE(iToolBarCallback->ViewImagesL());
+                TRAP_IGNORE(iToolBarCallback->CloseToolBarL());
                 break;
                 }
 

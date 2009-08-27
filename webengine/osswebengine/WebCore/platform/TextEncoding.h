@@ -64,7 +64,8 @@ namespace WebCore {
     const TextEncoding& UTF32LittleEndianEncoding();
     const TextEncoding& UTF8Encoding();
     const TextEncoding& WindowsLatin1Encoding();
-
+    void deleteTextEncodings();
+    
 } // namespace WebCore
 
 #endif // TextEncoding_h

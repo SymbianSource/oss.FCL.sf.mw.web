@@ -77,7 +77,7 @@ class CRecentUrlStore : public CBase
 	    /**
 	    * Save the url and title in store.
 	    */
-	    IMPORT_C void SaveData (const TDesC& aUrl, const TDesC& aTitle);
+	    IMPORT_C void SaveDataL (const TDesC& aUrl, const TDesC& aTitle);
 
 	    /**
 	    * Clear the saved data

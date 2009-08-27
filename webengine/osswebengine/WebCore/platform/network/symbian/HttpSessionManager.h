@@ -43,7 +43,7 @@ class RHTTPTransaction;
 class SelfDownloadContentHandler;
 
 const int KHttpMaxConnectionNum = 7;
-const int KHttpMaxTransactionNumPerConnection = 5;
+const int KHttpMaxTransactionNumPerConnection = 2;
 const int KHttpBatchingBuffSize = 2*1400;
 const int KHttpReceiveBuffSize = 32*1024;
 

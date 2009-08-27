@@ -75,7 +75,7 @@ extern "C" {
 #ifndef __SYMBIAN32__
 
 #ifdef __S60_32__
-#include <javascriptcore\stdint.h>
+#include <javascriptcore/stdint.h>
 #else
 #include <stdint.h>
 #endif //__S60_32__
@@ -85,7 +85,7 @@ extern "C" {
 #else // Not __SYMBIAN32__
 
 #ifdef __S60_32__
-#include <javascriptcore\stdint.h>
+#include <javascriptcore/stdint.h>
 #else
 #include <stdint.h>
 #endif //__S60_32__

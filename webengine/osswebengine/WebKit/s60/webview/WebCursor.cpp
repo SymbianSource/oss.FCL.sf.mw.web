@@ -143,6 +143,13 @@ void WebCursor::setCurrentView(WebView& view)
         m_view = &view;
         TRAP_IGNORE( constructSpriteL() );
     }
+    //switching between diffrent webviews, set current webview as the parent to m_sprite
+    if( m_sprite->Parent() != &view)
+    {
+        m_view = &view;
+        CCoeControl* parent = static_cast<CCoeControl*>(m_view);
+        m_sprite->SetParent(parent);
+    }
     m_view = &view;
     setOpaqueUntil(KTransparencyTime);
     m_transcount = 0;

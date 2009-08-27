@@ -128,6 +128,8 @@ LIBRARY         aknpictograph.lib
 LIBRARY         pbe.lib
 LIBRARY         crypto.lib
 LIBRARY         libpthread.lib
+LIBRARY         WidgetRegistryClient.lib
+
 #ifdef BRDO_TOUCH_ENABLED_FF 
 LIBRARY         touchfeedback.lib
 #endif // BRDO_TOUCH_ENABLED_FF 

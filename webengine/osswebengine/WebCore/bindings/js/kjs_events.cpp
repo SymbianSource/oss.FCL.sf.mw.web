@@ -145,6 +145,39 @@ void JSAbstractEventListener::handleEvent(Event* ele, bool isWindowEvent)
     }
 }
 
+void JSAbstractEventListener::handleNetworkStateEvent(int param)
+{
+    JSObject* listener = listenerObj();
+    if (!listener)
+        return;
+    
+    Window* window = windowObj();
+    if (!window)
+        return;
+    
+    Frame *frame = window->impl()->frame();
+    if (!frame)
+        return;
+    KJSProxy* proxy = frame->scriptProxy();
+    if (!proxy)
+        return;
+
+    JSLock lock;
+
+    ScriptInterpreter* interpreter = proxy->interpreter();
+    ExecState* exec = interpreter->globalExec();
+    
+    List args;
+    if ( param != -1 )
+        args.append( jsNumber(param) );
+    JSValue* retval = listener->call(exec, window, args);
+    
+    if (exec->hadException())
+        exec->clearException();
+    
+    JSLock::unlock();
+}
+
 bool JSAbstractEventListener::isHTMLEventListener() const
 {
     return m_html;

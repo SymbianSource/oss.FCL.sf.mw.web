@@ -109,7 +109,7 @@ void CDeviceLiwBinding::ConstructL()
 
         // we need to keep main session allive, to keep sub session
         m_secMgr = CRTSecManager::NewL();
-        
+
         CTrustInfo* trust = CTrustInfo::NewLC();
 
         // TODO: in future, to support blanket permission,
@@ -123,9 +123,11 @@ void CDeviceLiwBinding::ConstructL()
             {
             User::Leave( KErrGeneral );
             }
+#ifdef SECURITYMANAGER_PROMPT_ENHANCEMENT
+		m_scriptSession->SetPromptOption(RTPROMPTUI_PROVIDER);   //  This is for setting the new prompting method
+#endif
         CleanupStack::PopAndDestroy( trust );
     }
-
 
 // ----------------------------------------------------------------------------
 // CDeviceLiwBinding::~CDeviceLiwBinding
@@ -141,7 +143,7 @@ CDeviceLiwBinding::~CDeviceLiwBinding()
     delete m_critArr;
     delete m_serviceHandler;
     delete m_scriptSession;
-    delete m_secMgr; 
+    delete m_secMgr;
     }
 
 
@@ -188,7 +190,7 @@ TInt CDeviceLiwBinding::LoadServiceProvider( ExecState* exec, const List& args )
             item->SetServiceClass( TUid::Uid( KLiwClassBase ) );
             RCriteriaArray crit_arr;
             crit_arr.AppendL( item );
-            
+
             CleanupStack::Pop(item); // item
 
             // "Attach" runtime to service
@@ -214,14 +216,14 @@ TInt CDeviceLiwBinding::LoadServiceProvider( ExecState* exec, const List& args )
                     case SAPIPROMPTLESS :
                         load_err = m_serviceHandler->AttachL( crit_arr );
                         break;
-                    case SAPIACCESSDENIED : 
+                    case SAPIACCESSDENIED :
                         load_err = KLiwSecurityAccessCheckFailed;
                         break;
                     default :
                         load_err = KLiwSecurityAccessCheckFailed;
                         break;
                     }
-                
+
                 User::LeaveIfError(widgetregistry.Disconnect());
                 CleanupStack::PopAndDestroy(); //widgetregistry
                 // hard coded for now since the definition of TLiwLoadStatus is not exposed to common dir yet
@@ -230,7 +232,7 @@ TInt CDeviceLiwBinding::LoadServiceProvider( ExecState* exec, const List& args )
                     error = KErrNone; // normalize the error
                     m_critArr->AppendL( item );
                     }
-                else 
+                else
                     {
                     error = load_err; // pass on the TLiwLoadStatus
                     delete item;
@@ -481,7 +483,7 @@ JSValue* CDeviceLiwBinding::InvokeOpInternal(
                                             callBack );
                 User::UnMarkCleanupStack(____t);
                 inps->Reset();
-                rval = LiwGenericParamList2JsArray( exec, outps );
+                rval = LiwGenericParamList2JsArray( exec, outps, ETrue );
                 outps->Reset();
                 CleanupStack::PopAndDestroy( oper ); // map
                 CleanupStack::Pop();// outps
@@ -901,7 +903,9 @@ JSValue* CDeviceLiwBinding::LiwVariant2JsVal(
             jsList.append( jsNumber( variant.AsMap()->Count() ) );
             JSObject * rval = new DeviceLiwMap(exec->lexicalInterpreter()->builtinArray()->construct(
                 exec, jsList ), variant.AsMap(), this);
-
+            
+            DevicePrivateBase* pMapData = (static_cast<DeviceLiwMap*> (rval))->getMapData();
+            
             for ( TInt i = 0; i < variant.AsMap()->Count(); i++ )
                 {
                 TBuf8<KMaxKeySize> name;
@@ -910,9 +914,24 @@ JSValue* CDeviceLiwBinding::LiwVariant2JsVal(
                     if ( variant.AsMap()->AtL( i, name ) )
                         {
                         variant.AsMap()->FindL( name, v );
+                        JSValue* jsval = LiwVariant2JsVal( exec, v );
                         rval->put( exec,
-                                Identifier( ( const char* ) name.PtrZ() ),
-                                LiwVariant2JsVal( exec, v ) );
+                                   Identifier( ( const char* ) name.PtrZ() ),
+                                   jsval );
+                        if ( v.TypeId() == EVariantTypeIterable )
+                            {
+                            DeviceLiwIterable* itObj = static_cast<DeviceLiwIterable*> (jsval);
+                            DevicePrivateBase* itData = itObj->getIterableData();
+                            itData->SetParent( pMapData );
+                            pMapData->AddChild( itData );
+                            }                   
+                        else if ( v.TypeId() == EVariantTypeMap )    
+                            {
+                            DeviceLiwMap* mapObj = static_cast<DeviceLiwMap*> (jsval);
+                            DevicePrivateBase* mapData = mapObj->getMapData();
+                            mapData->SetParent( pMapData ); 
+                            pMapData->AddChild( mapData );
+                            }
                         }
                     });
                 // No error processing
@@ -1051,7 +1070,7 @@ void CDeviceLiwBinding::JsList2LiwGenericParamListL(
 //
 JSValue* CDeviceLiwBinding::LiwGenericParamList2JsArray(
     ExecState* exec,
-    CLiwGenericParamList* aLiwList )
+    CLiwGenericParamList* aLiwList, TBool managed )
     {
     // the output param list should not be empty, if it is, return an undefined js obj.
     if ( aLiwList->Count() == 0 )
@@ -1064,11 +1083,31 @@ JSValue* CDeviceLiwBinding::LiwGenericParamList2JsArray(
     JSObject * rval = new DeviceLiwResult(exec->lexicalInterpreter()->builtinArray()->construct(
                 exec, jsList ));
 
+    DevicePrivateBase* retData =(static_cast<DeviceLiwResult*> (rval))->getResultData();
+
     for ( TInt i = 0; i < aLiwList->Count(); i++ )
         {
         TBuf8<KMaxKeySize> name( (*aLiwList)[i].Name() );
-        rval->put( exec, Identifier( (const char*) name.PtrZ() ),
-            LiwVariant2JsVal( exec, (*aLiwList)[i].Value() ) );  //??? should call AtL?
+        JSValue* jsval = LiwVariant2JsVal( exec, (*aLiwList)[i].Value() );
+        // connect DeviceLiwResult to DeviceLiwIterable  
+        if ( managed )
+            { 
+            if ( (*aLiwList)[i].Value().TypeId() == EVariantTypeIterable )
+                {
+                DeviceLiwIterable* itObj = static_cast<DeviceLiwIterable*> (jsval);
+                DevicePrivateBase* itData = itObj->getIterableData();
+                itData->SetParent( retData ); 
+                retData->AddChild( itData );
+                }
+            else if ( (*aLiwList)[i].Value().TypeId() == EVariantTypeMap )
+                {
+                DeviceLiwMap* mapObj = static_cast<DeviceLiwMap*> (jsval);
+                DevicePrivateBase* mapData = mapObj->getMapData();
+                mapData->SetParent( retData ); 
+                retData->AddChild( mapData );
+                }    
+            }
+        rval->put( exec, Identifier( (const char*) name.PtrZ() ), jsval);  //??? should call AtL?
         }
 
     return rval;
@@ -1084,7 +1123,42 @@ JSValue* CDeviceLiwBinding::LiwGenericParamList2JsArray(
 void CDeviceLiwBinding::SetUid( const TUint& aValue)
     {
     m_Uid.iUid = aValue;
+#ifdef SECURITYMANAGER_PROMPT_ENHANCEMENT    
+    SetAppName();
+#endif    
     }
+#ifdef SECURITYMANAGER_PROMPT_ENHANCEMENT
+// ----------------------------------------------------------------------------
+// CDeviceLiwBinding::SetAppName
+// Sets the widget display name
+//
+// ----------------------------------------------------------------------------
+//
+void CDeviceLiwBinding::SetAppName()
+    {
+    RWidgetRegistryClientSession widgetregistry;
+    TRAP_IGNORE(
+    TInt ret = widgetregistry.Connect();
+    if ( ret == KErrNone || ret == KErrAlreadyExists )
+        {
+        CleanupClosePushL( widgetregistry );
+        }
+    else
+        {
+        User::Leave( ret );
+        }
+    
+    CWidgetPropertyValue* displayname = widgetregistry.GetWidgetPropertyValueL(m_Uid, EBundleDisplayName );
+    User::LeaveIfError(widgetregistry.Disconnect());
+    CleanupStack::PopAndDestroy(); //widgetregistry
+
+    if ( displayname && displayname->iType == EWidgetPropTypeString )
+        {
+        m_scriptSession->SetApplicationNameL(*displayname);
+        }
+    );
+    }
+#endif
 
 // ----------------------------------------------------------------------------
 // KJS::GetAsciiBufferL

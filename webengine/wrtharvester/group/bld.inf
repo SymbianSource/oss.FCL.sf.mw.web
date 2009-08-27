@@ -24,7 +24,10 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../rom/wrtharvester.iby                CORE_MW_LAYER_IBY_EXPORT_PATH(wrtharvester.iby)
+// export localization files
+../loc/wrtharvester.loc				MW_LAYER_LOC_EXPORT_PATH(wrtharvester.loc)
+../rom/wrtharvester.iby				CORE_MW_LAYER_IBY_EXPORT_PATH(wrtharvester.iby)
+../rom/wrtharvesterResources.iby	LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(wrtharvesterResources.iby)
 
 PRJ_MMPFILES
 wrtharvester.mmp

@@ -69,14 +69,15 @@ class CCpsPublisher : public CBase,
     public:
         TSize BitmapSize();
         void PublishBitmapL( CFbsBitmap& aBitmap, const TDesC& aBundleName );
+        void NetworkConnectionCancelledL();
+        void NetworkConnectionAllowedL();
         
     private:
         void GetBitmapSizeL();
         void InitCpsInterfaceL();
 
-        void AddImageHandleL( const TDesC& aPublisherId, const TDesC& aContentType, 
-                const TDesC& aContentId, const TInt& aHandle, const TInt& aMaskHandle,
-                const TDesC8& aImageKey );
+        void AddImageHandleL( const TDesC& aBundleId, const TInt& aHandle,
+                const TInt& aMaskHandle, const TDesC8& aImageKey );
         void ExecuteCommandL(CLiwDefaultMap* aInFilter, CLiwDefaultMap* aOutDataMap,
                 const TDesC16& aRegistry  );
         void ExecuteRegistrationCommandL( TUint aOption );

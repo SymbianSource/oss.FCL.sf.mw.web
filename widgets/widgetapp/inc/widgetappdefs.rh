@@ -58,6 +58,9 @@ enum TWidgetOperations
     WidgetResume,
     WidgetSuspend,
     WidgetSelect,
+    WidgetOnline,
+    WidgetOffline,
+    WidgetRestart,
     Uninitialized
     };
 

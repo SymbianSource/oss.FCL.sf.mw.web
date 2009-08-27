@@ -23,8 +23,18 @@ DEFAULT
 PRJ_EXPORTS
 
 ../inc/Browser_platform_variant.hrh  MW_LAYER_PLATFORM_EXPORT_PATH(Browser_platform_variant.hrh)
+
 #ifdef BRDO_ADDED_EXPORT_LOCATION
 ../inc/Browser_platform_variant.hrh  BRDO_ADDED_EXPORT_LOCATION(Browser_platform_variant.hrh)
+#endif
+
+#ifdef __PLATFORM_VERSION_50_TUBE__
+../inc/Browser_platform_variant.hrh  /epoc32/include/oem/Browser_platform_variant.hrh
+../inc/Browser_platform_variant.hrh  /epoc32/include/oem/platform/mw/Browser_platform_variant.hrh
+#endif
+
+#ifdef __PLATFORM_VERSION_50__
+../inc/Browser_platform_variant.hrh  /epoc32/include/oem/Browser_platform_variant.hrh
 #endif
 
 PRJ_MMPFILES

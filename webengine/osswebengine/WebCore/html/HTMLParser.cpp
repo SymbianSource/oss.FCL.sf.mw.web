@@ -122,6 +122,9 @@ HTMLParser::HTMLParser(HTMLDocument* doc, bool reportErrors)
     , m_reportErrors(reportErrors)
     , m_handlingResidualStyleAcrossBlocks(false)
     , inStrayTableContent(0)
+#if PLATFORM(SYMBIAN)
+    ,m_scriptSupported(true)
+#endif
 {
 }
 

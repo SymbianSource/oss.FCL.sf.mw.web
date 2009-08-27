@@ -38,6 +38,6 @@
 #else
 // Define an correctly-sized array of pointers to avoid static initialization.
 // Use an array of pointers instead of an array of char in case there is some alignment issue.
-#define DEFINE_GLOBAL(type, name, ...) \
+#define DEFINE_GLOBAL(type, name, args...) \
     void * name[(sizeof(type) + sizeof(void *) - 1) / sizeof(void *)];
 #endif

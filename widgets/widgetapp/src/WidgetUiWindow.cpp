@@ -51,7 +51,7 @@ static const TUint32 KDummyCommand = 0;
 
 const TUint KWmlNoDefaultAccessPoint = KMaxTUint; // see cenrep setting default -1 as int, here as uint
 const TUint KWmlNoDefaultSnapId = KMaxTUint; // see cenrep setting default -1 as int, here as uint
-_LIT( KSeparator, ":" );
+
 // MACROS
 
 // LOCAL CONSTANTS AND MACROS
@@ -92,8 +92,8 @@ CWidgetUiWindow::CWidgetUiWindow( CWidgetUiWindowManager& aWindowManager, CCpsPu
     : iWindowManager( aWindowManager ), iCpsPublisher( aCpsPublisher ), iNetworkAccessGrant(EInvalid),
       iPreferredOrientation(TBrCtlDefs::EOrientationUndefined),
       iIsCurrent(EFalse), iShowSoftkeys(EFalse), iWidgetLoaded(EFalse),
-      iSchemeProcessing (EFalse),
-      iBlanketPromptDisplayed (EFalse) 
+      iSchemeProcessing (EFalse),iClickCount(0), iWidgetLoadStarted(EFalse),
+      iNetworkState(ENetworkNotAllowed), iUserPermission(ETrue)
     {
     }
 
@@ -171,6 +171,9 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
         }
      
     iDlId = 0;
+    
+    // determine initial widget online/offline network state
+    DetermineNetworkState();
     }
 
 // -----------------------------------------------------------------------------
@@ -195,6 +198,7 @@ CWidgetUiWindow::~CWidgetUiWindow()
     delete iLeftSoftKeyLabel;
     delete iWidgetUiDialogsProviderProxy;
     delete iSchemeHandler;
+    delete iMiniviewBitmap;
     }
 
 // -----------------------------------------------------------------------------
@@ -318,7 +322,10 @@ void CWidgetUiWindow::SetSoftkeysVisible(TBool aVisible)
     if (CbaGroup())
         {
         CbaGroup()->MakeVisible( iShowSoftkeys );
-        iWindowManager.View()->UpdateStatusPane();
+        iWindowManager.View()->UpdateStatusPane( aVisible );
+        //in case CBA keys are disbaled by javascript ,SetToolbarVisibility EFalse,
+        //Since it would take entire screen.Else SetToolbarVisibility to ETrue in Landscape mode
+        iShowSoftkeys?iWindowManager.View()->UpdateToolbar(ETrue):iWindowManager.View()->UpdateToolbar(EFalse);
         CbaGroup()->DrawNow();
         TRect clientRect = iWindowManager.View()->ClientRect();
         // resize the container to take into account the size of the softkey labels
@@ -404,7 +411,7 @@ void CWidgetUiWindow::SetSoftKeyLabelL( TBrCtlKeySoftkey aKeySoftkey, const TDes
 
     // make sure softkeys are visible before setting the text
     // CEikButtonGroupContainer::Current() returns NULL if softkeys are not visible
-    SetSoftkeysVisible(ETrue);
+    SetSoftkeysVisible(iShowSoftkeys);
 
     TInt err(KErrNotFound);
     // check to see if aText is a filename
@@ -495,11 +502,11 @@ void CWidgetUiWindow::Relayout( )
 //
 void CWidgetUiWindow::SetCurrentWindow( TBool aCurrent )
     {
-    if (iIsCurrent != aCurrent && iWindowManager.View())
+    if (iIsCurrent != aCurrent && iWindowManager.View() && Engine())
         {
         iIsCurrent = aCurrent;
 
-        iWindowManager.View()->ShowActivatedObject(EFalse); // deactivates any open edit boxes
+        iWindowManager.View()->UpdateStatusPane(EFalse); // deactivates any open edit boxes
 
         if (aCurrent)
             {
@@ -516,9 +523,11 @@ void CWidgetUiWindow::SetCurrentWindow( TBool aCurrent )
             iWindowManager.View()->DeActivateOptionsMenu();
             Engine()->MakeVisible(EFalse);// hide the active widget
             }
-        if ( !aCurrent )
+        if ( !aCurrent &&  (EPublishStart != WidgetMiniViewState()))
+            {
             iWidgetExtension->HandleCommandL ( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase );
-
+            Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase);
+            }
         if ( aCurrent )
             {
             Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandAppForeground + (TInt)TBrCtlDefs::ECommandIdBase);
@@ -568,10 +577,12 @@ void CWidgetUiWindow::UpdateCba( )
 void CWidgetUiWindow::ReloadWidget( )
     {
     SetWidgetLoaded(EFalse);
+    iWidgetLoadStarted = ETrue;
     TRAPD(err,iEngine->LoadFileL( iUrl->Des() ));
     if (err != KErrNone)
         {
         SetWidgetLoaded(ETrue);
+        iWidgetLoadStarted = EFalse;
         }
     }
 
@@ -601,64 +612,27 @@ void CWidgetUiWindow::SetWidgetLoaded( TBool aWidgetLoaded )
 //
 void CWidgetUiWindow::PublishSnapShot()
     {
-    if( iWidgetLoaded )
+    if( iWidgetLoaded && (WidgetMiniViewState() == EPublishStart ) )
         {
 #ifdef BRDO_WRT_HS_FF
-        CFbsBitmap* bitmap( new CFbsBitmap() );
 
-        if ( bitmap && iCpsPublisher)
+        if ( !iMiniviewBitmap )
             {
-
+            iMiniviewBitmap = new CFbsBitmap();
+            }
+            
+        if ( iMiniviewBitmap && iCpsPublisher)
+            {
             TRAP_IGNORE(
-               (iEngine->TakeSnapshotL( *bitmap ));
-                HBufC* publisherName = WidgetIdAndNameLC();
-                RDebug::Printf( "CWidgetUiWindow::PublishSnapShot" );
-                iCpsPublisher->PublishBitmapL( *bitmap, *publisherName );
-                CleanupStack::PopAndDestroy( publisherName );
+               (iEngine->TakeSnapshotL( *iMiniviewBitmap ));
+                iCpsPublisher->PublishBitmapL( *iMiniviewBitmap, *iWidgetBundleId );
                 );
-
-
-            delete bitmap;
             }
 #endif
         }
     }
 
-// -----------------------------------------------------------------------------
-// CWidgetUiWindow::WidgetIdAndNameLC()
-// Constructs the publisher identifier
-//
-// -----------------------------------------------------------------------------
-//
-HBufC* CWidgetUiWindow::WidgetIdAndNameLC()
-    {
 
-    HBufC* widgetBundleName = HBufC::NewLC( KWidgetRegistryVal );
-    TPtr bundleName( widgetBundleName->Des() );
-    GetBundleName( bundleName );
-
-    HBufC* name = HBufC::NewL( bundleName.Length() + KSeparator().Length() +  iWidgetBundleId->Length() );
-    TPtr namePtr( name->Des());
-    namePtr.Append( *iWidgetBundleId );
-    namePtr.Append( KSeparator );
-    namePtr.Append( bundleName );
-    CleanupStack::PopAndDestroy( widgetBundleName );
-    CleanupStack::PushL( name );
-    return name;
-    }
-
-// -----------------------------------------------------------------------------
-// CWidgetUiWindow::GetBundleName()
-// Get Bundle name for the current widget Uid
-//
-// -----------------------------------------------------------------------------
-//
-void CWidgetUiWindow::GetBundleName( TPtr& aBundleName )
-    {
-    RWidgetRegistryClientSession clientSession = iWindowManager.WidgetUIClientSession();
-
-    clientSession.GetWidgetBundleName( iUid, aBundleName );
-    }
 
 // -----------------------------------------------------------------------------
 // CWidgetUiWindow::HasMiniviewL()
@@ -683,22 +657,32 @@ TBool CWidgetUiWindow::HasMiniviewL()
 //
 TBool CWidgetUiWindow::CheckNetworkAccessL()
     {
+    // if widgets in offline mode, deny network access
+    if (iWindowManager.GetNetworkMode() == EOfflineMode)
+        {
+        // if widget is in full view, offer user the option to go to online mode
+#ifdef BRDO_WRT_HS_FF
+        if ( WidgetFullViewState() && WidgetMiniViewState() != EPublishStart )
+            {
+            iCpsPublisher->NetworkConnectionAllowedL();
+            }
+#endif
+        SetNetworkAccessGrant( EDeny );
+        User::Leave( KErrAccessDenied );
+        }
+    
     // begin info.plist (declare EAllowNetworkAccess or EAllowFullAccess ?)
     RWidgetRegistryClientSession& widgetRegistry
                 = iWindowManager.WidgetUIClientSession();
 
-    CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowNetworkAccess );
+    CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL(iUid, EAllowNetworkAccess ); 
     TInt networkAccess = *propValue;
     delete propValue;
-    propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowFullAccess );
+    propValue = widgetRegistry.GetWidgetPropertyValueL(iUid, EAllowFullAccess );
     TInt fullAccess = *propValue;
     delete propValue;
-    propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EBlanketPermGranted );
-    TInt blanketPermission = *propValue;
-    delete propValue;
-    TInt inMiniView = widgetRegistry.IsWidgetInMiniView( iUid);
-    if ( !( networkAccess || fullAccess )  ||
-        ( inMiniView && !blanketPermission  ))
+ 
+    if ( !( networkAccess || fullAccess ) )
         {
         SetNetworkAccessGrant( EDeny );
         User::Leave( KErrAccessDenied );
@@ -734,8 +718,8 @@ void CWidgetUiWindow::NetworkSecurityCheckL()
                     prompt = 1; // got error, force prompt
                 }
                 delete rep;
-           }
-
+            }
+        
             if ( prompt )
                 {
                 CBrowserDialogsProvider* dialogProvider
@@ -748,6 +732,8 @@ void CWidgetUiWindow::NetworkSecurityCheckL()
                 CleanupStack::PopAndDestroy( 3 );
                 // save prompt result for session
                 SetNetworkAccessGrant( grant? EAllow : EDeny );
+                
+                CheckUserPermissionChanged( grant );
                 }
             else
                 {
@@ -826,9 +812,9 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
         TInt connFailure = iWindowManager.GetConnection()->StartConnectionL( ETrue );
         if (KErrCancel == connFailure)
             {
-            // Only if user cancelled, do we treat this as
-            // session deny permission to prevent repeated attempts
-            SetNetworkAccessGrant( EDeny );
+#ifdef BRDO_WRT_HS_FF
+            iCpsPublisher->NetworkConnectionCancelledL();
+#endif
             User::Leave( connFailure );
             }
         else if ( KErrNone != connFailure )
@@ -1096,6 +1082,56 @@ CAiwGenericParamList* CWidgetUiWindow::BrCtlParamList2GenericParamListL(
         }
     CleanupStack::Pop( genericParamList ); // genericParamList
     return genericParamList;
+    }
+
+// ---------------------------------------------------------
+// CWidgetUiWindow::CheckUserPermissionChanged()
+// ---------------------------------------------------------
+//
+void CWidgetUiWindow::CheckUserPermissionChanged(TBool iCurrUserPerm)
+    {
+    if ( iUserPermission != iCurrUserPerm )
+        {
+        iUserPermission = iCurrUserPerm;
+        DetermineNetworkState();
+        }
+    }
+
+// ---------------------------------------------------------
+// CWidgetUiWindow::DetermineNetworkState()
+// ---------------------------------------------------------
+//
+void CWidgetUiWindow::DetermineNetworkState()
+    {
+    TNetworkState currNetState;
+    RWidgetRegistryClientSession& widgetRegistry = iWindowManager.WidgetUIClientSession();
+    TInt inMiniView = widgetRegistry.IsWidgetInMiniView( iUid);
+    CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowNetworkAccess ); 
+    TInt netAccessWdgtProp = *propValue;    // AllowNetworkAccess in the info.plist file
+    
+    if ( netAccessWdgtProp && ((inMiniView && (iWindowManager.GetNetworkMode() == (TInt)EOnlineMode)) 
+                                    || (!inMiniView && iUserPermission)) )
+        {
+        if ( iWindowManager.GetNetworkConn() )
+            {
+            currNetState = ENetworkAccessible;
+            }
+        else
+            {
+            currNetState = ENetworkAccessAllowed;
+            }
+        }
+    else
+        {
+        currNetState = ENetworkNotAllowed;
+        }
+    
+    if ( iNetworkState != currNetState )
+        {
+        iNetworkState = currNetState;
+        // send the new widget network state to widget engine
+        iWidgetExtension->SetParamL( TBrCtlDefs::EWidgetNetworkState, (TInt)iNetworkState );
+        }
     }
 
 // End of file

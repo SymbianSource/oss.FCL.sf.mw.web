@@ -59,7 +59,11 @@ namespace WebCore {
 
     class PlatformKeyboardEvent {
     public:
+#if PLATFORM(SYMBIAN)
+        String text() const;
+#elif
         String text() const { return m_text; }
+#endif //PLATFORM(SYMBIAN)
         String unmodifiedText() const { return m_unmodifiedText; }
         String keyIdentifier() const { return m_keyIdentifier; }
         bool isKeyUp() const { return m_isKeyUp; }
@@ -96,6 +100,7 @@ namespace WebCore {
 #if PLATFORM(SYMBIAN)
         PlatformKeyboardEvent(TKeyEvent, TEventCode, bool forceAutoRepeat = false );
         TKeyEvent symbianEvent() const { return m_symbianEvent; }
+        bool isNaviKey(TUint code) const;
 #endif
     private:
         String m_text;

@@ -148,6 +148,13 @@ private:
      */
     TInt PreprocessWidgetBundleL( TDesC& aRestoreDir );
 
+    /** 
+	* Fix the widget properties need to restore from the backup 
+	* @return void
+    * @since 5.0 
+	*/
+    void FixWidgetPropsL(); 
+
     void ProcessRestoreDirL( TDesC& aRestoreDir );
 
     /**

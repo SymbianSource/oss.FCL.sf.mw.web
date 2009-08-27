@@ -35,9 +35,10 @@ namespace WebCore { namespace EventNames {
     DEFINE_GLOBAL(AtomicString, name##Event, #name)
 DOM_EVENT_NAMES_FOR_EACH(DEFINE_EVENT_GLOBAL)
 
+static bool initialized = false;
+
 void init()
 {
-    static bool initialized;
     if (!initialized) {
         // Use placement new to initialize the globals.
         
@@ -47,5 +48,17 @@ void init()
         initialized = true;
     }
 }
+
+void remove()
+{
+    if( initialized ) {
+        #define DESTROY_GLOBAL(name) delete ((AtomicString*)&name##Event)->impl();
+        DOM_EVENT_NAMES_FOR_EACH(DESTROY_GLOBAL)
+        AtomicString::remove();
+
+        initialized = false;
+    }
+
+} //remove()
 
 } }

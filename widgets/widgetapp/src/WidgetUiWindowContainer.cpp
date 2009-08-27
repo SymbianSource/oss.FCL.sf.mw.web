@@ -316,7 +316,7 @@ TKeyResponse CWidgetUiWindowContainer::OfferKeyEventL(
                     if ( iWindowManager.ActiveWindow() &&
           			        iWindowManager.View()->CbaGroup()->IsVisible() )
                         {
-                        iWindowManager.View()->ShowActivatedObject(ETrue, showStausPane);
+                        iWindowManager.View()->UpdateStatusPane(ETrue);
                         editing = ETrue;
                         }
                     }
@@ -333,7 +333,7 @@ TKeyResponse CWidgetUiWindowContainer::OfferKeyEventL(
             (Engine()->FocusedElementType() != TBrCtlDefs::EElementActivatedInputBox  &&
              Engine()->FocusedElementType() != TBrCtlDefs::EElementActivatedObjectBox  ))
             {
-            iWindowManager.View()->ShowActivatedObject(EFalse);
+            iWindowManager.View()->UpdateStatusPane(EFalse);
             }
 
         }

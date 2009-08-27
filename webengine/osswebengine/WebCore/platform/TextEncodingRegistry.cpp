@@ -251,10 +251,16 @@ bool noExtendedTextEncodingNameUsed()
 #if PLATFORM(SYMBIAN)
 void deleteEncodingMaps()
 {
-    delete textEncodingNameMap;
-    textEncodingNameMap = NULL;
-    delete textCodecMap;
-    textCodecMap = NULL;
+    if( textEncodingNameMap ) {
+        textEncodingNameMap->clear();
+        delete textEncodingNameMap;
+        textEncodingNameMap = NULL;
+    }
+    if( textCodecMap ) {
+        textCodecMap->clear();
+        delete textCodecMap;
+        textCodecMap = NULL;
+    }
     didExtendTextCodecMaps = false;
 }
 #endif

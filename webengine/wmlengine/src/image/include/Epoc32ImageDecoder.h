@@ -99,6 +99,21 @@ class CEpoc32ImageDecoder : public CActive
 
 
         inline void SetImageHasNotBeenOpened (NW_Bool aImageHasNotBeenOpened) { iImageHasNotBeenOpened = aImageHasNotBeenOpened; }
+    
+        enum TDecoderState   
+        {  
+        ID_IDLE = 0,  
+        ID_INITIALIZING,  
+        ID_DECODING,  
+        // state added to check if the decoding is already complete  
+        ID_DECODE_COMPLETE  
+        };     
+        /*  
+        @function getDecoderState  
+        @discussion Return the current state of the decoder   
+        */  
+        
+        inline TDecoderState getDecoderState() { return iState; }  
 
     private:
 
@@ -145,12 +160,7 @@ class CEpoc32ImageDecoder : public CActive
 		 TInt CheckForDRMImage();
 
     private:
-        enum
-        {
-          ID_IDLE = 0,
-          ID_INITIALIZING,
-          ID_DECODING
-        } iState;                       // Current decoder operation
+        enum TDecoderState iState; // Current decoder operation 
 
         CBufferedImageDecoder* iImageConverter;  // Connection to media server
         

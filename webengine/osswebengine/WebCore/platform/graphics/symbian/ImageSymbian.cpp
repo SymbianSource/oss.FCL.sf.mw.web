@@ -25,6 +25,7 @@
  */
 
 #include "config.h"
+#include "ImageSymbian.h"
 #include "BitmapImage.h"
 #include "FloatRect.h"
 #include "ImageObserver.h"
@@ -183,8 +184,13 @@ bool BitmapImage::dataChanged(bool allDataReceived)
     
     // Feed all the data we've seen so far to the image decoder.
     m_allDataReceived = allDataReceived;
-    m_source.setData(m_data.get(), allDataReceived);
-    
+        TRAPD(oomErr, m_source.setDataL(m_data.get(), allDataReceived));
+    if (oomErr == KErrNoMemory)
+     {
+       //We are OOM, this should be reported as an error and image load
+       // must be stopped.
+       return false;
+     }
     // Image properties will not be available until the first frame of the file
     // reaches kCGImageStatusIncomplete.
     return isSizeAvailable();
@@ -368,13 +374,11 @@ _LIT( KBrowserSvgFile, "webkiticons.mif" );
 #endif
 
 static HBufC* iconFileNameBuf = NULL;
-struct cleanupIconFileName {
-    ~cleanupIconFileName() {
+
+void cleanupIconFileName() {
         delete iconFileNameBuf;
         iconFileNameBuf = NULL;
-    }
-};
-struct cleanupIconFileName cleanIconFileName;
+}
 
 TPtrC iconFileName()
 {

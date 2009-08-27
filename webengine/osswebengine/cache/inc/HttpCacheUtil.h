@@ -45,12 +45,18 @@ enum TLogItemType
     ELogFileErrorCode
     };
 
-const TInt KCacheVersionNumber = 1;
+const TInt KCacheVersionNumber = 2; // changed on-disk format
 //make 16 subdirectories named 0 through F for organizing cached files
 const TUint32 KCacheSubdirCount = 16;
+// The subdirectory name is calculated in HttpCacheUtil::GenerateNameLC()
+const TUint32 KSubdirNameLength = 2;
+// The filename is calculated in HttpCacheUtil::GenerateNameLC()
+const TUint32 KFilenameLength = 8;
 _LIT( KHttpCacheHeaderExt, ".h" );
 
-//#define __CACHELOG__
+#ifdef _DEBUG
+#define __CACHELOG__
+#endif
 
 // MACROS
 
@@ -147,7 +153,7 @@ class HttpCacheUtil
         * @return
         */
         static TCacheLoadMethod MethodFromStr( RStringF aMethodStr, RStringPool aStrP );
-     
+
         /**
         *
         * @since 3.1
@@ -204,7 +210,7 @@ class HttpCacheUtil
         * @return
         */
         static void GetHeaderFileName( const TDesC& aBodyFileName, TDes& aHeaderFileName );
-        
+
         /**
         *
         * @since 3.1
@@ -254,6 +260,14 @@ class HttpCacheUtil
         * @return
         */
         static void WriteLog( TInt aLogLevel, TPtrC aBuf, TInt aAny = 0xffff );
+
+        /**
+        * expects a format string in aBuf, plus arguments...
+        * @since 7.1
+        * @param
+        * @return
+        */
+        static void WriteFormatLog( TInt aLogLevel, TRefByValue<const TDesC> aBuf, ... );
 
         /**
         *

@@ -152,7 +152,7 @@ TBrCtlDefs::TBrCtlElementType nodeTypeB(Node* node, Frame* frame)
 
     // change to activated input box
     WebView* v = control(frame)->webView();
-    if ((elType == TBrCtlDefs::EElementInputBox || elType == TBrCtlDefs::EElementTextAreaBox) && v && v->isEditable())
+    if ((elType == TBrCtlDefs::EElementInputBox) && v && v->isEditable())
         elType = TBrCtlDefs::EElementActivatedInputBox;
 
     return elType;

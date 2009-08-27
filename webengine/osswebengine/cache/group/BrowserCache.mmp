@@ -47,6 +47,8 @@ SOURCE        HttpCacheObserver.cpp
 SOURCE        HttpCacheLookupTable.cpp
 SOURCE        HttpCacheStreamHandler.cpp
 SOURCE        HttpCacheUtil.cpp
+SOURCE        HttpCacheFileWriteHandler.cpp
+SOURCE        HttpCachePostponeWriteUtilities.cpp
 
 
 USERINCLUDE    ../inc
@@ -55,24 +57,26 @@ USERINCLUDE    ../inc
 
 #ifndef __BROWSER_SDK
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_HTTP_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
 #else
-SYSTEMINCLUDE   /epoc32/include  /epoc32/include/oem  
-SYSTEMINCLUDE   /epoc32/include/http   /epoc32/include/libc
+SYSTEMINCLUDE   /epoc32/include  /epoc32/include/oem
 #endif
+SYSTEMINCLUDE /Epoc32/include/http
+SYSTEMINCLUDE /Epoc32/include/libc
 
 
-LIBRARY     ESTLIB.lib 
-LIBRARY     http.lib 
-LIBRARY     EFSRV.lib 
-LIBRARY     bafl.lib 
-LIBRARY     InetProtUtil.lib 
+
+LIBRARY     ESTLIB.lib
+LIBRARY     http.lib
+LIBRARY     EFSRV.lib
+LIBRARY     bafl.lib
+LIBRARY     InetProtUtil.lib
 LIBRARY     HttpFilterCommon.lib
-LIBRARY       euser.lib 
-LIBRARY       estor.lib
-LIBRARY       centralrepository.lib
-LIBRARY       CenRepNotifHandler.lib
-LIBRARY       featmgr.lib
-LIBRARY     cone.lib 		    // CoeControl
+LIBRARY     euser.lib
+LIBRARY     estor.lib
+LIBRARY     centralrepository.lib
+LIBRARY     CenRepNotifHandler.lib
+LIBRARY     featmgr.lib
+LIBRARY     hal.lib
+LIBRARY     memman.lib
+LIBRARY     cone.lib                // CoeControl
 DEBUGLIBRARY flogger.lib

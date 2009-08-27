@@ -29,6 +29,7 @@
 #include <SWInstTaskManager.h>
 #include <SWInstLogTaskParam.h>
 #include <WidgetRegistryClient.h>
+#include <apgcli.h> // RApaLsSession
 #include "cuicanceltimer.h"
 #include "WidgetUIHandler.h"
 #include "IconConverter.h"
@@ -253,6 +254,12 @@ private:
      */
     void RestoreL();
 
+    /**
+    *In the process of uninstallation if widget is running the widget should be first closed and then uninstalled
+    *@since 5.0
+    */
+    void HandleWidgetCommandL( RApaLsSession& aSession,const TDesC& aWidget,const TUid& aUid,TUint32 aOperation );
+
 private: // Data
 
     // A few state variables with the normal case complexity being
@@ -299,6 +306,9 @@ private: // Data
     CTaskManager* iTaskManager; 
     // TODO: To be investigated
     //CommonUI::CCUICancelTimer* iCanceller;
+    
+    TFileName iWidgetName;  // save the widget name during overwrite (only for HS widgets)
+    TBool iWidgetInHS;      // indicates whether the widget was in HS
     };
 }
 

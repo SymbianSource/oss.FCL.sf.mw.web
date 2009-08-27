@@ -67,13 +67,14 @@ void TCodParser::ParseL( const TDesC& aBuf, CCodData& aData )
     iBuf = &aBuf;
     iCurP = iBuf->Ptr();
     iEndP = iCurP + iBuf->Length();
+    CMediaObjectData *mediaObject = CMediaObjectData::NewL();
     // Processing lines (attribute and value) until there is more lines to read.
-    while ( AttrLineL() )
+    while ( AttrLineL(mediaObject) )
         {
         // Some compilers require empty controlled statement block instead of
         // just a semicolon.
         }
-
+    iData->AppendMediaObjectL( mediaObject );   
 #ifdef __TEST_COD_LOG
     TPtrC ptr16;
     TPtrC8 ptr8;
@@ -113,7 +114,7 @@ void TCodParser::ParseL( const TDesC& aBuf, CCodData& aData )
 // TCodParser::AttrLineL()
 // ---------------------------------------------------------
 //
-TBool TCodParser::AttrLineL()
+TBool TCodParser::AttrLineL(CMediaObjectData *& aMediaObject)
     {
     SkipWhiteSpace();  // Skip lines which contain only WS and LF at the end.
     while ( IsEndOfLine() )
@@ -131,7 +132,7 @@ TBool TCodParser::AttrLineL()
                 {
                 if ( Colon() )
                     {
-                    ok = iData->SetNameL( AttrValue() );
+                    ok = aMediaObject->SetNameL( AttrValue() );
                     EndOfLine();
                     }
                 break;
@@ -151,7 +152,7 @@ TBool TCodParser::AttrLineL()
                 {
                 if ( Colon() )
                     {
-                    ok = iData->SetDescriptionL( AttrValue() );
+                    ok = aMediaObject->SetDescriptionL( AttrValue() );
                     EndOfLine();
                     }
                 break;
@@ -166,7 +167,7 @@ TBool TCodParser::AttrLineL()
                     TLex lex( AttrValue() );
                     if ( !lex.Val( size ) )
                         {
-                        iData->SetSize( size );
+                        aMediaObject->SetSize( size );
                         }
                     else
                         {
@@ -181,7 +182,7 @@ TBool TCodParser::AttrLineL()
                 {
                 if ( Colon() )
                     {
-                    ok = iData->SetInstallNotifyL( AttrValue() );
+                    ok = aMediaObject->SetInstallNotifyL( AttrValue() );
                     EndOfLine();
                     }
                 break;
@@ -211,7 +212,7 @@ TBool TCodParser::AttrLineL()
                 {
                 if ( Colon() )
                     {
-                    ok = iData->SetInfoUrlL( AttrValue() );
+                    ok = aMediaObject->SetInfoUrlL( AttrValue() );
                     EndOfLine();
                     }
                 break;
@@ -221,7 +222,7 @@ TBool TCodParser::AttrLineL()
                 {
                 if ( Colon() )
                     {
-                    ok = iData->SetPriceL( AttrValue() );
+                    ok = aMediaObject->SetPriceL( AttrValue() );
                     EndOfLine();
                     }
                 break;
@@ -231,7 +232,25 @@ TBool TCodParser::AttrLineL()
                 {
                 if ( Colon() )
                     {
-                    ok = iData->SetIconL( AttrValue() );
+                    ok = aMediaObject->SetIconL( AttrValue() );
+                    EndOfLine();
+                    }
+                break;
+                }
+            case ECodType:
+                {
+                if ( Colon() )
+                    {
+                    ok = aMediaObject->SetTypeL( AttrValue() );
+                    EndOfLine();
+                    }
+                break;
+                }
+            case ECodUrl:
+                {
+                if ( Colon() )
+                    {
+                    ok = aMediaObject->SetUrlL( AttrValue() );
                     EndOfLine();
                     }
                 break;

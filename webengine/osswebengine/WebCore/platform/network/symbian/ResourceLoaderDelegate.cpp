@@ -85,6 +85,8 @@ MUrlConnection* ResourceLoaderDelegate::CreateUrlConnection(ResourceHandle* hand
     if (r.mainLoad() && frame == frame->page()->mainFrame() && err != KErrNone && err != KErrCancel) {
 		m_httpSessionManager.uiCallback()->reportError(mapHttpErrors(err));
     }
+    CBrCtl* brctl = control(frame);
+    m_httpSessionManager.uiCallback()->SetBrowserControl(brctl);
     return connection;
 }
 
@@ -169,62 +171,70 @@ bool ResourceLoaderDelegate::checkSecurityStatus(const ResourceRequest& request,
     HttpUiCallbacks::TEnterStatus enterStatus = HttpUiCallbacks::EEnterStatusNone;
     bool ret = true;
     
-    if (brctl->settings()->brctlSetting(TBrCtlDefs::ESettingsSecurityWarnings)) {
-        TUriParser8 parser;
-        bool secureUrl = false;
-        bool currentSecureUrl = false;
-        if (parser.Parse(request.url().des()) == KErrNone) {
-            TPtrC8 scheme = parser.Extract( EUriScheme );
-            secureUrl = scheme.CompareF(KHttps) == 0;
+    TUriParser8 secureUrlParser;
+    TUriParser8 currentSecureUrlParser;
+    bool secureUrl = false;
+    bool currentSecureUrl = false;
+    if (secureUrlParser.Parse(request.url().des()) == KErrNone) {
+        TPtrC8 scheme = secureUrlParser.Extract( EUriScheme );
+        secureUrl = scheme.CompareF(KHttps) == 0;
+    }
+    if (frame->loader() && frame->loader()->documentLoader()) {
+        TPtrC8 url = frame->loader()->documentLoader()->URL().des();
+        if (currentSecureUrlParser.Parse(url) == KErrNone) {
+            TPtrC8 scheme = currentSecureUrlParser.Extract( EUriScheme );
+            currentSecureUrl = scheme.CompareF(KHttps) == 0;
         }
-        if (frame->loader() && frame->loader()->documentLoader()) {
-            TPtrC8 url = frame->loader()->documentLoader()->URL().des();
-            TUriParser8 parser;
-            if (parser.Parse(url) == KErrNone) {
-                TPtrC8 scheme = parser.Extract( EUriScheme );
-                currentSecureUrl = scheme.CompareF(KHttps) == 0;
-            }
-        }
-        if (request.mainLoad()) {
-            if (!frame->ownerElement()) {
-                if (currentSecureUrl) {
-                    if (!secureUrl) {
-                        // secure -> non secure
-                        if (request.httpMethod() == "POST") {
-                            enterStatus = HttpUiCallbacks::ESubmittingToNonSecurePage;
-                        }
-                        else {
-                            enterStatus = HttpUiCallbacks::EExitingSecurePage;
-                        }
-                    } // if (!secureUrl)
-                }
-                else {
-                    if (secureUrl) {
-                        // non secure -> secure
-                        enterStatus = HttpUiCallbacks::EEnteringSecurePage;
-                    }
-                } // if (currentSecureUrl)
-            } // if (!frame->ownerElement())
-        }
-        else
-        {
+    }
+    if (request.mainLoad()) {
+        if (!frame->ownerElement()) {
             if (currentSecureUrl) {
                 if (!secureUrl) {
-                    // Ask once per page. If we already asked, just use the previous user decision
-                    if (topDocumentLoader->userWasAskedToLoadNonSecureItem()) {
-                        ret = topDocumentLoader->userAgreedToLoadNonSecureItem();
+                    // secure -> non secure
+                    if (request.httpMethod() == "POST") {
+                        enterStatus = HttpUiCallbacks::ESubmittingToNonSecurePage;
                     }
                     else {
-                        enterStatus = HttpUiCallbacks::ESomeItemsNotSecure;
+                        enterStatus = HttpUiCallbacks::EExitingSecurePage;
+                    }
+                } // if (!secureUrl)
+                else {
+					// secure -> secure
+                    if( secureUrlParser.Extract(EUriHost).Compare(
+                        currentSecureUrlParser.Extract(EUriHost)) ) {
+                        enterStatus = HttpUiCallbacks::EEnteringSecurePage;
+                    }
+                    else {
+                        enterStatus = HttpUiCallbacks::EReEnteringSecurePage;
                     }
                 }
-            }
+            } // if (currentSecureUrl)
             else {
                 if (secureUrl) {
-                    enterStatus = HttpUiCallbacks::ESecureItemInNonSecurePage;
+                    // non secure -> secure
+                    enterStatus = HttpUiCallbacks::EEnteringSecurePage;
+                }
+            }
+        } // if (!frame->ownerElement())
+    }
+    else
+    {
+        if (currentSecureUrl) {
+            if (!secureUrl) {
+                // Ask once per page. If we already asked, just use the previous user decision
+                if (topDocumentLoader->userWasAskedToLoadNonSecureItem()) {
+                    ret = topDocumentLoader->userAgreedToLoadNonSecureItem();
+                }
+                else {
+                    enterStatus = HttpUiCallbacks::ESomeItemsNotSecure;
                 }
             }
         }
+        else {
+            if (secureUrl) {
+                enterStatus = HttpUiCallbacks::ESecureItemInNonSecurePage;
+            }
+        }  
     }
     if (enterStatus != HttpUiCallbacks::EEnterStatusNone) {
         int err = m_httpSessionManager.uiCallback()->aboutToLoadPage(brctl, enterStatus);

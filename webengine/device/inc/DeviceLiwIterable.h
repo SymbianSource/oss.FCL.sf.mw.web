@@ -21,6 +21,7 @@
 
 //  INCLUDES
 #include <object.h>
+#include "Device.h"
 
 /**
 *  DeviceLiwIterable
@@ -31,9 +32,25 @@
 namespace KJS
     {
     class CDeviceLiwBinding;
-    class DeviceLiwIterablePrivate;
+    class DeviceLiwIterable;
+    
+    class DeviceLiwIterablePrivate : public DevicePrivateBase
+        {
+        friend class DeviceLiwIterable;
+        friend class DeviceLiwIterableFunc;
+        public:
+            DeviceLiwIterablePrivate(DeviceLiwIterable* jsobj, const CLiwIterable* m_iterable, CDeviceLiwBinding* liwBinding);
+            ~DeviceLiwIterablePrivate();
+            CDeviceLiwBinding* m_liwBinding;                 // not Owned
+            Identifier m_propName;
+            CLiwIterable* m_iterable;                        // not owned  
+            ExecState* m_exec;                               // not owned
+            DeviceLiwIterable* m_jsobj;                        // not owned
+        };
+        
     class DeviceLiwIterable : public JSObject
         {
+        friend class DeviceLiwIterablePrivate;
         friend class DeviceLiwIterableFunc;
         public: // constructor and destructor
 
@@ -81,14 +98,21 @@ namespace KJS
             * @return boolean
             * @since 5.0
             */
-            const bool isValid() const { return m_valid; }
+            const TBool isValid() const { return m_valid; }
             
+            /**
+            * getIterableData
+            * @return DevicePrivateBase*
+            * @since 7.x
+            */
+            DevicePrivateBase* getIterableData() { return m_privateData; }
+                        
             /**
             * close jsobject array
             * @return 
             * @since 5.0
             **/
-            void Close(ExecState* exec , bool unmark);
+            void Close();
             
             static const ClassInfo info;
 
@@ -109,22 +133,7 @@ namespace KJS
 
     private:
             DeviceLiwIterablePrivate* m_privateData;   // private object to hold data
-            bool m_valid;                          // object is valid or not
-        };
-
-    class DeviceLiwIterablePrivate
-        {
-        friend class DeviceLiwIterable;
-        friend class DeviceLiwIterableFunc;
-        public:
-            DeviceLiwIterablePrivate(const CLiwIterable* m_iterable, CDeviceLiwBinding* liwBinding);
-            ~DeviceLiwIterablePrivate()   { Close(); }
-            void Close();
-            CDeviceLiwBinding* m_liwBinding;                 // not Owned
-            Identifier m_propName;
-            CLiwIterable* m_iterable;                        // not owned  
-            ExecState* m_exec;                               // not owned
-            RPointerArray<JSObject>* m_jsobjArray;              // owned
+            TBool m_valid;                          // object is valid or not
         };
 
     class DeviceLiwIterableFunc : public JSObject

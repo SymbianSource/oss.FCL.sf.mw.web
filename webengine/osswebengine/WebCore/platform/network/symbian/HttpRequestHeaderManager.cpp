@@ -147,8 +147,8 @@ void HttpRequestHeaderManager::SetAcceptHeaderL(
     const TStringTable& stringTable = m_Session.GetTable();
     TPtrC8 acceptMimeTypes;
     HBufC8* tmpBuf = NULL;
-    CleanupStack::PushL(tmpBuf);
-    //
+	TInt pushCounter( 0 );
+
     if(aRequest.mainLoad()) {
         acceptMimeTypes.Set(*TopLevelAcceptStringL(aRequest));
     } else {
@@ -159,6 +159,8 @@ void HttpRequestHeaderManager::SetAcceptHeaderL(
         if(reqMimeTypes.Length() > 0) {
             // WebCore has set accept MIME type - leave alone
             tmpBuf = HBufC8::NewL(reqMimeTypes.Length());
+			CleanupStack::PushL(tmpBuf);
+			++pushCounter;
             tmpBuf->Des().Copy(reqMimeTypes);
             acceptMimeTypes.Set(*tmpBuf);
         } else {
@@ -166,11 +168,11 @@ void HttpRequestHeaderManager::SetAcceptHeaderL(
             acceptMimeTypes.Set(KStarSlashStar8);
         }
     }
-    //
     RStringF str = m_StringPool.OpenFStringL(acceptMimeTypes);
     CleanupClosePushL(str);
+	++pushCounter;
     aHeaders.SetFieldL(m_StringPool.StringF(HTTP::EAccept, stringTable), str);
-    CleanupStack::PopAndDestroy(2); // str, tmpBuf
+    CleanupStack::PopAndDestroy(pushCounter);
 }
 
 // -----------------------------------------------------------------------------

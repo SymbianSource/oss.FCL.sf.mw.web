@@ -37,6 +37,7 @@
 
 namespace WebCore
 {
+void cleanupFontDataCache();
 
 class AtomicString;
 class FontData;

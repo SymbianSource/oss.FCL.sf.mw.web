@@ -29,8 +29,15 @@
 #include <apgcli.h>
 #include <W32STD.H>
 #include <APGTASK.H>
+#include <oommonitorsession.h>
+#include <e32property.h>
+#include <systemwarninglevels.hrh>
+#include "Browser_platform_variant.hrh"
 
 // CONSTANTS
+#define KUidWidgetOOMPlugin 0x10282855
+const TInt KMemoryToLaunchWidgetUi = 17*1024*1024;
+
 
 // LOCAL FUNCTION DEFINITIONS
 // RDesWriteStream
@@ -52,6 +59,13 @@ static void ParseCmdLineL( TUid& aUid, TUint32& aOperation );
 * @param aOperation Operation to perform.
 */
 static void LaunchWidgetL( const TUid& aUid, TUint32 aOperation );
+
+/** 
+* In case the widget cannot be launched because of OOM
+* Notify harvester and Clear event Queue
+* @return void
+*/
+static void NotifyCommandAndCleanUp();
 
 /** 
 * Launch new widget.
@@ -147,9 +161,11 @@ void LaunchWidgetL( const TUid& aUid, TUint32 aOperation )
     TUid widgetAppUid( TUid::Uid( KWidgetAppUid ) );
     
     RWsSession wsSession;
+    ROomMonitorSession monitorSession;
     TApaTaskList taskList( wsSession );
     HBufC8* message( HBufC8::NewLC( KWidgetUiMaxMessageLength ) );
     TPtr8 des( message->Des() );
+    TInt err(KErrNone);
     RDesWriteStream stream( des );
     
     CleanupClosePushL( stream );
@@ -163,6 +179,7 @@ void LaunchWidgetL( const TUid& aUid, TUint32 aOperation )
     
     // Create Window server session
     User::LeaveIfError( wsSession.Connect() );
+    User::LeaveIfError( monitorSession.Connect() );
     CleanupClosePushL( wsSession );
 
     // Get the task list
@@ -185,14 +202,50 @@ void LaunchWidgetL( const TUid& aUid, TUint32 aOperation )
         // TODO CONST
         if ( aOperation == LaunchFullscreen ||
              aOperation == LaunchMiniview ||
-             aOperation == WidgetSelect ) //WidgetUI has died -> re-launch
+             aOperation == WidgetSelect ||
+             aOperation == WidgetResume ||
+             aOperation == WidgetRestart ) //WidgetUI has died -> re-launch
             {
-            LaunchWidgetUIL( widgetAppUid, *message, aOperation );
+            TInt bytesAvailaible(0);
+            if (aOperation != WidgetSelect && aOperation != LaunchFullscreen )
+                {
+#ifdef FF_OOM_MONITOR2_COMPONENT
+                err = monitorSession.RequestOptionalRam(KMemoryToLaunchWidgetUi, KMemoryToLaunchWidgetUi,KUidWidgetOOMPlugin, bytesAvailaible);
+#else
+                   TMemoryInfoV1Buf info;
+                   UserHal::MemoryInfo(info);
+                   err = info().iFreeRamInBytes > KMemoryToLaunchWidgetUi +  KRAMGOODTHRESHOLD ? KErrNone : KErrNoMemory;
+#endif
+                if( err == KErrNone)
+                    {
+                    LaunchWidgetUIL( widgetAppUid, *message, aOperation );
+                    }
+                }
+            else
+                {
+				//The modification is related to the manual starting of WRT widgets from HS. After noticing an issue when
+				//the user taps manually a WRT widget from the HS. 
+				//If RAM is not available with RequestOptionalRam() API, the manual tapping does nothing
+				//and that is incorrect behaviour. Therefore if widgetSelect -event is sent to the launcher we are using RequestFreeMemory() instead of using RequestOptionalRam() API. 
+				//This means that we apply mandatory RAM allocation when a widget is started manually from HS in order to make sure that RAM is released properly
+                err = monitorSession.RequestFreeMemory( KMemoryToLaunchWidgetUi );
+                if( err == KErrNone)
+                    {
+                    LaunchWidgetUIL( widgetAppUid, *message, aOperation );
+                    }
+                }
+            if(err != KErrNone)
+                NotifyCommandAndCleanUp();
             }
+        else
+            {
+            NotifyCommandAndCleanUp();
+            }
+            
         }
         
     CleanupStack::PopAndDestroy( 2, message );
-    
+    monitorSession.Close();
     __UHEAP_MARKEND;
     }
 
@@ -225,7 +278,7 @@ void LaunchWidgetUIL(
     line->SetExecutableNameL( info.iFullName );
         
     // TODO make const definitions.
-    if ( aOperation == 1 )
+    if ( aOperation == 1 || aOperation == 3 )
         {
         line->SetCommandL( EApaCommandBackground );
         }
@@ -235,6 +288,14 @@ void LaunchWidgetUIL(
     CleanupStack::PopAndDestroy( 3, line );
     }
 
+void NotifyCommandAndCleanUp()
+    {
+    const TUid KMyPropertyCat = { 0x10282E5A };
+    enum TMyPropertyKeys { EWidgetUIState = 109 };
+    TInt state( 2 );
+    RProperty::Set( KMyPropertyCat, EWidgetUIState , state );    
+    }
+    
 /*
 * E32Main: called by operating system to start the program
 */

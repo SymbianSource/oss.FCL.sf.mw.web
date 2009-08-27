@@ -115,7 +115,6 @@ void HttpSessionManager::openHttpSessionIfNeededL()
 		THTTPHdrVal enableTranspHndlrPriority(strP.StringF(HTTP::EEnableTranspHndlrPriority, RHTTPSession::GetTable()));
 		connInfo.SetPropertyL(strP.StringF(HTTP::ETranspHndlrPriority, RHTTPSession::GetTable()), enableTranspHndlrPriority);
 
-
         strP.OpenL( HttpFilterCommonStringsExt::GetTable() );
         strP.OpenL( HttpFilterCommonStringsExt::GetLanguageTable() );
         strP.OpenL( HttpFilterCommonStringsAddition::GetTable() );

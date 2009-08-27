@@ -50,6 +50,7 @@ class MDeviceBridge
         inline virtual ~MDeviceBridge() {};
         inline virtual void SetUid( const TUint& aValue) = 0;
         virtual void Clear() = 0;
+		inline virtual  void* GetSecuritySession() = 0;
     };
 
 /**
@@ -96,6 +97,8 @@ NONSHARABLE_CLASS( TDeviceBridge ): public MDeviceBridge
         */
         void SetUid( const TUint& aValue);
         void Clear();
+		
+		void* GetSecuritySession();
 
     private:
 

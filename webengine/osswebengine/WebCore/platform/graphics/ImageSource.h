@@ -79,7 +79,7 @@ public:
 
     bool initialized() const;
     
-    void setData(SharedBuffer* data, bool allDataReceived);
+    void setDataL(SharedBuffer* data, bool allDataReceived);
 
     bool isSizeAvailable();
     IntSize size() const;

@@ -26,7 +26,7 @@ targettype exe
 uid 0 0x10282821
 
 //SwEvent needed for TApaTask
-CAPABILITY SwEvent
+CAPABILITY SwEvent WriteDeviceData
 VENDORID    VID_DEFAULT
 
 MW_LAYER_SYSTEMINCLUDE
@@ -43,3 +43,4 @@ library estor.lib
 library apparc.lib
 library apgrfx.lib
 library ws32.lib
+library oommonitor.lib

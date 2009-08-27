@@ -23,7 +23,7 @@
 #include <e32uid.h>
 #include <sysutil.h>
 #include "config.h"
-#include "..\..\bidi.h"
+#include "../../bidi.h"
 
 // System includes
 #include <ecom/ecom.h>
@@ -586,12 +586,27 @@ TInt PluginHandler::findPlugin(const TDesC& mimeType)
 //
 TInt PluginHandler::findPluginByExtension(const TDesC8& url)
 {
+    TInt idx = -1;
+    PluginInfo* pluginInfo = pluginInfoByExtention(url, &idx);
+    TInt ret = pluginInfo ? pluginInfo->m_handle : KErrNotFound;
+    return ret;
+}
+
+
+// -----------------------------------------------------------------------------
+//  PluginHandler::pluginInfoByExtention
+//  aUrl - url that should be handle by plugin
+//  aExtIdx - return value of the index in the m_mimeFileExtensions for the extention
+//  returns a pointer to the PluginInfo object of the plugin that should handle aUrl
+// -----------------------------------------------------------------------------
+PluginInfo* PluginHandler::pluginInfoByExtention(const TPtrC8& aUrl, TInt* aExtIdx)
+{
     LOAD_PLUGINS
     
     TInt  pluginIndex;
     TInt  extIndex;
 
-    TPtrC8 extPtr(url.Mid(url.LocateReverse('.') + 1));
+    TPtrC8 extPtr(aUrl.Mid(aUrl.LocateReverse('.') + 1));
     for (pluginIndex = 0; pluginIndex < m_pluginInfoArray.Count(); pluginIndex++) {
         
         for (extIndex = 0; 
@@ -599,12 +614,30 @@ TInt PluginHandler::findPluginByExtension(const TDesC8& url)
             m_mimeFileExtensions.Count(); extIndex++) {
             
             if (!m_pluginInfoArray[pluginIndex]->m_mimeFileExtensions[extIndex]->CompareF(extPtr)) {
-                return m_pluginInfoArray[pluginIndex]->m_handle;
+                *aExtIdx = extIndex;
+                return m_pluginInfoArray[pluginIndex];
             }                
         }
     }
 
-    return KErrNotFound;
+    return NULL;
+}
+
+
+// -----------------------------------------------------------------------------
+// PluginHandler::pluginMimeByExtention
+// aUrl - url that should be handle by plugin
+// returns pointer to mime type in m_mimeExtensionToTypeMap array
+// -----------------------------------------------------------------------------
+HBufC* PluginHandler::pluginMimeByExtention(const TPtrC8& url)
+{
+    TInt idx = -1;
+    PluginInfo* pluginInfo = pluginInfoByExtention(url, &idx);
+    HBufC* mimeType = NULL;
+    if (pluginInfo && idx < pluginInfo->m_mimeExtensionToTypeMap.Count()) {
+        mimeType = pluginInfo->m_mimeExtensionToTypeMap[idx];
+    }
+    return mimeType;
 }
 
 

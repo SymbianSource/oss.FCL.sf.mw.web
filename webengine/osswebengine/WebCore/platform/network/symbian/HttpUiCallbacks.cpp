@@ -48,6 +48,7 @@ HttpUiCallbacks::HttpUiCallbacks()
 {
     m_error = KErrNone;
     m_scheduler = NULL;
+    m_brctl = NULL;
 }
 
 HttpUiCallbacks::~HttpUiCallbacks()
@@ -56,6 +57,12 @@ HttpUiCallbacks::~HttpUiCallbacks()
         m_scheduler->Cancel();
         delete m_scheduler;
     }
+    m_brctl = NULL;
+}
+
+void HttpUiCallbacks::SetBrowserControl(CBrCtl* aBrctl)
+{
+    m_brctl = aBrctl;        
 }
 
 TInt HttpUiCallbacks::handleErrorCb(TAny* aPtr)
@@ -79,7 +86,14 @@ TInt HttpUiCallbacks::CreateConnection(TInt* aConnectionPtr, TInt* aSockSvrHandl
 {
     TInt error = KErrNone;
     if( aConnectionPtr && aSockSvrHandle && aNewConn ){
-        TRAP(error, brctl()->brCtlSpecialLoadObserver()->NetworkConnectionNeededL(aConnectionPtr, aSockSvrHandle, aNewConn, aBearerType));
+        if(m_brctl && m_brctl->webView()->widgetExtension()){
+            TRAP(error, m_brctl->brCtlSpecialLoadObserver()->NetworkConnectionNeededL(aConnectionPtr, aSockSvrHandle, aNewConn, aBearerType));        
+            }
+        else 
+            {
+            TRAP(error, brctl()->brCtlSpecialLoadObserver()->NetworkConnectionNeededL(aConnectionPtr, aSockSvrHandle, aNewConn, aBearerType));        
+            }     
+ 
         if( error == KErrNone && *aConnectionPtr ) {
             RConnection* connPtr = REINTERPRET_CAST( RConnection*, *aConnectionPtr );
             TConnectionInfoBuf connInfoBuf;
@@ -195,7 +209,12 @@ int HttpUiCallbacks::aboutToLoadPageL(CBrCtl* brctl, int stateType)
                 event = TBrCtlDefs::EEventSecureItemInNonSecurePage;
                 break;
             }
-        
+        case EReEnteringSecurePage:
+            {
+                resId = 0;
+                event = TBrCtlDefs::EEventEnteringSecurePage;
+                break;
+            }
         default:
             {
                 resId = 0;

@@ -140,6 +140,16 @@ namespace WebCore {
         { "ucs-2-big",  KCharacterSetIdentifierUnicodeBig },
         { "ucs-2-little",  KCharacterSetIdentifierUnicodeLittle },
         { "iscii",  0x1027508E },
+        { "euc-kr",  0x2000E526 },
+        { "csEUCKR",  0x2000E526 },
+        { "ko",  0x200113CD },
+        { "ks_c_5601-1987",  0x200113CD },
+        { "iso-ir-149",  0x200113CD },
+        { "ks_c_5601-1989",  0x200113CD },
+        { "ksc_5601",  0x200113CD },
+        { "csksc56011987",  0x200113CD },
+        { "ms949",  0x200100FF },
+        { "cp949",  0x200100FF },
 
         { 0, 0 }
     };

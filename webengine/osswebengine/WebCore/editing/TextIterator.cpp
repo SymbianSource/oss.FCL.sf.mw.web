@@ -1068,7 +1068,11 @@ const UChar* WordAwareIterator::characters() const
 // --------
 
 CircularSearchBuffer::CircularSearchBuffer(const String& s, bool isCaseSensitive)
+#if PLATFORM(SYMBIAN)
+    : m_target(isCaseSensitive ? s : s.lower())
+#else
     : m_target(isCaseSensitive ? s : s.foldCase())
+#endif
     , m_isCaseSensitive(isCaseSensitive)
     , m_characterBuffer(m_target.length())
     , m_isCharacterStartBuffer(m_target.length())
@@ -1098,7 +1102,11 @@ inline void CircularSearchBuffer::append(UChar c)
     const int maxFoldedCharacters = 16; // sensible maximum is 3, this should be more than enough
     UChar foldedCharacters[maxFoldedCharacters];
     bool error;
+#if PLATFORM(SYMBIAN)
+    int numFoldedCharacters = toLower(foldedCharacters, maxFoldedCharacters, &c, 1, &error);
+#else
     int numFoldedCharacters = foldCase(foldedCharacters, maxFoldedCharacters, &c, 1, &error);
+#endif
     ASSERT(!error);
     ASSERT(numFoldedCharacters);
     ASSERT(numFoldedCharacters <= maxFoldedCharacters);

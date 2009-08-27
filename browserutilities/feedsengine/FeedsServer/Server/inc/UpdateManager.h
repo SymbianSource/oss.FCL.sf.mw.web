@@ -203,6 +203,8 @@ private:
     TInt                        iMins;
 
     CRoamingInfo*               iRoamingInfo;
+    TTime                       iLastAutoUpdate;
+
     //friend class
     friend class CRoamingInfo;
     friend class CFeedsServer;

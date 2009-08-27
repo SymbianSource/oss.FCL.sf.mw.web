@@ -36,6 +36,7 @@
 #include <e32base.h>
 #include <BrCtlDialogsProvider.h>
 
+const TInt KDefaultSize(1);
 namespace WebCore {
 
 static void ResetAndDestroy(TAny *aPtr);
@@ -60,8 +61,9 @@ void PopupMenu::showL(FrameView* v, int index)
     WebView* wv = kit(v->frame()->page());
     MBrCtlDialogsProvider* dialogs = wv->brCtl()->brCtlDialogsProvider();
     int size = client()->listSize();
-    CArrayFix<TBrCtlSelectOptionData>* options = new CArrayFixFlat<TBrCtlSelectOptionData>(size);
-    RPointerArray<HBufC> items(size);
+    CArrayFix<TBrCtlSelectOptionData>* options = 
+            new CArrayFixFlat<TBrCtlSelectOptionData>((size>0) ? size : KDefaultSize);
+    RPointerArray<HBufC> items((size>0) ? size : KDefaultSize);
     CleanupStack::PushL(TCleanupItem(&ResetAndDestroy,&items));
     
     for (int i = 0; i < size; i++) {
@@ -97,7 +99,6 @@ void PopupMenu::showL(FrameView* v, int index)
         m_popupClient->valueChanged(newIndex);
     }
     delete options;
-    
 }
 
 void PopupMenu::hide()

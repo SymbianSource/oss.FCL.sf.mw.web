@@ -41,6 +41,7 @@ namespace
   }
 
 using namespace WebCore;
+CSynDecodeThread *CAnimationDecoder::iSyncDecodeThread  = NULL;
 
 // ============================ MEMBER FUNCTIONS ===============================
 // -----------------------------------------------------------------------------
@@ -55,7 +56,6 @@ CAnimationDecoder::CAnimationDecoder( ImageObserver* aObs )
     , iCurLoopCount( -1 )
     , iSyncBitmapHandle(-1)
     , iSyncMaskHandle(-1)
-    , iSyncDecodeThread(NULL)
     , iDecodeInProgress(ETrue)
 {
     if (CActiveScheduler::Current())
@@ -96,7 +96,6 @@ CAnimationDecoder::~CAnimationDecoder()
         delete iDecoder, iDecoder = NULL;
     }
 
-    delete iSyncDecodeThread; iSyncDecodeThread = NULL;
     delete iAnimationBitmap, iAnimationBitmap = NULL;
     delete iDestination, iDestination = NULL;
     if(iDrmContent) 
@@ -115,23 +114,16 @@ void CAnimationDecoder::OpenAndDecodeSyncL( const TDesC8& aData )
     iRawDataComplete = ETrue;
     delete iDestination;
     iDestination = NULL;
-    delete iSyncDecodeThread;
-    iSyncDecodeThread = NULL;
     
-    iSyncDecodeThread = CSynDecodeThread::NewL();
+    if(!iSyncDecodeThread) { // first time, create decoder thread
+        iSyncDecodeThread = CSynDecodeThread::NewL();
+    }
     
-    TRequestStatus status;
-    if (iSyncDecodeThread->Decode( aData, &status ) == KErrNone) {
-        User::WaitForRequest(status);
-        if( status == KErrNone ) {
-            iSyncDecodeThread->Handle(iSyncBitmapHandle, iSyncMaskHandle);
-            iSizeAvailable = ETrue;
-        }
-    }
-    if (!iSizeAvailable) {
-        delete iSyncDecodeThread;
-        iSyncDecodeThread = NULL;
-    }
+    if (iSyncDecodeThread->Decode(aData) == KErrNone) {
+        iSyncDecodeThread->Handle(iSyncBitmapHandle, iSyncMaskHandle); 
+        Destination(); // duplicate bitmap handles
+        iSizeAvailable = ETrue;
+    }        
 }
 
 CMaskedBitmap* CAnimationDecoder::Destination() 
@@ -151,8 +143,7 @@ CMaskedBitmap* CAnimationDecoder::Destination()
         iSyncBitmapHandle = -1;
         iSyncMaskHandle = -1;
     }
-    delete iSyncDecodeThread;
-    iSyncDecodeThread = NULL;
+    
     return iDestination;
 }
 //=============================================================================
@@ -242,7 +233,7 @@ void CAnimationDecoder::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBool aIsC
 
     iRawDataComplete = aIsComplete;
 
-    if(iDecoder->ValidDecoder()  && iDecoder->IsImageHeaderProcessingComplete())
+    if(iDecoder && iDecoder->ValidDecoder()  && iDecoder->IsImageHeaderProcessingComplete())
         StartDecodingL();
     else
         // remove me when incremental image rendering gets supported

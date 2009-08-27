@@ -1469,11 +1469,6 @@ bool EventHandler::keyEvent(const PlatformKeyboardEvent& initialKeyEvent)
     keyDownEvent.setIsAutoRepeat(false);
     
     bool result = !node->dispatchKeyEvent(keyDownEvent);
-
-    //***** FL added from r12765 *****//
-    if (initialKeyEvent.isKeyDown())
-        return result;
-    //**********//
     
     // Focus may have change during the keyDown handling, so refetch node
     node = eventTargetNodeForDocument(m_frame->document());

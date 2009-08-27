@@ -57,6 +57,7 @@
 #include "WebKitLogger.h"
 #include "PluginHandler.h"
 #include "MIMETypeRegistry.h"
+#include "WidgetExtension.h"
 
 using namespace WebCore;
 using namespace HTMLNames;
@@ -1274,6 +1275,28 @@ String WebFrameLoaderClient::userAgent(const KURL&)
 {
     //    return [getWebView(m_webFrame.get()) _userAgentForURL:url];
     return m_webFrame->frameView()->topView()->userAgent();
+}
+
+TInt WebFrameLoaderClient::widgetNetworkConstants(TInt aId)
+{
+    CWidgetExtension* widgetExt = m_webFrame->frameView()->topView()->widgetExtension();
+    if ( widgetExt ) {
+        return widgetExt->widgetNetworkConstants(aId);
+    }
+    
+    notImplemented();
+    return 0;
+}
+
+TInt WebFrameLoaderClient::widgetNetworkState()
+{
+    CWidgetExtension* widgetExt = m_webFrame->frameView()->topView()->widgetExtension();
+    if ( widgetExt ) {
+        return widgetExt->widgetNetworkState();
+    }
+    
+    notImplemented();
+    return 0;
 }
 
 void WebFrameLoaderClient::saveDocumentViewToCachedPage(CachedPage*) 

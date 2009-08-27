@@ -69,6 +69,7 @@ LIBRARY         avkon.lib
 LIBRARY         eikdlg.lib
 LIBRARY         eikctl.lib
 LIBRARY         cone.lib
+LIBRARY         sysutil.lib
 LIBRARY         eikcore.lib
 LIBRARY         euser.lib
 LIBRARY         etext.lib

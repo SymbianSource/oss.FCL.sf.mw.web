@@ -653,35 +653,43 @@ TBool HttpCacheUtil::OperatorCacheContent(
 // -----------------------------------------------------------------------------
 //
 TBool HttpCacheUtil::VSSCacheContent( const TDesC8& aUrl, const HBufC8* aWhiteList )
-  {
-    TBool found( EFalse );
-  if( aWhiteList )
     {
-    TUint8* bufPtr = (TUint8* ) aWhiteList->Ptr();
-    TUint8* startBufPtr = bufPtr;
-    TUint len = aWhiteList->Length();
-    TInt i, startUri, uriLen;
-    TPtrC8 uri ( aUrl );
-    for(i=0; i < len; i++)
-      {
-      startUri = i;
-      for( ;( ( *bufPtr != ';' ) && ( i<len ) ) ; i++, bufPtr++ ) ;
-      uriLen = i - startUri;
-      if( i == len ) 
-          {
-          uriLen += 2; //For getting total length 
-          }
-      TPtrC8 uriDomain( startBufPtr, uriLen);
-      if ( OperatorCacheContent( uriDomain, uri ) )
+    TBool found( EFalse );
+
+    if ( aWhiteList )
         {
-        found = ETrue;
-        break;
-        }
-      startBufPtr = ++bufPtr;
-      i++;
-      } //end for()
-     } //end for()
-     return found;
+        TUint8* bufPtr = (TUint8* ) aWhiteList->Ptr();
+        TUint8* startBufPtr = bufPtr;
+        TUint len = aWhiteList->Length();
+        TInt i, startUri, uriLen;
+        TPtrC8 uri ( aUrl );
+        for ( i=0; i < len; i++ )
+            {
+            startUri = i;
+
+            for ( ;( ( *bufPtr != ';' ) && ( i<len ) ) ; i++, bufPtr++ ) ;
+
+            uriLen = i - startUri;
+
+            if ( i == len )
+                {
+                //For getting total length
+                uriLen += 2;
+                }
+
+            TPtrC8 uriDomain( startBufPtr, uriLen);
+            if ( OperatorCacheContent( uriDomain, uri ) )
+                {
+                found = ETrue;
+                break;
+                }
+
+            startBufPtr = ++bufPtr;
+            i++;
+            } //end for()
+        } //end if ( aWhiteList )
+
+    return found;
     }
 
 // -----------------------------------------------------------------------------
@@ -707,7 +715,6 @@ TBool HttpCacheUtil::PragmaNoCache(
     return( noCacheField == KErrNone || noStoreField == KErrNone );
     }
 
-        
 // -----------------------------------------------------------------------------
 // HttpCacheUtil::GetHeaderFileName
 //
@@ -723,7 +730,6 @@ void HttpCacheUtil::GetHeaderFileName(
     // take the filename and append the new extension
     aHeaderFileName.Append( KHttpCacheHeaderExt() );
     }
-
 
 // -----------------------------------------------------------------------------
 // HttpCacheUtil::AdjustExpirationTime
@@ -847,7 +853,6 @@ TBool HttpCacheUtil::CacheNeedsUpdateL(
             CleanupStack::PopAndDestroy(); // valueStr
             }
         }
-
 
     // last modified
     fieldName = aStrP.StringF( HTTP::ELastModified, RHTTPSession::GetTable() );
@@ -1025,14 +1030,14 @@ TBool HttpCacheUtil::IsCacheable(
                 {
                 expires = now;
                 }
-            
+
             // if past-expire date do not cache. According to RFC2616, section 13.2.4/14.9.3,
             // if maxage is present, then ignore expires
             if (!maxAge && now > expires)
                 {
                 return EFalse;
                 }
-            
+
             if( err == KErrNone || maxAge > 0 )
                 {
                 hasExplicitCache = ETrue;
@@ -1150,6 +1155,45 @@ void HttpCacheUtil::WriteLog(
     }
 
 // -----------------------------------------------------------------------------
+// HttpCacheUtil::WriteFormatLog
+//
+// -----------------------------------------------------------------------------
+//
+void HttpCacheUtil::WriteFormatLog(
+    TInt aLogLevel,
+    TRefByValue<const TDesC> aBuf, ... )
+    {
+#ifdef __CACHELOG__
+    TBool log( aLogLevel <= KCurrentLogLevel );
+    TPtrC fileName( KHttpCacheGeneralFileName );
+
+    if ( aLogLevel == 1 )
+        {
+        // write logging to hash.txt
+        fileName.Set( KHttpCacheHashFileName );
+        log = ETrue;
+        }
+
+    if ( log )
+        {
+        VA_LIST args;
+        VA_START(args, aBuf);
+        // Be careful of string length when debugging
+        TBuf16<1024> string;
+        // TDes16OverflowIgnore, not supported in 3.2.3
+        // TDes16OverflowIgnore overflow;
+        // string.AppendFormatList(aBuf, args, &overflow);
+        string.AppendFormatList(aBuf, args);
+        RFileLogger::WriteFormat(_L("Browser"), fileName, EFileLoggingModeAppend, string);
+        VA_END(args);
+        }
+#else // __CACHELOG__
+    (void)aLogLevel;
+    (void)aBuf;
+#endif // __CACHELOG__
+    }
+
+// -----------------------------------------------------------------------------
 // HttpCacheUtil::WriteLogFilenameAndUrl
 //
 // -----------------------------------------------------------------------------
@@ -1170,7 +1214,7 @@ void HttpCacheUtil::WriteLogFilenameAndUrl(
     TInt tmpLen( aMethodName.Length() + aFilename.Length() +
                  3*KColonSpace().Length() + aUrl.Length() + itemTypeStringLen );
     HBufC* tmp = HBufC::New( tmpLen );
-    
+
     if ( tmp ) {
         TPtr tmpPtr( tmp->Des() );
         tmpPtr.Copy( aMethodName );
@@ -1198,17 +1242,17 @@ void HttpCacheUtil::WriteLogFilenameAndUrl(
                 tmpPtr.Append( KColonSpace );
             }
         }
-        
+
         // Append the bucketIndex, lookup table pos, etc...
         switch ( aItemType )
         {
             case ELogItemTypeNone:
                 break;
-        
+
             case ELogBucketIndex:
                 tmpPtr.Append( _L("bucketIndex =") );
                 break;
-                
+
             case ELogEntrySize:
                 tmpPtr.Append( _L("entrySize =") );
                 break;
@@ -1321,27 +1365,32 @@ void HttpCacheUtil::WriteUrlToLog(
 
 // -----------------------------------------------------------------------------
 // HttpCacheUtil::GenerateNameLC
-// Given a URL, generates fully qualified Symbian path for storing HTTP response. 
-// The format is <cache base dir> + <subdirectory> + <file name>. 
-// Caller must free the returned HBufC* when done. 
+// Given a URL, generates fully qualified Symbian path for storing HTTP response.
+// The format is <cache base dir> + <subdirectory> + <file name>.
+// Caller must free the returned HBufC* when done.
 // -----------------------------------------------------------------------------
-HBufC* HttpCacheUtil::GenerateNameLC(
-        const TDesC8& aUrl, const TDesC& aBaseDir)
+HBufC* HttpCacheUtil::GenerateNameLC( const TDesC8& aUrl, const TDesC& aBaseDir )
     {
-   
     TUint32 crc (0);
-    
-    //use the entire URL for CRC calculation: maximizes source entropy/avoids collisions
-    Mem::Crc32(crc, aUrl.Ptr(), aUrl.Size()); 
-    TUint32 nibble (crc & (KCacheSubdirCount-1)); // extract least significant 4 bits (nibble) for subdirectory
-    
-    HBufC* fileName = HBufC::NewLC( KMaxPath ); // e.g E\078AFEFE
-    _LIT(KFormat,"%S%x%c%08x"); // Note the %08x : a 32-bit value can represented as 0xFFFFFFFF 
-    fileName->Des().Format(KFormat, &aBaseDir, nibble, KPathDelimiter, crc);
-    return fileName;
-    
-    }
 
+    // Use the entire URL for CRC calculation: maximizes source
+    // entropy/avoids collisions. Returns 8 char hex filename, use
+    // KMaxFilenameLength to internalize/externalize.
+    Mem::Crc32(crc, aUrl.Ptr(), aUrl.Size());
+
+    // extract least significant 4 bits (nibble) for subdirectory
+    TUint32 nibble( crc & (KCacheSubdirCount-1) );
+
+    // filename has full path, drive:\directory\sub-directory\8-char filename
+    // e.g. c:\system\cache\E\078AFEFE, where E is calculated by nibble()
+    // and 078AFEFE is calculated by crc32()
+    HBufC* fileName = HBufC::NewLC( KMaxPath );
+    // Note in KFormat, the %08x : a 32-bit value can represented as 0xFFFFFFFF
+    _LIT(KFormat,"%S%x%c%08x");
+    fileName->Des().Format(KFormat, &aBaseDir, nibble, KPathDelimiter, crc);
+
+    return fileName;
+    }
 
 // -----------------------------------------------------------------------------
 // HttpCacheUtil::Freshness
@@ -1368,7 +1417,7 @@ TInt64 HttpCacheUtil::Freshness(
     // Get the date from the headers
     fieldName = aStrP.StringF( HTTP::EDate, RHTTPSession::GetTable() );
     err = aHeaders.GetField( fieldName, 0, hdrValue );
-    if( err == KErrNotFound || hdrValue.Type() != THTTPHdrVal::KDateVal )
+    if ( err == KErrNotFound || hdrValue.Type() != THTTPHdrVal::KDateVal )
         {
         date = aResponseTime;
         }
@@ -1379,12 +1428,12 @@ TInt64 HttpCacheUtil::Freshness(
 
     // Get useful cache-control directives
     status = GetCacheControls( aHeaders, &maxAge, NULL, NULL, NULL, NULL, NULL, aStrP );
-    if( status == KErrNone )
+    if ( status == KErrNone )
         {
         // max-age is in delta-seconds. Convert it to micro seconds.
         // All our calculations are in micro-seconds
         // If maxAge is present, use it
-        if( maxAge != -1 )
+        if ( maxAge != -1 )
             {
             freshness = maxAge * 1000 * 1000;
 
@@ -1394,7 +1443,7 @@ TInt64 HttpCacheUtil::Freshness(
         // Get the expires from the headers
         fieldName = aStrP.StringF( HTTP::EExpires, RHTTPSession::GetTable() );
         err = aHeaders.GetField( fieldName, 0, hdrValue );
-        if( err == KErrNotFound || hdrValue.Type() != THTTPHdrVal::KDateVal )
+        if ( err == KErrNotFound || hdrValue.Type() != THTTPHdrVal::KDateVal )
             {
             expires = 0;
             }
@@ -1404,7 +1453,7 @@ TInt64 HttpCacheUtil::Freshness(
             }
 
         // Otherwise, if the expires is present use it
-        if( err != KErrNotFound )
+        if ( err != KErrNotFound )
             {
             freshness = expires.Int64() - date.Int64();
             return freshness;
@@ -1423,7 +1472,7 @@ TInt64 HttpCacheUtil::Freshness(
             }
 
         // Otherwise, if last-modified is present use it
-        if( err != KErrNotFound )
+        if ( err != KErrNotFound )
             {
             if( aResponseTime > lastModified )
                 {

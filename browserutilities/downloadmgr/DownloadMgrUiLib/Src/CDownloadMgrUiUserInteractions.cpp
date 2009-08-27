@@ -266,7 +266,8 @@ void CUserInteractionsExtension::NotifyHandlerExit( RHttpDownload* aDownload,
 CDownloadMgrUiUserInteractions::CDownloadMgrUiUserInteractions
     ( CDownloadMgrUiLibRegistry& aRegistryModel )
 :   CDownloadMgrUiBase( aRegistryModel ),
-    iDlgActive ( EFalse )
+    iDlgActive ( EFalse ),
+    iProgressiveDownloadLaunched ( EFalse )
     {
     }
 
@@ -500,7 +501,7 @@ TInt CDownloadMgrUiUserInteractions::PrepareToExit( CEikAppUi& aAppUi,
     CLOG_ENTERFN("CDownloadMgrUiUserInteractions::PrepareToExit");
 
     // send a message to all running PD applications and tell that browser is exiting
-    TRAP_IGNORE( iUiUtils->SendMsgTerminateToPdAppsL());
+    TRAP_IGNORE( iUiUtils->SendMsgTerminateToPdAppsL( iProgressiveDownloadLaunched ));
 
     TRAPD( err, PrepareToExitL( &aAppUi, aExitType, aViewId, aCustomMessageId, 
                                 aViewActivationMsg ) );
@@ -522,7 +523,7 @@ TInt CDownloadMgrUiUserInteractions::PrepareToExit( TUint32 aAppUid,
     CLOG_ENTERFN("CDownloadMgrUiUserInteractions::PrepareToExit 2");
 
     // send a message to all running PD applications and tell that browser is exiting
-    TRAP_IGNORE( iUiUtils->SendMsgTerminateToPdAppsL());
+    TRAP_IGNORE( iUiUtils->SendMsgTerminateToPdAppsL( iProgressiveDownloadLaunched ));
 
     // Convert parameters to the necessary form
     TVwsViewId viewId( TUid::Uid(aAppUid), TUid::Uid(aViewId) );

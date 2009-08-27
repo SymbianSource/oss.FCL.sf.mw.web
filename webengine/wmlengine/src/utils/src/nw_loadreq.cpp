@@ -584,6 +584,8 @@ static TBrowserStatusCode getEscapedPostdataL(NW_NVPair_t *postfields,
   NW_Uint32 convertedValueLen = 0;
   NW_Uint32 parameterLen = 0;
   
+  const char* ie  = "ie";
+  const char* euc = "EUC-KR"; 
   NW_TRY( status )
       {
 
@@ -600,13 +602,20 @@ static TBrowserStatusCode getEscapedPostdataL(NW_NVPair_t *postfields,
 		    return KBrsrSuccess;
 		    }
 
-  	    status = KBrsrFailure;
+        // set status to KBrsrSuccess because if the were only ie=EUC-KR as 
+        // postdata we need to return KBrsrSuccess 
+        status = KBrsrSuccess;
 		CBufFlat* buffer = CBufFlat::NewL(20);  // arbitrary granularity.
 		NW_Bool   needSep = NW_FALSE;
 
 		(void) NW_NVPair_ResetIter( postfields );
 		while ( KBrsrSuccess == (status = NW_NVPair_GetNext( postfields, &name, &value ))) 
           {
+          if ( 0 == NW_Str_StrnicmpConst( name, ie, NW_Str_Strlen( name ) ) &&
+               0 == NW_Str_StrnicmpConst( value, euc, NW_Str_Strlen( value ) ) )
+              {
+              continue;
+              } 
 
           if ( needSep ) 
               {

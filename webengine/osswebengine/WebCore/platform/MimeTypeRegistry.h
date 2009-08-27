@@ -33,6 +33,8 @@
 
 namespace WebCore {
 
+void cleanupMimeTypes();
+
 class MIMETypeRegistry {
 public:
     static String getMIMETypeForExtension(const String& ext);

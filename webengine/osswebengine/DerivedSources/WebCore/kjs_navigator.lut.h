@@ -1,31 +1,38 @@
-/* Automatically generated from /cygdrive/x/tot/WebCore/bindings/js/kjs_navigator.cpp using /cygdrive/x/tot/WebCore/../JavaScriptCore/kjs/create_hash_table. DO NOT EDIT ! */
+/* Automatically generated from kjs_navigator.cpp using create_hash_table. DO NOT EDIT ! */
+
+#include "lookup.h"
 
 namespace KJS {
 
 static const struct HashEntry NavigatorTableEntries[] = {
-   { "appVersion", Navigator::AppVersion, DontDelete|ReadOnly, 0, &NavigatorTableEntries[17] }/* 737224111 */ ,
-   { "appCodeName", Navigator::AppCodeName, DontDelete|ReadOnly, 0, &NavigatorTableEntries[16] }/* 2036402863 */ ,
+   { "appName", Navigator::AppName, DontDelete|ReadOnly, 0, 0 }/* 1928575421 */ ,
    { 0, 0, 0, 0, 0 },
-   { "javaEnabled", Navigator::JavaEnabled, DontDelete|Function, 0, 0 }/* 3101780464 */ ,
-   { "productSub", Navigator::ProductSub, DontDelete|ReadOnly, 0, 0 }/* 2097335881 */ ,
-   { "language", Navigator::Language, DontDelete|ReadOnly, 0, &NavigatorTableEntries[13] }/* 389985029 */ ,
-   { "appName", Navigator::AppName, DontDelete|ReadOnly, 0, &NavigatorTableEntries[14] }/* 1928575421 */ ,
-   { "vendorSub", Navigator::VendorSub, DontDelete|ReadOnly, 0, 0 }/* 2200565686 */ ,
-   { 0, 0, 0, 0, 0 },
-   { 0, 0, 0, 0, 0 },
-   { "vendor", Navigator::Vendor, DontDelete|ReadOnly, 0, 0 }/* 4183282360 */ ,
-   { 0, 0, 0, 0, 0 },
-   { "mimeTypes", Navigator::_MimeTypes, DontDelete|ReadOnly, 0, 0 }/* 541397713 */ ,
-   { "userAgent", Navigator::UserAgent, DontDelete|ReadOnly, 0, &NavigatorTableEntries[15] }/* 1491767165 */ ,
-   { "platform", Navigator::Platform, DontDelete|ReadOnly, 0, 0 }/* 1656147642 */ ,
    { "plugins", Navigator::_Plugins, DontDelete|ReadOnly, 0, 0 }/* 3805841733 */ ,
+   { "appVersion", Navigator::AppVersion, DontDelete|ReadOnly, 0, 0 }/* 737224111 */ ,
+   { "NetworkNotAllowed", Navigator::NetworkNotAllowed, DontDelete|ReadOnly, 0, 0 }/* 1135189233 */ ,
+   { "mimeTypes", Navigator::_MimeTypes, DontDelete|ReadOnly, 0, &NavigatorTableEntries[19] }/* 541397713 */ ,
+   { "vendorSub", Navigator::VendorSub, DontDelete|ReadOnly, 0, &NavigatorTableEntries[20] }/* 2200565686 */ ,
+   { 0, 0, 0, 0, 0 },
+   { "onLine", Navigator::Online, DontDelete|ReadOnly, 0, 0 }/* 3891351994 */ ,
+   { "platform", Navigator::Platform, DontDelete|ReadOnly, 0, 0 }/* 1656147642 */ ,
+   { 0, 0, 0, 0, 0 },
+   { "NetworkAccessAllowed", Navigator::NetworkAccessAllowed, DontDelete|ReadOnly, 0, 0 }/* 2231046963 */ ,
+   { "appCodeName", Navigator::AppCodeName, DontDelete|ReadOnly, 0, &NavigatorTableEntries[17] }/* 2036402863 */ ,
+   { "NetworkAccessible", Navigator::NetworkAccessible, DontDelete|ReadOnly, 0, 0 }/* 3337096018 */ ,
+   { "language", Navigator::Language, DontDelete|ReadOnly, 0, &NavigatorTableEntries[18] }/* 389985029 */ ,
+   { "productSub", Navigator::ProductSub, DontDelete|ReadOnly, 0, 0 }/* 2097335881 */ ,
+   { "vendor", Navigator::Vendor, DontDelete|ReadOnly, 0, 0 }/* 4183282360 */ ,
+   { "userAgent", Navigator::UserAgent, DontDelete|ReadOnly, 0, 0 }/* 1491767165 */ ,
    { "product", Navigator::Product, DontDelete|ReadOnly, 0, 0 }/* 3666888811 */ ,
-   { "cookieEnabled", Navigator::CookieEnabled, DontDelete|ReadOnly, 0, 0 }/* 2175375748 */ 
+   { "cookieEnabled", Navigator::CookieEnabled, DontDelete|ReadOnly, 0, 0 }/* 2175375748 */ ,
+   { "javaEnabled", Navigator::JavaEnabled, DontDelete|Function, 0, 0 }/* 3101780464 */ 
 };
 
-const struct HashTable NavigatorTable = { 2, 18, NavigatorTableEntries, 13 };
+const struct HashTable NavigatorTable = { 2, 21, NavigatorTableEntries, 17 };
 
 } // namespace
+
+#include "lookup.h"
 
 namespace KJS {
 
@@ -38,6 +45,8 @@ const struct HashTable PluginsTable = { 2, 2, PluginsTableEntries, 2 };
 
 } // namespace
 
+#include "lookup.h"
+
 namespace KJS {
 
 static const struct HashEntry MimeTypesTableEntries[] = {
@@ -47,6 +56,8 @@ static const struct HashEntry MimeTypesTableEntries[] = {
 const struct HashTable MimeTypesTable = { 2, 1, MimeTypesTableEntries, 1 };
 
 } // namespace
+
+#include "lookup.h"
 
 namespace KJS {
 
@@ -61,6 +72,8 @@ static const struct HashEntry PluginTableEntries[] = {
 const struct HashTable PluginTable = { 2, 5, PluginTableEntries, 4 };
 
 } // namespace
+
+#include "lookup.h"
 
 namespace KJS {
 

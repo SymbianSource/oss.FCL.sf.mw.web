@@ -37,9 +37,10 @@ namespace MediaFeatureNames {
 CSS_MEDIAQUERY_NAMES_FOR_EACH_MEDIAFEATURE(DEFINE_MEDIAFEATURE_GLOBAL)
 #undef DEFINE_MEDIAFEATURE_GLOBAL
 
+static bool initialized;
+
 void init()
 {
-    static bool initialized;
     if (!initialized) {
        // Use placement new to initialize the globals.
 
@@ -50,6 +51,19 @@ void init()
         initialized = true;
     }
 }
+
+void remove()
+{
+    if( initialized ) {
+        #define DESTROY_GLOBAL(name, str) delete ((AtomicString*)&name##MediaFeature)->impl();
+        CSS_MEDIAQUERY_NAMES_FOR_EACH_MEDIAFEATURE(DESTROY_GLOBAL)
+        #undef DESTROY_GLOBAL
+        AtomicString::remove();
+
+        initialized = false;
+    }
+
+} //remove()
 
 } // namespace MediaFeatureNames
 } // namespace WebCore

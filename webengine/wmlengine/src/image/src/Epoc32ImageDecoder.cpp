@@ -1030,7 +1030,8 @@ void CEpoc32ImageDecoder::ConvertComplete()
         //
         if( iIsAnimated == NW_FALSE )
           {
-          //
+          // Set the decode state after decoding complete
+          iState = ID_DECODE_COMPLETE;
           DeleteImageConverterBitmapMask();
           }
         }

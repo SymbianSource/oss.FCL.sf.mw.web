@@ -253,16 +253,13 @@ static bool acceptsEditingFocus(Node *node)
 
 DeprecatedPtrList<Document>*  Document::changedDocuments = 0;
 
-struct cleanupChangedDocuments {
-    ~cleanupChangedDocuments() {
+void cleanupChangedDocuments() {
     	if(Document::changedDocuments)
     		{
     		delete Document::changedDocuments;
     		Document::changedDocuments = NULL;
     		}
-    }
-};
-static cleanupChangedDocuments deleteChangedDocuments;
+}
 
 // FrameView might be 0
 Document::Document(DOMImplementation* impl, Frame* frame, bool isXHTML)
@@ -2468,6 +2465,19 @@ void Document::handleWindowEvent(Event *evt, bool useCapture)
             (*it)->listener()->handleEvent(evt, true);
 }
 
+void Document::handleNetworkEvent(const AtomicString &eventType, int param)
+{ 
+    if (m_windowEventListeners.isEmpty())
+        return;
+            
+    // if any html event listeners are registered on the window, then dispatch them here
+    RegisteredEventListenerList listenersCopy = m_windowEventListeners;
+    RegisteredEventListenerList::iterator it = listenersCopy.begin();
+    
+    for (; it != listenersCopy.end(); ++it)
+        if ((*it)->eventType() == eventType && !(*it)->removed())
+            (*it)->listener()->handleNetworkStateEvent(param);
+}
 
 void Document::defaultEventHandler(Event *evt)
 {

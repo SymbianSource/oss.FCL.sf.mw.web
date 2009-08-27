@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:  Implementation of CHttpCacheEvictionHandler 
+* Description:  Implementation of CHttpCacheEvictionHandler
 *
 */
 
@@ -111,11 +111,11 @@ CHttpCacheEvictionHandler* CHttpCacheEvictionHandler::NewL()
 CHttpCacheEvictionHandler::~CHttpCacheEvictionHandler()
     {
     if (iBuckets)
-        {    	
-	    // delete the entries    
-	    for( TInt i=0; i<iBuckets->Count(); ++i )
-	        delete iBuckets->At( i );	   
-        }        
+        {
+        // delete the entries
+        for( TInt i=0; i<iBuckets->Count(); ++i )
+            delete iBuckets->At( i );
+        }
         delete iBuckets;
     }
 
@@ -337,25 +337,25 @@ CArrayPtrFlat<CHttpCacheEntry>* CHttpCacheEvictionHandler::EvictL(
                 }
             }
 
-        // remove from the bucket, add it to the evicted list, 
+        // remove from the bucket, add it to the evicted list,
         // reduce space needed size
         if ( candidate )
             {
 #ifdef __CACHELOG__
             // no protected entries should be evacuated
             if( candidate->Protected() )
-            	{
-	            HttpCacheUtil::WriteUrlToLog( 0, _L( "CHttpCacheEvictionHandler::EvictL - PROTECTED entry is about to be removed" ), candidate->Url() );
-            	}
+                {
+                HttpCacheUtil::WriteUrlToLog( 0, _L( "CHttpCacheEvictionHandler::EvictL - PROTECTED entry is about to be removed" ), candidate->Url() );
+                }
 
             HttpCacheUtil::WriteLogFilenameAndUrl( 0,
                                            _L("CHttpCacheEvictionHandler::EvictL - removing entry "),
                                            candidate->Filename(),
                                            candidate->Url(),
-                                           candidate->BodySize(), 
+                                           candidate->BodySize(),
                                            ELogEntrySize );
 #endif //__CACHELOG__
-            
+
             iBuckets->At( bucketInd )->Remove( *candidate );
             // Reduce size needed
             aSpaceNeeded -= candidate->BodySize();
@@ -366,7 +366,7 @@ CArrayPtrFlat<CHttpCacheEntry>* CHttpCacheEvictionHandler::EvictL(
 #ifdef __CACHELOG__
             if ( aSpaceNeeded > 0 ) {
                 HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheEvictionHandler::EvictL - more space needed aSpaceNeeded = " ), aSpaceNeeded );
-            	}
+                }
 #endif
             }
         else
@@ -474,7 +474,7 @@ TBool CHttpCacheEvictionHandler::ItemIsInBucket(
                                            _L("CHttpCacheEvictionHandler::ItemIsInBucket - entry NOT found"),
                                            aCacheEntry.Filename(),
                                            aCacheEntry.Url(),
-                                           aCacheEntry.BodySize(), 
+                                           aCacheEntry.BodySize(),
                                            ELogEntrySize );
         }
 #endif // __CACHELOG__
@@ -511,12 +511,13 @@ void CHttpCacheEvictionHandler::LogBuckets()
         TBucketIter bucketIter( *(iBuckets->At( i )) );
         //
         bucketIter.SetToFirst();
-        while( ( entry = bucketIter++ ) != NULL )
+        while ( ( entry = bucketIter++ ) != NULL )
             {
             _LIT( KDateString,"%D%M%Y%/0%1%/1%2%/2%3%/3 %-B%:0%J%:1%T%:2%S%.%*C4%:3%+B");
             _LIT( KRefSizeString,"CHttpCacheEvictionHandler::LogBuckets - size: %d refcount:%d");
 
-            TBuf<50> refStr;
+            // note ref string is 60 chars before we format it
+            TBuf<80> refStr;
             TBuf<50> lastAccessedStr;
 
             TTime lastAccessed( entry->LastAccessed() );
@@ -529,7 +530,7 @@ void CHttpCacheEvictionHandler::LogBuckets()
                                                _L("CHttpCacheEvictionHandler::LogBuckets - "),
                                                entry->Filename(),
                                                entry->Url(),
-                                               i, 
+                                               i,
                                                ELogBucketIndex );
             }
         }

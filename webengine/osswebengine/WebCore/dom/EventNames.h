@@ -73,6 +73,8 @@ namespace WebCore { namespace EventNames {
     macro(textInput) \
     macro(unload) \
     macro(zoom) \
+    macro(ononline) \
+    macro(onoffline) \
     \
     macro(DOMActivate) \
     macro(DOMAttrModified) \
@@ -98,6 +100,7 @@ namespace WebCore { namespace EventNames {
 
     void init();
 
+    void remove();
 } }
 
 #endif

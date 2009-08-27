@@ -28,6 +28,13 @@
 #include "Browser_platform_variant.hrh"
 // CONSTANTS
 
+enum TNetworkMode
+    {
+    EUnknownMode = 0,
+    EOnlineMode,
+    EOfflineMode
+    };
+
 // MACROS
 
 // DATA TYPES
@@ -47,6 +54,7 @@ class CLiwServiceHandler;
 class MLiwInterface;
 class CInternetConnectionManager;
 class CSchemeHandler;
+class CWidgetUiNetworkListener;
 
 #ifdef BRDO_WRT_HS_FF
 class CCpsPublisher;
@@ -93,14 +101,6 @@ class CWidgetUiWindowManager : public CBase
         void HandleWidgetCommandL( 
             const TUid& aUid,
             TUint32 aOperation );
-
-// Suspend/resume miniview stuff.        
-        /**
-        * Suspend a widget.
-        * @since 5.0
-        * @param aUid UID of widget.
-        */
-        void SuspendWidget( const TUid& aUid );
         
         /**
         * Resume a suspended widget.
@@ -108,59 +108,6 @@ class CWidgetUiWindowManager : public CBase
         * @param aUid UID of widget.
         */
         void ResumeWidgetL( const TUid& aUid );
-
-        /**
-        * Suspend all the publishing widget.
-        * @since 5.0
-        * @return none.
-        */
-        void SuspendAllWidget();
-
-        /**
-        * Stop mini view and exit
-        * @since 5.0
-        * @param aUrl
-        * @return none
-        */
-        void DeactivateMiniViewL( const TUid& aUid );
- 
-        /**
-        * Suspend publishing on home screen
-        * @since 5.0
-        * @param aUid UID of widget.
-        * @param aSize Size of miniview.
-        * @return Successful or not.
-        */
-        TBool ActivateMiniViewL( const TUid& aUid, const TRect& aRect );
-        
-// Close / terminate widgets.
-        
-        /**
-        * CloseWindow
-        * Closes the window of the widget identified by a Uid
-        * @since 3.1
-        * @param aUid - Uid to identify the widget
-        * @return none
-        */
-        void CloseWindow( const TUid& aUid );
-
-        /**
-        * CloseWindow
-        * Closes the window of the widget
-        * @since 3.1
-        * @param aWidgetWindow - window of the widget
-        * @return none
-        */
-        void CloseWindow( CWidgetUiWindow* aWidgetWindow );
-
-         /**
-        * RemoveFromWindowList
-        * Remove  the widget window from window list
-        * @since 5.0
-        * @param aWidgetWindow - window of the widget
-        * @return none
-        */
-        void RemoveFromWindowList( CWidgetUiWindow* aWidgetWindow );
 
         /**
         * CloseWindowsAsync
@@ -288,13 +235,6 @@ class CWidgetUiWindowManager : public CBase
         */
         void HandleOOMEventL( TBool aForeground );
 
-        /**
-        * AllowPlatformAccessL
-        * Prompt for Allow Platform Access
-        * @since 5.0
-        */
-        void AllowPlatformAccessL( const TUid& aUid );
-
 // Utility stuff.
 
         /**
@@ -350,7 +290,122 @@ class CWidgetUiWindowManager : public CBase
         * @return CActiveApDb
         */
         CActiveApDb*  GetDb() {return iDb;}
-       
+        
+        /**
+         * GetNetworkMode
+         * @since 5.0
+         * @returns online/offline mode
+         */
+        TNetworkMode GetNetworkMode() {return iNetworkMode;}
+        
+        /**
+         * GetNetworkConn
+         * @since 5.0
+         * @returns ETrue if there is an active network connection
+         */
+        TBool GetNetworkConn() {return iNetworkConnected;}
+        
+        /**
+         * GetCenrepHSModeL
+         * @since 5.0
+         * @returns online/offline mode read from the cenrep
+         */
+        TInt GetCenrepHSModeL();
+        
+        /**
+         * FullViewWidgetsOpen
+         * @since 5.0
+         * @returns ETrue if atleast one full view widget is open
+         */
+        TBool FullViewWidgetsOpen();
+		
+        /**
+        * CloseWindowWithLeastClick
+        * Removes widget window with least click count
+        * @since 5.0
+        * @return TBool
+        */
+        TBool CloseWindowWithLeastClick();  
+        
+        /**
+        * DeleteOOMNotifyTimer
+        * @since 5.0
+        * @return void
+        */
+        void  DeleteOOMNotifyTimer();
+
+	    /**
+        * OpenOrCreateWindowL
+        * @since 5.0
+        * @param aUid UID of widget.
+        * @param aOperation Whether to open widget to miniview or full screen.
+        */
+        void OpenOrCreateWindowL( 
+            const TUid& aUid,
+            TUint32 aOperation );     
+        
+        /**
+        * CanWindowBeCreated
+        * Checks for available RAM before creating window
+        * @since 5.0
+        * @return none
+        */
+        void CanWindowBeCreated(const TUid& aUid, TUint32 aOperation);  	
+        
+        /**
+        * StartHarvesterNotifyTimer
+        * @since 5.0
+        * @return void
+        */        
+        void StartHarvesterNotifyTimer();	
+        
+        /**
+        * DeleteHarvesterNotifyTimer
+        * @since 5.0
+        * @return void
+        */        
+        void DeleteHarvesterNotifyTimer();
+        
+        /**
+        * SendAppToBackground
+        * Send widget ui to background
+        * @since 5.0
+        * @return void
+        */        
+        void SendAppToBackground();
+        
+        /**
+        * NotifyConnecionChange
+        * Notify widgets of a network connection change
+        * @since 5.0
+        * @return void
+        */        
+        void NotifyConnecionChange(TBool aConn);
+        
+#ifdef  OOM_WIDGET_CLOSEALL
+        /**
+        * CloseAllWidgetsUnderOOM
+        * @param none
+        * @return ETrue if all widgets were closed else EFalse
+        */        
+        TBool CloseAllWidgetsUnderOOM();
+        
+        /**
+        * GetLastWidgetRestartTime
+        * @param none
+        * @return Time when last widget was created after OOM
+        */        
+        TTime GetLastWidgetRestartTime(){return iTimeLastWidgetOpen; }
+
+        /**
+        * SetLastWidgetRestartTime
+        * The time when last widget was restarted in case of OOM
+        * @param aStartTime 
+        * @return none
+        */        
+        void SetLastWidgetRestartTime(TTime aStartTime){iTimeLastWidgetOpen = aStartTime;}
+#endif  // OOM_WIDGET_CLOSEALL
+        
     protected:
 
         /**
@@ -372,7 +427,58 @@ class CWidgetUiWindowManager : public CBase
         void ConstructL();
 
     private:
+        
+        /**
+        * Suspend a widget.
+        * @since 5.0
+        * @param aUid UID of widget.
+        */
+        void SuspendWidget( const TUid& aUid );
+        
+        /**
+        * Suspend all the publishing widget.
+        * @since 5.0
+        * @return none.
+        */
+        void SuspendAllWidget();
 
+        /**
+        * Stop mini view and exit
+        * @since 5.0
+        * @param aUrl
+        * @return ETrue if last window was closed
+        */
+        TBool DeactivateMiniViewL( const TUid& aUid );
+ 
+        /**
+        * Suspend publishing on home screen
+        * @since 5.0
+        * @param aUid UID of widget.
+        * @param aSize Size of miniview.
+        * @return Successful or not.
+        */
+        TBool ActivateMiniViewL( const TUid& aUid, const TRect& aRect );
+
+// Close / terminate widgets.
+
+        /**
+        * CloseWindow
+        * Closes the window of the widget
+        * @since 3.1
+        * @param aWidgetWindow - window of the widget
+        * @return ETrue if last window was closed
+        */
+        TBool CloseWindow( CWidgetUiWindow* aWidgetWindow );
+        
+        /**
+        * RemoveFromWindowList
+        * Remove  the widget window from window list
+        * @since 5.0
+        * @param aWidgetWindow - window of the widget
+        * @return ETrue if last window was closed
+        */
+        TBool RemoveFromWindowList( CWidgetUiWindow* aWidgetWindow );
+        
         /**
         * Hide the window.
         * @param aWindow Window. Ownership is retained.
@@ -408,16 +514,7 @@ class CWidgetUiWindowManager : public CBase
         * @return Whether widgets are supported or not.
         */
         TBool DoesWidgetSupportMiniviewL( const TUid& aUid );
-		
-    		/**
-        * OpenOrCreateWindowL
-        * @since 5.0
-        * @param aUid UID of widget.
-        * @param aOperation Whether to open widget to miniview or full screen.
-        */
-        void OpenOrCreateWindowL( 
-            const TUid& aUid,
-            TUint32 aOperation );
+
             
         /**
         * Set the given window as "active full-screen window".
@@ -425,16 +522,15 @@ class CWidgetUiWindowManager : public CBase
         * @since 5.0
         * @param aWindow Window. Onwership is retained.
         */
-        void ShowWindow(
-            CWidgetUiWindow* aWindow );
+        void ShowWindow( CWidgetUiWindow* aWindow );
             
         /**
-        * Exit Publishing Widget
+        * SendWidgetToBackground
         * @since 5.0
         * @param aUid
         * @return none
         */
-        void ExitPublishingWidget( const TUid& aUid );
+        void SendWidgetToBackground( const TUid& aUid );
 
     private:
 
@@ -442,18 +538,25 @@ class CWidgetUiWindowManager : public CBase
         CWidgetUiWindowView*                iContentView;   // not owned, not responsible for deleting
         RPointerArray<CWidgetUiWindow>      iWindowList;    // owned, responsible for deleting
         CWidgetUiAppUi&                     iAppUi;          // not owned, not responsible for deleting.
+        CWidgetUiNetworkListener*           iNetworkListener;   // owned, responsible for deleting
         CDocumentHandler*                   iHandler;           // own        
         RWidgetRegistryClientSession        iClientSession;     // owned
         TBool                               iServerConnected;   // connected to Widget Registry server ?
         TBool                               iStrictMode;
         CBrowserDialogsProvider*            iDialogsProvider;// owned, responsible for deleting
-        CInternetConnectionManager*         iConnection;        // owned, responsible for deleting 
+        CInternetConnectionManager*         iConnection;        // owned, responsible for deleting
+        TNetworkMode                        iNetworkMode;       // unknown mode =  0, online mode = 1, offline mode = 2
+        TBool                               iNetworkConnected;  // ETrue if there is an active network connection, else EFalse
 #ifdef BRDO_WRT_HS_FF       
         CCpsPublisher*                      iCpsPublisher;      // Owned, interface to publish bitmap to CPS
 #endif
         // TODO should this be created only when needed?
-        CActiveApDb*                        iDb;                // owned, responsible for deleting
-
+        CActiveApDb*                        iDb;                // owned, responsible for deleting        
+        CPeriodic*                          iNotifyOOMFlagTimer;//Timer for one min timeout before next oom note is shown
+        CPeriodic*                          iNotifyHarvester;//Notify harvester to send next event
+#ifdef  OOM_WIDGET_CLOSEALL
+        TTime                               iTimeLastWidgetOpen;
+#endif         
     };
 
 #endif  // WIDGETUIWINDOWMANAGER_H_

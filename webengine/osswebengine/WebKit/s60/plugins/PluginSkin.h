@@ -428,11 +428,17 @@ class PluginSkin : public CBase,
         * @return Bool.
         */
         TBool RunScript(); 
+        RArray<NPN_GenericElement>*  genericElementArray(){
+            return iGenericElementArray;
+        }
   private:  // private member data
         void setPluginWinClipedRect();
         TRect frameVisibleRect() const;
         void Close();
         
+        const TDesC& GetExecutionMode();
+        void setupGenericElementArrrayL();
+        void addWidgetAttributesL();
         // Window-owning CoeControl which wraps the CoeControl created by the plugin
         PluginWin* m_pluginwin;
         WebFrame* m_frame; // not owned
@@ -464,6 +470,11 @@ class PluginSkin : public CBase,
         RPointerArray<HBufC> m_JSUrls;
 
         WTF::HashSet<PluginStream*>  m_streams;
+        
+        RArray<NPN_GenericElement>*  iGenericElementArray;
+        TPoint   m_oldPos;
+        TRect    m_oldViewport;
+        
 
 public:
         TInt m_handle;

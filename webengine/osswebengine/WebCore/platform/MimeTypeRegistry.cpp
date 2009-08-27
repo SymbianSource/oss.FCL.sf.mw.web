@@ -45,26 +45,24 @@ static WTF::HashSet<String>* supportedImageResourceMIMETypes;
 static WTF::HashSet<String>* supportedImageMIMETypes;
 static WTF::HashSet<String>* supportedNonImageMIMETypes;
 
-struct cleanupMimeTypes {
-    ~cleanupMimeTypes() {
-        if( supportedImageResourceMIMETypes ) {
-            supportedImageResourceMIMETypes->clear();
-            delete supportedImageResourceMIMETypes;
-            supportedImageResourceMIMETypes = 0;
-        }
-        if( supportedImageMIMETypes ) {
-            supportedImageMIMETypes->clear();
-            delete supportedImageMIMETypes;
-            supportedImageMIMETypes = 0;
-        }
-        if( supportedNonImageMIMETypes ) {
-            supportedNonImageMIMETypes->clear();
-            delete supportedNonImageMIMETypes;
-            supportedNonImageMIMETypes = 0;
-        }
+void cleanupMimeTypes() 
+{
+    if( supportedImageResourceMIMETypes ) {
+        supportedImageResourceMIMETypes->clear();
+        delete supportedImageResourceMIMETypes;
+        supportedImageResourceMIMETypes = 0;
     }
-};
-struct cleanupMimeTypes cleanMimeTypes;
+    if( supportedImageMIMETypes ) {
+        supportedImageMIMETypes->clear();
+        delete supportedImageMIMETypes;
+        supportedImageMIMETypes = 0;
+    }
+    if( supportedNonImageMIMETypes ) {
+        supportedNonImageMIMETypes->clear();
+        delete supportedNonImageMIMETypes;
+        supportedNonImageMIMETypes = 0;
+    }
+}
 
 #if PLATFORM(CG)
 extern String getMIMETypeForUTI(const String& uti);

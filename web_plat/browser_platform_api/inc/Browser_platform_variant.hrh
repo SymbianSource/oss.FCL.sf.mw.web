@@ -26,34 +26,57 @@
 #ifndef BROWSER_PLATFORM_VARIANT_HRH
 #define BROWSER_PLATFORM_VARIANT_HRH
 
-
 /*
 * Establish which platform we are building on.
 * If required, un-comment correct platform macro as
 * described below  
 *
 */
-
+/*
+* ===================
+*        S60 3.23 Gadget, etc..
+* ===================
+*/ 
 #if defined(__S60_32__)
 //
 // this is the only supported platform that comes with unambiguous platform version flag
 #define __PLATFORM_VERSION_32__
-//
-#else
+
+/*
+* ===================
+*        S60 5.0 Tube, Alvin, Ivalo, Saga, etc.
+*        5.0/5250 platforms
+* ===================
+*/ 
+#elif defined(__S60_50__)
 // manually edit the following lines to enable definition for
 // whichever platform is in use
-//
-// un-comment following line for 5.0/5250 platforms
-//#define __PLATFORM_VERSION_50__
-//
+// un-comment following line for 5.0/5250 platforms running on products similar on Tube and Alvin
+// #define __PLATFORM_VERSION_50_TUBE__
+
+// un-comment following line for 5.0/5250 platforms for Ivalo and Saga
+// #define __PLATFORM_VERSION_50__
+
+/*
+* ===================
+*        S60 5.1 Corolla, etc.
+* ===================
+*/ 
+// #elif defined(__S60_51__)
 // un-comment following line for 5.1/TB9.1 platforms
-#define __PLATFORM_VERSION_51__
-//
+//#define __PLATFORM_VERSION_51__
+
+/*
+* ===================
+*        S60 5.2 Vasco, etc.
+* ===================
+*/ 
+// #elif defined(__S60_52__)
+
 // un-comment following line for 5.2/TB9.2 platforms
-//#define __PLATFORM_VERSION_52__
+ #define __PLATFORM_VERSION_52__
 //
 #endif
-
 
 /*
 *
@@ -64,7 +87,6 @@
 #define BRDO_APP_VERSION_MAJOR 7
 #define BRDO_APP_VERSION_MINOR 2
 #define BRDO_APP_VERSION BRDO_APP_VERSION_MAJOR##_##BRDO_APP_VERSION_MINOR
-
 
 /*
 *
@@ -120,6 +142,11 @@ Default is WML support enabled
 // Additional export location - to adapt to new header export location
 #undef BRDO_ADDED_EXPORT_LOCATION
 
+// Platform contains new Symbian Libxml implementation
+#undef BRDO_SYMBIAN_LIBXML_FF
+
+// Enable/Disable compilation of some of Search Integration specific code 
+#define BRDO_SEARCH_INTEGRATION_FF
 
 /*
 * ===================
@@ -127,12 +154,6 @@ Default is WML support enabled
 * ===================
 */ 
 #if defined(__PLATFORM_VERSION_32__)
-
-// Defines Language InterWork and SAPI availability
-#undef BRDO_LIW_FF
-
-// Defines if SecurityManager component is present
-#undef BRDO_WRT_SECURITY_MGR_FF
 
 // Defines touch screen capability
 #undef BRDO_TOUCH_ENABLED_FF
@@ -142,25 +163,104 @@ Default is WML support enabled
 
 // Defines Direct File IO support in RFile ( EFileWriteDirectIO )
 #undef BRDO_RFILE_WRITE_DIRECT_IO_FF
+
+// Defines use of GestureHelper library
 #undef BRDO_USE_GESTURE_HELPER
 
+// Defines WRT widgets feature to publish on homescreen
 #undef BRDO_WRT_HS_FF
 
 // Gallery App is present
 #define BRDO_APP_GALLERY_SUPPORTED_FF
 
+// Disable compilation of some of Search Integration specific code
+#undef BRDO_SEARCH_INTEGRATION_FF
+
 // Missing from 3.23 platform_paths.hrh
 
 // Location, where the middleware layer localization .loc file should be exported
+#if __GNUC__ >= 3
+#define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(exported)
+#else
 #define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(##exported)
+#endif
 
 // Location, where the middleware layer localization .loc file should be exported
+#if __GNUC__ >= 3
+#define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(exported)
+#else
 #define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(##exported)
+#endif
 
+#if __GNUC__ >= 3
+#define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../platform/mw/exported)
+#else
+#define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../platform/mw/##exported)
+#endif
+
+#define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
+#define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
+#define APP_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(http)
+#define APP_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
+#define APP_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(swi)
+#define APP_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(kernel)
+#define APP_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
+#define APP_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
+
+#define MW_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
+#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
+#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(http)
+#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
+#define MW_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(swi)
+#define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(kernel)
+#define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
+#define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
 
 /*
 * ===================
-*        S60 5.0
+*        S60 5.0 PF5250 / Tube / Alvin
+* ===================
+*/ 
+#elif defined(__PLATFORM_VERSION_50_TUBE__)
+
+// Defines must accumulate versions. ie for 5.01 you must define BRDO_BROWSER_50_FF and BRDO_BROWSER_501_FF(To be reviewed)
+// The assumption is that anything that worked in 3.2 will work in 5.0 and 5.01.  For anything doesn't work
+// in 3.2 but works in 5.0 and above, that code should be behind the BRDO_BROWSER_50_FF flag.
+#define BRDO_BROWSER_50_FF
+
+// Defines WRT widgets feature to publish on homescreen
+#undef BRDO_WRT_HS_FF
+
+// Disable compilation of some of Search Integration specific code
+#undef BRDO_SEARCH_INTEGRATION_FF
+
+#if __GNUC__ >= 3
+#define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../../platform/mw/exported)
+#else
+#define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../../platform/mw/##exported)
+#endif
+
+#define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
+#define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../ecom)
+#define APP_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../http)
+#define APP_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../connect)
+#define APP_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../swi)
+#define APP_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../kernel)
+#define APP_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
+#define APP_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
+
+#define MW_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
+#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../ecom)
+#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../http)
+#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../connect)
+#define MW_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../swi)
+#define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../kernel)
+#define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
+#define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
+
+/*
+* ===================
+*        S60 5.0 PF5250+ / Ivalo / Saga
 * ===================
 */ 
 #elif defined(__PLATFORM_VERSION_50__)
@@ -194,7 +294,6 @@ Default is WML support enabled
 #define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
 #define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
 
-
 /*
 * ===================
 *        S60 5.1
@@ -223,7 +322,6 @@ Default is WML support enabled
 #define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
 #define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
 
-
 /*
 * ===================
 *        S60 5.2
@@ -236,7 +334,8 @@ Default is WML support enabled
 #define BRDO_BROWSER_52_FF
 
 // BrDo MultipartParser not used from S60 5.2 onward
-//#undef BRDO_MULTIPART_PARSER_FF - TODO: un-comment this line for week21 release
+// un-comment this line for week21 release
+#undef BRDO_MULTIPART_PARSER_FF
 
 #define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
 #define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
@@ -256,10 +355,10 @@ Default is WML support enabled
 #define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
 #define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
 
+// Platform contains new Symbian Libxml implementation
+#define BRDO_SYMBIAN_LIBXML_FF
 
 #endif // PLATFORM VERSION ID's
-
-
 
 // Generic run-time definitions -- see WmlBrowserBuild.h for similar feature related definitions
 

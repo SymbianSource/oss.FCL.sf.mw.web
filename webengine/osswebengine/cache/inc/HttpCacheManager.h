@@ -39,6 +39,7 @@ class CCenRepNotifyHandler;
 class CRepository;
 class RHTTPTransaction;
 class MHTTPDataSupplier;
+class CHttpCacheFileWriteHandler;
 
 // CLASS DECLARATION
 
@@ -223,8 +224,8 @@ class CHttpCacheManager : public CBase, public MCenRepNotifyHandlerCallback
         * @param
         * @return
         */
-        void RemoveOrphanedFilesL(); 
-        
+        void RemoveOrphanedFilesL();
+
         /**
         *
         * @since 3.1
@@ -240,8 +241,8 @@ class CHttpCacheManager : public CBase, public MCenRepNotifyHandlerCallback
         * @param
         * @return
         */
-        TBool VSSRequestCheck( const RHTTPTransaction& aTrans,
-                               const RHTTPHeaders& aHttpHeader, const TDesC8& aUrl );
+        TBool VSSRequestCheckL( const RHTTPTransaction& aTrans,
+                                const RHTTPHeaders& aHttpHeader, const TDesC8& aUrl );
     /**
         *
         * @since 3.1
@@ -254,14 +255,14 @@ class CHttpCacheManager : public CBase, public MCenRepNotifyHandlerCallback
     private:    // Data
 
         CHttpCacheHandler*                         iCache;      // owned
-        
-        TPath	                                   iCacheFolder;
-        
+
+        TPath                                      iCacheFolder;
+
         CHttpCacheHandler*                         iOperatorCache;      // owned
         //
         CHttpCacheHandler*                         iphoneSpecificCache;      // owned
         //
-
+        CHttpCacheFileWriteHandler*                iFileWriteHandler; // owned
 
         HBufC8*                                    iOpDomain;       // owned
         //

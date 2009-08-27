@@ -21,6 +21,7 @@
 #include "WidgetUiWindowContainer.h"
 #include "WidgetUiWindow.h"
 #include "WidgetUiAppUi.h"
+#include "WidgetUiNetworkListener.h"
 #include "WidgetInstallerInternalCRKeys.h"
 #include "SWInstWidgetUid.h"
 #include "widgetappdefs.rh"
@@ -42,39 +43,28 @@
 
 #include <InternetConnectionManager.h>
 #include <ActiveApDb.h>
+#include <oommonitorsession.h>
+#include <aknglobalnote.h>
 
+// LOCAL FUNCTION PROTOTYPES
+TInt doDestructOOMNotifyTimer( TAny* ptr );
+TInt doNotifyHarvester( TAny* ptr );
 
-/**
-* Utility class to show the prompt for platform security access.
-*
-* The class exists only to provide platform security access prompt
-* for the widgets which are launched in minview 
-*/
-class CGlobalQueryHandlerAO : public CActive
+// CONSTANTS
+#define KUidWidgetOOMPlugin 0x10282855
+const TUint32 KCRUidActiveIdleLV = 0x10275102;
+const TUint32 KAIWebStatus = 0x0000300F;
+const TInt KMemoryToCreateWidgetWindow = 10*1024*1024;
+const TInt KOOMNotificationDialogIntervalTimeOut = 60000000;
+const TInt KOOMNotificationDialogTimeOut = 2000000;
+const TInt KOOMHarvesterNotificationTimeOut = 5000000;
+const TInt KOOMWidgetCloseTimeOut = 15;//Do not close the widget that was started after OOM within 15 sec
+
+class CRequestRAM : public CActive
     {
-public:
-    /**
-    * Startup.
-    *
-    * @param aManager Window Manager.
-    * @param aWindow Window.
-    * @param aMessage Message to be prompted.
-    * @param aSoftkeys for prompt.
-    */
-    static CGlobalQueryHandlerAO* StartLD (
-                            CWidgetUiWindowManager& aManager,
-                            CWidgetUiWindow& aWindow,
-                            const TDesC& aMessage, 
-                            TInt aSoftkeys);
-    /**
-    * ShowGlobalQueryDialogL.
-    *
-    * @param aMessage Message to be prompted.
-    * @param aSoftkeys for prompt.
-    */
-    void ShowGlobalQueryDialogL ( 
-                            const TDesC& aMessage, 
-                            TInt aSoftkeys );
+public: 
+
+    static CRequestRAM* StartLD(CWidgetUiWindowManager* aWidgetUiWindowManager, const TUid& aUid, TUint32 aOperation);
 protected: // From CActive
     /**
     * Execute asynchronous operation.
@@ -85,39 +75,38 @@ protected: // From CActive
     * Provide cancellation methods.
     */
     void DoCancel();
+    void ConstructL();
     
 private:
 
     /**
     * Constructor.
-    *
-    * @param aManager Manager.
-    * @param aWindow Window.
-    * @param aMessage Message for prompt.
-    * @param aSoftkeys for prompt.
     */
-    CGlobalQueryHandlerAO (
-            CWidgetUiWindowManager& aManager,
-            CWidgetUiWindow& aWindow,
-            const TDesC& aMessage, 
-            TInt aSoftkeys);
+    CRequestRAM (CWidgetUiWindowManager* aWidgetUiWindowManager, const TUid& aUid, TUint32 aOperation);
         
     /**
     * Destructor. 
     *
     * Private on purpose.
     */
-    ~CGlobalQueryHandlerAO();
+    ~CRequestRAM();
     
 private:
-
-    CWidgetUiWindowManager& iManager;
-    CWidgetUiWindow& iWindow;
-    CAknGlobalConfirmationQuery* iGlobalConfirmationQuery ;
-    CActiveSchedulerWait iScheduler;
-    HBufC* iConfirmationText;
-
+    ROomMonitorSession iOomSession;
+    CWidgetUiWindowManager* iWidgetUiWindowManager;
+    TUid iUid;
+    TUint32 iOperation;
     };
+
+// ============================= LOCAL FUNCTIONS ================================
+
+static void NotifyCommandHandled()
+    {
+    const TUid KMyPropertyCat = { 0x10282E5A };
+    enum TMyPropertyKeys { EMyPropertyState = 109 };
+    TInt state( 1 );
+    RProperty::Set( KMyPropertyCat, EMyPropertyState , state );
+    }
 
 // =============================================================================
 
@@ -129,7 +118,9 @@ private:
 //
 CWidgetUiWindowManager::CWidgetUiWindowManager(CWidgetUiAppUi& aAppUi):
     iAppUi(aAppUi),
-    iStrictMode(ETrue)
+    iStrictMode(ETrue),
+    iNetworkMode(EUnknownMode),
+    iNetworkConnected(EFalse)
     {
     }
 
@@ -168,6 +159,8 @@ void CWidgetUiWindowManager::ConstructL()
 #ifdef BRDO_WRT_HS_FF    
     iCpsPublisher = CCpsPublisher::NewL();
 #endif
+    
+    iNetworkListener = CWidgetUiNetworkListener::NewL( *this );
     }
 
 // -----------------------------------------------------------------------------
@@ -196,6 +189,8 @@ CWidgetUiWindowManager* CWidgetUiWindowManager::NewL( CWidgetUiAppUi& aAppUi )
 CWidgetUiWindowManager::~CWidgetUiWindowManager()
     {
     iWindowList.ResetAndDestroy();
+    
+    delete iNetworkListener;
 
     // TODO Why there is a "Disconnect" method in the first place...
     // RHandleBase::Close() should be enough?
@@ -227,23 +222,22 @@ CWidgetUiWindowManager::~CWidgetUiWindowManager()
 //
 // -----------------------------------------------------------------------------
 //
-void CWidgetUiWindowManager::DeactivateMiniViewL( const TUid& aUid )
+TBool CWidgetUiWindowManager::DeactivateMiniViewL( const TUid& aUid )
     {
     CWidgetUiWindow* wdgt_window = GetWindow(aUid);
     
     if(!wdgt_window)
-        return ;
+        return EFalse;
     wdgt_window->SetWindowStateMiniViewL( EMiniViewEnabled );
-    SuspendWidget( aUid );
 
     // TODO also other states are possible when we should react?
 
     // Removing . Miniview, shall remove full view as well. For blanket permissions
     // will be revoked for miniview
 
-    iClientSession.SetBlanketPermissionL( aUid, EFalse );
+    iClientSession.SetBlanketPermissionL( aUid, EBlanketUnknown );
     iClientSession.SetMiniViewL( aUid, EFalse );
-    CloseWindow( wdgt_window );
+    return CloseWindow( wdgt_window );
     }
 
 // -----------------------------------------------------------------------------
@@ -271,17 +265,7 @@ TBool CWidgetUiWindowManager::ActivateMiniViewL(
             HideWindow( iActiveFsWindow );
             //This is done to prevent offscreen bit map overlap 
             //when widget selected from FSW
-            wdgt_window->Engine()->MakeVisible( EFalse );       
-                     
-            if ( !iClientSession.IsBlanketPermGranted ( aUid) )
-                {
-                AllowPlatformAccessL(aUid);
-                }
-            else 
-                { 
-                wdgt_window->SetBlanketPromptDisplayed(ETrue); 
-                ResumeWidgetL(aUid); 
- 		        }                 
+            wdgt_window->Engine()->MakeVisible( EFalse );                    
             }
         
         res = ETrue;
@@ -300,6 +284,8 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
     const TUid& aUid,
     TUint32 aOperation )
     {
+    TBool exit( EFalse );
+    TBool needToNotify (ETrue) ;
     switch ( aOperation )
         {
         case LaunchFullscreen:
@@ -310,11 +296,12 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
             break;
         case Deactivate:
             {
-            DeactivateMiniViewL( aUid );
+            exit = DeactivateMiniViewL( aUid );
             }
             break;
         case WidgetResume:
             {
+            needToNotify = GetWindow(aUid) ? ETrue: EFalse;
             ResumeWidgetL( aUid );
             }
             break;
@@ -324,20 +311,75 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
             }
             break;
         case WidgetSelect:
-            {
+            {            	
             // If we don't have window we know that WidgetUI has died
             // We must enable miniview state
-            if( !GetWindow( aUid ))
-                {
-                OpenOrCreateWindowL( aUid, LaunchMiniview );
+            if( !GetWindow(aUid))
+                {        
+                needToNotify = EFalse;
+                CanWindowBeCreated( aUid, aOperation );
+                break;
                 }
             //WidgetLauncher modified to bring app to foreground
-            OpenOrCreateWindowL( aUid, LaunchFullscreen );
+            GetWindow( aUid)->IncrementClickCount();
+            OpenOrCreateWindowL( aUid, LaunchFullscreen );            
             }
             break;
+        case WidgetOnline:
+            {
+            iNetworkMode = EOnlineMode;
+            GetWindow( aUid )->DetermineNetworkState();
+            }
+            break;
+       case WidgetOffline:
+            {
+            iNetworkMode = EOfflineMode;
+            // if no full view widgets open, then close the network connection
+            if ( ( !FullViewWidgetsOpen() ) && ( iConnection->Connected() ) )
+                {
+                CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
+                wdgt_window->Engine()->HandleCommandL( 
+                        (TInt)TBrCtlDefs::ECommandIdBase +
+                        (TInt)TBrCtlDefs::ECommandDisconnect );
+                iConnection->StopConnectionL();
+                }
+            GetWindow( aUid )->DetermineNetworkState();
+            }
+            break;
+       case WidgetRestart:
+           {
+           OpenOrCreateWindowL( aUid, LaunchMiniview );
+           ResumeWidgetL( aUid );
+           }
+           break;
+        }
+    if(needToNotify)
+    // Widget is up and running, notify that next one can be launched    
+    	NotifyCommandHandled();
+    
+    if( exit )
+        {
+        iAppUi.Exit();
         }
     }
-    
+
+// ------------------------------------------------------------------------
+// CWidgetUiWindowManager::CanWindowBeCreated()
+// Check for availaibilty for window creation
+//
+// ------------------------------------------------------------------------
+//
+void CWidgetUiWindowManager::CanWindowBeCreated(const TUid& aUid, TUint32 aOperation)
+    {
+    CRequestRAM* requestRam = CRequestRAM::StartLD(this, aUid, aOperation);
+    }
+
+// ------------------------------------------------------------------------
+// CWidgetUiWindowManager::OpenOrCreateWindowL()
+// Open or create widget window
+//
+// ------------------------------------------------------------------------
+//
 void CWidgetUiWindowManager::OpenOrCreateWindowL( 
     const TUid& aUid,
     TUint32 aOperation )
@@ -436,35 +478,18 @@ void CWidgetUiWindowManager::OpenOrCreateWindowL(
             {
             iActiveFsWindow = wdgt_window;
             iActiveFsWindow->SetWindowStateFullView(ETrue);
-            iActiveFsWindow->SetCurrentWindow( ETrue );
+            
             if ( iActiveFsWindow->Engine()->Rect() != View()->ClientRect())
                 {
                 iActiveFsWindow->Engine()->SetRect( View()->ClientRect() );
                 }
+            iActiveFsWindow->SetCurrentWindow( ETrue ); 
+            iActiveFsWindow->Engine()->SetFocus(ETrue);
             //iActiveFsWindow->Engine()->MakeVisible( ETrue );
             
             }
         }
     iClientSession.SetActive( aUid, ETrue );
-    }
-
-// =============================================================================
-// CWidgetUiWindowManager::AllowPlatformAccessL()
-// Prompt for network access allow
-//
-// =============================================================================
-//
-void CWidgetUiWindowManager::AllowPlatformAccessL( const TUid& aUid )
-    {
-    CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
-    if( !wdgt_window)
-        return ;
-     
-    HBufC* confirmationText = StringLoader::LoadLC(R_WIDGETUI_PLEASE_WORK);
-    TInt softKey = R_AVKON_SOFTKEYS_OK_CANCEL;
-    CGlobalQueryHandlerAO* tmp = NULL;
-    TRAP_IGNORE(  tmp = CGlobalQueryHandlerAO::StartLD( *this, *wdgt_window , confirmationText->Des(), softKey ) );
-    CleanupStack::PopAndDestroy(confirmationText);  
     }
 
 // =============================================================================
@@ -511,12 +536,12 @@ CWidgetUiWindow* CWidgetUiWindowManager::GetWindow( const TUid& aUid )
 //
 // =============================================================================
 //
-void CWidgetUiWindowManager::CloseWindow( CWidgetUiWindow* aWidgetWindow )
+TBool CWidgetUiWindowManager::CloseWindow( CWidgetUiWindow* aWidgetWindow )
     {
 
     TBool lastOne( iWindowList.Count() == 1 );
-    
-    RemoveFromWindowList( aWidgetWindow );
+    TBool ret( EFalse );
+    ret = RemoveFromWindowList( aWidgetWindow );
      
     if ( !lastOne )
         {
@@ -532,15 +557,16 @@ void CWidgetUiWindowManager::CloseWindow( CWidgetUiWindow* aWidgetWindow )
             CWidgetUiWindow* window( iWindowList[i] );
             if ( window->WidgetMiniViewState() == EPublishStart )
                 {
-				TRAP_IGNORE (window->WidgetExtension()->HandleCommandL(
-				                (TInt)TBrCtlDefs::ECommandAppForeground +   
-								(TInt)TBrCtlDefs::ECommandIdBase));  
+                    TRAP_IGNORE (window->WidgetExtension()->HandleCommandL(
+                                   (TInt)TBrCtlDefs::ECommandAppForeground + 
+                                   (TInt)TBrCtlDefs::ECommandIdBase));
 
                     break;
                 }
             }
 
         }
+    return ret;
     }
 
 // =============================================================================
@@ -549,12 +575,12 @@ void CWidgetUiWindowManager::CloseWindow( CWidgetUiWindow* aWidgetWindow )
 //
 // =============================================================================
 //
-void CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWindow )
+TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWindow )
     {
     __ASSERT_DEBUG( aWidgetWindow, User::Invariant() );
     if ( iDialogsProvider->IsDialogLaunched() )
         {
-        return;
+        return EFalse;
         }
 
     if ( iClientSession.IsWidgetInFullView ( aWidgetWindow->Uid()))
@@ -574,6 +600,9 @@ void CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWindo
 
     iWindowList.Remove( iWindowList.Find( aWidgetWindow ) );
     TBool lastOne( iWindowList.Count() == 0 );
+    TRAP_IGNORE( aWidgetWindow->Engine()->HandleCommandL( 
+            (TInt)TBrCtlDefs::ECommandIdBase +
+            (TInt)TBrCtlDefs::ECommandCancelFetch ) );   
     if ( lastOne )
         {
         TRAP_IGNORE( aWidgetWindow->Engine()->HandleCommandL( 
@@ -581,75 +610,58 @@ void CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWindo
                 (TInt)TBrCtlDefs::ECommandDisconnect ) );
 
         delete aWidgetWindow;
-        iAppUi.Exit();
+        return ETrue;
         }
     else
         {
         delete aWidgetWindow;
         }
+    return EFalse;
     }
 
 // =============================================================================
-// CWidgetUiWindowManager::CloseWindow()
-// close window of widget with a particular Uid
+// CWidgetUiWindowManager::CloseWindowWithLeastClick()
+// return true for the last widgets  to be closed
 //
 // =============================================================================
 //
-void CWidgetUiWindowManager::CloseWindow( const TUid& aUid )
+TBool CWidgetUiWindowManager::CloseWindowWithLeastClick()
     {
-    CWidgetUiWindow* widgetWindow = GetWindow( aUid );
-    CloseWindow( widgetWindow );
-    }
-
-// =============================================================================
-// CWidgetUiWindowManager::CloseAllWindowsExceptCurrent()
-// close all window except the current widget
-//
-// =============================================================================
-//
-void CWidgetUiWindowManager::CloseAllWindowsExceptCurrent()
-    {
-    TInt idx(0);
-    SuspendAllWidget();
-    while (iWindowList.Count() > 1)
+   
+    TInt temp(iWindowList[0]->GetClickCount());
+    TInt err(KErrNone);
+    CWidgetUiWindow* windowToBeClosed(NULL);
+    TTime currentTime;
+    currentTime.HomeTime();    
+    TTimeIntervalSeconds  seconds;
+    for ( TInt i = 0; i < iWindowList.Count(); i++ )
         {
-        CWidgetUiWindow* window = iWindowList[idx];
-        TRAP_IGNORE(iClientSession.SetMiniViewL( window->Uid(), EFalse ));
-        if(CheckIfWindowNeedsToBeClosed(window))
+        CWidgetUiWindow* window = iWindowList[i];        
+        err = currentTime.SecondsFrom(window->GetTime(),seconds);
+        if ( window->GetClickCount() <= temp && window != iActiveFsWindow &&  
+             (err == KErrOverflow || seconds.Int() > KOOMWidgetCloseTimeOut))
             {
-            RemoveFromWindowList( window );
+            temp  = window->GetClickCount();
+            windowToBeClosed = window;
             }
-        else
+        else if( window == iActiveFsWindow )
             {
-            idx++;// skip ActiveWindow
+            if ( window->WidgetMiniViewState() == EPublishStart ||
+                 window->WidgetMiniViewState() == EPublishSuspend )
+                {
+                // Incase when the widget is active and as in full as well as miniview. 
+                // it will stop publishing
+                TRAP_IGNORE(window->SetWindowStateMiniViewL( EMiniViewEnabled ));
+                }
             }
         }
-    }
-
-// =============================================================================
-// CWidgetUiWindowManager::CheckIfWindowNeedsToBeClosed()
-// return true for the widgets that needs to be closed
-//
-// =============================================================================
-//
-TBool CWidgetUiWindowManager::CheckIfWindowNeedsToBeClosed(CWidgetUiWindow* aWindow) const
-    {
-    __ASSERT_DEBUG( aWindow, User::Invariant() );
-
-    if( aWindow == iActiveFsWindow )
-        {
-        if ( aWindow->WidgetMiniViewState() == EPublishStart ||
-             aWindow->WidgetMiniViewState() == EPublishSuspend )
+        if ( windowToBeClosed)
             {
-            // Incase when the widget is active and as in full as well as miniview. 
-            // it will stop publishing
-            TRAP_IGNORE(aWindow->SetWindowStateMiniViewL( EMiniViewEnabled ));
+            return RemoveFromWindowList(windowToBeClosed);
             }
-        return EFalse;
-        }
-    return ETrue;
-    }
 
+    return EFalse;
+    }
 // =============================================================================
 // CWidgetUiWindowManager::Exit()
 // Exit from widget and close widget window
@@ -661,33 +673,36 @@ void CWidgetUiWindowManager::Exit( TInt aCommand, const TUid& aUid )
     CWidgetUiWindow* window( GetWindow( aUid ) );
     if( !window )
         return;
+        
+    if ( window->WidgetExtension() )
+        {
+        if ( window->WidgetExtension()->HandleCommandL( aCommand ) )
+            return;    
+        }
+    
     if( ( window->WidgetMiniViewState() == EMiniViewEnabled ) ||
         ( window->WidgetMiniViewState() == EMiniViewNotEnabled ) ) 
         {
         // The widget is not publishing.
-        if ( window->WidgetExtension() )
-            {
-            if ( window->WidgetExtension()->HandleCommandL( aCommand ) )
-                return;
-            }
-
-        CloseWindow( window );
-        if( window == iActiveFsWindow)
-            iActiveFsWindow = NULL;
+        TBool isOkToExit = CloseWindow( window );
+        if ( isOkToExit)
+            iAppUi.Exit();
         }
     else
         {
-        ExitPublishingWidget( aUid );
+        // Since widget is in miniview we just push the widget app to background and
+        // set the window status
+        SendWidgetToBackground( aUid );
         }
     }
 
 // =============================================================================
-// CWidgetUiWindowManager::ExitPublishingWidget()
-// Exit from widget in full view when it is publishing
+// CWidgetUiWindowManager::SendWidgetToBackground()
+// Push the widget to background and set the window status
 //
 // =============================================================================
 //
-void CWidgetUiWindowManager::ExitPublishingWidget( const TUid& aUid )
+void CWidgetUiWindowManager::SendWidgetToBackground( const TUid& aUid )
     {
     CWidgetUiWindow* window( GetWindow( aUid ) );
     if( !window )
@@ -696,11 +711,13 @@ void CWidgetUiWindowManager::ExitPublishingWidget( const TUid& aUid )
     // make widgets act like separate applications by pushing to background
     // this way user is sent back to app shell or idle to run another widget
     iAppUi.SendAppToBackground();
-
-    if ( iWindowList.Count() == 0 )
+    if ( window == iActiveFsWindow )
         {
-        iAppUi.Exit(); //TODO Check if it is required for publishin widget
-        }
+        //make the active window NULL and also CurrentWindow as False
+        iActiveFsWindow->SetIsCurrentWindow(EFalse);
+        iActiveFsWindow = NULL;        
+        }        
+
     window->Engine()->MakeVisible( EFalse );
     window->SetWindowStateFullView( EFalse );
     //  Add registry info
@@ -817,18 +834,39 @@ void CWidgetUiWindowManager::HandleForegroundEvent( TBool aForeground )
 
 // -----------------------------------------------------------------------------
 // CWidgetUiWindowManager::HandleOOMEventL
-// called when out of memory message is received by app ui
+// called to display  notification for out of memory when message is received 
+// by app ui
 //
 // -----------------------------------------------------------------------------
 //
 void CWidgetUiWindowManager::HandleOOMEventL( TBool /*aForeground*/ )
     {
+    if ( iNotifyOOMFlagTimer)
+        return;
+    
     HBufC* message = StringLoader::LoadLC( R_WIDGETUI_OOM_EVENT );
-    CAknConfirmationNote* note = new (ELeave) CAknConfirmationNote( ETrue );
-    note->ExecuteLD(*message );
+    
+    TInt NoteId (-1);
+    CAknGlobalNote* dialog = CAknGlobalNote::NewLC();
+    NoteId = dialog->ShowNoteL( EAknGlobalInformationNote, *message);
+    User::After(KOOMNotificationDialogTimeOut);
+    dialog->CancelNoteL(NoteId);
+
+    CleanupStack::PopAndDestroy(dialog);
     CleanupStack::PopAndDestroy( message );// message
     
-    CloseWindowsAsync( ETrue );// close all widgets
+    iNotifyOOMFlagTimer = CPeriodic::NewL(CActive::EPriorityLow);
+    iNotifyOOMFlagTimer->Start(KOOMNotificationDialogIntervalTimeOut,0,TCallBack(&doDestructOOMNotifyTimer,this));
+    }
+ 
+TInt doDestructOOMNotifyTimer( TAny* ptr )
+    {
+    CWidgetUiWindowManager* temp = static_cast<CWidgetUiWindowManager*>(ptr);
+    if(temp)
+        {
+        temp->DeleteOOMNotifyTimer();                         
+        }
+    return EFalse;
     }
 
 // -----------------------------------------------------------------------------
@@ -884,16 +922,40 @@ void CWidgetUiWindowManager::ResumeWidgetL( const TUid& aUid )
     {
     CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
     
+    if ( iNetworkMode == EUnknownMode )
+        {
+        TInt HSOnlineMode = GetCenrepHSModeL();
+        if (HSOnlineMode)
+            {
+            iNetworkMode = EOnlineMode;
+            }
+        else
+            {
+            iNetworkMode = EOfflineMode;
+            }
+        }
+    
     // Window can be null if WidgetUI has been killed due to low memory situation
     //__ASSERT_DEBUG( wdgt_window, User::Invariant() );
-    if(!wdgt_window || !wdgt_window->GetBlanketPromptDisplayed())
-        return;
+    if(!wdgt_window)
+        {
+        //LAUNCH WIDGET Window
+        CanWindowBeCreated(aUid,WidgetResume);		
+		return;
+    	}
     
+    // reload widget now moved to resume for miniview widgets, to be called 
+    // after determining online/offline mode
+    if ( !(wdgt_window->IsWidgetLoaded() || wdgt_window->IsWidgetLoadStarted()) )
+        {
+        wdgt_window->ReloadWidget();
+        }
+		
     if( (wdgt_window ->WidgetMiniViewState() == EMiniViewEnabled) ||
         (wdgt_window->WidgetMiniViewState() == EPublishSuspend) )
         {
-        //HideWindow( iActiveFsWindow );
-        //iActiveFsWindow = NULL;
+        //Widgets on HS cannnot be active
+        iActiveFsWindow = NULL;
         // Publish should start only after widget is resumed.
         wdgt_window->SetWindowStateMiniViewL(EPublishStart);
 
@@ -904,7 +966,8 @@ void CWidgetUiWindowManager::ResumeWidgetL( const TUid& aUid )
         wdgt_window->WidgetExtension()->HandleCommandL(
             (TInt)TBrCtlDefs::ECommandAppForeground + 
             (TInt)TBrCtlDefs::ECommandIdBase);
-#ifdef BRDO_WRT_HS_FF  
+#ifdef BRDO_WRT_HS_FF 
+        wdgt_window->Engine()->MakeVisible( EFalse );
         wdgt_window->Engine()->SetRect( iCpsPublisher->BitmapSize());
 #endif
         }
@@ -939,14 +1002,7 @@ void CWidgetUiWindowManager::HideWindow( CWidgetUiWindow* aWindow )
     if ( aWindow )
         {
         // Hide the previously active widget.
-        aWindow->SetCurrentWindow(EFalse);
-        /*        
-            if( iActiveFsWindow->WidgetMiniViewState() == EPublishSuspend ) 
-                {
-                iClientSession.SetFullView( aWindow->Uid(), EFalse );
-                aWindow->SetWindowStateFullView( EFalse );   
-                }
-           */     
+        aWindow->SetCurrentWindow(EFalse);        
         }
     }
  
@@ -1034,7 +1090,11 @@ CWidgetUiWindow* CWidgetUiWindowManager::CreateNewWidgetWindowL(
     // reset the display orientation when the widget is launched
     iAppUi.SetDisplayAuto();
 
-    window->ReloadWidget();
+    // reload widget only for full view widgets
+    if ( iClientSession.IsWidgetInFullView(aUid) )
+        {
+        window->ReloadWidget();
+        }
     
     return window;
     }
@@ -1060,7 +1120,10 @@ TBool CWidgetUiWindowManager::DoesWidgetSupportMiniviewL( const TUid& aUid )
 void CWidgetUiWindowManager::ShowWindow( CWidgetUiWindow* aWindow )
     {
     if ( !aWindow )
+        {
+        iAppUi.SendAppToBackground();
         return;
+        }
     if ( aWindow != iActiveFsWindow )
         {
         HideWindow( iActiveFsWindow );
@@ -1070,117 +1133,225 @@ void CWidgetUiWindowManager::ShowWindow( CWidgetUiWindow* aWindow )
     iActiveFsWindow->SetCurrentWindow( ETrue );
     iActiveFsWindow->Engine()->MakeVisible( ETrue );
     }
+// ------------------------------------------------------------------------
+// CWidgetUiWindowManager::DeleteOOMNotifyTimer
+//
+// ------------------------------------------------------------------------
+    
+void CWidgetUiWindowManager::DeleteOOMNotifyTimer()
+    {
+    iNotifyOOMFlagTimer->Cancel();
+    delete iNotifyOOMFlagTimer;
+    iNotifyOOMFlagTimer = NULL;
+    }
+    
+void CWidgetUiWindowManager::StartHarvesterNotifyTimer()
+{
+    if(iNotifyHarvester)
+        DeleteHarvesterNotifyTimer();
+    iNotifyHarvester = CPeriodic::NewL(CActive::EPriorityLow);
+    iNotifyHarvester->Start(KOOMHarvesterNotificationTimeOut,0,TCallBack(&doNotifyHarvester,this));
+}
+
+TInt doNotifyHarvester( TAny* ptr )
+{
+    NotifyCommandHandled();
+    CWidgetUiWindowManager* temp = static_cast<CWidgetUiWindowManager*>(ptr);
+    if(temp)
+        temp->DeleteHarvesterNotifyTimer();
+    return EFalse;    
+}
+
+void CWidgetUiWindowManager::DeleteHarvesterNotifyTimer()
+{
+    iNotifyHarvester->Cancel();
+    delete iNotifyHarvester;
+    iNotifyHarvester = NULL;    
+}
 
 // ------------------------------------------------------------------------
-// CGlobalQueryHandlerAO::StartLD
+// CWidgetUiWindowManager::GetCenrepHSModeL
 //
-// Initialize AO.
+// Determine the homescreen network mode (online/offline) from the cenrep
 // ------------------------------------------------------------------------
-CGlobalQueryHandlerAO* CGlobalQueryHandlerAO::StartLD(
-    CWidgetUiWindowManager& aManager,
-    CWidgetUiWindow& aWindow,
-    const TDesC& aMessage, 
-    TInt aSoftkeys)
+TInt CWidgetUiWindowManager::GetCenrepHSModeL()
     {
-    CGlobalQueryHandlerAO* self( new( ELeave ) CGlobalQueryHandlerAO( aManager, aWindow, aMessage, aSoftkeys) );
-    TRAPD(error, self->ShowGlobalQueryDialogL ( aMessage, aSoftkeys ));
-    if ( error )
+    TInt value( 0 );
+    CRepository* rep( NULL );
+    TRAPD( cenrepError, rep = CRepository::NewL( TUid::Uid( KCRUidActiveIdleLV ) ) );
+    if ( KErrNone == cenrepError )
         {
-        delete self;
-        User::Leave(error);
+        (void)rep->Get( KAIWebStatus, value );
         }
-    self->SetActive();
-    self->iScheduler.Start();
-    return self;
+    delete rep;
+    
+    return value;
     }
 
 // ------------------------------------------------------------------------
-// CGlobalQueryHandlerAO::CGlobalQueryHandlerAO
+// CWidgetUiWindowManager::FullViewWidgetsOpen
 //
-// Constructor.
+// Checks if any full view widgets are open 
 // ------------------------------------------------------------------------
-CGlobalQueryHandlerAO::CGlobalQueryHandlerAO(
-    CWidgetUiWindowManager& aManager,
-    CWidgetUiWindow& aWindow,
-    const TDesC& aMessage, 
-    TInt aSoftkeys):CActive( EPriorityHigh ),
-    iWindow ( aWindow ), 
-    iManager(aManager),
-    iConfirmationText(aMessage.AllocL())
+TBool CWidgetUiWindowManager::FullViewWidgetsOpen()
     {
-    CActiveScheduler::Add( this );
-    }
-
-// ------------------------------------------------------------------------
-// CGlobalQueryHandlerAO::CGlobalQueryHandlerAO
-//
-// ISet network and platofrom access permission based on user response.
-// ------------------------------------------------------------------------
-void CGlobalQueryHandlerAO::RunL()
-    {
-    if (iScheduler.IsStarted())
+    for ( TInt i = 0; i < iWindowList.Count(); ++i )
         {
-        iScheduler.AsyncStop();
+        CWidgetUiWindow* window( iWindowList[i] );
+        if ( ( window->WidgetFullViewState() ) && ( !iClientSession.IsWidgetInMiniView( window->Uid() ) ) )
+            {
+            return ETrue;
+            }
         }
     
-    RWidgetRegistryClientSession clientSession = iManager.WidgetUIClientSession();	
-    if (iStatus == EAknSoftkeyOk)
-        {
-        clientSession.SetBlanketPermissionL( iWindow.Uid(), ETrue );
-        }
-    else if ( iStatus == EAknSoftkeyCancel)
-        {
-        //iWindow.SetNetworkAccessGrant(EDeny);
-        clientSession.SetBlanketPermissionL( iWindow.Uid(), EFalse );
-        //User::Leave( KErrAccessDenied );
-        }
-    iWindow.SetBlanketPromptDisplayed(ETrue); 
-	iManager.ResumeWidgetL(iWindow.Uid());        
-    delete this;
+    return EFalse;
     }
 
 // ------------------------------------------------------------------------
-// CGlobalQueryHandlerAO::DoCancel
+// CWidgetUiWindowManager::NotifyConnecionChange
 //
-// Do nothing.
+// Notify widgets of a network connection change 
 // ------------------------------------------------------------------------
-void CGlobalQueryHandlerAO::DoCancel()
+void CWidgetUiWindowManager::NotifyConnecionChange( TBool aConn )
     {
-    if ( iGlobalConfirmationQuery )
+    iNetworkConnected = aConn;
+    for ( TInt i = 0; i < iWindowList.Count(); ++i )
         {
-        iGlobalConfirmationQuery->CancelConfirmationQuery();
+        CWidgetUiWindow* window( iWindowList[i] );
+        window->DetermineNetworkState();
         }
-    iScheduler.AsyncStop();
     }
 
+#ifdef OOM_WIDGET_CLOSEALL
 // ------------------------------------------------------------------------
-// CGlobalQueryHandlerAO::~CGlobalQueryHandlerAO
+// CWidgetUiWindowManager::CloseAllWidgetsUnderOOM
 //
-// Destructor.
+// In case of OOM closes all widgets. 
 // ------------------------------------------------------------------------
-CGlobalQueryHandlerAO::~CGlobalQueryHandlerAO()
+TBool  CWidgetUiWindowManager::CloseAllWidgetsUnderOOM()
+    {
+    TInt temp(0);
+    TInt err(KErrNone);
+    CWidgetUiWindow* windowToBeClosed(NULL);
+    TTime currentTime;
+    currentTime.HomeTime();    
+    TTimeIntervalSeconds  seconds;
+    TInt nCountWidgetClosed = 0;
+    TBool bAllWindowsClosed = ETrue;
+      
+    TInt nWidgetsCount = iWindowList.Count();
+    for ( TInt i = (nWidgetsCount-1); i >= 0; i-- )
+        {
+        CWidgetUiWindow* window = iWindowList[i];        
+        err = currentTime.SecondsFrom(iTimeLastWidgetOpen,seconds);
+        if ( err == KErrOverflow || seconds.Int() > KOOMWidgetCloseTimeOut)
+           {
+           windowToBeClosed = window;
+           if ( windowToBeClosed)
+               {
+               RemoveFromWindowList(windowToBeClosed);
+               nCountWidgetClosed++;
+               }
+           }
+        }
+    if(nWidgetsCount == nCountWidgetClosed)
+        {
+        bAllWindowsClosed = ETrue;
+        }
+    else
+        {
+        bAllWindowsClosed = EFalse;
+        }
+    return bAllWindowsClosed;
+    }
+ 
+#endif  //OOM_WIDGET_CLOSEALL    
+
+void CWidgetUiWindowManager::SendAppToBackground()
+    {
+    iAppUi.SendAppToBackground();    
+    }
+    
+CRequestRAM::CRequestRAM(CWidgetUiWindowManager* aWidgetUiWindowManager, const TUid& aUid, TUint32 aOperation):
+    CActive( EPriorityStandard ),
+    iOperation(aOperation),
+    iUid(aUid),
+    iWidgetUiWindowManager(aWidgetUiWindowManager)
+    {
+	}
+	
+CRequestRAM* CRequestRAM::StartLD(CWidgetUiWindowManager* aWidgetUiWindowManager, const TUid& aUid, TUint32 aOperation)
+    {
+     CRequestRAM* self = new ( ELeave ) CRequestRAM(aWidgetUiWindowManager, aUid, aOperation); 
+     CleanupStack::PushL( self );
+     self->ConstructL();
+     CleanupStack::Pop();
+     return self;
+    }
+    
+void CRequestRAM::ConstructL()
+    {
+    User::LeaveIfError(iOomSession.Connect());
+    CActiveScheduler::Add( this );
+#ifdef FF_OOM_MONITOR2_COMPONENT
+    iOomSession.RequestOptionalRam(KMemoryToCreateWidgetWindow, KMemoryToCreateWidgetWindow, KUidWidgetOOMPlugin, iStatus);
+    SetActive();
+#else
+    TMemoryInfoV1Buf  info;
+    UserHal::MemoryInfo (info);                
+    TInt err = info().iFreeRamInBytes > KMemoryToCreateWidgetWindow ? KErrNone : KErrNoMemory;   
+    SetActive();
+    TRequestStatus* status = &iStatus;
+    User::RequestComplete(status, err); 
+#endif
+    }
+
+void CRequestRAM::RunL()
+    {    
+    if(iStatus >= 0)
+        {        
+        iWidgetUiWindowManager->OpenOrCreateWindowL( iUid, LaunchMiniview );
+        iWidgetUiWindowManager->ResumeWidgetL( iUid );
+        iWidgetUiWindowManager->GetWindow(iUid)->SetTime();
+#ifdef OOM_WIDGET_CLOSEALL        
+        iWidgetUiWindowManager->SetLastWidgetRestartTime( iWidgetUiWindowManager->GetWindow(iUid)->GetTime());
+#endif //OOM_WIDGET_CLOSEALL
+        
+        switch ( iOperation )
+            {
+            case WidgetSelect:
+                {
+                iWidgetUiWindowManager->GetWindow(iUid)->IncrementClickCount();                
+                iWidgetUiWindowManager->OpenOrCreateWindowL( iUid, LaunchFullscreen );
+                iWidgetUiWindowManager->GetWindow(iUid)->SetWindowStateMiniViewL(EPublishSuspend); 
+                }
+                break;
+            case WidgetResume:
+                {                
+
+                }
+                break;                
+            } 
+        iWidgetUiWindowManager->StartHarvesterNotifyTimer();            
+        }
+    else
+        {
+        NotifyCommandHandled();
+        iWidgetUiWindowManager->SendAppToBackground();  
+        iWidgetUiWindowManager->WidgetUIClientSession().SetActive( iUid, EFalse );
+        }        
+    delete this;    
+    }
+
+
+CRequestRAM::~CRequestRAM()
     {
     Cancel();
-    delete iGlobalConfirmationQuery;
-    delete iConfirmationText;
+    iOomSession.Close();
     }
-
-// ---------------------------------------------------------
-// CGlobalQueryHandlerAO::ShowGlobalQueryDialogL()
-// ---------------------------------------------------------
-// 
-void CGlobalQueryHandlerAO::ShowGlobalQueryDialogL(const TDesC& aMessage, TInt aSoftkeys)
+void CRequestRAM::DoCancel()
     {
-    iGlobalConfirmationQuery = CAknGlobalConfirmationQuery::NewL();
-    iGlobalConfirmationQuery->ShowConfirmationQueryL
-                                (iStatus,
-                                aMessage,
-                                aSoftkeys);
-    }
+    iOomSession.CancelRequestFreeMemory();
+    }    
 
 // End of file
-
-
-
-
-

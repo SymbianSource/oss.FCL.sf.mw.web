@@ -326,10 +326,10 @@ NONSHARABLE_CLASS( CUserInteractionsUtils ) : public CDownloadUtils,
         TBool IsNetworkPdCompatibleL() const;
 
         /**
-        * Sends a message to the PD applications (MP, VP )
-        * before browser exits
+        * Sends a message to the PD applications (MP, VP ) before browser exits
+        * @param aProgressiveDownloadLaunched Progressive Play Launched or not 
         */
-        void SendMsgTerminateToPdAppsL();
+        void SendMsgTerminateToPdAppsL( TBool aProgressiveDownloadLaunched );
 
 		/**
 		* Checks if the WLAN is available

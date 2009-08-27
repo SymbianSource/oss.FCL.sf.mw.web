@@ -215,7 +215,7 @@ CWidgetUIConfigHandler::CWidgetUIConfigHandler()
     //
     iProperties[EPropertyDescriptionNokiaPromptNeeded].id = EBlanketPermGranted;
     iProperties[EPropertyDescriptionNokiaPromptNeeded].name.Set( KBlanketPermGranted );
-    iProperties[EPropertyDescriptionNokiaPromptNeeded].type = EWidgetPropTypeBool;
+    iProperties[EPropertyDescriptionNokiaPromptNeeded].type = EWidgetPropTypeInt;
     iProperties[EPropertyDescriptionNokiaPromptNeeded].flags = CONFIG_NOKIA_MAY;
     }
 

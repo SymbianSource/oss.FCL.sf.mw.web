@@ -282,6 +282,13 @@ int WebCoreFrameBridge::textZoomPercent() const
         sizeMultiplier = StaticObjectsContainer::instance()->screenResolution() == ELowScreenResolution ?
         KDefaultLowResFontMultiplier : KDefaultFontMultiplier;
     }
+#if PLATFORM(SYMBIAN)
+    TLanguage uilang = User::Language();
+    if(uilang == ELangKorean)
+    {
+       sizeMultiplier = 100;
+    }
+#endif
     if (control(m_frame)->settings())
         sizeMultiplier = textMultiplier(control(m_frame)->settings()->brctlSetting(TBrCtlDefs::ESettingsFontSize), sizeMultiplier);
     return sizeMultiplier;

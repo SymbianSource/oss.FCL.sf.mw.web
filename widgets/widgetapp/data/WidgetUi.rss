@@ -173,8 +173,4 @@ RESOURCE TBUF r_widgetui_softkey_exit { buf = text_softkey_exit; }
 RESOURCE TBUF r_widgetui_softkey_option { buf = text_softkey_option; }
 
 
-// query to grant permission for phone inofrmation and network access
-RESOURCE TBUF r_widgetui_platform_access { buf = qtn_widgetui_blanketpermission_prompt; }
-RESOURCE TBUF r_widgetui_please_work { buf = qtn_widgetui_blanketpermission_prompt; }
-
 // End of File

@@ -27,7 +27,7 @@
 _LIT(KWidgetUiPath, "\\private\\10282822\\");
 _LIT(KWidgetBURTempPath, "WidgetBURTemp\\");
 _LIT(KWidgetBURDummy, "dummy data for backup");
-
+_LIT( KWidgetEntryStoreXmlFile, "\\private\\10282f06\\WidgetEntryStore.xml" );
 // ======== MEMBER FUNCTIONS ========
 
 // ---------------------------------------------------------------------------
@@ -277,6 +277,8 @@ void CWidgetActiveCallback::PrepareBackupDataL()
     // Move widget data to BUR path
     CFileMan* fileManager = CFileMan::NewL( iFs );
     CleanupStack::PushL( fileManager );
+    // Prepare to backup the registration files 
+    User::LeaveIfError( fileManager->Copy( KWidgetEntryStoreXmlFile, KWidgetUiPath, CFileMan::EOverWrite ) );
     User::LeaveIfError( fileManager->Move( KWidgetUiPath, *iPathBUR, CFileMan::ERecurse ) );
     CleanupStack::PopAndDestroy();  // fileMananger
     }

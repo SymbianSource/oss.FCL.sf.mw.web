@@ -35,10 +35,24 @@ namespace KJS
     class ServiceEventHandler;
     class MDeviceBinding;
     class ServiceObjectFunc;
-    class ServiceObjectPrivate;
+    class ServiceObject;
 
+    class ServiceObjectPrivate : public DevicePrivateBase
+        {
+        friend class ServiceObject;
+        friend class ServiceObjectFunc;
+        public:
+            ServiceObjectPrivate(ServiceObject* jsobj, HBufC8* svcName, MDeviceBinding* deviceBinding );
+            ~ServiceObjectPrivate();
+            MDeviceBinding* m_deviceBinding; // Not owned
+            Identifier m_propName;
+            HBufC8* m_svcName;    // owned
+            ServiceObject* m_jsobj;
+        };
+            
     class ServiceObject : public JSObject
         {
+        friend class ServiceObjectPrivate;
         friend class ServiceObjectFunc;
 
         public: // constructor and destructor
@@ -84,7 +98,14 @@ namespace KJS
             /**
             * isValid
             */
-            bool isValid() const { return m_valid; }
+            TBool isValid() const { return m_valid; }
+            
+            /**
+            * getServiceData
+            * @return DevicePrivateBase*
+            * @since 7.x
+            */
+            DevicePrivateBase* getServiceData() { return m_privateData; }
 
            /**
             * Get class info
@@ -103,29 +124,15 @@ namespace KJS
             virtual UString toString( ExecState* exec ) const;
 
         public:
-            void Close( ExecState* exec, bool unmark );
+            void Close();
             enum
                 {
                 close
                 };
             private:
             ServiceObjectPrivate* m_privateData;   // private object to hold data
-            bool m_valid;                          // object is valid or not
+            TBool m_valid;                          // object is valid or not
         };
-        
-        class ServiceObjectPrivate
-            {
-            friend class ServiceObject;
-            friend class ServiceObjectFunc;
-            public:
-                ServiceObjectPrivate(HBufC8* svcName, MDeviceBinding* deviceBinding );
-                ~ServiceObjectPrivate()   { Close(); }
-                void Close();
-                MDeviceBinding* m_deviceBinding; // Not owned
-                Identifier m_propName;
-                HBufC8* m_svcName;    // owned
-                bool isClosing; 
-            };
 
         class ServiceObjectFunc : public JSObject
                 {

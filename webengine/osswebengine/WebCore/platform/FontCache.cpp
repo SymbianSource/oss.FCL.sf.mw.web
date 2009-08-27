@@ -104,23 +104,21 @@ typedef HashMap<FontPlatformDataCacheKey, FontPlatformData*, FontPlatformDataCac
 
 static FontPlatformDataCache* gFontPlatformDataCache = 0;
 
-struct cleanupFontDataCache {
-    ~cleanupFontDataCache() {
-        if( gFontPlatformDataCache ) 
-        {
-			FontPlatformDataCacheIterator end = gFontPlatformDataCache->end();
-			for (FontPlatformDataCacheIterator it = gFontPlatformDataCache->begin(); it != end; ++it) 
-				{
-				FontPlatformData* obj = (*it).second;
-				delete obj;
-				}
-          gFontPlatformDataCache->clear();
-          delete gFontPlatformDataCache;
-          gFontPlatformDataCache=0;
-        }
+void cleanupFontDataCache() 
+{
+    if( gFontPlatformDataCache ) 
+    {
+		FontPlatformDataCacheIterator end = gFontPlatformDataCache->end();
+		for (FontPlatformDataCacheIterator it = gFontPlatformDataCache->begin(); it != end; ++it) 
+			{
+			FontPlatformData* obj = (*it).second;
+			delete obj;
+			}
+      gFontPlatformDataCache->clear();
+      delete gFontPlatformDataCache;
+      gFontPlatformDataCache=0;
     }
-};
-static cleanupFontDataCache cleanFontDataCache;
+}
 
 static const AtomicString& alternateFamilyName(const AtomicString& familyName)
 {

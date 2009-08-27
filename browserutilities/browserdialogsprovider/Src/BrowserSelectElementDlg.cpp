@@ -160,6 +160,7 @@ void CBrowserSelectElementDlg::ConstructL( const TDesC& aTitle )
           iHistoryList->SetCurrentItemIndex( 0 );
           }
         SetTitleL( aTitle );
+        EnableFind();
         }    
     }
 

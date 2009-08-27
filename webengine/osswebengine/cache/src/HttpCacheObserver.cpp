@@ -45,8 +45,9 @@
 // might leave.
 // -----------------------------------------------------------------------------
 //
-CHttpCacheObserver::CHttpCacheObserver(CHttpCacheHandler* aHttpCacheHandler) : CActive( CActive::EPriorityIdle ),
-iHttpCacheHandler(aHttpCacheHandler)
+CHttpCacheObserver::CHttpCacheObserver(CHttpCacheHandler* aHttpCacheHandler)
+    : CActive( CActive::EPriorityIdle ),
+      iHttpCacheHandler(aHttpCacheHandler)
     {
     CActiveScheduler::Add(this);
     }

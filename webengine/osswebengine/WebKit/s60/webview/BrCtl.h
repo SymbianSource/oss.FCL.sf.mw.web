@@ -719,11 +719,15 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         bool m_wmlUnloadPending;
         bool m_ownsLayoutObserver;
         bool m_ownsDialogsProvider;
+        bool m_ownsSpecialLoadObserver;
+        bool m_ownsSoftkeysObserver;    
+        bool m_ownsWindowObserver;
         CPageScaler* m_wmlPageScaler;
         CWmlDispatcher* m_wmlDispatcher;
         RPointerArray<TBrCtlWmlServiceOption>   m_wmlServiceOption;
         TBrCtlWmlServiceOption*                 m_firstPrevDoElement;
-		MBrCtlDownloadObserver*                 m_brCtlDownloadObserver;
+        MBrCtlDownloadObserver*                 m_brCtlDownloadObserver;
+        CPeriodic* m_windoCloseTimer;       //new timer for managing browser window close
 
 };
 

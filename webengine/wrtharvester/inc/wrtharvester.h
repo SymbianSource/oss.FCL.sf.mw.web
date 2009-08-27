@@ -22,7 +22,7 @@
 // INCLUDES
 #include <apgcli.h> // RApaLsSession 
 #include <contentharvesterplugin.h>
-#include "widgetappdefs.rh"
+#include <widgetappdefs.rh>
 #include "wrtharvesterregistryaccess.h"
 
 
@@ -31,19 +31,44 @@ class CWrtHarvesterPSNotifier;
 class CWrtHarvesterPublisherObserver;
 class MLiwInterface;
 class CLiwGenericParamList;
+class CWrtInfo;
 
 // CONSTANTS
 
+enum TWidgetState
+    {
+    EActivatedState = 0,
+    EResumeState
+    };
+
+class TWrtState
+    {
+    public:
+        /**
+        * Constructor
+        */
+        inline TWrtState(TUid aUid, TWidgetState aState)
+            {
+            iUid = aUid;
+            iState = aState;
+            }
+
+    public:
+        TUid            iUid;
+        TWidgetState    iState;
+    };
+
 // CLASS DECLARATION
 /**
- * 
- *
- *  @lib ??????.dll
- *  @since S60 S60 v3.1
  */
-
 class CWrtHarvester: public CContentHarvesterPlugin
 	{
+	struct SWidgetOperation
+	    {
+	    TWidgetOperations iOperation;
+	    TUid iUid;
+	    };
+	
 	public: // Constructors and destructor
 		/**
 		 * Two-phased constructor.
@@ -65,13 +90,28 @@ class CWrtHarvester: public CContentHarvesterPlugin
 		/**
     	* 
     	*/
-		void TryLaunchNextWidgetL();
+		void TryLaunchNextOperationL();
 
         /**
 		* @param aContentId
 		* @param aTrigger
 		*/
 		void HandlePublisherNotificationL( const TDesC& aContentId, const TDesC8& aTrigger );
+       
+        /**
+		*Clears the Event Queue 
+		*/
+		
+		void ClearAllOperations();
+		
+		/**
+		* Queues widget operation
+		* @param aOperation Operation to be queued
+    	* @param aUid Uid of the widget
+    	*/
+		void QueueOperationL(  TWidgetOperations aOperation, TUid aUid );	
+		
+		void DialogShown(){ iDialogShown = EFalse; }	
 		
 	private:
         
@@ -92,39 +132,44 @@ class CWrtHarvester: public CContentHarvesterPlugin
 		void UpdatePublishersL();
 		
 		/**
+        * 
+        */
+		void RemoveObsoletePublishersL();
+		
+		/**
+        * 
+        */
+		void RegisteredPublishersL( RPointerArray<HBufC>& publishers );
+		
+		/**
 		* 
-    	* @param aPublisherId
-    	* @param aContentId
-    	* @param aContentType
-    	* @param aResultType
+    	* @param aWrtInfo
     	* @return TInt
     	*/
-		TInt RegisterPublisherL( const TDesC& aPublisherId, const TDesC& aContentId,
-		        const TDesC& aContentType, const TDesC8& aResultType );
+		TInt RegisterPublisherL( CWrtInfo& aWrtInfo );
 		
 		/**
     	* 
-    	* @param aPublisherId
-    	* @param aContentId
-    	* @param aContentType
+    	* @param aBundleId
     	*/
-		void RemovePublisherL( const TDesC& aPublisherId, const TDesC& aContentId,
-		        const TDesC& aContentType );
+		void RemovePublisherAndObserverL( const TDesC& aBundleId );
 		
 		/**
-		* Starts WRT widget
-    	* @param aUid Uid of the widget
-    	*/
-		void StartWidgetL( TUid aUid );
+		* 
+		* @param aBundleId
+		*/
+		void RemoveObserver(const TDesC& aBundleId);
 		
 		/**
     	* 
-    	* @param aPublisherId
-    	* @param aContentId
-    	* @param aContentType
+    	* @param aWrtInfo
     	*/
-		void RequestForNotificationL( const TDesC& aPublisherId, const TDesC& aContentId,
-		        const TDesC& aContentType );
+		void RequestForNotificationL( CWrtInfo& aWrtInfo );
+		
+		/**
+        * 
+        */
+		TUid WidgetUid( TPtrC aBundleId );
 		
 		/**
     	* 
@@ -137,8 +182,59 @@ class CWrtHarvester: public CContentHarvesterPlugin
 		/**
 		 * 
 		 */
-		void LaunchWidgetL( TWidgetOperations aOperation, TUid aUid );
-
+		void LaunchWidgetOperationL( SWidgetOperation aOperation );
+		
+		/**
+		 * Check If widget Ui Process Exists
+		 */		
+		TBool CheckTaskExistsL();
+				
+		/**
+		 * Queues widget resume operation
+		 * @param aUid Uid of the widget
+		 * @return void
+		 */
+		void QueueResumeL( TUid& aUid );
+		
+		/**
+		 * Processes online/offline event
+		 * @param aUid Uid of the widget
+		 * @param aOperation Online/Offline operation to be queued
+		 * @return void
+		 */
+		 void ProcessNetworkModeL( TUid& aUid, TWidgetOperations aOperation );
+		       
+		/**
+		 * Finds widget in the widget state array which has
+		 * the same uid and state as specified in the params
+		 * @param aUid Uid of the widget to be found
+		 * @param aState Widget state
+		 * @returns the array index of the widget found
+		 */
+		TInt FindWidget( TUid& aUid, TWidgetState aState );
+		
+		/**
+		 * Finds widget in the widget state array which has
+		 * the same uid as specified in the params
+		 * @param aUid Uid of the widget to be found
+		 * @returns the array index of the widget found
+		 */
+		TInt FindWidget( TUid& aUid );
+		
+		/**
+		 * Checks if the widget has network access
+		 * @param aUid Uid of the widget to be checked
+		 * @returns ETrue if widget has network access,
+		 * else returns EFalse
+		 */
+		TBool CheckNetworkAccessL( TUid& aUid );
+		
+		/**
+		 * Prompt for Allow Platform Access
+		 * @param aUid Uid of the widget
+		 * @return void
+		 */
+		void AllowPlatformAccessL( TUid& aUid );
 
 	private: // data
        	
@@ -165,10 +261,26 @@ class CWrtHarvester: public CContentHarvesterPlugin
          */
         CWrtHarvesterPSNotifier* iWidgetMMCListener;
         
+        /**
+         * Publish & Subscribe listener
+         * own
+         */        
+        CWrtHarvesterPSNotifier* iWidgetUsbListener;
+        
 		/**
     	* 
     	*/
-        RWrtArray< CWrtHarvesterPublisherObserver > iObservers;
+        RWrtArray<CWrtHarvesterPublisherObserver> iObservers;
+        
+        /**
+        * 
+        */
+        RWrtArray<CWrtInfo> iWidgetInfo;
+        
+        /**
+        * 
+        */
+        RWrtArray<TWrtState> iWidgetStateArray;
 
 		/**
     	* 
@@ -178,12 +290,27 @@ class CWrtHarvester: public CContentHarvesterPlugin
 		/**
     	* 
     	*/
-        RArray<TUid> iWidgetUids;
+        RArray<SWidgetOperation> iWidgetOperations;
         
         /**
          * 
          */
         RApaLsSession iApaSession;
+        
+        /**
+         * Resource offset
+         */
+        TInt iResourceFileOffset;
+		
+        /**
+         * 
+         */        
+        TInt          iHSCount;		
+        /**
+         *
+         *
+         */
+         TBool        iDialogShown;
     };
 
 #endif // C_WRTCONTENTHARVESTER_H 

@@ -22,7 +22,7 @@
 //  INCLUDES
 #include <e32std.h>
 #include <eikscrlb.h>
-#include "platform\Shared.h"
+#include "platform/Shared.h"
 #include "BrCtlDefs.h"
 #include "PageScaler.h"
 #include "Timer.h"
@@ -459,6 +459,11 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
         bool handleEditable(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame );
         bool isNaviKey(const TKeyEvent& keyevent);
+        bool needDeactivateEditable(const TKeyEvent& keyevent, TEventCode eventcode);
+        bool deactivateEditable();
+        TUint correctKeyCode();
+        bool handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame); 
+   
     public:
         void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
         void fepTimerFired(WebCore::Timer<WebView>*);
@@ -504,6 +509,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool m_inFindState;
         CPageView* m_pageView;
         TPoint m_savedPosition; // contentPosition
+        TPoint m_pageViewStartPosition; 
         TPoint m_savedCursorPosition;
         HBufC* m_findKeyword;
         WebTabbedNavigation* m_tabbedNavigation;
@@ -551,6 +557,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         //Indicates any plugin is activated/deactivated
         bool                m_showCursor;
         bool                m_allowRepaints;
+        bool                m_prevEditMode; 
     };
 
 #endif

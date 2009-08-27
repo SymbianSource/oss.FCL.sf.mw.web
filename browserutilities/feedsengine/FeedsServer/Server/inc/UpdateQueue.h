@@ -97,13 +97,21 @@ public:
      */
 	TInt GetFreq();
 
-	/**
+    /**
      * This method return the Count 
      *     
      * @since 7.1
      * @return Integer.
      */
-	TInt Count();
+    TInt Count();
+
+    /**
+     * This method resets all the auto update timers 
+     *     
+     * @since 7.1
+     * @return void.
+     */
+    void ResetTimers();
 
 private:
     

@@ -167,6 +167,8 @@ const char NW_Windows874_CharsetStr[]   = {"windows-874"};
 const char NW_Koi8r_CharsetStr[]        = {"koi8-r"};
 const char NW_Koi8u_CharsetStr[]        = {"koi8-u"};
 
+ const char NW_EucKr_CharsetStr[]        = {"euc-kr"};
+ const char NW_ksc5601_1987_CharsetStr[] = {"ks_c_5601-1987"};
 
 /* End Content Type */
 

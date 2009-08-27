@@ -33,6 +33,8 @@
 #include "BrCtl.h"
 #include "WebCursor.h"
 #include "SettingsContainer.h"
+#include "Document.h"
+#include "EventNames.h"
 
 // LOCAL FUNCTION PROTOTYPES
 
@@ -63,6 +65,8 @@ CWidgetExtension::CWidgetExtension(WebView& aWebKitView) :
                             m_webview(&aWebKitView), 
                             m_isWidgetPublishing ( false)
 {
+    m_topLevelLoadedpage = 0;
+    m_widgetNetState = ENetworkNotAllowed;
 }
 
 
@@ -78,22 +82,38 @@ void CWidgetExtension::ConstructL(MWidgetCallback& aWidgetCallback)
 {
     if (!m_widgetengine) {
 
-        m_widgetengine = WebCore::StaticObjectsContainer::instance()->getWidgetEngineBridgeL();
+        RLibrary& widgetLib = WebCore::StaticObjectsContainer::instance()->getWidgetEngineBridgeLibL();
+        TLibraryFunction entry = widgetLib.Lookup(1);
+        if (entry) {
+            m_widgetengine = (MWidgetEngineBridge*) entry(); 
+        }
         if(!m_widgetengine) {
             User::Leave(KErrNotFound);
         }
             
         m_widgetcallback = &aWidgetCallback;
 
+        if (m_widgetengine) {
+            AddJSExtension(_L("widget"),m_widgetengine->Widget(*m_widgetcallback, *this));
+            AddJSExtension(_L("menu"),m_widgetengine->Menu(*m_widgetcallback, *this));
+            AddJSExtension(_L("MenuItem"),m_widgetengine->MenuItem(*m_widgetcallback, *this));
+        }
 
 #if defined(BRDO_LIW_FF)
         // device for SAPI
-        
-        m_deviceBridge = WebCore::StaticObjectsContainer::instance()->getDeviceBridgeL();
+        RLibrary& deviceLib = WebCore::StaticObjectsContainer::instance()->getDeviceBridgeLibL();
+        TLibraryFunction device_entry = deviceLib.Lookup(1);
+        if (device_entry) {
+            m_deviceBridge = (MDeviceBridge*) device_entry();
+        }
         if (!m_deviceBridge) {
             User::Leave(KErrNotFound);
         }
         
+        if (m_deviceBridge) {
+            AddJSExtension(_L("device"), m_deviceBridge->Device(0));
+        }
+        m_securitySession = m_deviceBridge->GetSecuritySession();
 #endif
 
         if (m_webview && m_webview->page()) {
@@ -153,6 +173,13 @@ void CWidgetExtension::SetParamL(TBrCtlDefs::TBrCtlWidgetParams aParam, const TD
 
 void CWidgetExtension::SetParamL(TBrCtlDefs::TBrCtlWidgetParams aParam, TUint aValue)
 {
+    if ( aParam == TBrCtlDefs::EWidgetNetworkState )
+        {
+        m_widgetNetState = (TNetworkState)aValue;
+        DispatchNetworkStateChangeEvent();
+        return;
+        }
+    
     if ( aParam == TBrCtlDefs::EWidgetPublishState)  {
         m_isWidgetPublishing = aValue;
         return ; 
@@ -228,12 +255,14 @@ void CWidgetExtension::setNavigationType(const TDesC& aType)
 
 void CWidgetExtension::windowObjectCleared()
 {
-    if (m_widgetengine) {
-        m_widgetengine->Clear();
-        AddJSExtension(_L("widget"),m_widgetengine->Widget(*m_widgetcallback, *this));
-        AddJSExtension(_L("menu"),m_widgetengine->Menu(*m_widgetcallback, *this));
-        AddJSExtension(_L("MenuItem"),m_widgetengine->MenuItem(*m_widgetcallback, *this));
-    }
+    m_topLevelLoadedpage++;
+    if (m_topLevelLoadedpage > 1) {
+        if (m_widgetengine) {
+            m_widgetengine->Clear();
+            AddJSExtension(_L("widget"),m_widgetengine->Widget(*m_widgetcallback, *this));
+            AddJSExtension(_L("menu"),m_widgetengine->Menu(*m_widgetcallback, *this));
+            AddJSExtension(_L("MenuItem"),m_widgetengine->MenuItem(*m_widgetcallback, *this));
+        }
 
 #if defined(BRDO_LIW_FF)
     if (m_deviceBridge) {
@@ -242,6 +271,36 @@ void CWidgetExtension::windowObjectCleared()
         m_deviceBridge->SetUid( iWidgetId);
     }
 #endif
+}
+}
+
+TInt CWidgetExtension::widgetNetworkConstants(TInt aId)
+    {
+    switch (aId)
+        {
+        case 0:
+            return ENetworkNotAllowed;
+        case 1:
+            return ENetworkAccessAllowed;
+        case 2:
+            return ENetworkAccessible;
+        default:
+            return 0;
+        }
+    }
+
+void CWidgetExtension::DispatchNetworkStateChangeEvent()
+{
+    if ( m_widgetNetState == ENetworkNotAllowed)
+    {
+        // fire offline event
+        m_webview->page()->mainFrame()->document()->handleNetworkEvent(WebCore::EventNames::onofflineEvent, -1);
+    }
+    else
+    {
+        // fire online event
+        m_webview->page()->mainFrame()->document()->handleNetworkEvent(WebCore::EventNames::ononlineEvent, (TInt)m_widgetNetState);
+    }
 }
 
 //END OF FILE

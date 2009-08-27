@@ -26,7 +26,7 @@
 #include <e32base.h>
 
 // FORWARD DECLARATION
-
+class CMediaObjectData;
 class CCodData;
 
 // CLASS DECLARATION
@@ -82,7 +82,7 @@ NONSHARABLE_CLASS( TCodParser )
         * Parse one line.
         * @return ETrue if more lines to go, EFalse if done.
         */
-        TBool AttrLineL();
+        TBool AttrLineL(CMediaObjectData *& aMediaObject);
 
         /**
         * Parse an attribute name. Empty token sets error.

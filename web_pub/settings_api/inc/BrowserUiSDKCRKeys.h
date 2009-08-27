@@ -130,6 +130,25 @@ const TUint32 KBrowserNGShowSecurityWarnings= 	0x0000002D;
 // Valid values: 0 = off 1 = on
 const TUint32 KBrowserNGPageOverview = 		  	0x0000002E;
 
+// Valid values for KBrowserNGHomepageType
+enum TBrowserCenRepHomePageTypeValue
+{
+     EBrowserCenRepAccessPoint = 0,         // AccessPoint
+     EBrowserCenRepUserDefinedHomePage = 1, // User defined home page address
+     EBrowserCenRepCurrentURL = 2,          // Current URL
+     EBrowserCenRepBookmarks = 3            // Bookmarks
+};
+
+// Integer type value to indicate what type of Home Page 
+// should be launched when "Home" option is activated.
+// Valid values:
+// AccessPoint = 0,
+// User defined home page address = 1,
+// Current URL = 2,
+// Bookmarks = 3
+// Enums for these valid values are as defined in TBrowserCenRepHomePageTypeValue
+const TUint32 KBrowserNGHomepageType =          0x00000031;
+
 // Mime types for HTTP accept header.
 // Any String value
 const TUint32 KBrowserNGMimeTypes = 		  	0x00000032;

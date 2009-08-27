@@ -21,6 +21,7 @@
 
 //  INCLUDES
 #include <object.h>
+#include "Device.h"
 
 /**
 *  Device
@@ -32,10 +33,22 @@
 
 namespace KJS
     {
-    class DeviceLiwResultPrivate;    
+    class DeviceLiwResult;    
+    
+    class DeviceLiwResultPrivate : public DevicePrivateBase
+        {
+        friend class DeviceLiwResult;
+        friend class DeviceLiwResultFunc;
+        public:
+            DeviceLiwResultPrivate(DeviceLiwResult* jsobj);
+            ~DeviceLiwResultPrivate();
+            Identifier m_propName;
+            DeviceLiwResult* m_jsobj;              // not owned
+        };
+        
     class DeviceLiwResult: public JSObject
         {
-
+        friend class DeviceLiwResultPrivate;
         public: // constructor and destructor
 
            /**
@@ -81,21 +94,21 @@ namespace KJS
             * @return boolean
             * @since 5.0
             */
-            const bool isValid() const { return m_valid; }
+            const TBool isValid() const { return m_valid; }
+            
+            /**
+            * getResultData
+            * @return DevicePrivateBase*
+            * @since 7.x
+            */
+            DevicePrivateBase* getResultData() { return m_privateData; }
        
            /**
             * close jsobject array
             * @return 
             * @since 5.0
             **/
-            void Close(ExecState* exec, bool unmark );  
-              
-           /**
-            * close jsobject array
-            * @return 
-            * @since 5.0
-            **/
-            void quickClose();  
+            void Close();  
  
             static const ClassInfo info;
 
@@ -115,20 +128,9 @@ namespace KJS
         private:
 
             DeviceLiwResultPrivate* m_privateData;  // private object to hold data
-            bool m_valid;                           // bject is valid or not
+            TBool m_valid;                           // bject is valid or not
             
 
-        };
-        
-    class DeviceLiwResultPrivate
-        {
-            friend class DeviceLiwResult;
-            friend class DeviceLiwResultFunc;
-            public:
-                DeviceLiwResultPrivate();
-                ~DeviceLiwResultPrivate()   { Close(); }
-                void Close();
-                Identifier m_propName;
         };
 
     class DeviceLiwResultFunc : public JSObject

@@ -30,7 +30,6 @@
 using namespace KJS;
 
 const ClassInfo DeviceLiwInterface::info = { "DeviceLiwInterface", 0, 0, 0 };
-const TInt INIT_RST_ARRAY_SIZE = 10;   // initial result object array
 
 // ============================= LOCAL FUNCTIONS ===============================
 /*
@@ -52,11 +51,14 @@ DeviceLiwInterface::DeviceLiwInterface(
     MDevicePeer* devicePeer )
     : JSObject( exec->lexicalInterpreter()->builtinObjectPrototype() )
     {
-        m_privateData = new DeviceLiwInterfacePrivate(deviceBinding, devicePeer);
-        if (!m_privateData || !m_privateData->m_devicePeer )
-            m_valid = false;
-        else 
-            m_valid = true;           
+    m_valid = EFalse;
+    m_privateData = NULL;
+    if ( deviceBinding && devicePeer)
+        {
+        m_privateData = new DeviceLiwInterfacePrivate(this, deviceBinding, devicePeer);
+        if ( m_privateData )
+            m_valid = ETrue;
+        }
     }
 
 // ----------------------------------------------------------------------------
@@ -66,7 +68,7 @@ DeviceLiwInterface::DeviceLiwInterface(
 //
 DeviceLiwInterface::~DeviceLiwInterface()
     {
-    delete m_privateData;
+    Close();
     }
 
 // ----------------------------------------------------------------------------
@@ -74,16 +76,14 @@ DeviceLiwInterface::~DeviceLiwInterface()
 //
 // ----------------------------------------------------------------------------
 //
-void DeviceLiwInterface::Close(ExecState* exec)
+void DeviceLiwInterface::Close()
     {
     if(!m_valid)
         return;
     
-    // need exec to close other jsobject
-    m_privateData->m_exec = exec;
+    m_valid = EFalse;
     delete m_privateData;
     m_privateData = NULL;
-    m_valid = false;   
     }
 
 // ----------------------------------------------------------------------------
@@ -211,37 +211,26 @@ TBool DeviceLiwInterface::IsRunningCallBack() const
 // DeviceLiwInterfacePrivate constructor
 //
 // ---------------------------------------------------------------------------
-DeviceLiwInterfacePrivate::DeviceLiwInterfacePrivate(MDeviceBinding* deviceBinding, MDevicePeer* devicePeer)
+DeviceLiwInterfacePrivate::DeviceLiwInterfacePrivate(DeviceLiwInterface* jsobj, MDeviceBinding* deviceBinding, MDevicePeer* devicePeer)
     {
     TRAP_IGNORE(
-        m_resultObjArray = new RPointerArray<DeviceLiwResult>( INIT_RST_ARRAY_SIZE );
         m_deviceBinding = deviceBinding;    
         m_devicePeer = devicePeer;
         m_exec = NULL;
+        m_jsobj = jsobj;
         )
     }
 
 // ---------------------------------------------------------------------------
-// DevicePrivate Close
+// DevicePrivate destructor
 //
 // ---------------------------------------------------------------------------
-void DeviceLiwInterfacePrivate::Close()
-    {    
-    if ( m_resultObjArray && m_exec)
-        {
-        // close all the result objects created for this device
-        for (int i = 0; i < m_resultObjArray->Count(); i++)
-            {
-            (*m_resultObjArray)[i]->Close( m_exec, true );
-            }
-        m_resultObjArray->Close();
-        delete m_resultObjArray;
-        m_resultObjArray = NULL;
-        }
-        
-    m_deviceBinding = NULL;
-    m_exec = NULL;
-    
+DeviceLiwInterfacePrivate:: ~DeviceLiwInterfacePrivate()
+    {
+    // invalid the DeviceLiwInterface
+    if (m_jsobj)
+        m_jsobj->m_valid = EFalse; 
+       
     delete m_devicePeer;
     m_devicePeer = NULL;
     }
@@ -304,7 +293,7 @@ JSValue* DeviceLiwInterfaceFunc::callAsFunction(ExecState *exec, JSObject *aThis
             {
             return throwError(exec, GeneralError, "Can not close interface object in callback function.");
             }
-        sapiif->Close(exec);
+        sapiif->Close();
         return ret;
         }
 
@@ -313,7 +302,10 @@ JSValue* DeviceLiwInterfaceFunc::callAsFunction(ExecState *exec, JSObject *aThis
     if(ret->isObject() && (static_cast<JSObject*> (ret))->inherits( &KJS::DeviceLiwResult::info ))
     {
         // insert into jsobject array
-        sapiif->m_privateData->m_resultObjArray->Append(static_cast<DeviceLiwResult*> (ret));
+        DevicePrivateBase* ifData = sapiif->getInterfaceData();
+        DevicePrivateBase* retData =(static_cast<DeviceLiwResult*> (ret))->getResultData();
+        retData->SetParent( ifData ); 
+        ifData->AddChild( retData );
         if ( aArgs.size() > 1 )
         {
             bool ok;

@@ -264,6 +264,11 @@ NONSHARABLE_CLASS( CMediaDataBase ) : public CBase
         */
         inline TPtrC TempFilename() const { return *iTempFilename; }
         
+        /**
+        * Gets the StatusCode of Media Object
+        * @ return iStatusCode
+        */
+        inline TInt StatusCode () const { return iStatusCode; } 
     public:     // Setters
         
         /**
@@ -403,6 +408,12 @@ NONSHARABLE_CLASS( CMediaDataBase ) : public CBase
         */
         virtual void SetPausable( TBool aPausable ) = 0;
         
+        /**
+        * Set StatusCode attribute.
+        * @param aStatusCode.
+        * @return void.
+        */
+        virtual void SetStatusCode( TInt aStatusCode ) = 0;
     protected:  // data
     
         HBufC* iName;               ///< Media-Name. Owned.
@@ -424,6 +435,7 @@ NONSHARABLE_CLASS( CMediaDataBase ) : public CBase
         TInt iGlobalErrorId;		///< Global Error Id.
         TBool iPausable;			///< Is Media-Download Pausable?
         HBufC* iTempFilename;		///< Media Temp Filename.
+        TInt iStatusCode;
     };
 
 

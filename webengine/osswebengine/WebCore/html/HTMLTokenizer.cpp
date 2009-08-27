@@ -1597,6 +1597,9 @@ bool HTMLTokenizer::write(const SegmentedString& str, bool appendData)
     inWrite = wasInWrite;
 
     m_state = state;
+    // Flush remaining text if doing a document.write.
+    if (!appendData && buffer && !m_state.hasTagState())
+        processToken();
 
     if (noMoreData && !inWrite && !state.loadingExtScript() && !m_executingScript && !m_timer.isActive()) {
         end(); // this actually causes us to be deleted

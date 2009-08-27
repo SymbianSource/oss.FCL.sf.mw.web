@@ -72,8 +72,8 @@ CHttpCacheLookupTable::CHttpCacheLookupTable(
 //
 void CHttpCacheLookupTable::ConstructL()
     {
-  iEntries = new( ELeave )CArrayPtrFlat<CHttpCacheEntry>( KHttpCacheLookupTableSize );
-    for( TInt i = 0; i < KHttpCacheLookupTableSize; i++ )
+    iEntries = new( ELeave )CArrayPtrFlat<CHttpCacheEntry>( KHttpCacheLookupTableSize );
+    for ( TInt i = 0; i < KHttpCacheLookupTableSize; i++ )
         {
         iEntries->AppendL( NULL );
         }
@@ -118,7 +118,6 @@ CHttpCacheLookupTable::~CHttpCacheLookupTable()
     }
 
     delete iEntries;
-
     }
 
 // -----------------------------------------------------------------------------
@@ -140,7 +139,12 @@ CHttpCacheEntry* CHttpCacheLookupTable::InsertL(
         }
     else
         {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteFormatLog(0, _L("  Added entry %08x to list."), entry);
+#endif
         entry->Accessed();
+        iStreamHandler->InitialiseCacheEntryL(*entry);
+
         // lookuptable takes ownership
         CleanupStack::Pop(); // entry
         }
@@ -156,20 +160,29 @@ CHttpCacheEntry* CHttpCacheLookupTable::Find( const TDesC8& aUrl )
     {
     CHttpCacheEntry* entry = NULL;
     TInt pos( Probe( aUrl, EFalse ) );
-
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteUrlToLog(0, _L("CHttpCacheLookupTable::Find"), aUrl);
+    HttpCacheUtil::WriteFormatLog(0, _L("  Probe returned position %d"), pos);
+#endif
     if ( Valid( pos ) )
         {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteFormatLog(0, _L("  Entry %d valid."), pos);
+#endif
         entry = iEntries->At( pos );
-        
+
         if ( entry )
             {
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteFormatLog(0, _L("  BodySize is %d\n  State is %d"), entry->BodySize(), entry->State());
+#endif
             if ( entry->BodySize() == 0 &&
                  entry->State() == CHttpCacheEntry::ECacheComplete )
                 {
 
 #ifdef __CACHELOG__
                 HttpCacheUtil::WriteLogFilenameAndUrl( 0,
-                                           _L("CHttpCacheLookupTable::Find - Found ZERO size"),
+                                           _L("CHttpCacheLookupTable::Find - Found ZERO size (can't reuse)"),
                                            entry->Filename(),
                                            entry->Url(),
                                            pos,
@@ -179,6 +192,9 @@ CHttpCacheEntry* CHttpCacheLookupTable::Find( const TDesC8& aUrl )
                 }
             }
         }
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteFormatLog(0, _L("  returning entry pointer 0x%08x"), entry);
+#endif
 
     return entry;
     }
@@ -192,7 +208,10 @@ TInt CHttpCacheLookupTable::Remove( const TDesC8& aUrl )
     {
     TInt status( KErrNotFound );
     TInt pos( Probe( aUrl, EFalse ) );
-
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteUrlToLog(0, _L("CHttpCacheLookupTable::Remove"), aUrl);
+    HttpCacheUtil::WriteFormatLog(0, _L("  Probe returned position %d"), pos);
+#endif
     if( Valid( pos ) )
         {
         // remove only nonactive entry
@@ -225,34 +244,13 @@ TInt CHttpCacheLookupTable::Remove( const TDesC8& aUrl )
         }
     else
         {
-        HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheLookupTable::Remove - item is not valid. cannot be removed" ), pos );
+        HttpCacheUtil::WriteFormatLog( 0, _L( "CHttpCacheLookupTable::Remove - item %d is not valid. cannot be removed" ), pos );
         }
 #endif // __CACHELOG__
 
     return status;
     }
 
-// -----------------------------------------------------------------------------
-// CHttpCacheLookupTable::RemoveByPosition
-//
-// -----------------------------------------------------------------------------
-//
-TInt CHttpCacheLookupTable::RemoveByPosition( TInt aPos )
-    {
-    TInt status( KErrNotFound );
-
-    if ( Valid( aPos ) )
-        {
-        CHttpCacheEntry* entry = iEntries->At( aPos );
-        SetDeleted( aPos );
-        delete entry;
-        iCount--;
-        status = KErrNone;
-        }
-
-    return status;
-    }
-       
 // -----------------------------------------------------------------------------
 // CHttpCacheLookupTable::EraseCacheEntry
 //
@@ -261,7 +259,7 @@ TInt CHttpCacheLookupTable::RemoveByPosition( TInt aPos )
 void CHttpCacheLookupTable::EraseCacheEntry( const TDesC8& aUrl )
     {
     TInt pos( Probe( aUrl, EFalse ) );
-    
+
     if ( Valid( pos ) )
         {
         Erase( pos );
@@ -320,13 +318,13 @@ TInt CHttpCacheLookupTable::ListFiles(RPointerArray<TDesC>& aFilenameList)
     TInt count( 0 );
     TInt error( KErrNone );
 
-    //1. Tally up 
+    //1. Tally up
     for (TInt i = 0; i < iEntries->Count(); i++)
         {
         if (Valid(i)) count++;
         }
 
-    //2. Preallocation. 
+    //2. Preallocation.
     TInt existing( aFilenameList.Count() );
     error = aFilenameList.Reserve( existing + count );
 
@@ -337,13 +335,13 @@ TInt CHttpCacheLookupTable::ListFiles(RPointerArray<TDesC>& aFilenameList)
             {
             if (Valid(i))
                 {
-                //add filename pointer to the array. 
+                //add filename pointer to the array.
                 const TDesC* ptr = &(iEntries->At(i)->Filename());
                 aFilenameList.Append( ptr ); // no ownership transfer happens here
                 }
             }
         }
-     
+
     return error;
 
     }
@@ -354,14 +352,22 @@ TInt CHttpCacheLookupTable::ListFiles(RPointerArray<TDesC>& aFilenameList)
 // -----------------------------------------------------------------------------
 //
 void CHttpCacheLookupTable::InternalizeL(
-    RFileReadStream& aReadStream,
-    const TDesC& /*aDirectory*/ )
+    RReadStream& aReadStream,
+    const TDesC& aDirectory )
     {
     // get number of entries
     TInt version = 0;
     version = aReadStream.ReadInt32L();
-    if( version == KCacheVersionNumber )
+    if ( version == KCacheVersionNumber )
         {
+        // read directory stub and validate it
+        TInt len = aReadStream.ReadInt32L();
+        HBufC* dirstub = HBufC::NewLC(len);
+        TPtr dirstubptr = dirstub->Des();
+        aReadStream.ReadL( dirstubptr, len );
+        ASSERT( aDirectory.CompareF( dirstubptr ) == 0 );
+        CleanupStack::PopAndDestroy( dirstub );
+
         TInt count( aReadStream.ReadInt32L() );
         TInt contentSize( 0 );
         TInt err;
@@ -370,27 +376,22 @@ void CHttpCacheLookupTable::InternalizeL(
             // create empty object
             CHttpCacheEntry* entry = CHttpCacheEntry::NewLC( KNullDesC8, *iEvictionHandler );
             // read it
-            err = entry->Internalize( aReadStream );
-
-            if ( err == KErrNone && entry->BodySize() > 0 )
+            err = entry->Internalize( aReadStream, aDirectory );
+            // leave only on no memory
+            if( err == KErrNone )
                 {
-                // cacheEntry is valid, insert into the table
+                // insert to the table
                 InsertL( entry );
                 contentSize += entry->HeaderSize();
                 contentSize += entry->BodySize();
                 }
             else if ( err == KErrNoMemory )
                 {
-                // Only leave if no memory
                 User::Leave( KErrNoMemory );
                 }
-            else if ( entry->BodySize() == 0 )
+            else
                 {
-                // This is an empty cache entry, remove it from file system.
-				// Use CreateNewFilesL() to open file handles, so we can delete
-				// the files associated with the cache entry.
-                iStreamHandler->CreateNewFilesL( *entry );
-                iStreamHandler->EraseCacheFile( *entry );
+                // suggestions
                 }
 
             // takes ownership
@@ -415,22 +416,40 @@ void CHttpCacheLookupTable::InternalizeL(
 // -----------------------------------------------------------------------------
 //
 void CHttpCacheLookupTable::ExternalizeL(
-    RFileWriteStream& aWriteStream )
+    RWriteStream& aWriteStream, const TDesC& aDirectory )
     {
     // write version number and the number of entries
-    TRAP_IGNORE( aWriteStream.WriteInt32L( KCacheVersionNumber );
-    aWriteStream.WriteInt32L( iCount ) );
+    TRAP_IGNORE( aWriteStream.WriteInt32L( KCacheVersionNumber ) );
+
+    // directory stub length
+    aWriteStream.WriteInt32L( aDirectory.Length() ) ;
+    // directory stub
+    aWriteStream.WriteL( aDirectory );
+
+    // entry count - don't write entries with zero body length, so precalculate this.
+    TInt goingToWrite = 0;
     for( TInt i = 0; i < iEntries->Count(); i++ )
         {
         CHttpCacheEntry* entry = iEntries->At( i );
         // save complete entries only
-        if( Valid( i ) )
+        if( Valid( i ) && entry->BodySize() > 0 )
+            {
+            goingToWrite++;
+            }
+        }
+    aWriteStream.WriteInt32L( goingToWrite );
+
+    for( TInt i = 0; i < iEntries->Count(); i++ )
+        {
+        CHttpCacheEntry* entry = iEntries->At( i );
+        // save complete entries only
+        if( Valid( i ) && entry->BodySize() > 0 )
             {
             // save entry
             TInt err;
-            err = entry->Externalize( aWriteStream );
+            err = entry->Externalize( aWriteStream, aDirectory );
             // leave only on no memory
-            if( err == KErrNoMemory )
+            if ( err == KErrNoMemory )
                 {
                 User::Leave( KErrNoMemory );
                 }
@@ -454,15 +473,27 @@ TInt CHttpCacheLookupTable::InsertL(
     if ( aCacheEntry )
         {
         pos = Probe( aCacheEntry->Url(), ETrue );
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteUrlToLog(0, _L("CHttpCacheLookupTable::InsertL"), aCacheEntry->Url());
+        HttpCacheUtil::WriteFormatLog(0, _L("  Probe returned position %d"), pos);
+#endif
         // double check
         if( Valid( pos ) )
             {
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteLog(0, _L("  Valid entry already exists according to Valid(). Rehash table."));
+#endif
             // try to rehash the table if probe failed
             ReHashL();
             pos = Probe( aCacheEntry->Url(), ETrue );
-
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteFormatLog(0, _L("  ReProbe after rehash returned new position %d"), pos);
+#endif
             if( pos == -1 || Valid( pos ) )
                 {
+#ifdef __CACHELOG__
+                HttpCacheUtil::WriteLog(0, _L("  Pos already filled (or == -1) - Couldn't find an empty slot to store it."));
+#endif
                 // completly failed
                 pos = -1;
                 }
@@ -473,13 +504,15 @@ TInt CHttpCacheLookupTable::InsertL(
             {
             iEntries->At( pos ) = aCacheEntry;
             iCount++;
-
 #ifdef __CACHELOG__
-            HttpCacheUtil::WriteLog( 0, _L( "insert new item to the lookuptable" ), pos );
+            HttpCacheUtil::WriteFormatLog( 0, _L( "insert new item at %d in the lookuptable" ), pos );
 #endif
             // check if the hashtable is full
             if ( iCount > ( iEntries->Count() >> 1 ) )
                 {
+#ifdef __CACHELOG__
+                HttpCacheUtil::WriteLog(0, _L("  But! hashtable is full - rehash."));
+#endif
                 ReHashL();
                 }
             }
@@ -687,9 +720,6 @@ void CHttpCacheLookupTable::Erase( TInt aPos )
 
     if( entry )
         {
-        // delete file associated with this entry
-        TBool attached( EFalse );
-        
 #ifdef __CACHELOG__
         HttpCacheUtil::WriteLogFilenameAndUrl( 0,
                                            _L("CHttpCacheLookupTable::Erase"),
@@ -697,14 +727,8 @@ void CHttpCacheLookupTable::Erase( TInt aPos )
                                            entry->Url(),
                                            aPos,
                                            ELogLookupTablePos );
-#endif        
-        TRAPD( err, attached = iStreamHandler->AttachL( *entry ) );
-        if ( err == KErrNone && attached )
-            {
-            iStreamHandler->EraseCacheFile( *entry );
-            iStreamHandler->Detach( *entry );
-            }
-
+#endif
+        iStreamHandler->Erase( *entry );
         SetDeleted( aPos );
         delete entry;
         iCount--;
@@ -826,7 +850,7 @@ void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable
                 CHttpCacheEntry* myEntry = InsertL(newEntry->Url());
                 myEntry->SetState( CHttpCacheEntry::ECacheComplete );
                 myEntry->Accessed(newEntry->LastAccessed(), newEntry->Ref());
-                }          
+                }
             aHttpCacheLookupTable->SetDeleted(pos);
             delete newEntry;
             aHttpCacheLookupTable->iCount--;
@@ -835,28 +859,32 @@ void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable
     }
 
 // -----------------------------------------------------------------------------
-// CHttpCacheLookupTable::FindCacheEntryIndex
+// CHttpCacheLookupTable::BeginEntryIteration
 //
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheLookupTable::FindCacheEntryIndex(
-    const CHttpCacheEntry& aCacheEntry,
-    TInt* aIndex )
+void CHttpCacheLookupTable::BeginEntryIteration(THttpCacheLookupTableEntryIterator& aIter)
     {
-    *aIndex = -1;
-    for ( TInt i = 0; i < iEntries->Count(); i++ )
-        {
-        CHttpCacheEntry* entry = iEntries->At( i );
+    aIter.iPos = 0;
+    aIter.iCount = iCount;
+    }
 
-        if ( entry == &aCacheEntry )
-            {
-            if ( aIndex )
-                {
-                *aIndex = i;
-                }
-            break;
-            }
+// -----------------------------------------------------------------------------
+// CHttpCacheLookupTable::NextEntry
+//
+// -----------------------------------------------------------------------------
+//
+const CHttpCacheEntry* CHttpCacheLookupTable::NextEntry(THttpCacheLookupTableEntryIterator& aIter)
+    {
+    const CHttpCacheEntry *entry = NULL;
+
+    while ( !entry && aIter.iPos < iEntries->Count() )
+        {
+        entry = Valid(aIter.iPos) ? iEntries->At(aIter.iPos) : NULL;
+        aIter.iPos++;
         }
+
+    return entry;
     }
 
 //  End of File

@@ -352,8 +352,7 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
             // previous char in secret text editor
             case EKeyF20:
             case EKeyBackspace:
-                frame->editor()->deleteWithDirection(SelectionController::BACKWARD,
-                                                     CharacterGranularity, false, true);
+                handleDeleteText(frame);
                 m_webView->fepTextEditor()->HandleUpdateCursor();
                 m_webView->fepTextEditor()->UpdateEditingMode();
                 event->setDefaultHandled();
@@ -476,7 +475,7 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     if (m_webView->fepTextEditor()->DocumentLengthForFep() <
                         m_webView->fepTextEditor()->DocumentMaximumLengthForFep()) {
                         TText c = kevent->symbianEvent().iCode;
-                        frame->editor()->insertTextWithoutSendingTextEvent(String(TPtrC(&c,1)), false);
+                        handleInsertText(frame, String(TPtrC(&c,1)));
                         m_webView->fepTextEditor()->UpdateEditingMode();
                     }
                     m_webView->fepTextEditor()->HandleUpdateCursor();
@@ -629,3 +628,31 @@ void WebEditorClient::setInputMethodState(bool enabled)
 {
     m_webView->setEditable(enabled);
 }
+
+//-----------------------------------------------------------------------------
+// WebEditorClient::handleInsertText
+//-----------------------------------------------------------------------------
+void WebEditorClient::handleInsertText(Frame* frame,  const String& text)
+{
+    if (!m_webView->fepTextEditor()->IsWapMaskedModeInput(frame)) {
+        frame->editor()->insertTextWithoutSendingTextEvent(text, false);    
+    }
+    else {
+        m_webView->fepTextEditor()->HandleMaskedInsertText(frame, text);
+    }
+}
+
+//-----------------------------------------------------------------------------
+// WebEditorClient::handleDeleteText
+//-----------------------------------------------------------------------------
+void WebEditorClient::handleDeleteText(Frame* frame)
+{
+    if (!m_webView->fepTextEditor()->IsWapMaskedModeInput(frame)) {
+        frame->editor()->deleteWithDirection(SelectionController::BACKWARD,
+            CharacterGranularity, false, true);
+    }
+    else {
+        m_webView->fepTextEditor()->HandleMaskedDeleteText(frame);
+    }
+}
+

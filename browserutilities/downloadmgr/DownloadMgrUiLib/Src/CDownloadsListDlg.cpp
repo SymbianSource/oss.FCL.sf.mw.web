@@ -668,6 +668,10 @@ void CDownloadsListDlg::FocusChanged( TDrawNow aDrawNow )
     // See SCB CR  GKOA-6KPC5L.
     if ( iListBox )
         {
+          if( iListBox->CurrentItemIndex() >= 0 )
+          {
+           TRAP_IGNORE( HandleMiddleSoftKeyChangeL() );
+          }
         iListBox->SetFocus(IsFocused(), aDrawNow);
         }
     // We have no find box, so this part can be omitted:

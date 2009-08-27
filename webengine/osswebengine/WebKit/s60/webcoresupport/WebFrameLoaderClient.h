@@ -156,6 +156,8 @@ class WebFrameLoaderClient : public WebCore::FrameLoaderClient, public WebCore::
         virtual void setTitle(const WebCore::String& title, const WebCore::KURL&);
 
         virtual WebCore::String userAgent(const WebCore::KURL&);
+        virtual TInt widgetNetworkConstants(TInt aId);
+        virtual TInt widgetNetworkState();
         
         virtual void saveDocumentViewToCachedPage(WebCore::CachedPage*);
         virtual bool canCachePage() const;

@@ -144,6 +144,8 @@ class PluginHandler : public CBase
         void  setPluginToActivate(PluginSkin* pluginObj) {m_pluginToActivate = pluginObj; };
         PluginSkin*  activePlugin() { return m_activePlugin; };
         void setActivePlugin(PluginSkin* pluginObj) { m_activePlugin = pluginObj; };
+        HBufC* pluginMimeByExtention(const TPtrC8& url);
+        PluginInfo* pluginInfoByExtention(const TPtrC8& aUrl, TInt* aExtIdx);
 
     private: // New functions
 

@@ -155,7 +155,7 @@ int KJS::PluginBase::m_plugInCacheRefCount = 0;
 
 const ClassInfo Navigator::info = { "Navigator", 0, &NavigatorTable, 0 };
 /*
-@begin NavigatorTable 13
+@begin NavigatorTable 17
   appCodeName   Navigator::AppCodeName  DontDelete|ReadOnly
   appName       Navigator::AppName      DontDelete|ReadOnly
   appVersion    Navigator::AppVersion   DontDelete|ReadOnly
@@ -170,6 +170,10 @@ const ClassInfo Navigator::info = { "Navigator", 0, &NavigatorTable, 0 };
   vendorSub     Navigator::VendorSub    DontDelete|ReadOnly
   cookieEnabled Navigator::CookieEnabled DontDelete|ReadOnly
   javaEnabled   Navigator::JavaEnabled  DontDelete|Function 0
+  NetworkNotAllowed     Navigator::NetworkNotAllowed    DontDelete|ReadOnly
+  NetworkAccessAllowed  Navigator::NetworkAccessAllowed DontDelete|ReadOnly
+  NetworkAccessible     Navigator::NetworkAccessible    DontDelete|ReadOnly
+  onLine                Navigator::Online               DontDelete|ReadOnly
 @end
 */
 KJS_IMPLEMENT_PROTOTYPE_FUNCTION(NavigatorFunc)
@@ -217,6 +221,14 @@ JSValue* Navigator::getValueProperty(ExecState* exec, int token) const
     return new MimeTypes(exec);
   case CookieEnabled:
     return jsBoolean(cookiesEnabled());
+  case NetworkNotAllowed:
+    return jsNumber(m_frame->loader()->widgetNetworkConstants(0));
+  case NetworkAccessAllowed:
+    return jsNumber(m_frame->loader()->widgetNetworkConstants(1));
+  case NetworkAccessible:
+    return jsNumber(m_frame->loader()->widgetNetworkConstants(2));
+  case Online:
+    return jsNumber(m_frame->loader()->widgetNetworkState());
   }
   return 0;
 }

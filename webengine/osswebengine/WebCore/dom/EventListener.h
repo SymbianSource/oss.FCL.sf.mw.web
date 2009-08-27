@@ -31,6 +31,7 @@ namespace WebCore {
     public:
         virtual ~EventListener() { }
         virtual void handleEvent(Event*, bool isWindowEvent) = 0;
+        virtual void handleNetworkStateEvent(int param) { }
         virtual bool isHTMLEventListener() const { return false; }
     };
 

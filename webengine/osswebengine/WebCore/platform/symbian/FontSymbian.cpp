@@ -34,6 +34,8 @@
 
 namespace WebCore {
 
+const UChar UnicodeZeroWidthSpace = 0x200b;
+
 static void notSupported() { __ASSERT_ALWAYS( 0, User::Panic( _L("Font:"), 1 ) ); }
 
 void Font::drawGlyphs(GraphicsContext* graphicsContext, const FontData* font, const GlyphBuffer& glyphBuffer,
@@ -111,6 +113,13 @@ void Font::drawComplexText(GraphicsContext* graphicsContext, const TextRun& run,
     // word spacing
     bitgc.SetWordJustification(m_wordSpacing*numSpaces + style.padding(), numSpaces);
 
+#if PLATFORM(SYMBIAN)
+    TLanguage uilang = User::Language();
+    if(uilang == ELangKorean)
+    {
+        startPos.iY -= 1;
+    }
+#endif
     // see if we need a temporary buffer
     if( indexOfFirstNonRegularSpace > -1 || isSmallCaps() || style.rtl()){
         HBufC* text = 0;
@@ -129,7 +138,9 @@ void Font::drawComplexText(GraphicsContext* graphicsContext, const TextRun& run,
             if (indexOfFirstNonRegularSpace > -1) {
                 for(; indexOfFirstNonRegularSpace<strLength; ++indexOfFirstNonRegularSpace ) {
                     if( TChar(newStr[indexOfFirstNonRegularSpace]).IsSpace()) {
-                        newStr[indexOfFirstNonRegularSpace] = ' ';
+                       if (newStr[indexOfFirstNonRegularSpace] != UnicodeZeroWidthSpace) {
+                           newStr[indexOfFirstNonRegularSpace] = ' ';
+                       }
                     }
                 }
             }

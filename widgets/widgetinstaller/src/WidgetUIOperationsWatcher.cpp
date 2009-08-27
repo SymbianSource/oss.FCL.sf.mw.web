@@ -26,9 +26,10 @@
 #include <SWInstTaskManager.h>
 #include <SWInstTask.h>
 #include <SWInstLogTaskParam.h>
+#include <apacmdln.h>
+#include <s32mem.h>
 
-
-
+#include <widgetappdefs.rh>
 #include "WidgetUIOperationsWatcher.h"
 #include "WidgetUIConfigHandler.h" // info.plist parser
 #include "WidgetRegistrationManager.h" // interface to "shell"
@@ -90,7 +91,8 @@ CWidgetUIOperationsWatcher* CWidgetUIOperationsWatcher::NewL()
 //
 CWidgetUIOperationsWatcher::CWidgetUIOperationsWatcher()
     : CActive( CActive::EPriorityStandard ),
-      iPropertyValues( EWidgetPropertyIdCount )
+      iPropertyValues( EWidgetPropertyIdCount ),
+      iWidgetInHS( EFalse )
     {
     CActiveScheduler::Add( this );
     }
@@ -437,11 +439,22 @@ TBool CWidgetUIOperationsWatcher::PreprocessWidgetBundleL()
         *(iPropertyValues[EUid]) = iRegistry.GetWidgetUidL(
             *(iPropertyValues[EBundleIdentifier]));
         found = ETrue;
-        if ( iRegistry.IsWidgetRunning( 
-                TUid::Uid( *(iPropertyValues[EUid]) )) )
+        TUid aUid = TUid::Uid( *(iPropertyValues[EUid]) );
+        iWidgetInHS = iRegistry.IsWidgetInMiniView( aUid );
+        if ( iRegistry.IsWidgetRunning( aUid ) )
             {
-            iUIHandler->CloseProgressDialogL();
-            User::Leave( KErrInUse );
+            //Runnning widget should be first closed
+            RApaLsSession apaLsSession;
+            apaLsSession.Connect();
+            TApaAppInfo info;
+                        
+            User::LeaveIfError( apaLsSession.GetAppInfo( info, aUid ) );
+            iWidgetName = info.iFullName;
+            HBufC *widgetName = iWidgetName.AllocLC();
+            HandleWidgetCommandL(apaLsSession, *widgetName, aUid, Deactivate);
+                        
+            CleanupStack::PopAndDestroy( widgetName );
+            apaLsSession.Close();
             }
         // get original install dir from registry in case user
         // decides to "overrite" to another memory location
@@ -729,7 +742,6 @@ void CWidgetUIOperationsWatcher::FinishInstallL()
             {
             TUid uid = TUid::Uid( *(iPropertyValues[EUid]) );
             iRegistry.DeRegisterWidgetL( uid );
-            iAppManager->DeregisterWidgetL( uid );
             }
 
         // TODO if registration steps fail does it leave inconsistent state???
@@ -746,6 +758,19 @@ void CWidgetUIOperationsWatcher::FinishInstallL()
             {
             // delete backup
             (void)iFileMgr->RmDir( iBackupDir );
+            
+            // if widget was in home screen, add it back to home screen
+            if ( iWidgetInHS )
+                {
+                RApaLsSession apaLsSession;
+                apaLsSession.Connect();
+       
+                HBufC* widgetName = iWidgetName.AllocLC();
+                HandleWidgetCommandL(apaLsSession, *widgetName, TUid::Uid( *(iPropertyValues[EUid]) ), WidgetRestart);
+                CleanupStack::PopAndDestroy( widgetName );
+
+                apaLsSession.Close();
+                }
             }
 
         iUIHandler->CloseFinalizeDialogL();
@@ -908,15 +933,7 @@ void CWidgetUIOperationsWatcher::UninstallL(
 
     // save client status to use in finish uninstall
     iRequestStatus = &aRequestStatus;
-
-    // TODO currently don't uninstall if running but in future should
-    // stop widget and then uninstall
-    if ( iRegistry.IsWidgetRunning( aUid ) )
-        {
-        FinishUninstallL( KErrInUse );
-        return;
-        }
-
+    
     TBuf<KWidgetRegistryVal> bundleName;
     iRegistry.GetWidgetBundleName( aUid, bundleName );
 
@@ -925,10 +942,26 @@ void CWidgetUIOperationsWatcher::UninstallL(
         FinishUninstallL( KErrCorrupt );
         return;
         }
-
+            
+    TBool widgetinHomeScreen(EFalse);
+    widgetinHomeScreen = iRegistry.IsWidgetInMiniView( aUid ); 
     // prompt user to uninstall
-    if( iUIHandler->DisplayUninstallL( bundleName ) )
+    if( iUIHandler->DisplayUninstallL( bundleName,widgetinHomeScreen ) )
         {
+        if(iRegistry.IsWidgetRunning( aUid ))
+        //Runnning widget should be first closed    
+            {
+            RApaLsSession apaLsSession;
+            apaLsSession.Connect();
+            TApaAppInfo info;
+            
+            User::LeaveIfError( apaLsSession.GetAppInfo( info, aUid ) );
+            HBufC* widgetName = info.iFullName.AllocLC();        
+            HandleWidgetCommandL(apaLsSession,*widgetName,aUid,Deactivate);
+            
+            CleanupStack::PopAndDestroy( widgetName );
+            apaLsSession.Close();            
+            }
         iUIHandler->DisplayUninstallInProgressL();
         TBuf<KWidgetRegistryVal> widgetPath;
         iRegistry.GetWidgetPath( aUid, widgetPath );
@@ -1261,5 +1294,46 @@ void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUi
     iTaskManager->CommitL();
     
     CleanupStack::Pop(task);
+    }
+
+// ============================================================================
+//
+// CWidgetUIOperationsWatcher::HandleWidgetCommandL
+//
+// ============================================================================
+void CWidgetUIOperationsWatcher::HandleWidgetCommandL( RApaLsSession& aSession,const TDesC& aWidget,const TUid& aUid,TUint32 aOperation )
+    {
+    const TInt size( 2* aWidget.Length() + 3*sizeof( TUint32 ) );
+    
+    // Message format is <filenameLength><unicode_filename><someintegervalue>
+    CApaCommandLine* cmd( CApaCommandLine::NewLC() );
+    HBufC8* opaque( HBufC8::NewLC( size ) );
+    
+    RDesWriteStream stream;
+    TPtr8 des( opaque->Des() );
+    
+    stream.Open( des );
+    CleanupClosePushL( stream );
+    
+    // Generate the command.
+    stream.WriteUint32L( aUid.iUid );
+    stream.WriteUint32L( aWidget.Length() );
+    stream.WriteL( reinterpret_cast< const TUint8* >( aWidget.Ptr() ),
+                   aWidget.Size() );
+    
+    stream.WriteInt32L( aOperation );
+    
+    CleanupStack::PopAndDestroy( &stream );
+    
+    // Generate command.
+    cmd->SetCommandL( EApaCommandBackgroundAndWithoutViews );
+    cmd->SetOpaqueDataL( *opaque );    
+
+    CleanupStack::PopAndDestroy( opaque );
+    
+    cmd->SetExecutableNameL( KLauncherApp );
+    
+    User::LeaveIfError( aSession.StartApp( *cmd ) );
+    CleanupStack::PopAndDestroy( cmd );    
     }
 //  End of File

@@ -21,7 +21,7 @@
 //  INCLUDES
 #include <e32base.h>
 #include <BrCtlDefs.h>
-#include <http\rhttpsession.h>
+#include <http/rhttpsession.h>
 #include <stringpool.h>
 
 // CONSTANTS
@@ -44,8 +44,105 @@ class CIdle;
 class CHttpCacheEvictionHandler;
 class THttpCacheEntry;
 class CHttpCacheObserver;
+class CHttpCacheFileWriteHandler;
 
 // CLASS DECLARATION
+
+NONSHARABLE_CLASS( THttpCachePostponeParameters )
+    {
+    public:
+        THttpCachePostponeParameters();
+
+        TBool   iEnabled;
+        TInt    iFreeRamThreshold;
+        TInt    iImmediateWriteThreshold;
+        TInt    iWriteTimeout;
+    };
+
+NONSHARABLE_CLASS( TCompressedEntry )
+    {
+    public:
+        ~TCompressedEntry() { if(!IsCompressed()) delete iName.iNameAsHBuf; };
+        static TCompressedEntry *NewL( const TEntry& aEntry );
+
+    private:
+        TCompressedEntry(){};
+        void ConstructL( const TEntry& aEntry );
+        enum {
+            EFilenameStoredAsUint32 = 0x01
+        };
+
+    public:
+        TBool IsCompressed() { return (iFlags && TCompressedEntry::EFilenameStoredAsUint32); };
+        static TBool ConvertANameToUint32( const TDesC& aName, TUint32& aConverted);
+        static TInt ConvertAsciiToIntSingleHexDigit(const TUint16& aDigitChar);
+        TUint32 GetSize() { return iSize; };
+        HBufC* GetNameL();
+        TUint32 GetCompressedName() { return iName.iNameAsUint32; };
+
+    private:
+        TUint32 iFlags;
+        TUint32 iSize;
+        union {
+            TUint32 iNameAsUint32;
+            HBufC*  iNameAsHBuf;
+        }iName;
+    };
+
+NONSHARABLE_CLASS( CCustomCacheDirList ) : public CBase
+    {
+    public:
+        static CCustomCacheDirList* NewL(CDir *aSrc);
+        ~CCustomCacheDirList() { iDirList.ResetAndDestroy(); };
+
+    public:
+        TBool ValidateCacheEntryL( const CHttpCacheEntry& aEntry );
+        TInt Count();
+        HBufC* NameAtL( TInt aIndex );
+
+    private:
+        CCustomCacheDirList();
+        void ConstructL(CDir *aSrc);
+
+    private:
+        RPointerArray<TCompressedEntry> iDirList;
+    };
+
+NONSHARABLE_CLASS( CCacheDirectoryFiles ) : public CBase
+    {
+    public:
+        static CCacheDirectoryFiles* NewL(RFs aRfs, const TDesC& aDir);
+        static CCacheDirectoryFiles* NewLC(RFs aRfs, const TDesC& aDir);
+
+    public:
+        /*
+         * Check to see if the entry passed in has a valid file in the directory listing
+         * returns ETrue if file present and size matches entry
+         * otherwise EFalse.
+         * Removes matching files from stored list.
+         */
+        TBool ValidateEntryL(const CHttpCacheEntry& aEntry);
+
+        /*
+         * Delete any files in the stored list from the filesystem
+         * Intended to be called after you have validated all the entries
+         * against the list - the content of the list will now only be the
+         * orphan files in the cache subdirectories.
+         * IMPORTANT: only call this once you've looked at all your entries.
+         */
+        void RemoveLeftoverFilesL();
+
+    private:
+        CCacheDirectoryFiles(RFs aRfs, const TDesC& aDir) : iRfs(aRfs), iDir(aDir) {};
+        ~CCacheDirectoryFiles();
+        void ConstructL();
+
+    private:
+        RFs iRfs;
+        const TDesC& iDir;
+
+        RPointerArray<CCustomCacheDirList> iDirContent;
+    };
 
 /**
 *
@@ -63,10 +160,11 @@ class CHttpCacheHandler : public CBase
         * @param
         * @return CacheHandler object.
         */
-        static CHttpCacheHandler* NewL( TInt aSize, 
+        static CHttpCacheHandler* NewL( TInt aSize,
             const TDesC& aDirectory,
             const TDesC& aIndexFile,
-            TInt aCriticalLevel );
+            TInt aCriticalLevel,
+            const THttpCachePostponeParameters& aPostpone);
 
         /**
         * Destructor.
@@ -145,8 +243,8 @@ class CHttpCacheHandler : public CBase
         * @param
         * @return
         */
-        TInt CHttpCacheHandler::ListFiles(RPointerArray<TDesC>& aFilenameList);
-        
+        TInt ListFiles(RPointerArray<TDesC>& aFilenameList);
+
         /**
         *
         * @since 3.1
@@ -198,6 +296,15 @@ class CHttpCacheHandler : public CBase
         */
         void UpdateLookupTable();
 
+        /**
+        *
+        * @since 3.1
+        * @param
+        * @param
+        * @return
+        */
+        void SaveLookupTableL();
+
     private:
 
         /**
@@ -212,7 +319,7 @@ class CHttpCacheHandler : public CBase
         /**
         * By default Symbian 2nd phase constructor is private.
         */
-        void ConstructL( const TDesC& aDirectory, const TDesC& aIndexFile,  TInt aCriticalLevel);
+        void ConstructL( const TDesC& aDirectory, const TDesC& aIndexFile,  TInt aCriticalLevel, const THttpCachePostponeParameters& aPostpone);
 
     private: //
 
@@ -277,15 +384,6 @@ class CHttpCacheHandler : public CBase
         * @param
         * @return
         */
-        void SaveLookupTableL();
-
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @param
-        * @return
-        */
         void OpenLookupTableL();
 
         /**
@@ -316,6 +414,22 @@ class CHttpCacheHandler : public CBase
         */
         TBool SaveBuffer( CHttpCacheEntry& aEntry, const TDesC8& aBuffer, TBool aBody = EFalse );
 
+        /**
+         *
+         * @since 7.1
+         * @param
+         * @return
+         */
+        void GenerateValidationFilename(TDes& aFilename, const TDesC& aIndexFilename) const;
+
+        /**
+         *
+         * @since 7.1
+         * @param
+         * @return
+         */
+        void ValidateCacheEntriesL();
+
     private:    // Data
 
         // hash table for cache entries
@@ -332,8 +446,10 @@ class CHttpCacheHandler : public CBase
         HBufC*                          iIndexFile; // owned
         // Observing changes in cache
         CHttpCacheObserver* iHttpCacheObserver; // owned
-    	// An opened and configured file server session
-    	RFs iRfs;
+        // An opened and configured file server session
+        RFs iRfs;
+        //
+        CHttpCacheFileWriteHandler*     iPostponeHandler;   // owned
     };
 
 #endif      // CHTTPCACHEHANDLER_H

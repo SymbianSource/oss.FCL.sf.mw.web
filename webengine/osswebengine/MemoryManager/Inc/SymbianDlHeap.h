@@ -178,12 +178,12 @@ private:
 	/*MACROS converted functions*/
 	static inline void unlink_first_small_chunk(mstate M,mchunkptr B,mchunkptr P,bindex_t& I);
 	static inline void insert_small_chunk(mstate M,mchunkptr P, size_t S);
-	static inline void insert_chunk(mstate M,mchunkptr P,size_t S);
+	static inline void insert_chunk(mstate M,mchunkptr P,size_t S,size_t NPAGES);
 	static inline void unlink_large_chunk(mstate M,tchunkptr X);
 	static inline void unlink_small_chunk(mstate M, mchunkptr P,size_t S);
 	static inline void unlink_chunk(mstate M, mchunkptr P, size_t S);
 	static inline void compute_tree_index(size_t S, bindex_t& I);
-	static inline void insert_large_chunk(mstate M,tchunkptr X,size_t S);
+	static inline void insert_large_chunk(mstate M,tchunkptr X,size_t S,size_t NPAGES);
 	static inline void replace_dv(mstate M, mchunkptr P, size_t S);
 	static inline void compute_bit2idx(binmap_t X,bindex_t& I);
 	/*MACROS converted functions*/
@@ -247,7 +247,39 @@ public:
 	void paged_free(void* p);	
 	void* paged_reallocate(void* p, unsigned size);
 	pagecell* paged_descriptor(const void* p) const ;
-private: 
+
+	/* Dl heap log dump functions*/
+#ifdef OOM_LOGGING    
+    void dump_heap_logs(size_t fail_size);
+    void dump_dl_free_chunks();
+    void dump_large_chunk(mstate m, tchunkptr t);
+    size_t iUnmappedChunkSize;
+#endif
+private:
+     /* Dubug checks for chunk page support*/
+#ifdef DL_CHUNK_MEM_DEBUG
+#define do_chunk_page_release_check(p, psize, fm, mem_released) debug_chunk_page_release_check(p, psize, fm, mem_released)
+#define do_check_large_chunk_access(p, psize) debug_check_large_chunk_access(p, psize)
+#define do_check_small_chunk_access(p, psize) debug_check_small_chunk_access(p, psize)
+#define do_check_any_chunk_access(p, psize) debug_check_any_chunk_access(p, psize)    
+    void debug_check_large_chunk_access(tchunkptr p, size_t psize);
+    void debug_check_small_chunk_access(mchunkptr p, size_t psize);
+    void debug_check_any_chunk_access(mchunkptr p, size_t psize);
+    void debug_chunk_page_release_check(mchunkptr p, size_t psize, mstate fm, int mem_released);    
+#else
+#define do_chunk_page_release_check(p, psize, fm, mem_released)
+#define do_check_large_chunk_access(p, psize)
+#define do_check_small_chunk_access(p, psize)
+#define do_check_any_chunk_access(p, psize)    
+#endif
+    
+    /* Chunk page release mechanism support */
+    TInt map_chunk_pages(tchunkptr p, size_t psize);
+    TInt unmap_chunk_pages(tchunkptr p, size_t psize, size_t prev_npages);
+    TInt map_chunk_pages_partial(tchunkptr tp, size_t psize, tchunkptr r, size_t rsize);
+    TInt sys_trim_partial(mstate m, mchunkptr prev, size_t psize, size_t prev_npages);    
+    size_t free_chunk_threshold;
+    
 	// paged allocator structures
 	enum {npagecells=4};
 	pagecell pagelist[npagecells];		// descriptors for page-aligned large allocations

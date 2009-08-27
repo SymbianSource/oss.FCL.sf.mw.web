@@ -58,6 +58,8 @@ const SupportedCharset supportedCharset[] =
     {0x101F8761, HTTP_Koi8_u,      EKoi8_u,     (NW_Uint8*)NW_Koi8u_CharsetStr, NW_TRUE}, // no header file is provided with the converter Ukrainian
     {KCharacterSetIdentifierUcs2, HTTP_iso_10646_ucs_2, EISO10646_UCS_2, (NW_Uint8*)NW_Iso10646Ucs2_CharsetStr, NW_FALSE},
     {KCharacterSetIdentifierUcs2, HTTP_iso_10646_ucs_2, EISO10646_UCS_2, (NW_Uint8*)NW_Unicode_CharsetStr, NW_FALSE},
+     {0x2000E526, HTTP_euc_kr,      EEucKr,     (NW_Uint8*)NW_EucKr_CharsetStr, NW_TRUE}, // no header file is provided with the converter Ukrainian
+     {0x200113CD, HTTP_ksc_5601,      EKsc_5601,     (NW_Uint8*)NW_ksc5601_1987_CharsetStr, NW_TRUE}, // no header file is provided with the converter Ukrainian     
     {0, 0, EAutomatic, (NW_Uint8*)NULL, NW_TRUE},
     {0, 0, EDummyLast, (NW_Uint8*)NULL, NW_TRUE}
 };

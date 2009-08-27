@@ -29,7 +29,7 @@
 using namespace KJS;
 
 const ClassInfo Device::info = { "Device", 0, 0, 0 };
-const TInt INIT_SO_ARRAY_SIZE = 10;   // initial service object array
+const TInt INIT_ARRAY_SIZE = 10;   // initial service object array
 
 // ============================= LOCAL FUNCTIONS ===============================
 /*
@@ -49,11 +49,11 @@ const TInt INIT_SO_ARRAY_SIZE = 10;   // initial service object array
 Device::Device( ExecState* exec )
     : JSObject()
     {
-    m_privateData = new DevicePrivate();
+    m_privateData = new DevicePrivate(this);
     if (!m_privateData || !m_privateData->m_deviceBinding )
-        m_valid = false;
+        m_valid = EFalse;
     else
-        m_valid = true;
+        m_valid = ETrue;
     }
 
 
@@ -75,6 +75,10 @@ void Device::SetUid( const TUint& aValue)
 //
 void Device::Close()
     {
+    if ( !m_valid )
+        return;
+    
+    m_valid = EFalse;
     delete m_privateData;
     m_privateData = NULL;
     }
@@ -107,6 +111,9 @@ UString Device::toString( ExecState* /*exec*/ ) const
 // ----------------------------------------------------------------------------
 bool Device::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName, PropertySlot& slot)
 {
+    if ( !m_valid )
+        return false;
+
     m_privateData->m_exec = exec;
     m_privateData->m_propName = propertyName;
     const HashEntry* entry = Lookup::findEntry(&DeviceTable, propertyName);
@@ -127,6 +134,9 @@ bool Device::getOwnPropertySlot(ExecState* exec, const Identifier& propertyName,
 // ----------------------------------------------------------------------------
 JSValue* Device::getValueProperty(ExecState *exec, int token) const
     {
+    if ( !m_valid )
+        return jsUndefined();
+        
     switch( token )
         {
         case getServiceObject:
@@ -139,35 +149,96 @@ JSValue* Device::getValueProperty(ExecState *exec, int token) const
     }
 
 // ---------------------------------------------------------------------------
+// DevicePrivateBase constructor
+//
+// ---------------------------------------------------------------------------
+DevicePrivateBase::DevicePrivateBase()
+    {
+    m_parent = NULL;
+    m_isDeleting = EFalse;
+    TRAP_IGNORE(
+        m_children = new RPointerArray<DevicePrivateBase>( INIT_ARRAY_SIZE );)
+    }
+
+// ---------------------------------------------------------------------------
+// DevicePrivateBase destructor
+//
+// ---------------------------------------------------------------------------
+DevicePrivateBase::~DevicePrivateBase()
+    {
+    m_isDeleting = ETrue;
+    // 1. remove self from the parent
+    if ( m_parent )  
+        {
+        m_parent->RemoveChild(this);
+        }
+
+    // 2. delete all the children
+    for ( int i = 0; i < m_children->Count(); i++ )
+        {
+        delete (*m_children)[i];
+        }
+
+    // 3. delete array
+    m_children->Close();
+    delete m_children;
+    }
+
+// ---------------------------------------------------------------------------
+// DevicePrivateBase setParent
+//
+// ---------------------------------------------------------------------------
+void DevicePrivateBase::SetParent( DevicePrivateBase* aValue )
+    {
+    m_parent = aValue;
+    }
+
+// ---------------------------------------------------------------------------
+// DevicePrivateBase add child into list
+//
+// ---------------------------------------------------------------------------
+void DevicePrivateBase::AddChild( DevicePrivateBase* aValue )
+    {
+    m_children->Append( aValue );
+    }
+
+// ---------------------------------------------------------------------------
+// DevicePrivateBase add child into list
+//
+// ---------------------------------------------------------------------------
+void DevicePrivateBase::RemoveChild( DevicePrivateBase* aValue )
+    {
+    if ( m_isDeleting )
+        return;
+    
+    TInt index = m_children->Find( aValue );
+    if ( index != KErrNotFound )
+        m_children->Remove( index );
+    }
+
+// ---------------------------------------------------------------------------
 // DevicePrivate constructor
 //
 // ---------------------------------------------------------------------------
-DevicePrivate::DevicePrivate()
+DevicePrivate::DevicePrivate( Device* jsobj )
     {
-	m_deviceBinding = NULL;
+    m_deviceBinding = NULL;
     TRAP_IGNORE(
-        m_serviceObjArray = new RPointerArray<ServiceObject>( INIT_SO_ARRAY_SIZE );
         m_deviceBinding = CDeviceLiwBinding::NewL();
+        m_jsobj = jsobj;
         m_exec = NULL;)
     }
 
 // ---------------------------------------------------------------------------
-// DevicePrivate Close
+// DevicePrivate destructor
 //
 // ---------------------------------------------------------------------------
-void DevicePrivate::Close()
+DevicePrivate::~DevicePrivate()
     {
-    if ( m_serviceObjArray )
-        {
-        // close all the service objects created for this device
-        for (int i = 0; i < m_serviceObjArray->Count(); i++)
-            {
-            (*m_serviceObjArray)[i]->Close( m_exec, true );
-            }
-        m_serviceObjArray->Close();
-        delete m_serviceObjArray;
-        m_serviceObjArray = NULL;
-        }
+    // invalid the Device
+    if (m_jsobj)
+        m_jsobj->m_valid = EFalse;
+        
     delete m_deviceBinding;
     m_deviceBinding = NULL;
     }
@@ -249,7 +320,10 @@ JSValue* DeviceFunc::callAsFunction(ExecState *exec, JSObject *thisObj, const Li
             ServiceObject *so = new ServiceObject( exec, svcName, m_deviceBinding );
             if ( so != NULL )
                 {
-                (static_cast<Device*>(thisObj))->m_privateData->m_serviceObjArray->Append( so );
+                DevicePrivateBase* devData = (static_cast<Device*>(thisObj))->getDeviceData();
+                DevicePrivateBase* soData = so->getServiceData();
+                soData->SetParent( devData ); 
+                devData->AddChild( soData );
                 ret = so;
                 }
             }
@@ -261,6 +335,11 @@ JSValue* DeviceFunc::callAsFunction(ExecState *exec, JSObject *thisObj, const Li
 
     return ret;
     }
+
+MDeviceBinding* Device::GetDeviceBinding()
+{
+    return m_privateData->m_deviceBinding;
+}
 
 //END OF FILE
 

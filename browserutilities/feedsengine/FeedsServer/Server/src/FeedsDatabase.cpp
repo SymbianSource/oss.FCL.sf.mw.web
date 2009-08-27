@@ -2789,7 +2789,7 @@ void CFeedsDatabase::CommitFeedL(TInt aFolderListId, TBool aIsNewFeed, TInt aFee
         {
         //update the folder table.
         TInt entryId;
-        EntryIdFromFeedId(aFeedId, aFolderListId, entryId);
+        EntryIdFromFeedIdL(aFeedId, aFolderListId, entryId);
         FolderItemUpdateL(entryId, title, KNullDesC, KAutoUpdatingOff);
         }
     }
@@ -4392,12 +4392,12 @@ void CFeedsDatabase::AlterFeedTableWithAutoFequencyL()
     }
 
 // -----------------------------------------------------------------------------
-// CFeedsDatabase::FeedIdFromEntryId
+// CFeedsDatabase::FeedIdFromEntryIdL
 //
 // Returns the feed id of the feed with the given entry id.
 // -----------------------------------------------------------------------------
 //
-TBool CFeedsDatabase::FeedIdFromEntryId(const TInt& aEntryId, TInt aFolderListId, TInt& aFeedId)
+TBool CFeedsDatabase::FeedIdFromEntryIdL(const TInt& aEntryId, TInt aFolderListId, TInt& aFeedId)
     {
     RDbView  view;
     TBool    found = EFalse;
@@ -4437,12 +4437,12 @@ TBool CFeedsDatabase::FeedIdFromEntryId(const TInt& aEntryId, TInt aFolderListId
     }
 
 // -----------------------------------------------------------------------------
-// CFeedsDatabase::EntryIdFromFeedId
+// CFeedsDatabase::EntryIdFromFeedIdL
 //
 // Returns the feed id of the feed with the given entry id.
 // -----------------------------------------------------------------------------
 //
-TBool CFeedsDatabase::EntryIdFromFeedId(const TInt& aFeedId, TInt aFolderListId, TInt& aEntryId)
+TBool CFeedsDatabase::EntryIdFromFeedIdL(const TInt& aFeedId, TInt aFolderListId, TInt& aEntryId)
     {
     RDbView  view;
     TBool    found = EFalse;

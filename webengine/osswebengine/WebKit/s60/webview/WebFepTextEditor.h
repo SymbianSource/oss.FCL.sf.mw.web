@@ -30,6 +30,7 @@
 
 #include "PlatformString.h"
 #include "Node.h"
+#include "Frame.h"
 
 #ifndef WEBFEPTEXTEDITOR_H
 #define WEBFEPTEXTEDITOR_H
@@ -128,10 +129,14 @@ public:
     void RetrieveDataFromClipboardL();
     void PasteFromStoreL(CStreamStore& aStore,CStreamDictionary& aDict);
     void CopyToStoreL(CStreamStore& aStore,CStreamDictionary& aDict);    
+    void HandleMaskedInsertText(WebCore::Frame* frame, const String& text);
+    void HandleMaskedDeleteText(WebCore::Frame* frame);
+    bool IsWapMaskedModeInput(WebCore::Frame* frame);
 
 private:
     void  findPrevSiblingTextLen(Node*, TInt&) const;
     Node* findTextNodeForCurPos(Node* aNode, TInt& aPos) const;
+    void setSCTAvailability(bool aAvailable);
        
 private:
     CState* m_state;        

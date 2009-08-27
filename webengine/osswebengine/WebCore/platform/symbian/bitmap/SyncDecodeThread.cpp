@@ -40,6 +40,7 @@ class BmElem
         TInt iMaskHandle;
 };
 
+enum DecoderState {ENewDecodeRequest, EDecodeInProgress, EDecoderIdle};
 class CSynDecoder : public CActive
     {
     public:  // Constructors and destructor
@@ -47,25 +48,35 @@ class CSynDecoder : public CActive
         virtual ~CSynDecoder();
 
     public:
-        TInt Open(BmElem* aElem);
+        void Open(const TDesC8& aData, TRequestStatus *status);
+        void Lock() { iDecoderLock.Wait(); }
+        void Release() { iDecoderLock.Signal(); }
 
     private: // From base class CActive
         void DoCancel();
         void RunL();
         TInt RunError( TInt aError );
         void SignalParent( TInt aError );
+        void StartDecodeL();        
+        void SetIdle();
         
     private: // Private constructors
         CSynDecoder();
-        void ConstructL() {}
+        void ConstructL();
 
     private: // Data
-        BmElem* iElem; // not owned
-        CImageDecoder* iDecoder; // owned
-        CMaskedBitmap* iBitmap; // owned
+        BmElem iElem;
+        CImageDecoder* iDecoder;
+        CMaskedBitmap* iBitmap;
+        RFastLock iDecoderLock;
+        DecoderState iDecodeState;
+        RThread syncThread;
+
+friend class CSynDecodeThread;        
     };
 
 // FORWARD DECLARATIONS
+CSynDecoder *CSynDecodeThread::iSyncDecoder = NULL;
 
 // ============================= LOCAL FUNCTIONS ===============================
 
@@ -79,6 +90,12 @@ CSynDecoder::CSynDecoder() : CActive(CActive::EPriorityHigh)
     {
     CActiveScheduler::Add( this );
     }
+
+void CSynDecoder::ConstructL()
+{
+    User::LeaveIfError(iDecoderLock.CreateLocal());
+    SetIdle();
+}
 
 CSynDecoder* CSynDecoder::NewL()
     {
@@ -94,46 +111,67 @@ CSynDecoder::~CSynDecoder()
     Cancel();
     delete iDecoder;
     delete iBitmap;
+    iDecoderLock.Close();
     }
 
 // -----------------------------------------------------------------------------
-// OpenL
+// Decode - Decode request submitted from client thread
 // -----------------------------------------------------------------------------
-TInt CSynDecoder::Open(BmElem* aElem)
+void CSynDecoder::Open(const TDesC8& aData, TRequestStatus *status)
 {
-    iElem = aElem;
-    // reset decoder
-    TRAPD( err, 
-        iDecoder = CImageDecoder::DataNewL(CEikonEnv::Static()->FsSession(), iElem->iData);
-        iBitmap = CMaskedBitmap::NewL();
-        );
-    if( err != KErrNone )
-        return err;
+    iElem.iRequestStatus = status;
+    iElem.iData.Set(aData); 
+    iElem.iParentThreadId = RThread().Id();
+    iElem.iBitmapHandle = 0;
+    iElem.iMaskHandle = 0;    
+    iDecodeState = ENewDecodeRequest;
+}
 
+void CSynDecoder::SetIdle()
+{
+    iDecodeState = EDecoderIdle;
+    if(!IsActive()) {
+        iStatus = KRequestPending;
+        SetActive();
+    }
+}
+
+void CSynDecoder::StartDecodeL()
+{
+    if(iDecoder) {
+        delete iDecoder;
+        iDecoder = NULL;
+    }
+    if(iBitmap) {
+        delete iBitmap;
+        iBitmap = NULL;
+    }
+    
+    iDecoder = CImageDecoder::DataNewL(CEikonEnv::Static()->FsSession(), iElem.iData);
+    iBitmap = CMaskedBitmap::NewL();
+    
     TFrameInfo frameInfo = iDecoder->FrameInfo( 0 );
-
+    TInt err = KErrNone;
     if( frameInfo.iFlags & TFrameInfo::ETransparencyPossible ) {
         TDisplayMode maskmode = (frameInfo.iFlags & TFrameInfo::EAlphaChannel) ? EGray256 : EGray2;
-
         err = iBitmap->Create( frameInfo.iOverallSizeInPixels, EColor64K, maskmode );
     }
     else
         err = iBitmap->Create( frameInfo.iOverallSizeInPixels, EColor64K );
-    //
-    if( err != KErrNone )
-        return err;
-   // start decoding
+    User::LeaveIfError(err);
+    
+    // start decoding
     CFbsBitmap& dstBitmap = iBitmap->BitmapModifyable();
-    CFbsBitmap& dstMask = iBitmap->MaskModifyable();
-
+    CFbsBitmap& dstMask = iBitmap->MaskModifyable();    
     if( ( frameInfo.iFlags & TFrameInfo::ETransparencyPossible ) && dstMask.Handle() )
         iDecoder->Convert( &iStatus, dstBitmap, dstMask, 0 );
     else {
         dstMask.Reset();
         iDecoder->Convert( &iStatus, dstBitmap, 0 );
     }
+    
+    iDecodeState = EDecodeInProgress;
     SetActive();
-    return KErrNone;
 }
 
 // -----------------------------------------------------------------------------
@@ -143,25 +181,31 @@ void CSynDecoder::DoCancel()
 {
     iDecoder->Cancel();
     SignalParent( KErrCancel );
+    SetIdle();
 }
 
 // -----------------------------------------------------------------------------
 // CSynDecoder::RunL
 // -----------------------------------------------------------------------------
 void CSynDecoder::RunL()
-{
-    SignalParent( iStatus.Int() );
-
-    if( iStatus.Int() == KErrNone ) {
-        iElem->iBitmapHandle = iBitmap->Bitmap().Handle();
-        iElem->iMaskHandle = iBitmap->Mask().Handle();
-
-        RThread self;
-        self.Suspend(); 
-        self.Close();
-        // destroy
-        CActiveScheduler::Stop();
-    }
+{    
+    switch(iDecodeState)
+    {
+    case ENewDecodeRequest:
+        StartDecodeL(); // start async decode
+        break;
+    case EDecodeInProgress:
+        if( iStatus.Int() == KErrNone ) {
+            iElem.iBitmapHandle = iBitmap->Bitmap().Handle();
+            iElem.iMaskHandle = iBitmap->Mask().Handle();        
+        }
+        
+        SignalParent(iStatus.Int());
+        SetIdle();
+        break;
+    default:
+        SetIdle();
+    }        
 }
 
 // -----------------------------------------------------------------------------
@@ -169,7 +213,8 @@ void CSynDecoder::RunL()
 // -----------------------------------------------------------------------------
 TInt CSynDecoder::RunError(TInt aError)
 {
-    SignalParent( aError );
+    SignalParent(aError);
+    SetIdle();
     return KErrNone;
 }
 
@@ -179,13 +224,11 @@ TInt CSynDecoder::RunError(TInt aError)
 void CSynDecoder::SignalParent(TInt aError)
 {
     RThread parent;
-    parent.Open(iElem->iParentThreadId);
-    parent.RequestComplete(iElem->iRequestStatus, aError );
-    parent.Close();            
-
-    if (aError != KErrNone)
-        CActiveScheduler::Stop();
+    parent.Open(iElem.iParentThreadId);
+    parent.RequestComplete(iElem.iRequestStatus, aError );
+    parent.Close();
 }
+
 
 CSynDecodeThread* CSynDecodeThread::NewL()
 {
@@ -201,46 +244,45 @@ CSynDecodeThread::CSynDecodeThread()
 }
 
 CSynDecodeThread::~CSynDecodeThread()
-{   	
-	if(iUp) {
-		iDecoderThread.Resume();
-		iDecoderThread.Kill(KErrNone);  
-		iDecoderThread.Close();  
-	}
-	delete iElem;
+{
+    CActiveScheduler::Stop(); 
+	iDecoderThread.Close();
 }
-
 
 void CSynDecodeThread::ConstructL()
-{
+{   
+    _LIT(KThreadName, "ImgDecoder");
+    User::LeaveIfError(iDecoderThread.Create(KThreadName, CSynDecodeThread::ScaleInThread, KDefaultStackSize, KMinHeapSize, KMaxHeapSize, NULL));
+    iDecoderThread.SetPriority(EPriorityMore);
+    TRequestStatus status = KRequestPending;
+    iDecoderThread.Rendezvous(status);
+    iDecoderThread.Resume();
+    User::WaitForRequest(status);
+    User::LeaveIfError(status.Int());
 }
 
-TInt CSynDecodeThread::Decode(const TDesC8& aData, TRequestStatus* aRequestStatus)
-{
-	iElem = new (ELeave) BmElem;
-	iElem->iData.Set( aData );
-	iElem->iParentThreadId = RThread().Id();
-	iElem->iRequestStatus = aRequestStatus;
 
-    TBuf<20> randName;
-	TTime t;
-	t.HomeTime();
-	randName.Num( I64INT(t.Int64()) );
+TInt CSynDecodeThread::Decode(const TDesC8& aData)
+{
+    iSyncDecoder->Lock();
     
-	TInt err = iDecoderThread.Create(randName, CSynDecodeThread::ScaleInThread, KDefaultStackSize, KMinHeapSize, KMaxHeapSize, iElem);
-    if (err==KErrNone) {
-		iUp = ETrue;
-        iDecoderThread.SetPriority(EPriorityMore);
-        *aRequestStatus = KRequestPending;
-        iDecoderThread.Resume(); 
-    }
-    return err;
+    //notify decoder thread about new request
+    TRequestStatus status = KRequestPending;
+    iSyncDecoder->Open(aData, &status);
+    TRequestStatus *ps = &(iSyncDecoder->iStatus);
+    iDecoderThread.RequestComplete(ps, KErrNone);
+
+    //wait for decode complete
+    User::WaitForRequest(status);    
+    
+    iSyncDecoder->Release();
+    return status.Int();    
 }
 
 void CSynDecodeThread::Handle(TInt& aBitmapHandle, TInt& aMaskHandle)
 {
-    aBitmapHandle = iElem->iBitmapHandle;
-    aMaskHandle = iElem->iMaskHandle;    
+    aBitmapHandle = iSyncDecoder->iElem.iBitmapHandle;
+    aMaskHandle = iSyncDecoder->iElem.iMaskHandle;    
 }
 
 TInt CSynDecodeThread::ScaleInThread(TAny *aPtr)
@@ -248,26 +290,23 @@ TInt CSynDecodeThread::ScaleInThread(TAny *aPtr)
     CTrapCleanup* cleanup = CTrapCleanup::New();
     CActiveScheduler* as = new CActiveScheduler;
     CActiveScheduler::Install(as);  
-
-    CSynDecoder* decoder = NULL;         
-
     RFbsSession fbs;
     fbs.Connect();
 
-    BmElem* elem = (BmElem*)aPtr;
-    TRAPD(err, decoder = CSynDecoder::NewL());
-
-    if (err == KErrNone && (err = decoder->Open(elem))== KErrNone )
-        CActiveScheduler::Start();              
-    else {    
-        RThread parent;
-        parent.Open(elem->iParentThreadId);
-        parent.RequestComplete(elem->iRequestStatus, err);
-        parent.Close();            
+    // start event loop
+    TRAPD(err, iSyncDecoder = CSynDecoder::NewL());
+    if (err == KErrNone) {
+        // wait for decode request from client threads
+        RThread().Rendezvous(KErrNone);
+        CActiveScheduler::Start();
     }
-
+    else {
+        RThread().Rendezvous(err);
+    }
+    
+    // thread shutdown 
     delete as;
-    delete decoder; 
+    delete iSyncDecoder; 
     delete cleanup; 
     fbs.Disconnect();       
     return err;

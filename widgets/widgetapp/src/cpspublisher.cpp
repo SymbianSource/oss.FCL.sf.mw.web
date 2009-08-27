@@ -46,23 +46,31 @@ _LIT8( KDataMap, "data_map" );
 _LIT8( KItem, "item" );
 _LIT8( KAdd, "Add" );
 
-_LIT(KP,"ai3templatedwidget");
-_LIT(KCT,"wideimage");
+_LIT(KTemplateWidget,"ai3templatedwidget");
 _LIT8( KImageKey, "image1");
 
 _LIT8( KMask, "_mask");
 
-_LIT(KP1,"ai3homescreen");
-_LIT(KCT1,"wideimage");
+_LIT(KHomescreenId,"ai3homescreen");
+_LIT(KTemplateName,"wideimage");
 _LIT( KImageContainer, "image_container" );
 _LIT8( KWidth, "width");
 _LIT8( KHeight, "height");
+
+_LIT( KPublisherInfo, "publisher" );
+_LIT( KInfoType, "network" );
+_LIT( KDisConnected, "disconnected");
+_LIT( KConnected, "connected");
+_LIT8( KAPStatus, "apstatus");
+
 _LIT8( KFilter, "filter" );
 _LIT8( KResults,      "results");
 _LIT8( KOperation, "operation" );
 _LIT8( KRequestNotification, "RequestNotification" );
 _LIT( KUpdate, "update" );
 _LIT8( KChangeInfo, "change_info" );
+_LIT( KWRTPublisher, "wrt_publisher");
+
 const TInt KSkinGfxInnerRectShrink = 5;
 
 static void DoResetAndDestroy( TAny* aPtr )
@@ -171,8 +179,8 @@ CLiwDefaultMap* ElementSizeFilterLC()
     {
     //Create filter criteria for requested entries in form of LIW map:
     CLiwDefaultMap* filter = CLiwDefaultMap::NewLC();
-    filter->InsertL( KPublisherId, TLiwVariant( KP1 ));
-    filter->InsertL( KContentType, TLiwVariant( KCT1 ));
+    filter->InsertL( KPublisherId, TLiwVariant( KHomescreenId ));
+    filter->InsertL( KContentType, TLiwVariant( KTemplateName ));
     filter->InsertL( KContentId, TLiwVariant( KImageContainer ));
     return filter;
     }
@@ -212,11 +220,25 @@ void CCpsPublisher::ConstructL()
 
 TSize CCpsPublisher::BitmapSize()
     {
-    return iSize;
+    if( iSize.iHeight == 0 || iSize.iWidth == 0 )
+        {
+        // TODO: This is a work around to fix the problem in 'Loading Content' feature.
+        // Miniview does not have size when 'Loading Content' is showing.
+        return TSize(312, 82 );
+        }
+    else
+        {
+        return iSize;
+        }
     }
 
-void CCpsPublisher::PublishBitmapL( CFbsBitmap& aBitmap, const TDesC& aBundleName )
+void CCpsPublisher::PublishBitmapL( CFbsBitmap& aBitmap, const TDesC& aBundleId )
     {
+#ifdef _DEBUG
+    TSize bitmapSize = aBitmap.SizeInPixels();
+    RDebug::Printf("CCpsPublisher::PublishBitmapL bitmap width %d height %d", bitmapSize.iWidth, bitmapSize.iHeight);
+#endif
+    
     // Load the mask bitmap from skin
     if( !iMaskBitmap ||
         aBitmap.SizeInPixels() != iMaskBitmap->SizeInPixels())
@@ -234,9 +256,83 @@ void CCpsPublisher::PublishBitmapL( CFbsBitmap& aBitmap, const TDesC& aBundleNam
         {
         maskHandle = iMaskBitmap->Handle();
         }    
-    RDebug::Printf("CCpsPublisher::PublishBitmapL");
-    AddImageHandleL( KP() ,KCT(), aBundleName,
+#ifdef _DEBUG
+    RDebug::Printf("CCpsPublisher::PublishBitmapL, bitmap handle 0x%x", handle);
+#endif
+    AddImageHandleL( aBundleId,
             handle, maskHandle, KImageKey() );
+    }
+
+void CCpsPublisher::NetworkConnectionCancelledL()
+    {
+    CLiwGenericParamList& inparam = iServiceHandler->InParamListL();
+    CLiwGenericParamList& outparam = iServiceHandler->OutParamListL();
+
+    TLiwGenericParam type( KType, TLiwVariant( KCpData ));
+    type.PushL();
+    inparam.AppendL( type );
+    
+    CLiwDefaultMap* cpdatamap = CLiwDefaultMap::NewLC();
+    CLiwDefaultMap* datamap = CLiwDefaultMap::NewLC();
+    
+    // Create content map
+    cpdatamap->InsertL( KPublisherId, TLiwVariant( KHomescreenId ));
+    cpdatamap->InsertL( KContentType, TLiwVariant( KPublisherInfo )); 
+    cpdatamap->InsertL( KContentId, TLiwVariant( KInfoType ));
+    // Create the data map
+    datamap->InsertL( KAPStatus, TLiwVariant( KDisConnected ));
+    cpdatamap->InsertL( KDataMap, TLiwVariant(datamap) );
+    
+    TLiwGenericParam item( KItem, TLiwVariant( cpdatamap ));     
+    item.PushL(); 
+       
+    inparam.AppendL( item );
+    
+    iCpsInterface->ExecuteCmdL( KAdd , inparam, outparam);
+
+    CleanupStack::PopAndDestroy( &item );
+    CleanupStack::PopAndDestroy( datamap );
+    CleanupStack::PopAndDestroy( cpdatamap );
+    CleanupStack::PopAndDestroy( &type );
+
+    outparam.Reset();
+    inparam.Reset();
+    }
+
+void CCpsPublisher::NetworkConnectionAllowedL()
+    {
+    CLiwGenericParamList& inparam = iServiceHandler->InParamListL();
+    CLiwGenericParamList& outparam = iServiceHandler->OutParamListL();
+
+    TLiwGenericParam type( KType, TLiwVariant( KCpData ));
+    type.PushL();
+    inparam.AppendL( type );
+    
+    CLiwDefaultMap* cpdatamap = CLiwDefaultMap::NewLC();
+    CLiwDefaultMap* datamap = CLiwDefaultMap::NewLC();
+    
+    // Create content map
+    cpdatamap->InsertL( KPublisherId, TLiwVariant( KHomescreenId ));
+    cpdatamap->InsertL( KContentType, TLiwVariant( KPublisherInfo )); 
+    cpdatamap->InsertL( KContentId, TLiwVariant( KInfoType ));
+    // Create the data map
+    datamap->InsertL( KAPStatus, TLiwVariant( KConnected ));
+    cpdatamap->InsertL( KDataMap, TLiwVariant(datamap) );
+    
+    TLiwGenericParam item( KItem, TLiwVariant( cpdatamap ));     
+    item.PushL(); 
+       
+    inparam.AppendL( item );
+    
+    iCpsInterface->ExecuteCmdL( KAdd , inparam, outparam);
+
+    CleanupStack::PopAndDestroy( &item );
+    CleanupStack::PopAndDestroy( datamap );
+    CleanupStack::PopAndDestroy( cpdatamap );
+    CleanupStack::PopAndDestroy( &type );
+
+    outparam.Reset();
+    inparam.Reset();
     }
 
 void CCpsPublisher::GetBitmapSizeL()
@@ -322,10 +418,8 @@ TInt CCpsPublisher::HandleNotifyL(
 // 
 // ---------------------------------------------------------------------------
 // 
-void CCpsPublisher::AddImageHandleL( 
-        const TDesC& aPublisherId, const TDesC& aContentType, 
-        const TDesC& aContentId, const TInt& aHandle, const TInt& aMaskHandle,
-        const TDesC8& aImageKey )
+void CCpsPublisher::AddImageHandleL( const TDesC& aBundleId, const TInt& aHandle,
+        const TInt& aMaskHandle, const TDesC8& aImageKey )
     {
     __UHEAP_MARK;
     CLiwGenericParamList& inparam = iServiceHandler->InParamListL();
@@ -351,9 +445,9 @@ void CCpsPublisher::AddImageHandleL(
     CleanupStack::PopAndDestroy( maskKey );
 
     // Create content data map
-    cpdatamap->InsertL( KPublisherId, TLiwVariant( aPublisherId ));
-    cpdatamap->InsertL( KContentType, TLiwVariant( aContentType )); 
-    cpdatamap->InsertL( KContentId, TLiwVariant( aContentId ));
+    cpdatamap->InsertL( KPublisherId, TLiwVariant( KWRTPublisher ));
+    cpdatamap->InsertL( KContentType, TLiwVariant( KTemplateWidget )); 
+    cpdatamap->InsertL( KContentId, TLiwVariant( aBundleId ));
     cpdatamap->InsertL( KDataMap, TLiwVariant(map) );
             
     TLiwGenericParam item( KItem, TLiwVariant( cpdatamap ));     

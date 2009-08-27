@@ -345,7 +345,10 @@ void RHttpDownloadMgr::InitializeL( TUid aAppUid,
             	
             	// Update CodData in Download Mgr Server
             	HBufC8* mediaInfo8 = NULL;
-    	    	mediaInfo8 = download->iCodDownload->UpdatedDownloadDataL();
+            	if(download->iCodDownload)
+            	    {
+            	    mediaInfo8 = download->iCodDownload->UpdatedDownloadDataL();
+            	    }
     	    	if (mediaInfo8)
     	        	{
     	        	download->SetDownloadDataAttribute(*mediaInfo8);

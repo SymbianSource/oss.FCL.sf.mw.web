@@ -118,4 +118,9 @@ void shutdownSharedTimer()
     stopSharedTimer();
     }
 
+void initSharedTimer()
+    {
+    shutdownInProgress = false;
+    }
+
 }

@@ -27,6 +27,8 @@
 
 namespace WebCore {
 
+void cleanupFuncMap();
+
 class AtomicString;
 class Document;
 class Element;

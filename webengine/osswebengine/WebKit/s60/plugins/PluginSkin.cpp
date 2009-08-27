@@ -16,6 +16,7 @@
 */
 
 //INCLUDES
+#include <Browser_Platform_Variant.hrh>
 #include "../../bidi.h"
 #include "PlatformString.h"
 #include <centralrepository.h>
@@ -48,6 +49,10 @@
 #include <Uri8.h>
 #include <InternetConnectionManager.h>
 #include <es_enum.h>
+#include <TextEncoding.h>
+#include "CString.h"
+#include "WidgetExtension.h"
+#include <WidgetRegistryClient.h>
 
 // CONSTANTS
 using namespace WebCore;
@@ -71,6 +76,19 @@ const TUint KHtml4cssPadding( 1 );
 // The border is grow/shrink by this much when the focus changes
 const TUint KBorderWidthUnfocus( 0 );
 const TUint KBorderWidthFocus( KHtml4cssPadding );
+
+_LIT(KBrowserMode,"BrowserMode");
+_LIT(KWidgetMode,"WidgetMode");
+_LIT(KUnknownMode, "UnKnownMode");
+_LIT(KApplicationId,"ApplicationId");
+_LIT(KSecMgrScriptSession,"SecMgrScriptSession");
+_LIT(KAllowNetworkAccess,"AllowNetworkAccess");
+
+
+#define KArraySize 3
+
+const TInt32 KWidgetApplicationId =  0x10282822;
+const TInt32 KBrowserApplicationId = 0x10008D39;
 
 //MACROS
 
@@ -140,10 +158,79 @@ PluginSkin::PluginSkin( WebFrame& frame )
       m_handle(-1),
       m_instance(0),    
       m_pluginfuncs(0),
-      m_resized(false)            
+      m_resized(false),
+      m_oldPos(TPoint(-1,-1))
   {
   }
 
+
+void PluginSkin::addWidgetAttributesL()
+{
+    const TDesC& SecMgrScriptSession = KSecMgrScriptSession();
+    RWidgetRegistryClientSession widgetregistry;
+    TInt ret = widgetregistry.Connect();
+    if ( ret != KErrNone && ret != KErrAlreadyExists ) { 
+        User::Leave( ret );
+    }
+    else {
+        CleanupClosePushL( widgetregistry );
+    }
+    
+    CBrCtl*   brCtl = control(this->frame());
+    WebView*  view = brCtl->webView();
+    CWidgetExtension* wdgtExt = view->widgetExtension();
+
+    if(wdgtExt){
+
+#if defined(BRDO_LIW_FF)
+        void* scriptSession =  wdgtExt->getSecuritySession();
+        if ( !scriptSession ) {
+            User::Leave( KErrGeneral );
+        }
+        
+        NPN_GenericElement ScriptSession(SecMgrScriptSession,scriptSession);
+        iGenericElementArray->AppendL(ScriptSession);           
+#endif
+
+        TInt uid = wdgtExt->GetWidgetId();         
+        CWidgetPropertyValue* AccessValue = widgetregistry.GetWidgetPropertyValueL(TUid::Uid(uid), EAllowNetworkAccess ); 
+        TInt networkAccess = *AccessValue;
+        const TDesC& allowNetworkAccess = KAllowNetworkAccess();
+        NPN_GenericElement NetworkAccess(allowNetworkAccess,networkAccess);
+        iGenericElementArray->AppendL(NetworkAccess);
+    }
+    User::LeaveIfError(widgetregistry.Disconnect());
+    CleanupStack::PopAndDestroy(); //widgetregistry
+}
+
+const TDesC& PluginSkin::GetExecutionMode()
+{
+    TUid uid  = RProcess().SecureId();
+    if( uid.iUid == KWidgetApplicationId ){
+        return KWidgetMode;
+    }
+    else if( uid.iUid == KBrowserApplicationId ){
+        return KBrowserMode;
+    }   
+    return KUnknownMode;
+ }
+ 
+ void PluginSkin::setupGenericElementArrrayL()
+ {
+    iGenericElementArray = new (ELeave) RArray<NPN_GenericElement> (KArraySize);
+
+    const TDesC& appId = KApplicationId();
+    const TDesC& executionMode = GetExecutionMode();
+
+    NPN_GenericElement ExecutionModeElement(appId,executionMode);
+    iGenericElementArray->AppendL(ExecutionModeElement);
+
+    if(0 == executionMode.Compare(KWidgetMode())) {
+        addWidgetAttributesL();
+    }
+        
+ }
+ 
 // ----------------------------------------------------------------------------
 // PluginSkin::ConstructL()
 // Second phase constructor for PluginSkin
@@ -170,8 +257,18 @@ void PluginSkin::ConstructL( const WebCore::String& mimeType,
         
     // Create the plugin if supported by platform
     PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
-    m_pluginSupported = pluginHandler->isSupported( mimeType.des(), url );
-
+    TPtrC mimeTypePtr;
+    if (mimeType.length() > 0) {
+        mimeTypePtr.Set(mimeType.des());
+        m_pluginSupported = pluginHandler->isSupported( mimeTypePtr, url );
+    }
+    else {
+        HBufC* ptr = pluginHandler->pluginMimeByExtention(url);
+        if (ptr) {
+            mimeTypePtr.Set(ptr->Des());
+        }
+        m_pluginSupported = ((ptr != NULL) && (mimeTypePtr.Length() > 0));
+    }
 
     if ( m_pluginSupported ) {
         
@@ -193,10 +290,13 @@ void PluginSkin::ConstructL( const WebCore::String& mimeType,
         TBuf16<4> value;
         value.Format( _L("%d"), m_frame->frameView()->topView()->accessPointId() );
         m_attributeValues->AppendL( value );      
+        
+        setupGenericElementArrrayL();
+
         if(url.Length())
             m_url = url.AllocL();
         bool loadPluginContent = m_frame->frameView()->topView()->brCtl()->settings()->brctlSetting(TBrCtlDefs::ESettingsAutoLoadImages);
-        if((mimeType.des().Find(KContentTypeFlash) != KErrNotFound)) {
+        if((mimeTypePtr.Find(KContentTypeFlash) != KErrNotFound)) {
             loadPluginContent = loadPluginContent && !m_frame->frameView()->topView()->brCtl()->settings()->brctlSetting(TBrCtlDefs::ESettingsDisableFlash);
             m_flashContent = ETrue;
         }
@@ -211,12 +311,11 @@ void PluginSkin::ConstructL( const WebCore::String& mimeType,
                 }                                                
             }
             else {
-                TPtrC mimePtr(mimeType.des());
                 TPtrC8 urlPtr(url);
                 HBufC8* mime = NULL;
-                mime = HBufC8::NewLC(mimePtr.Length());
-                mime->Des().Copy(mimePtr);
-                createPluginWinL(urlPtr, mimePtr);
+                mime = HBufC8::NewLC(mimeTypePtr.Length());
+                mime->Des().Copy(mimeTypePtr);
+                createPluginWinL(urlPtr, mimeTypePtr);
                 loadPluginL(*mime);
                 CleanupStack::PopAndDestroy(); // mime
             }
@@ -258,6 +357,10 @@ PluginSkin::~PluginSkin()
         }
     
     m_tempFilesArray.ResetAndDestroy();
+    if (iGenericElementArray){
+        iGenericElementArray->Close();
+        delete iGenericElementArray;
+	}
     }
 
 void PluginSkin::Close()
@@ -461,11 +564,11 @@ void PluginSkin::activate()
                 {
                 m_active = ETrue;
                 m_frame->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
-                // Set right soft key
-                m_frame->frameView()->topView()->brCtl()->updateDefaultSoftkeys();
                 pluginHandler->setActivePlugin(this);
                 pluginHandler->setPluginToActivate(NULL);
                 }
+            // Set right soft key
+            m_frame->frameView()->topView()->brCtl()->updateDefaultSoftkeys();
             }
         else
             {
@@ -636,13 +739,19 @@ void PluginSkin::positionChanged()
     // If the plugin content hasnt arrived yet or plugin is invalid, then return immediately
     if ( !m_pluginwin ) {
         return;
-        }
+    }
     TRect rect = m_rect;
-    TRect clipRect(frameVisibleRect());
-    clipRect.Intersection(rect);
-    setClipRect(clipRect);
-    setPluginWinClipedRect();
+    TPoint newPos = m_frame->frameView()->frameCoordsInViewCoords(rect.iTl);
+    TRect newViewport = m_frame->frameView()->topView()->DocumentViewport();
     
+    if (m_oldPos != newPos || m_oldViewport != newViewport) {
+        m_oldPos = newPos;
+        m_oldViewport = newViewport;
+        TRect clipRect(frameVisibleRect());
+        clipRect.Intersection(rect);
+        setClipRect(clipRect);
+        setPluginWinClipedRect();
+    }
 }
   
 //-------------------------------------------------------------------------------
@@ -796,9 +905,11 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
         int start_content = buffer.Find(KRequestEOH());    
         start_content =  (start_content != KErrNotFound) ? start_content+ KRequestEOH().Length() : 0;                
         
-        HBufC8* body = HBufC8::NewLC(buffer.Mid(start_content).Length());                
-        body->Des().Copy(buffer.Mid(start_content));        
-        FormData* fd = new (ELeave) FormData(body->Ptr(),body->Length());                                          
+        HBufC* body = HBufC::NewLC(buffer.Mid(start_content).Length()+1);                
+        body->Des().Copy(buffer.Mid(start_content));
+        TextEncoding *ecoder = new TextEncoding(core(mainFrame(m_frame))->loader()->encoding());
+        CString decoded_body = ecoder->encode(body->Des().PtrZ(),body->Length());
+        FormData* fd = new (ELeave) FormData(decoded_body.data(),decoded_body.length());                                               
         request.setHTTPBody(fd);                                              
         CleanupStack::PopAndDestroy(); // body
     }
@@ -920,13 +1031,28 @@ void PluginSkin::setPluginWinClipedRect()
 {
     TRect fullRect(getPluginWinRect());
     TRect clipRect(getClipRect());
-    m_pluginwin->makeVisible((m_frame->frameView()->isVisible())
-					&& (m_frame->frameView()->rect().Intersects(fullRect))
-					&& (control(m_frame)->webView()->inPageViewMode() == EFalse));
-    clipRect.Intersection(fullRect);
-    if (m_pluginwin && !m_pluginwin->isPluginInFullscreen() && 
-       (m_pluginwin->Rect() != clipRect || m_pluginwin->isForceScroll())) {
-        m_pluginwin->SetRect(clipRect);
+    TRect frameRect(m_frame->frameView()->rect());
+    TRect viewRect = control(m_frame)->webView()->Rect();
+    TBool isPageViewMode = control(m_frame)->webView()->inPageViewMode();
+    WebFrame* pf = m_frame;
+    TPoint p = frameRect.iTl;
+
+    if (m_frame->parentFrame()) {
+        pf = m_frame->parentFrame();
+        p = pf->frameView()->frameCoordsInViewCoords(frameRect.iTl); 
+    }
+    TSize  sz = pf->frameView()->toViewCoords(frameRect.Size());
+    TRect frameRectInViewCoord = TRect(p, sz);
+    TBool isPluginVisible = frameRectInViewCoord.Intersects(fullRect); 
+    TBool isFrameVisible = m_frame->frameView()->isVisible() && 
+                           frameRectInViewCoord.Intersects(viewRect);
+      
+    if (m_pluginwin) {
+        m_pluginwin->makeVisible( isFrameVisible && !isPageViewMode && isPluginVisible);
+        if (!m_pluginwin->isPluginInFullscreen()) {
+            clipRect.Intersection(fullRect);
+            m_pluginwin->SetRect(clipRect);
+        }
     }
 }
 

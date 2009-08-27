@@ -107,6 +107,28 @@ bool WebTabbedNavigation::navigate(int horizontalDir, int verticalDir)
         StaticObjectsContainer::instance()->webCursor()->cursorUpdate(true);
         return true;
     }
+    // DOM can be changed so check if we are still inside the document
+    // If not reset tabbed navigation parameters to the closest point in document.
+    TSize contentSize = m_webView->mainFrame()->frameView()->contentSize();
+    TPoint contentPos = m_webView->mainFrame()->frameView()->contentPos();
+    TRect docRect = TRect(contentPos, contentSize - contentPos);
+    if (!docRect.Contains(m_focusPosition)) {
+        TInt viewW = m_webView->Rect().Width();
+        TInt viewH = m_webView->Rect().Height();
+        if (m_focusPosition.iX > contentSize.iWidth || 
+            m_focusPosition.iX < contentPos.iX) {
+            m_focusPosition.iX = (horizontalDir == -1) ? contentPos.iX + viewW : contentPos.iX;
+        }
+        
+        if (m_focusPosition.iY > contentSize.iHeight || 
+            m_focusPosition.iY < contentPos.iY) {
+            m_focusPosition.iY = (verticalDir == -1) ? contentPos.iY + viewH : contentPos.iY;
+        }
+
+        m_selectedElementRect.SetRect(m_focusPosition.iX, m_focusPosition.iY, m_focusPosition.iX, m_focusPosition.iY);
+        m_node = NULL;    
+    }
+    
     bool ret = m_firstNavigationOnPage;
     Frame* focusedFrame = m_webView->page()->focusController()->focusedFrame();
     if (focusedFrame == NULL) focusedFrame = m_webView->page()->mainFrame();
@@ -188,7 +210,7 @@ bool WebTabbedNavigation::navigate(int horizontalDir, int verticalDir)
         f = f->tree()->traverseNext();
     } // while ( f )
     // Remember new selection
-    TPoint contentPos = m_webView->mainFrame()->frameView()->contentPos();
+    contentPos = m_webView->mainFrame()->frameView()->contentPos();
     if (selectedNode) {
         // Found an element to jump to
         m_selectedElementRect = selectedRect;

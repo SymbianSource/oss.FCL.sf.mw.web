@@ -60,7 +60,8 @@ const TInt KMaxHeaderOfMultipart = 32000;
 const TInt KRespSizeForRecognition = 1024;  //for THttpProgressState EHttpContTypeRecognitionAvail
 const TInt KMinDataSizeToSend = (32*1024);  //for Browser Control to call NewDownloadL     
 const TInt KErrCodHttpDownloadPaused = -20045;  //Error code set by the CodHandler if the download is paused by the client
-
+const TInt KHttp903LossOfService = 903; //Error code set by the CodHandler if connection is lost
+const TInt KHttp954LoaderError = 954; //Error code set by the CodHandler if Loader error is found
 _LIT8( KHttpScheme, "http" );
 _LIT8( KHttpsScheme, "https" );
 _LIT8( KDefDestFilename, "content.bin" );
@@ -3172,9 +3173,10 @@ EXPORT_C void CHttpDownload::SetTrackDataAttributeL( TInt aIndex, HBufC8* dlData
     	mediaData->ResetTypes();
     	for (TInt type = 0; type < updatedMediaData->TypesCount(); ++type)
         	mediaData->AddTypeL( updatedMediaData->Types().MdcaPoint(type) );
-        
+        mediaData->SetStatusCode( updatedMediaData->StatusCode() );
         TInt result = updatedMediaData->Result();
-        
+        TInt statusCode = updatedMediaData->StatusCode();
+        TBool pausable = updatedMediaData->Pausable();
         //New track download Begins.Hence make track size as 0
         //iStorage->SetDownloadedSize ( 0 );
         // Active MO completed OR failed. Notify clients.
@@ -3202,7 +3204,7 @@ EXPORT_C void CHttpDownload::SetTrackDataAttributeL( TInt aIndex, HBufC8* dlData
                 }
             
             //if the client pauses the download, Codhandler sets error code to KErrCodHttpDownloadPaused. In that case, no need to trigger EHttpDlFailed Event     
-            if ( result != KErrCodHttpDownloadPaused )
+            if ( !( result == KErrCodHttpDownloadPaused || ( pausable && statusCode == KHttp903LossOfService ) || ( pausable && statusCode == KHttp954LoaderError ) ) )
                 {    
     	        TriggerEvent( EHttpDlFailed, EHttpProgNone );
                 }
@@ -6561,7 +6563,7 @@ TInt CHttpDownload::GetHttpHeadersSize(CArrayPtrFlat<CHeaderField>* aHeaders )
         
         size = size + fieldName->Size() +  fieldRawData->Size();
         
-        CLOG_WRITE8_1( "Size = %S:", size );
+        CLOG_WRITE8_1( "Size = %d:", size );
         }
 
     return size;

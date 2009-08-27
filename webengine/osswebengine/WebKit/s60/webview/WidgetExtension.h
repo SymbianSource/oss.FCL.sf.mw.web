@@ -27,6 +27,13 @@
 #include <brctlinterface.h>
 #include "WidgetEngineCallbacks.h"
 
+enum TNetworkState
+    {
+    ENetworkNotAllowed = 0,
+    ENetworkAccessAllowed,
+    ENetworkAccessible
+    };
+
 // FUNCTION PROTOTYPES
 
 // FORWARD DECLARATION
@@ -58,6 +65,8 @@ public:
     void SetParamL(TBrCtlDefs::TBrCtlWidgetParams aParam, TUint aValue);
     TBool HandleCommandL( TInt aCommandId );
     TInt GetWidgetId(){ return iWidgetId;}
+    TInt widgetNetworkConstants( TInt aId );
+    TInt widgetNetworkState() { return (TInt)m_widgetNetState; }
 
 public:
     void drawWidgetTransition();
@@ -68,11 +77,16 @@ public:
     bool IsWidgetPublising(){ return m_isWidgetPublishing;}
     void setNavigationType(const TDesC& aType);
     void windowObjectCleared();
+#if defined(BRDO_LIW_FF)
+    void* getSecuritySession(){ return m_securitySession;  }
+#endif    
+
 
 private:
     void AddJSExtension(const TDesC& id, void* obj);
     CWidgetExtension(WebView& aWebKitView);
     void ConstructL(MWidgetCallback& aWidgetCallback);
+    void DispatchNetworkStateChangeEvent();
 
     WebView*                 m_webview;
 
@@ -80,9 +94,12 @@ private:
     MWidgetCallback*         m_widgetcallback;
     TInt 		             iWidgetId;	
     bool                     m_isWidgetPublishing;
+    int                      m_topLevelLoadedpage;
+    TNetworkState            m_widgetNetState;
 
 #if defined(BRDO_LIW_FF)
     MDeviceBridge*           m_deviceBridge;
+    void*                    m_securitySession;
 #endif
 };
 

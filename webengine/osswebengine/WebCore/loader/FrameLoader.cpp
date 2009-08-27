@@ -3149,6 +3149,16 @@ String FrameLoader::userAgent(const KURL& url) const
     return m_client->userAgent(url);
 }
 
+TInt FrameLoader::widgetNetworkConstants(TInt aId)
+{
+    return m_client->widgetNetworkConstants(aId);
+}
+
+TInt FrameLoader::widgetNetworkState()
+{
+    return m_client->widgetNetworkState();
+}
+
 void FrameLoader::tokenizerProcessedData()
 {
     ASSERT(m_frame->page());

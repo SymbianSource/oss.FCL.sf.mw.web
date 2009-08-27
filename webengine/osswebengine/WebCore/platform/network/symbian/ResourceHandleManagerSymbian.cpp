@@ -40,15 +40,13 @@ namespace WebCore {
 
 static CResourceHandleManager* s_self = 0;
 
-struct cleanupHandleManager {
-    ~cleanupHandleManager() {
-    	if(s_self){
-    		delete s_self;
-    		s_self = 0;
-    	}
+void cleanupHandleManager() 
+{
+    if(s_self){
+    	delete s_self;
+    	s_self = 0;
     }
-};
-static cleanupHandleManager deleteResourceHandleManager;
+}
 
 CResourceHandleManager::CResourceHandleManager()
 {

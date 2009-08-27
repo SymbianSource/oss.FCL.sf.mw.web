@@ -20,9 +20,6 @@
 
 #include "wrtharvesterregistryaccess.h"
 
-_LIT( KSeparator, ":" );
-
-
 // ============================ MEMBER FUNCTIONS ==============================
 
 // ----------------------------------------------------------------------------
@@ -39,28 +36,25 @@ WrtHarvesterRegistryAccess::WrtHarvesterRegistryAccess()
 //
 WrtHarvesterRegistryAccess::~WrtHarvesterRegistryAccess()
     {
-    iWidgetInfoArray.ResetAll();
     }
 
 // ---------------------------------------------------------------------------
 // Collect bundle names of widgets supporting miniviews.
 // ---------------------------------------------------------------------------
 //
-void WrtHarvesterRegistryAccess::WidgetBundleNamesL( 
-    RPointerArray< HBufC >& aArray )
+void WrtHarvesterRegistryAccess::WidgetInfosL( 
+    RWrtArray< CWrtInfo >& aWidgetInfoArray )
     {
     RWrtArray< CWidgetInfo > widgetInfoArr;
-    RWidgetRegistryClientSession session;
-    
-    CleanupClosePushL( session );
     widgetInfoArr.PushL();
     
+    RWidgetRegistryClientSession session;
+    CleanupClosePushL( session );
     User::LeaveIfError( session.Connect() );
-    
-    aArray.Reset();
+
     // Reset previously appended widget infos
-    iWidgetInfoArray.ResetAll();
-    
+    aWidgetInfoArray.ResetAll();
+
     TInt err = session.InstalledWidgetsL( widgetInfoArr );
     
     for( TInt i( widgetInfoArr.Count() - 1 ); i >= 0; --i )
@@ -69,42 +63,15 @@ void WrtHarvesterRegistryAccess::WidgetBundleNamesL(
         
         if ( SupportsMiniviewL( session, widgetInfo->iUid ) )
             {
-            aArray.AppendL( ConstructWidgetNameL( session, *widgetInfo ) );
-            iWidgetInfoArray.AppendL( widgetInfo );
-            }
-        else
-            {
-            delete widgetInfo;
-            }
-            
-        widgetInfoArr.Remove( i );
-        }
-        
-    CleanupStack::PopAndDestroy( 2, &session ); 
-    }
-
-// ---------------------------------------------------------------------------
-// Find widget by UID.
-// ---------------------------------------------------------------------------
-//
-TUid WrtHarvesterRegistryAccess::WidgetUid( TPtrC aBundleName )
-    {
-    TUid uid={0};
-    TInt pos = aBundleName.Find( KSeparator );
-    if( pos != KErrNotFound )
-        {
-        aBundleName.Set( aBundleName.Right( aBundleName.Length()-pos-1 ));
-        }
-                   
-    for( TInt i = 0; i < iWidgetInfoArray.Count(); i++ )
-        {
-        if( aBundleName == *iWidgetInfoArray[i]->iBundleName )
-            {
-            uid = iWidgetInfoArray[i]->iUid;
-            break;
+            CWrtInfo* info = new CWrtInfo();
+            info->iUid = widgetInfo->iUid;
+            info->iBundleId = WidgetPropertyL( session, widgetInfo->iUid, EBundleIdentifier );
+            info->iDisplayName = WidgetPropertyL( session, widgetInfo->iUid, EBundleDisplayName );
+            aWidgetInfoArray.AppendL( info );
             }
         }
-    return uid;
+    CleanupStack::PopAndDestroy( &session );
+    CleanupStack::PopAndDestroy( &widgetInfoArr );
     }
 
 // ---------------------------------------------------------------------------
@@ -127,27 +94,21 @@ TBool WrtHarvesterRegistryAccess::SupportsMiniviewL(
     }
     
 // ---------------------------------------------------------------------------
-// Get the Bundle identifier.
+// Get the widget property as string.
 // ---------------------------------------------------------------------------
 //
-HBufC* WrtHarvesterRegistryAccess::ConstructWidgetNameL( 
+HBufC* WrtHarvesterRegistryAccess::WidgetPropertyL( 
     RWidgetRegistryClientSession& aSession,
-    CWidgetInfo& aInfo )
+    const TUid& aUid, TWidgetPropertyId aPropertyId )
     {   
     CWidgetPropertyValue* value( NULL );
-    value = aSession.GetWidgetPropertyValueL( aInfo.iUid, EBundleIdentifier );
+    value = aSession.GetWidgetPropertyValueL( aUid, aPropertyId );
     CleanupStack::PushL( value );
     
-    const TDesC& identifier = *value;    
-    HBufC* bundle = aInfo.iBundleName;
-
-    HBufC* name = HBufC::NewL( identifier.Length() + KSeparator().Length() + bundle->Length());
-    TPtr ptr = name->Des();
-    ptr.Append( identifier );
-    ptr.Append( KSeparator );
-    ptr.Append( *bundle);
+    const TDesC& str = *value;
+    HBufC* strBuf = str.AllocL();
     CleanupStack::PopAndDestroy( value );
-    return name;
+    return strBuf;
     }
     
  //  End of File

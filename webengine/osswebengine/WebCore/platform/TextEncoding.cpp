@@ -161,53 +161,98 @@ const TextEncoding& TextEncoding::closest8BitEquivalent() const
     return *this;
 }
 
+static TextEncoding* globalASCIIEncoding;
 const TextEncoding& ASCIIEncoding()
 {
-    static TextEncoding globalASCIIEncoding("ASCII");
-    return globalASCIIEncoding;
+    if( !globalASCIIEncoding ) {
+        globalASCIIEncoding = new TextEncoding("ASCII");
+    }
+    return *globalASCIIEncoding;
 }
 
+static TextEncoding* globalLatin1Encoding;
 const TextEncoding& Latin1Encoding()
 {
-    static TextEncoding globalLatin1Encoding("Latin-1");
-    return globalLatin1Encoding;
+    if( !globalLatin1Encoding ) {
+        globalLatin1Encoding = new TextEncoding("Latin-1");
+    }
+    return *globalLatin1Encoding;
 }
 
+static TextEncoding* globalUTF16BigEndianEncoding;
 const TextEncoding& UTF16BigEndianEncoding()
 {
-    static TextEncoding globalUTF16BigEndianEncoding("UTF-16BE");
-    return globalUTF16BigEndianEncoding;
+    if( !globalUTF16BigEndianEncoding ) {
+        globalUTF16BigEndianEncoding = new TextEncoding("UTF-16BE");
+    }
+    return *globalUTF16BigEndianEncoding;
 }
 
+static TextEncoding* globalUTF16LittleEndianEncoding;
 const TextEncoding& UTF16LittleEndianEncoding()
 {
-    static TextEncoding globalUTF16LittleEndianEncoding("UTF-16LE");
-    return globalUTF16LittleEndianEncoding;
+    if( !globalUTF16LittleEndianEncoding ) {
+        globalUTF16LittleEndianEncoding = new TextEncoding("UTF-16LE");
+    }
+    return *globalUTF16LittleEndianEncoding;
 }
 
+static TextEncoding* globalUTF32BigEndianEncoding;
 const TextEncoding& UTF32BigEndianEncoding()
 {
-    static TextEncoding globalUTF32BigEndianEncoding("UTF-32BE");
-    return globalUTF32BigEndianEncoding;
+    if( !globalUTF32BigEndianEncoding ) {
+        globalUTF32BigEndianEncoding = new TextEncoding("UTF-32BE");
+    }
+    return *globalUTF32BigEndianEncoding;
 }
 
+static TextEncoding* globalUTF32LittleEndianEncoding;
 const TextEncoding& UTF32LittleEndianEncoding()
 {
-    static TextEncoding globalUTF32LittleEndianEncoding("UTF-32LE");
-    return globalUTF32LittleEndianEncoding;
+    if( !globalUTF32LittleEndianEncoding ) {
+        globalUTF32LittleEndianEncoding = new TextEncoding("UTF-32LE");
+    }
+    return *globalUTF32LittleEndianEncoding;
 }
 
-
+static TextEncoding* globalUTF8Encoding;
 const TextEncoding& UTF8Encoding()
 {
-    static TextEncoding globalUTF8Encoding("UTF-8");
-    return globalUTF8Encoding;
+    if( !globalUTF8Encoding ) {
+        globalUTF8Encoding = new TextEncoding("UTF-8");
+    }
+    return *globalUTF8Encoding;
 }
 
+static TextEncoding* globalWindowsLatin1Encoding;
 const TextEncoding& WindowsLatin1Encoding()
 {
-    static TextEncoding globalWindowsLatin1Encoding("WinLatin-1");
-    return globalWindowsLatin1Encoding;
+    if( !globalWindowsLatin1Encoding ) {
+        globalWindowsLatin1Encoding = new TextEncoding("WinLatin-1");
+    }
+    return *globalWindowsLatin1Encoding;
+}
+
+void deleteTextEncodings() {
+
+    // Delete all encodings and set to NULL
+    delete globalASCIIEncoding;
+    globalASCIIEncoding = NULL;
+    delete globalLatin1Encoding;
+    globalLatin1Encoding = NULL;
+    delete globalUTF16BigEndianEncoding;
+    globalUTF16BigEndianEncoding = NULL;
+    delete globalUTF16LittleEndianEncoding;
+    globalUTF16LittleEndianEncoding = NULL;
+    delete globalUTF32BigEndianEncoding;
+    globalUTF32BigEndianEncoding = NULL;
+    delete globalUTF32LittleEndianEncoding;
+    globalUTF32LittleEndianEncoding = NULL;
+    delete globalUTF8Encoding;
+    globalUTF8Encoding = NULL;
+    delete globalWindowsLatin1Encoding;
+    globalWindowsLatin1Encoding = NULL;
+
 }
 
 } // namespace WebCore

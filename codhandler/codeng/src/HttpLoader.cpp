@@ -1731,7 +1731,12 @@ void CHttpLoader::SetRangeFieldL( RStringPool& aStringPool,
     }
     
     TInt size (iSaver->DownloadedFileSize());
-
+    if( iSaver->DataType().Des8().Find( KFotaPackageDataType ) != KErrNotFound ) 
+        {
+        iCodEng->UpdateDownloadedSize( size );
+        IncProgressL(size);
+        }
+   
     if( size <= 0 )
         {
 		// no bytes have been downloaded yet

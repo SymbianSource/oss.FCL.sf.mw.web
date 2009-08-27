@@ -282,6 +282,11 @@ void PluginStream::generateTempFileL()
             fileExtPtr.Set(fileExtPtr.Left(i));
         }
 
+        // remove any '/' at the end  
+    if ( fileExtPtr[fileExtPtr.Length() - 1] == '/' ) {
+            fileExtPtr.Set(fileExtPtr.Left(fileExtPtr.Length() - 1));
+        } 
+        
         //  Trim anything left of path, the last '/'
         // "http://www.xyz.com/flashy.swf" -> "flashy.swf"
         i = fileExtPtr.LocateReverse('/');

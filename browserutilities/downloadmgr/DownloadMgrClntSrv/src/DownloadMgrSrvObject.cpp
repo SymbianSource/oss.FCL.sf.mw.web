@@ -739,7 +739,7 @@ void CDownloadSubSession::SetFileHandleAttributeL()
     RFile* file = new (ELeave) RFile;
     CleanupStack::PushL( file );
     
-    file->AdoptFromClient( Message(), 0, 1 );
+    User::LeaveIfError( file->AdoptFromClient( Message(), 0, 1 ) );
     
     // ownership is passed to the engine
     iDownload->SetFileHandleAttributeL( file );

@@ -1071,10 +1071,11 @@ TBool CUserInteractionsUtils::CancelAllWithUserConfirmL( RHttpDownload& /* aDown
         {
         TInt count = iRegistryModel.DownloadMgr().CurrentDownloads().Count();
         TInt32 dlState;
-        for(TInt i = 0; i < count; i++)
+        TInt i = 0;
+        while((i < count)&& (count>0))
         	{
         	(iRegistryModel.DownloadMgr().CurrentDownloads().At(i))->GetIntAttribute(EDlAttrState, dlState);
-        	
+        	i++;
         	//add fix for the bug  JERI-7P8CF2, if checking against EHttpDlMultipleMOCompleted EHttpDlMultipleMOFailed
              //Changes for the bug JERI-7P8CF2
             //Changes made in the server side to fix for the video center receiving unexpected events
@@ -1090,9 +1091,9 @@ TBool CUserInteractionsUtils::CancelAllWithUserConfirmL( RHttpDownload& /* aDown
            
             if(dlState == EHttpDlInprogress || dlState == EHttpDlPaused )
         	    {
-        	    User::LeaveIfError( (iRegistryModel.DownloadMgr().CurrentDownloads().At(i))->Delete());
         	    i--;
         	    count--;
+        	    User::LeaveIfError( (iRegistryModel.DownloadMgr().CurrentDownloads().At(i))->Delete());
         	    }
         	}
         CLOG_LEAVEFN("CUserInteractionsUtils::CancelAllWithUserConfirmL");
@@ -1780,6 +1781,9 @@ void CUserInteractionsUtils::LaunchPdAppL( RHttpDownload& aDownload, const TBool
             CleanupStack::PopAndDestroy( &appArcSession );
             CleanupStack::PopAndDestroy( param );
             }
+        
+        //Store the information whether progressive play is launched or not
+        iRegistryModel.UserInteractions().SetProgressiveDownloadLaunched( ETrue );
         if( aProgressively )
             {
             User::LeaveIfError( aDownload.SetIntAttribute( EDlAttrActivePlayedDownload, activeDownloadID ) );
@@ -1953,7 +1957,7 @@ TBool CUserInteractionsUtils::IsNetworkPdCompatibleL() const
 // -----------------------------------------------------------------------------
 //
 
-void CUserInteractionsUtils::SendMsgTerminateToPdAppsL()
+void CUserInteractionsUtils::SendMsgTerminateToPdAppsL(TBool aProgressiveDownloadLaunched )
     {
         CLOG_ENTERFN("CUserInteractionsEventHandler::SendMsgTerminateToPdAppsL");
         // Pack EGenericParamTerminate.
@@ -1991,12 +1995,15 @@ void CUserInteractionsUtils::SendMsgTerminateToPdAppsL()
 	    {
 			TUid KTestPdPlayerUid = {KDocPDAppUidList[ i ]};
 			TApaTask task = taskList.FindApp(KTestPdPlayerUid );		// task for MP app    
-			if ( task.Exists() && isProgressive  )
+			if ( task.Exists() && ( isProgressive || aProgressiveDownloadLaunched ) )
 				{
-				RHttpDownload* dl = downloads.At(j); // current download
-                //This Atribute will tell if MP called Delete  				
-				//on exit of Browser				
- 	            dl->SetBoolAttribute( EDlAttrProgressive, EFalse );
+				if ( isProgressive )
+				    {    
+				    RHttpDownload* dl = downloads.At(j); // current download
+                    //This Atribute will tell if MP called Delete  				
+				    //on exit of Browser				
+ 	                dl->SetBoolAttribute( EDlAttrProgressive, EFalse );
+				    }
 				// 8-bit buffer is required. 
 				task.SendMessage( TUid::Uid( 0 ), *param8 ); // Uid is not used
 				task.BringToForeground();

@@ -378,7 +378,17 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
             *((TInt*) aRetValue) = apId;
             break;
             
-            
+       case NPNVGenericParameter: {   
+            PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
+            if (pluginWin) {
+                void **v = (void **)aRetValue;
+                *v = pluginWin->pluginSkin()->genericElementArray();
+            }
+            else {
+                err = NPERR_GENERIC_ERROR;
+            }
+        }
+        break;  // for code consistency
         default:
             {
             *((TBool*) aRetValue) = EFalse;
@@ -460,7 +470,8 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
             {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             if (pluginWin) {
-                pluginWin->pluginDeactivate();
+                TPoint* cursorPos = static_cast<TPoint*>(aSetValue);
+                pluginWin->pluginDeactivate(*cursorPos);
             }
         }
         break;

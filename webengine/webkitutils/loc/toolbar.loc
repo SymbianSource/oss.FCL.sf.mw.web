@@ -25,6 +25,11 @@
 //w:
 //r: 5.0
 #define qtn_browser_tooltip_recent_urls                 "Recent URLs"
+//d: Tooltip text for display when hovering over a toolbar button.
+//l: popup_preview_text_window_t1
+//w:
+//r: 3.2
+#define qtn_browser_tooltip_frequently_used_urls                        "Frequently used URLs"
 
 //d: Tooltip text for display when hovering over a toolbar button.
 //l: popup_preview_text_window_t1
@@ -49,6 +54,17 @@
 //w:
 //r: 5.0
 #define qtn_browser_tooltip_subscribe_to_feeds          "Subscribe to Feeds"
+//d: Tooltip text for display when hovering over a toolbar button
+//l: popup_preview_text_window_t1
+//w:
+//r: 3.2
+#define qtn_browser_tooltip_find                                        "Find In Page"
+
+//d: Tooltip text for display when hovering over a toolbar button
+//l: popup_preview_text_window_t1
+//w:
+//r: 3.2
+#define qtn_browser_tootip_list_subscribe_to                            "Subscribe To"
 
 //d: Tooltip text for display when hovering over a toolbar button.
 //l: popup_preview_text_window_t1

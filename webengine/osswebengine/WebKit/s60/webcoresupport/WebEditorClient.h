@@ -99,6 +99,10 @@ public:
      void setInputMethodState(bool enabled);
 
 private:
+    void handleInsertText(WebCore::Frame* frame, const WebCore::String& text);
+    void handleDeleteText(WebCore::Frame* frame);
+
+private:
     WebView* m_webView;
 };
 

@@ -41,6 +41,7 @@ SOURCE          WidgetInstaller.cpp
 SOURCE          WidgetConfigHandler.cpp
 SOURCE          WidgetRegistrationManager.cpp
 SOURCE          IconConverter.cpp
+SOURCE          WidgetBackupRegistryXml.cpp
 
 // Includes
 USERINCLUDE     . ../Inc/

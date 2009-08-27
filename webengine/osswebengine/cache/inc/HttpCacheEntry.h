@@ -21,10 +21,9 @@
 //  INCLUDES
 #include <e32base.h>
 #include <f32file.h>
+#include "HttpCachePostponeWriteUtilities.h"
 
 // CONSTANTS
-const TInt KBufferSize32k = 32768;
-const TInt KBufferSizeZero = 0;
 
 // MACROS
 
@@ -43,14 +42,14 @@ class CHttpCacheStreamHandler;
 // CLASS DECLARATION
 
 /**
-*  
-*  @lib 
+*
+*  @lib
 *  @since 3.1
 */
-class CHttpCacheEntry : public CBase
+class CHttpCacheEntry : public CBase, public MHttpCacheWriteSource
     {
-    public:  // Constructors and destructor        
-        
+    public:  // Constructors and destructor
+
         enum TCacheEntryState
             {
             ECacheUninitialized,
@@ -64,245 +63,245 @@ class CHttpCacheEntry : public CBase
         /**
         * Two-phased constructor.
         * @since 3.1
-        * @param 
-        * @param 
+        * @param
+        * @param
         * @return CHttpCacheEntry object.
         */
-        static CHttpCacheEntry* NewL( const TDesC8& aUrl, 
+        static CHttpCacheEntry* NewL( const TDesC8& aUrl,
             CHttpCacheEvictionHandler& aEvictionHandler );
 
         /**
         * Two-phased constructor.
         * @since 3.1
-        * @param 
-        * @param 
+        * @param
+        * @param
         * @return CHttpCacheEntry object.
         */
-        static CHttpCacheEntry* NewLC( const TDesC8& aUrl, 
+        static CHttpCacheEntry* NewLC( const TDesC8& aUrl,
             CHttpCacheEvictionHandler& aEvictionHandler );
-        
+
         /**
         * Destructor.
         */
         virtual ~CHttpCacheEntry();
-        
+
     public: // new functions
-        
-        /**
-        * 
-        * @since 3.1
-        * @param 
-        * @return 
-        */
-        void SetState( TCacheEntryState aState ); 
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
+        */
+        void SetState( TCacheEntryState aState );
+
+        /**
+        *
+        * @since 3.1
+        * @param
+        * @return
         */
         inline TCacheEntryState State() { return iState; }
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         void SetFileNameL( const TFileName& aFileName );
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         const TDesC& Filename() const { return *iFileName; }
-        
+
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         inline const TDesC8& Url() const { return *iUrl; }
-        
+
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         inline TInt64 LastAccessed() const { return iLastAccessed; }
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         void Accessed();
-        
+
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         inline TUint16 Ref() const { return iRef; }
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         inline TUint BodySize() const { return iBodySize; }
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         void SetBodySize( TUint aSize );
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         inline TUint16 HeaderSize() const { return iHeaderSize; }
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         inline void SetHeaderSize( TUint16 aHeaderSize ) { iHeaderSize = aHeaderSize; }
 
         /**
-        * 
+        *
         * @since 7.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
-        inline RFile& HeaderFile() { return iHeaderFile; }
+        void CreateHeaderBufferL( TInt aHeaderBufferSize );
 
         /**
-        * 
+        *
         * @since 7.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
-        inline RFile& BodyFile() { return iBodyFile; }
+        void CreateHeaderBufferL( const TDesC8& aHeaderData );
 
         /**
-        * 
+        *
         * @since 7.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
-        TPtr8 CacheBuffer();
-        
-        /**
-        * 
-        * @since 7.1
-        * @param 
-        * @return 
-        */
-        void SetCacheBufferL( TInt aCacheBufferSize );
+        TDesC8& HeaderData();
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         inline TBool Protected() const { return iProtected; }
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         void SetProtected();
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
-        TInt Internalize( RFileReadStream& aReadStream );
+        TInt Internalize( RReadStream& aReadStream, const TDesC& aDirectory );
 
         /**
-        * 
-        * @since 3.1
-        * @param 
-        * @return 
+        *
+        * @since 7.1
+        * @param
+        * @return
         */
-        TInt Externalize( RFileWriteStream& aWriteStream );
+        void InternalizeL( RReadStream& aReadStream, const TDesC& aDirectory );
 
         /**
-        * 
+        *
         * @since 3.1
-        * @param 
-        * @return 
+        * @param
+        * @return
+        */
+        TInt Externalize( RWriteStream& aWriteStream, const TDesC& aDirectory );
+
+        /**
+        *
+        * @since 3.1
+        * @param
+        * @return
+        */
+        void ExternalizeL( RWriteStream& aWriteStream, const TDesC& aDirectory );
+
+        /**
+        *
+        * @since 3.1
+        * @param
+        * @return
         */
         void Accessed(TInt64 aLastAccessed, TUint16 aRef);
 
         /**
-        * 
+        *
         * @since 7.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         inline TBool BodyFileDeleteNeeded() { return iBodyFileDeleteNeeded; }
 
         /**
-        * 
+        *
         * @since 7.1
-        * @param 
-        * @return 
+        * @param
+        * @return
         */
         inline void SetBodyFileDeleteNeeded( TBool aBodyFileDeleteNeeded )
                     {
                     iBodyFileDeleteNeeded = aBodyFileDeleteNeeded;
                     }
-
         /**
-        * 
-        * @since 7.1
-        * @param 
-        * @return 
-        */
-        TBool CacheFilesOpened() { return iCacheFilesOpened; }
+         *
+         * @since 7.1
+         * @param
+         * @return
+         *
+         */
+         void UnsetEvictionCandidate() { iEvictionCandidate = EFalse; };    // this only exists because when EvictL removes an item from the eviction candidate list, it can't tell the entry that this has happened and so the entry then goes on to attempt to remove itself later when it's being deleted.
 
-        /**
-        * 
-        * @since 7.1
-        * @param 
-        * @return 
-        */
-        void SetCacheFilesOpened( TBool aCacheFilesOpened );
-
-    public : 
+    public :
 
         // support linked list
         static const TInt iOffset;
 
     private:
-        
+
         /**
         * Construct.
         * @since 3.1
-        * @param 
-        * @param 
+        * @param
+        * @param
         * @return CHttpCacheEntry object.
         */
         CHttpCacheEntry( CHttpCacheEvictionHandler& aEvictionHandler );
@@ -310,7 +309,48 @@ class CHttpCacheEntry : public CBase
         /**
         * By default Symbian 2nd phase constructor is private.
         */
-        void ConstructL( const TDesC8& aUrl );    
+        void ConstructL( const TDesC8& aUrl );
+
+        /**
+        *
+        * @since 7.1
+        * @param
+        * @return
+        */
+        void SetCacheBufferL( TInt aCacheBufferSize );
+
+    public:
+        // from MHttpCacheStreamWriteSource
+        virtual RFile& BodyFile();
+        virtual void   BodyWriteInProgress();
+        virtual void   BodyWriteComplete();
+        virtual CSegmentedHeapBuffer& BodyData();
+
+        enum TWriteStateBits
+            {
+            EFileOk = 0x01,
+            EHeaderDataCached = 0x02,
+            ENewHeaderData = 0x04,
+            EBodyDataCached = 0x08,
+            EDelayedWriteAllowed = 0x10,
+            EDelayedWriteInProgress = 0x20,
+            EBodyDataPartiallyWritten = 0x40
+            };
+
+        inline TBool FileOk() const { return (iWriteState & EFileOk); }
+        inline TBool BodyDataCached() const { return (iWriteState & EBodyDataCached); }
+        inline TBool DelayedWriteAllowed() const { return (iWriteState & EDelayedWriteAllowed); }
+        inline TBool DelayedWriteInProgress() const { return (iWriteState & EDelayedWriteInProgress); }
+        inline TBool BodyDataPartiallyWritten() const { return (iWriteState & EBodyDataPartiallyWritten); }
+
+        inline void SetFileOk(TBool aBit)           { (aBit ? iWriteState |= EFileOk : iWriteState &= ~EFileOk); }
+        void SetBodyDataCached(TBool aBit)          { (aBit ? iWriteState |= EBodyDataCached : iWriteState &= ~EBodyDataCached); if(!aBit){ iCacheBuffer->Reset(); } }
+        void SetDelayedWriteAllowed(TBool aBit)     { (aBit ? iWriteState |= EDelayedWriteAllowed : iWriteState &= ~EDelayedWriteAllowed); }
+        void SetDelayedWriteInProgress(TBool aBit)  { (aBit ? iWriteState |= EDelayedWriteInProgress : iWriteState &= ~EDelayedWriteInProgress); }
+        void SetBodyDataPartiallyWritten(TBool aBit){ (aBit ? iWriteState |= EBodyDataPartiallyWritten : iWriteState &= ~EBodyDataPartiallyWritten); }
+
+        void WriteBodyDataAsync(TRequestStatus& aStatus);
+        void CancelBodyWrite();
 
     private:    // Data
 
@@ -339,15 +379,17 @@ class CHttpCacheEntry : public CBase
         //
         TBool                           iBodyFileDeleteNeeded;
         //
-        RFile                           iHeaderFile;        // owned
-        //
         RFile                           iBodyFile;          // owned
         //
-        HBufC8*                         iCacheBuffer;       // owned
-        // ETrue if files open (and attached to StreamHandler) for read/write
-        TBool                           iCacheFilesOpened;
+        CSegmentedHeapBuffer*           iCacheBuffer;       //owned
+        //
+        HBufC8*                         iHeaderBuffer;      // owned
+        // TWriteStateBits
+        TUint32                         iWriteState;
+        //
+        CHttpCacheEntryAsyncWriteHelper* iWriteHelper;      //owned
     };
 
 #endif      // CHTTPCACHEENTRY_H
-            
+
 // End of File

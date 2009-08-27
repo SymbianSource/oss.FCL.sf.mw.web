@@ -172,6 +172,14 @@ class CWidgetUiAppUi : public CAknViewAppUi, MApiProvider
          * @since 5.0
          */
         void ProcessCommandL(TInt aCommand);
+        
+        /**
+         * Closes widget Window and exits WidgetUI if no windowleft
+         * @return void
+         * @since 5.0
+         */        
+        
+        void CloseAndExitIfNoneLeft();
 
     private: // From CEikAppUi
 
@@ -273,6 +281,13 @@ class CWidgetUiAppUi : public CAknViewAppUi, MApiProvider
         */
         void LaunchWindowL( const TDesC8& aParams );
             
+#ifdef OOM_WIDGET_CLOSEALL
+        /**
+        * CloseAllWidgetsAndExit
+        * @param none
+        */        
+        void CloseAllWidgetsAndExit();
+#endif        
     private:
         // WindowManager to manage the list of running widget windows
         CWidgetUiWindowManager*       iWindowManager;

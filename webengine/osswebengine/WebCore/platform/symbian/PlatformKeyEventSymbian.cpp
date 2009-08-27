@@ -23,6 +23,7 @@
 #include <e32keys.h>
 #include <w32std.h>
 #include <ctype.h>
+#include <eikon.hrh>
 
 namespace WebCore {
 
@@ -660,10 +661,8 @@ static int WindowsKeyCodeForKeyEvent(TKeyEvent aEvent)
 
 PlatformKeyboardEvent::PlatformKeyboardEvent( TKeyEvent event, TEventCode eventCode, bool forceAutoRepeat ) :
       m_keyIdentifier(KeyIdentifierForKeyEvent(event.iCode))
-    , m_isKeyUp( eventCode == EEventKeyUp )
-    //***** FL added from r12765 *****//
-    , m_isKeyDown( eventCode == EEventKeyDown )
-    //**********//
+    , m_isKeyUp( eventCode == EEventKeyUp  || eventCode == EEventUser + 2)
+    , m_isKeyDown( eventCode == EEventKeyDown || eventCode == EEventUser + 1 )
     , m_autoRepeat(event.iRepeats>0 || forceAutoRepeat )
     , m_WindowsKeyCode(WindowsKeyCodeForKeyEvent(event))
     , m_shiftKey( event.iModifiers & EModifierShift )
@@ -674,8 +673,11 @@ PlatformKeyboardEvent::PlatformKeyboardEvent( TKeyEvent event, TEventCode eventC
     {
         
     TText c = event.iCode;
+    if (eventCode == EEventUser + 1 || eventCode == EEventUser + 2) {
+        m_symbianEvent.iCode = 0; 
+    }
     m_text = String(TPtrC(&c,1));
-    m_unmodifiedText = String(TPtrC(&c,1));; // ### FIXME should do something else
+    m_unmodifiedText = String(TPtrC(&c,1)); // ### FIXME should do something else
     
     // Turn 0x7F into 8, because backspace needs to always be 8.
     if (m_text == "\x7F")
@@ -693,6 +695,32 @@ PlatformKeyboardEvent::PlatformKeyboardEvent( TKeyEvent event, TEventCode eventC
         m_unmodifiedText = "\x9";
         }
     }
+
+String PlatformKeyboardEvent::text() const
+{   
+    return m_text;
+}
+
+
+bool PlatformKeyboardEvent::isNaviKey(TUint code) const
+{
+    return (    code == EKeyUpArrow         // North
+             || code == EStdKeyUpArrow      //   :
+             || code == EKeyRightUpArrow    // Northeast
+             || code == EStdKeyDevice11     //   :
+             || code == EKeyRightArrow      // East
+             || code == EStdKeyRightArrow   //   :
+             || code == EKeyRightDownArrow  // Southeast
+             || code == EStdKeyDevice12     //   :
+             || code == EKeyDownArrow       // South
+             || code == EStdKeyDownArrow    //   :
+             || code == EKeyLeftDownArrow   // Southwest
+             || code == EStdKeyDevice13     //   :
+             || code == EKeyLeftArrow       // West
+             || code == EStdKeyLeftArrow    //   :
+             || code == EKeyLeftUpArrow     // Northwest
+             || code == EStdKeyDevice10 );  //   :
+}
 
 }
 

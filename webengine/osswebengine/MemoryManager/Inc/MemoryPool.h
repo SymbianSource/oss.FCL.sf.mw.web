@@ -356,6 +356,9 @@ NONSHARABLE_CLASS(CNewSymbianHeapPool) : public CMemoryPool
         TUint PostCheck();
         TUint FreeMemory( TFreeMem& aFree );
         void RestoreRescueBuffer();
+#ifdef OOM_LOGGING         
+        void DumpHeapLogs();
+#endif        
     private:
     	void InitLocal();
     	

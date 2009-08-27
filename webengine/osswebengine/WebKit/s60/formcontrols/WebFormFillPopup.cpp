@@ -143,12 +143,8 @@ void WebFormFillPopup::positionListBox()
 
         // y position
         TInt height = m_font->HeightInPixels()*KMaxNumToShow;
-        if (y + height > r.Height())
-            y -= height;
-        else
             y += m_inputHeight;
 
-        //m_listBox->SetRect(TRect(TPoint(x, y), TSize(width, height)));
         SetRect(TRect(TPoint(x, y), TSize(width, height)));
     }
 }
@@ -301,7 +297,9 @@ void WebFormFillPopup::clear()
 }
 
 void WebFormFillPopup::setLocationHintInDoc(const TRect& r, WebCore::Frame* frame)
-{
+{    
+    if (!frame)
+        return;
     WebFrame* webFrame = kit(frame);
 
     // now lets reverse back to the root frame to figure out the screen position

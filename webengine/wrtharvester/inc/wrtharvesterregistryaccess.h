@@ -60,11 +60,39 @@ template < class T > class RWrtArray : public RPointerArray< T >
             ptr->Close();
             }
     };
-    
+
+class CWrtInfo : public CBase
+    {
+    public:
+        /**
+        * Constructor
+        */
+        inline CWrtInfo()
+            {
+            iUid = TUid::Uid(0);
+            iDisplayName = NULL;
+            iBundleId = NULL;
+            }
+
+        /**
+        * Destructor.
+        */
+        inline virtual ~CWrtInfo()
+            {
+            delete iDisplayName;
+            delete iBundleId;
+            }
+
+    public:
+        TUid        iUid;
+        HBufC*      iDisplayName;// widget display name
+        HBufC*      iBundleId; //  widget bundle identifier
+    };
+
 // CLASS DECLARATION
 
 /**
- *  Widget Register accessor.
+ *  Widget Registry interface.
  *
  *  Handles communication & widget bookkeeping of miniview-capable widgets.
  *
@@ -85,22 +113,14 @@ class WrtHarvesterRegistryAccess
         ~WrtHarvesterRegistryAccess();
         
         /**
-	    * Get widget bundle names for widgets supporting miniviews.
+	    * Get widget bundle ids for widgets supporting miniviews.
 	    *
 	    * NOTE: Ownership of pointers in the array is not transferred!
 	    * Caller must not delete them.
 	    * 
 	    * @param aArray Array where the descriptor pointers are to be stored.
 	    */
-	    void WidgetBundleNamesL( RPointerArray< HBufC >& aArray );
-	    
-        /**
-	    * Get widget uid.
-	    *
-	    * @param aBundleName Name of the widget
-	    * @return TUid of the widget.
-	    */
-	    TUid WidgetUid( TPtrC aBundleName );
+	    void WidgetInfosL( RWrtArray< CWrtInfo >& aWidgetInfoArray );
 	    
 	private:
         /**
@@ -113,19 +133,17 @@ class WrtHarvesterRegistryAccess
         TBool SupportsMiniviewL( RWidgetRegistryClientSession& aSession, const TUid& aUid );
         
         /**
-        * Returns the Bundle identifier for the given widget. Ownership transfered.
+        * Returns the property value for the widget as a string. Ownership transferred.
         * 
         * @param aSession Widget registry session
         * @param aUid UID of widget.
+        * aPropertyId Id of the property.
         * @return Identifier in a descriptor.
         */
-        HBufC* ConstructWidgetNameL( RWidgetRegistryClientSession& aSession, CWidgetInfo& aInfo );
+        HBufC* WidgetPropertyL( RWidgetRegistryClientSession& aSession, const TUid& aUid, TWidgetPropertyId aPropertyId  );
         
-	private: // data
-	    /**
-	    *
-	    */
-	    RWrtArray< CWidgetInfo >     iWidgetInfoArray;
+
+
     };
 
 #endif // WRHARVESTERREGISTRYACCESS_H 

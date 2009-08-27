@@ -34,6 +34,8 @@ class RenderBlock;
 class RenderObject;
 class InlineBox;
 
+void cleanupMidpoints();
+
 struct BidiRun : BidiCharacterRun {
     BidiRun(int start, int stop, RenderObject* o, BidiContext* context, WTF::Unicode::Direction dir)
         : BidiCharacterRun(start, stop, context, dir)

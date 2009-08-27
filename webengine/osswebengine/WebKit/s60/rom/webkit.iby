@@ -55,7 +55,9 @@ file=ABI_DIR\BUILD_DIR\PageScaler.dll                   SHARED_LIB_DIR\PageScale
 file=ABI_DIR\BUILD_DIR\MemMan.dll                       SHARED_LIB_DIR\MemMan.dll
 file=ABI_DIR\BUILD_DIR\WmlEngine.dll                    SHARED_LIB_DIR\WmlEngine.dll
 file=ABI_DIR\BUILD_DIR\BrowserCache.dll                 SHARED_LIB_DIR\BrowserCache.dll
+#ifndef __S60_32__
 file=ABI_DIR\BUILD_DIR\npscript.dll                     SHARED_LIB_DIR\npscript.dll
+#endif
 
 ECOM_PLUGIN(MemoryPlugin.dll, memoryplugin.RSC)
 
