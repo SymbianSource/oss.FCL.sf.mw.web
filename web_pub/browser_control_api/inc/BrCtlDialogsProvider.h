@@ -36,7 +36,15 @@ enum TBrCtlSelectOptionType
     * OK softkey is available
     * Cancel button is not available
     */
-    ESelectTypeOkOnly
+    ESelectTypeOkOnly,
+    /**
+     * Added enumeration ESelectTypeWithFindPane at offset of 0x100 so that
+     * the limit of different types of dialog boxes can be upto 256.
+     * Any user who wants a list with find pane must "|" with a defined type
+     * above like ESelectTypeNone | ESelectTypeWithFindPane to obtain a list
+     * box with find pane.
+     */
+    ESelectTypeWithFindPane = 0x100
     };
 
 /**

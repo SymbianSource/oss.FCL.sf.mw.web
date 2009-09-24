@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef SELFDOWNLOADCONTENTHANDLER_H
 #define SELFDOWNLOADCONTENTHANDLER_H
 
@@ -25,8 +24,6 @@
 #include <http/rhttptransaction.h>
 #include <http/MHTTPTransactionCallback.h>
 #include <f32file.h>
-
-_LIT8( KSelfDownloadCallback, "SelfDownloadCallback" );
 
 // FORWARD DECLARATIONS
 class CDocumentHandler;
@@ -111,7 +108,6 @@ class CTempFile : public CBase
         RFile iFile;
        
     };
-
 
 /**
 *

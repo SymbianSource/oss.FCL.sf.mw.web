@@ -1,20 +1,30 @@
 /*
-* Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
-*
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
-*
-* Contributors:
-*
-* Description:  
-*
-*/
-
+ * Copyright (C) 2006 Nokia, Inc.  All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
+ *
+ * 1.  Redistributions of source code must retain the above copyright
+ *     notice, this list of conditions and the following disclaimer. 
+ * 2.  Redistributions in binary form must reproduce the above copyright
+ *     notice, this list of conditions and the following disclaimer in the
+ *     documentation and/or other materials provided with the distribution. 
+ * 3.  Neither the name of Apple Computer, Inc. ("Apple") nor the names of
+ *     its contributors may be used to endorse or promote products derived
+ *     from this software without specific prior written permission. 
+ *
+ * THIS SOFTWARE IS PROVIDED BY APPLE AND ITS CONTRIBUTORS "AS IS" AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL APPLE OR ITS CONTRIBUTORS BE LIABLE FOR ANY
+ * DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+ * ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
+ * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 #include "config.h"
 #include <../bidi.h>            // work around for multiple bidi.h files
@@ -34,6 +44,7 @@
 #include "PluginHandler.h"
 #include "WebCannedImages.h"
 #include "OOMHandler.h"
+#include "OOMStopper.h"
 #include "SharedTimer.h"
 #include "TextEncoding.h"
 #include "TextEncodingRegistry.h"
@@ -56,9 +67,9 @@
 #include "RenderBox.h"
 #include "FontCache.h"
 #include "MIMETypeRegistry.h"
-#include "ImageSymbian.h"
 #include "ResourceHandleManagerSymbian.h"
 #include "TextBreakIteratorSymbian.h"
+#include "ImageSymbian.h"
 #include "HTMLElementFactory.h"
 #include <eikenv.h>
 
@@ -88,6 +99,7 @@ StaticObjectsContainer::StaticObjectsContainer() :
     ,m_refcount(0)
     ,m_capabilities(0)
     ,m_oomHandler(0)
+    ,m_oomStopper(0)
     ,m_fullScreenMode(false)
     ,m_pluginFullscreen(false)
     ,m_symbianTheme(NULL)
@@ -110,6 +122,7 @@ StaticObjectsContainer::StaticObjectsContainer() :
         }
     }
     m_oomHandler = new OOMHandler();
+    m_oomStopper = new OOMStopper();
     initSharedTimer();
 }
 
@@ -119,6 +132,7 @@ StaticObjectsContainer::~StaticObjectsContainer()
     // This must be run before Cache::deleteStaticCache to properly free resources
     KJS::Collector::collect();
     delete m_oomHandler;
+    delete m_oomStopper;
     FontCache::deleteFontDataCache();
     delete m_fontCache;
     delete m_formFillController;
@@ -133,14 +147,11 @@ StaticObjectsContainer::~StaticObjectsContainer()
     delete m_symbianTheme;
     gInstance = NULL;
     deletePageStaticData();
+
     CSSStyleSelector::deleteDefaultStyle();
-    deleteTextEncodings();
-    deleteEncodingMaps();
-    RenderStyle::deleteDefaultRenderStyle();
     Cache::deleteStaticCache();
     TextCodecSymbian::deleteStatAvailCharsets();
-    QualifiedName::cleanup();
-    XMLNames::remove();
+
 	cleanupChangedDocuments();
 	mappedAttributeCleaner();
 	cleanupMidpoints();
@@ -152,16 +163,7 @@ StaticObjectsContainer::~StaticObjectsContainer()
 	cleanupIconFileName();
 	cleanupIterators();
 
-#ifndef __WINSCW__    
-    WebCore::MediaFeatureNames::remove();
-    WebCore::EventNames::remove();
-#endif  // __WINSCW__    
-    
-    // HTMLNames::remove() will destroy the AtomicString table
-    // All other atomic string destruction must be done before this call
-    //
-    HTMLNames::remove();
-    XMLTokenizer::cleanupXMLStringParser();
+	XMLTokenizer::cleanupXMLStringParser();
     shutdownSharedTimer();
     m_widgetLibrary.Close();
 #if defined(BRDO_LIW_FF)
@@ -336,5 +338,4 @@ RenderTheme* StaticObjectsContainer::theme()
     return m_symbianTheme;
 }
 }
-
 // END OF FILE

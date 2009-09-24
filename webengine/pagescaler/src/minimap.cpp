@@ -345,8 +345,15 @@ void CMinimap::DocumentStarted()
     iDocumentComplete = EFalse;
     iViewportOnDocument = TRect();
     iUpdateTimer->Cancel();
-    iUpdateCbTimer->Cancel();
+    if ( iUpdateCbTimer->IsActive() )
+        {
+        UpdateNow();
+        }
     iVisibilityTimer->Cancel();
+    if ( iFadeDirection )
+        {
+        VisibilityTimerCbL();
+        }
     iGenerator->Clear();
     TRAP_IGNORE(CheckAndCreateMinimapBitmapsL());
     iNeedsUpdate = EFalse;

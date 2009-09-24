@@ -184,22 +184,6 @@ void CWidgetUiObserver::UpdateSoftkeyL( TBrCtlKeySoftkey aKeySoftkey,
             }
         }
     
-    if (iWindow->WindowManager().ActiveWindow() && 
-            iWindow->WindowManager().View()->CbaGroup()->IsVisible())
-        {
-        TBrCtlDefs::TBrCtlElementType elementtype =
-                      iWindow->WindowManager().ActiveWindow()->Engine()->FocusedElementType();
-        // Check if focused element type is editing type
-        if ((elementtype == TBrCtlDefs::EElementActivatedInputBox) ||
-                       (elementtype == TBrCtlDefs::EElementActivatedObjectBox))
-            {
-            iWindow->WindowManager().View()->UpdateStatusPane( ETrue );
-            }
-        else 
-            {
-            iWindow->WindowManager().View()->UpdateStatusPane( EFalse );
-            }        
-        }
     }
 
 // -----------------------------------------------------------------------------

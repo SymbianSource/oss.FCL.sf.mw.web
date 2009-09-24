@@ -61,6 +61,10 @@ NONSHARABLE_CLASS( MDownloadsListDlgObserver )
         */
         virtual TKeyResponse OfferKeyEventL( CDownloadsListDlg& aDialog, const TKeyEvent& aKeyEvent, TEventCode aType ) = 0;
 
+        /**
+        * setting the downloadlist hide to the observer.
+        */
+        virtual void SetDownloadListHide( TBool aHide ) = 0;
     };
 
 #endif /* DOWNLOADSLISTDLGOBSERVER_H */

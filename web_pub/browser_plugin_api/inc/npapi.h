@@ -413,7 +413,8 @@ typedef enum {
     
     /* Get the id of the currently connected access point */
     NPNNetworkAccess,
-    NPNVGenericParameter        
+    NPNVGenericParameter,
+    NPNVSupportsWindowless
 } NPNVariable;
 
 #ifdef GENERIC_CONTEXTS

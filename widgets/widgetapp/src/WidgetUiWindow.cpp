@@ -42,6 +42,7 @@
 #include <aknsdrawutils.h>
 #include "SWInstWidgetUid.h"
 
+
 // EXTERNAL DATA STRUCTURES
 
 // EXTERNAL FUNCTION PROTOTYPES
@@ -120,14 +121,32 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
     iWidgetUiObserver = CWidgetUiObserver::NewL( *this );
 
     iWidgetUiDialogsProviderProxy = CWidgetUiDialogsProviderProxy::NewL(*(iWindowManager.DialogsProvider()), NULL, *this);
+    
+#ifdef BRDO_WRT_HS_FF
+    iNetworkModeWait = new(ELeave) CActiveSchedulerWait();
+#endif
 
+    unsigned int capabilities;
+    if (iWindowManager.CursorShowMode() == TBrCtlDefs::ENoCursor)
+        {
+        //no cursor
+        capabilities = TBrCtlDefs::ECapabilityLoadHttpFw |
+                         TBrCtlDefs::ECapabilityWebKitLite |
+                         TBrCtlDefs::ECapabilityClientResolveEmbeddedURL;
+        }
+    else
+        {
+        //cursor is setting
+        capabilities = TBrCtlDefs::ECapabilityLoadHttpFw |
+                        TBrCtlDefs::ECapabilityCursorNavigation|
+                        TBrCtlDefs::ECapabilityWebKitLite |
+                        TBrCtlDefs::ECapabilityClientResolveEmbeddedURL;
+
+        }
     iEngine = CreateBrowserControlL(
         view->Container(),
         rect,
-        TBrCtlDefs::ECapabilityLoadHttpFw |
-        TBrCtlDefs::ECapabilityCursorNavigation|
-        TBrCtlDefs::ECapabilityWebKitLite |
-        TBrCtlDefs::ECapabilityClientResolveEmbeddedURL,
+            capabilities,
         TBrCtlDefs::ECommandIdBase,
         iWidgetUiObserver, /* softkeys */
         iWidgetUiObserver, /* link resolver */
@@ -136,6 +155,8 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
         iWidgetUiDialogsProviderProxy,
         iWidgetUiObserver, /* window observer */
         iWidgetUiObserver /* download observer */);
+    //Set the cursor mode inside Widget
+    iEngine->SetBrowserSettingL(TBrCtlDefs::ESettingsCursorShowMode, iWindowManager.CursorShowMode());
 
     iEngine->AddLoadEventObserverL( iWidgetUiObserver );
     iEngine->AddStateChangeObserverL( view );
@@ -199,6 +220,9 @@ CWidgetUiWindow::~CWidgetUiWindow()
     delete iWidgetUiDialogsProviderProxy;
     delete iSchemeHandler;
     delete iMiniviewBitmap;
+#ifdef BRDO_WRT_HS_FF
+    delete iNetworkModeWait;
+#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -319,26 +343,8 @@ void CWidgetUiWindow::SetSoftkeysVisible(TBool aVisible)
     {
     iShowSoftkeys = (aVisible);
 
-    if (CbaGroup())
-        {
-        CbaGroup()->MakeVisible( iShowSoftkeys );
-        iWindowManager.View()->UpdateStatusPane( aVisible );
-        //in case CBA keys are disbaled by javascript ,SetToolbarVisibility EFalse,
-        //Since it would take entire screen.Else SetToolbarVisibility to ETrue in Landscape mode
-        iShowSoftkeys?iWindowManager.View()->UpdateToolbar(ETrue):iWindowManager.View()->UpdateToolbar(EFalse);
-        CbaGroup()->DrawNow();
-        TRect clientRect = iWindowManager.View()->ClientRect();
-        // resize the container to take into account the size of the softkey labels
-        // reduction is only needed for portrait mode (softkey on bottom) since landscape
-        // mode softkeys don't take up screen real estate
-        if (AknLayoutUtils::CbaLocation() == AknLayoutUtils::EAknCbaLocationBottom)
-            {
-            CbaGroup()->ReduceRect(clientRect);
-            }
-        //Check if the container rect needs change and then call setRect
-        if(clientRect != iWindowManager.View()->Container()->Rect())
-           iWindowManager.View()->Container()->SetRect(clientRect);
-        }
+    MakeSoftkeysVisible(aVisible, EFalse);
+
     }
 
 // -----------------------------------------------------------------------------
@@ -523,10 +529,14 @@ void CWidgetUiWindow::SetCurrentWindow( TBool aCurrent )
             iWindowManager.View()->DeActivateOptionsMenu();
             Engine()->MakeVisible(EFalse);// hide the active widget
             }
-        if ( !aCurrent &&  (EPublishStart != WidgetMiniViewState()))
-            {
+        if ( !aCurrent &&  (EPublishStart != WidgetMiniViewState()) )
+            {			
             iWidgetExtension->HandleCommandL ( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase );
-            Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase);
+            if( iWindowManager.AnyWidgetOnHs() )
+                {
+                //If there is no widget on HS then we should not stop the JS timers
+                Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase);
+                }
             }
         if ( aCurrent )
             {
@@ -666,9 +676,13 @@ TBool CWidgetUiWindow::CheckNetworkAccessL()
             {
             iCpsPublisher->NetworkConnectionAllowedL();
             }
+        iNetworkModeWait->Start();
 #endif
-        SetNetworkAccessGrant( EDeny );
-        User::Leave( KErrAccessDenied );
+        if (iWindowManager.GetNetworkMode() == EOfflineMode)
+            {
+            SetNetworkAccessGrant( EDeny );
+            User::Leave( KErrAccessDenied );
+            }
         }
     
     // begin info.plist (declare EAllowNetworkAccess or EAllowFullAccess ?)
@@ -1134,4 +1148,37 @@ void CWidgetUiWindow::DetermineNetworkState()
         }
     }
 
+
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::MakeSoftkeysVisible()
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiWindow::MakeSoftkeysVisible(TBool aVisible, TBool aTextBoxUpdate)
+    {
+    if (CbaGroup() && !(aTextBoxUpdate && iShowSoftkeys))
+        {
+        CbaGroup()->MakeVisible( aVisible );
+        //in case CBA keys are disbaled by javascript ,SetToolbarVisibility EFalse,
+        //Since it would take entire screen.Else SetToolbarVisibility to ETrue in Landscape mode
+        aVisible?iWindowManager.View()->UpdateToolbar(ETrue):iWindowManager.View()->UpdateToolbar(EFalse);
+        CbaGroup()->DrawNow();
+        TRect clientRect = iWindowManager.View()->ClientRect();
+        // resize the container to take into account the size of the softkey labels
+        // reduction is only needed for portrait mode (softkey on bottom) since landscape
+        // mode softkeys don't take up screen real estate
+        if (AknLayoutUtils::CbaLocation() == AknLayoutUtils::EAknCbaLocationBottom)
+            {
+            CbaGroup()->ReduceRect(clientRect);
+            }
+        //Check if the container rect needs change and then call setRect
+        if(clientRect != iWindowManager.View()->Container()->Rect())
+           iWindowManager.View()->Container()->SetRect(clientRect);
+        
+        if (!aTextBoxUpdate)
+            {
+            // status pane always off unless in text box
+            iWindowManager.View()->UpdateStatusPane(EFalse);
+            }
+        }
+    }
 // End of file

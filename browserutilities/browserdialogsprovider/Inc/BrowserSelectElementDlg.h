@@ -128,6 +128,8 @@ class CBrowserSelectElementDlg : public CAknPopupList
         CArrayFix<TBrCtlSelectOptionData>&  iOptionsOrg;    // not owned
 
         CBrowserDialogsProviderAsyncExit*   iAsyncExit;      // owned
+        
+        TInt iResource;
     };
 
 #endif  //BROWSERSELECTELEMENTDLG_H

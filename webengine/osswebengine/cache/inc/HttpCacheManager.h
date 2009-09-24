@@ -40,6 +40,8 @@ class CRepository;
 class RHTTPTransaction;
 class MHTTPDataSupplier;
 class CHttpCacheFileWriteHandler;
+class CHttpCacheFileHash;
+class THttpCachePostponeParameters;
 
 // CLASS DECLARATION
 
@@ -218,13 +220,53 @@ class CHttpCacheManager : public CBase, public MCenRepNotifyHandlerCallback
         */
         void CreateCacheHandlersL();
 
-         /**
+        /**
         *
         * @since 7.1
         * @param
         * @return
         */
-        void RemoveOrphanedFilesL();
+        void RemoveOrphanedFilesL();    // remove all orphan files.
+        /**
+        *
+        * @since 7.1
+        * @param
+        * @return
+        */
+        // perform phase 2 of orphan file removal. Mark any files 
+        void MarkAllCacheContentAsNoDelete( CHttpCacheFileHash* aOnDiskFilesMap );
+        /**
+        *
+        * @since 7.1
+        * @param
+        * @return
+        */
+        // perform phase 3 of orphan file removal.
+        // Write an 'empty cache' index file over the top of any unknown index files to let any running clients
+        // prepare for their data to disappear.
+        void WipeAllOtherIndexFilesL( CHttpCacheFileHash* aOnDiskFilesMap, RFs& aRfs );
+        /**
+        *
+        * @since 7.1
+        * @param
+        * @return
+        */
+        // perform phase 4 of orphan file removal. Remove any files not referenced in the loaded caches.
+        void DeleteMarkedFilesL( CHttpCacheFileHash* aOnDiskFilesMap, RFs& aRfs );
+        /**
+        *
+        * @since 7.1
+        * @param
+        * @return
+        */
+        // utility fn for phase 3 of orphan file removal.
+        void GenerateEmptyIndexFileL(const TDesC& aIndexFile, RFs& aRfs );
+
+        /**
+         * @since 7.1
+         * override cache parameters according to application using DLL and any config in Centrep
+         */
+        void ApplyCacheOverridesL(CRepository& aRepository, const TUint32& aSecIdInt, TBool& aCacheEnabled, TInt& aCacheSize, TBool& aOpCacheEnabled, TBool& aVssCacheEnabled, TDes& aPath, const TDesC& aDefaultDrive);
 
         /**
         *
@@ -251,6 +293,61 @@ class CHttpCacheManager : public CBase, public MCenRepNotifyHandlerCallback
         */
 
         TBool VSSHeaderCheck(  TDes8*  aHttpHeaderString ) const ;
+
+        /**
+         * @since 7.1
+         * 
+         */
+        void GetPostponeParamsL( TBool& aNewCentrepPresent, THttpCachePostponeParameters& aParams, CRepository* aRepo );
+
+        /**
+         * @since 7.1
+         * 
+         */
+        void GetHttpCacheConfigL( CRepository& aRepository, TBool& aCacheEnabled, TInt& aCacheSize, TDes& aCacheFolder );
+
+        /**
+         * @since 7.1
+         * 
+         */
+        void GetOperatorCacheConfigL( CRepository& aRepository, TBool& aOpCacheEnabled, TInt& aOpCacheSize, TDes& aOpCacheFolder );
+
+        /**
+         * @since 7.1
+         * 
+         */
+        void GetVSSCacheConfigL( CRepository& aRepository, TBool& aVSSCacheEnabled, TInt& aVssCacheSize, TDes& aVssCacheFolder );
+        
+        /**
+         * @since 7.1
+         * 
+         */
+        void GetCriticalDriveLevelsL( CRepository& aRepository, const TDesC& aCacheFolder, TInt& aCriticalLevel );
+
+        /**
+         * @since 7.1
+         * 
+         */
+        void CreateHttpCacheL( const TInt& aSecIdInt, const TInt& aCacheSize, const TInt& aCriticalLevel, const THttpCachePostponeParameters& aPostpone );
+
+        /**
+         * @since 7.1
+         * 
+         */
+        void CreateOperatorCacheL( CRepository& aRepository, const TDesC& aOpCacheFolder, const TInt& aOpCacheSize, const TInt& aCriticalLevel, const THttpCachePostponeParameters& aPostpone );
+
+        /**
+         * @since 7.1
+         * 
+         */
+        void CreateVssCacheL( CRepository& aRepository, const TDesC& aVssCacheFolder, const TInt& aVssCacheSize, const TInt& aCriticalLevel, const THttpCachePostponeParameters& aPostpone );
+
+        /**
+         * @since 7.1
+         * 
+         */
+        void CrashCheckL( const TInt& aSecIdInt );
+
 
     private:    // Data
 

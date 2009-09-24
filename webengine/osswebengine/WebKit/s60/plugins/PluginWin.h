@@ -479,6 +479,7 @@ public: // Functions from MPluginAdapter
     void PlayPausePluginL ();
     void HandlePointerEventFromPluginL(const TPointerEvent& aEvent);
     TBool HandleGesture(const RT_GestureHelper::TGestureEvent& aEvent);    
+	TBool Windowed() { return m_windowedPlugin;}
     protected: // New functions
 
         /**
@@ -501,9 +502,6 @@ public: // Functions from MPluginAdapter
         bool                                m_windowedPlugin;
         bool                                m_transparentPlugin;
         CFbsBitmap*                         m_bitmap;       //The bitmap for windowless plugin
-        CFbsBitmap*                         m_mask;         //The mask for transparent windowless plugin
-        CFbsBitmapDevice*                   m_bitmapDeviceMask;
-        CFbsBitGc*                          m_bitmapContextMask; 
         bool                                m_fullscreen;
         bool                                m_windowCreated;
         bool                                m_forceScroll;

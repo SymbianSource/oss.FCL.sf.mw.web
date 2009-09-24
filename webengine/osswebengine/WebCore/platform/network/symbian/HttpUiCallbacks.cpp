@@ -246,6 +246,7 @@ int HttpUiCallbacks::aboutToLoadPageL(CBrCtl* brctl, int stateType)
         // If the user selected "No" or "Cancel", we are cancelling the load
         if ( !result )
         {
+            brctl->HandleBrowserLoadEventL(TBrCtlDefs::EEventContentFinished,0,0);
             return KErrCancel;
         }
     }   // end of if

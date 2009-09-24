@@ -641,6 +641,7 @@ void CCodEngBase::DoCancel()
             
         case EFetch:
         case ENotify:
+		case EProductNotify:
             {
             // Instant abort, without any further processing
             // (no install, no notify).

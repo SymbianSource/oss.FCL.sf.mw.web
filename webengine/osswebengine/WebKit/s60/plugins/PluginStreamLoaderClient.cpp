@@ -131,6 +131,8 @@ NetscapePlugInStreamLoaderClient::~NetscapePlugInStreamLoaderClient()
 void NetscapePlugInStreamLoaderClient::start()
 {
     if (m_loader) {
+        // Protect the loader from being deleted by errors before we finish with it (prevents a crash)
+        RefPtr<ResourceLoader> protector(m_loader);
         m_loader->documentLoader()->addSubresourceLoader(m_loader);
         m_loader->load(*m_request);            
     }

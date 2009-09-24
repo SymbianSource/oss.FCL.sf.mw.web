@@ -55,6 +55,14 @@ public:
 
     static void fireTimersInNestedEventLoop();
 
+    /*
+     * The method deleteTimerHeap has been added so that when the browser instance is closed, all the pending timers that are added
+     * to the static heap are deleted. This helps when the same heap is reused in the next instance of browser control.
+     */
+#if PLATFORM(SYMBIAN)
+    static void deleteTimerHeap();
+#endif    
+
 private:
     virtual void fired() = 0;
 

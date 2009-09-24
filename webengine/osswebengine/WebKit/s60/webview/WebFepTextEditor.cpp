@@ -445,14 +445,15 @@ void CWebFepTextEditor::GetCursorSelectionForFep(TCursorSelection& aCursorSelect
 		if ( frame && frame->document()->focusedNode() ) {
 			if ( IsTextAreaFocused() ) {
                 HTMLTextAreaElement* ie = static_cast<HTMLTextAreaElement*>(frame->document()->focusedNode());                                                 
-                while(editNode && !editNode->isTextNode())
+                while(editNode && !editNode->isTextNode()) {
                     editNode = editNode->previousSibling();
+                }
 				TInt len( 0 );
 				if ( editNode ) {
 					findPrevSiblingTextLen( editNode, len );
 				}
 				aCursorSelection.SetSelection( ((sc->baseOffset()+len > ie->value().length()) ? 0 : sc->baseOffset()+len),
-                                                  ((sc->extentOffset()+len > ie->value().length()) ? 0 : sc->baseOffset()+len));
+                                                  ((sc->extentOffset()+len > ie->value().length()) ? 0 : sc->extentOffset()+len));
 			}
 			else {
 				aCursorSelection.SetSelection(sc->baseOffset(), sc->extentOffset());
@@ -744,6 +745,7 @@ void CWebFepTextEditor::UpdateInputModeState(TUint inputMode, TUint permittedInp
     state->SetCurrentInputMode(inputMode);
     state->SetPermittedInputModes(permittedInputModes);
     state->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(numericKeyMap));
+    state->ReportAknEdStateEventL(MAknEdStateObserver::EAknSyncEdwinState);
     state->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateInputModeUpdate);
 }
 
@@ -1179,11 +1181,12 @@ void CWebFepTextEditor::CopyToStoreL(CStreamStore& aStore,CStreamDictionary& aDi
 		return ;
     TCursorSelection selection;
     GetCursorSelectionForFep(selection);
+    TInt len = DocumentLengthForFep();
 
-	HBufC* buf = HBufC::NewLC(512);
+	HBufC* buf = HBufC::NewLC(len);
 	TPtr ptr(buf->Des());
 
-    GetEditorContentForFep(ptr,0,DocumentLengthForFep());
+    GetEditorContentForFep(ptr,0,len);
     CPlainText* text = CPlainText::NewL(CPlainText::EFlatStorage);
 
 	text->InsertL(0,*buf);
@@ -1295,18 +1298,19 @@ void CWebFepTextEditor::PasteFromStoreL(CStreamStore& aStore,CStreamDictionary& 
     GetCursorSelectionForFep(selection);
     const TInt cursorPos=selection.LowerPos();
 
-	HBufC* buf1 = HBufC::NewLC(512);
+    TInt len = DocumentLengthForFep();
+	HBufC* buf1 = HBufC::NewLC(len);
 	TPtr ptr1(buf1->Des());
 
 	CPlainText* text = CPlainText::NewL(CPlainText::EFlatStorage);
 
-    GetEditorContentForFep(ptr1,0,DocumentLengthForFep());
+    GetEditorContentForFep(ptr1,0,len);
 
     text->InsertL(0,*buf1);
 
     TInt charPasted = text->PasteFromStoreL(aStore,aDict,cursorPos);
 
-    HBufC* buf = HBufC::NewLC(512);
+    HBufC* buf = HBufC::NewLC(charPasted);
     TPtr ptr(buf->Des());
     text->Extract(ptr,cursorPos,charPasted);
 
@@ -1393,7 +1397,7 @@ Node* CWebFepTextEditor::findTextNodeForCurPos(Node* aNode, TInt& aPos) const
 			WebCore::Text* aText = (WebCore::Text*)aNode;
 			str = aText->data();
 			len +=  str.length();
-			if ( len > aPos ) {
+			if ( len >= aPos ) {
 				// We found the text node at aPos, calculate the length of all
 				// previous text nodes
 				retNode = aNode;

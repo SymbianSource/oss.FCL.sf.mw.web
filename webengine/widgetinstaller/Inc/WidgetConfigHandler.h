@@ -140,6 +140,7 @@ NONSHARABLE_CLASS(CWidgetConfigHandler): public CBase
             EPropertyDescriptionWidth,                     // optional; integer; example: 100
             EPropertyDescriptionNokiaMiniViewEnable,       // optional; bool but int 0/1 internally
             EPropertyDescriptionNokiaPromptNeeded,       //optional; bool but int 0/1 internally
+            EPropertyDescriptionNokiaPreInstalled,         // optional; bool but int 0/1 internally
             // end property description list, begin special values
             EPropertyDescriptionIdCount,     // must be at end of properties
             EPropertyDescriptionIdInvalid    // must be after EPropertyDescriptionIdCount

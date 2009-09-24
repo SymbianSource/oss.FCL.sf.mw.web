@@ -246,5 +246,7 @@ RESOURCE AIW_INTEREST r_webkit_aiw_interests
 RESOURCE TBUF r_qtn_browser_dialog_scriptlog_t1 { buf=qtn_browser_dialog_scriptlog_t1; } 
 RESOURCE TBUF r_qtn_browser_dialog_scriptlog_sk2 { buf=qtn_browser_dialog_scriptlog_sk2; } 
 RESOURCE TBUF r_qtn_browser_dialog_scriptlog_t2 { buf=qtn_browser_dialog_scriptlog_t2; } 
+RESOURCE TBUF r_qtn_browser_choose_file_sym {buf=qtn_browser_choose_file_text;}
 RESOURCE TBUF r_qtn_browser_dialog_scriptlog_disable_msg { buf=qtn_browser_dialog_scriptlog_disable_msg; }     
+
 

@@ -494,7 +494,7 @@ TInt CHttpCacheStreamHandler::FlushAsync(CHttpCacheEntry& aEntry, TRequestStatus
 
     if ( datalen && aEntry.BodyData().Length() ) // don't bother writing files which have no body data
         {
-        if ( IsDiskSpaceAvailable( datalen ) && CreateNewBodyFile( aEntry ) )
+        if ( IsDiskSpaceAvailable( datalen ) && CreateNewBodyFile( aEntry, ETrue ) )
             {
 #ifdef __CACHELOG__
             HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE:   Triggering Async write for object 0x%08x."), &aEntry);
@@ -594,12 +594,16 @@ TBool CHttpCacheStreamHandler::CreateNewFilesL( CHttpCacheEntry& aCacheEntry )
 //
 // -----------------------------------------------------------------------------
 //
-TBool CHttpCacheStreamHandler::CreateNewBodyFile( CHttpCacheEntry& aCacheEntry )
+TBool CHttpCacheStreamHandler::CreateNewBodyFile( CHttpCacheEntry& aCacheEntry, TBool aUseDirectIO )
     {
     TInt statusBody( KErrNotFound );
 
     // Create the body file or replace it, if it exists.
+#ifdef BRDO_RFILE_WRITE_DIRECT_IO_FF
+    statusBody = aCacheEntry.BodyFile().Replace( iRfs, aCacheEntry.Filename(), EFileShareExclusive | EFileWrite | (aUseDirectIO ? EFileWriteDirectIO : 0) );
+#else
     statusBody = aCacheEntry.BodyFile().Replace( iRfs, aCacheEntry.Filename(), EFileShareExclusive | EFileWrite );
+#endif
 
 #ifdef __CACHELOG__
     HttpCacheUtil::WriteUrlToLog( 0, aCacheEntry.Filename(), aCacheEntry.Url() );

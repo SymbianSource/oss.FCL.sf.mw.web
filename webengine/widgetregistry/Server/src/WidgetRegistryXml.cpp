@@ -43,6 +43,7 @@ _LIT( KUid,                  "Uid" );
 _LIT( KNokiaWidget,          "NokiaWidget" );
 _LIT( KMiniViewEnabled,      "MiniViewEnabled" );
 _LIT( KBlanketPermGranted,   "BlanketPermissionGranted" );         // optional
+_LIT( KPreInstalled,         "PreInstalled" );
 
 static void XmlFree( TAny* aPtr )
     {
@@ -185,6 +186,11 @@ void CWidgetRegistryXml::ConstructL()
     //
     property.id = EBlanketPermGranted;
     property.name.Set( KBlanketPermGranted );
+    property.type = EWidgetPropTypeInt;
+    iProperties.AppendL(property);
+    //
+    property.id = EPreInstalled;
+    property.name.Set( KPreInstalled );
     property.type = EWidgetPropTypeInt;
     iProperties.AppendL(property);
     }

@@ -21,6 +21,7 @@
 #include <wtf/Assertions.h>
 #include <e32std.h>
 #include <e32base.h>
+#include <Timer.h>
 
 static TInt64 remainingMicro = 0;
 static bool shutdownInProgress = false;
@@ -110,12 +111,18 @@ void stopSharedTimer()
         sharedTimer = NULL;
         }
     remainingMicro = 0;
+    /*
+     * The static boolean variable shutdownInProgress, must be reset in scenario's where a browser control instance is deleted and a new
+     * instance is created without actually closing the application.
+     */
+    shutdownInProgress = false ;
     }
 
 void shutdownSharedTimer()
     {
     shutdownInProgress = true;
     stopSharedTimer();
+    TimerBase::deleteTimerHeap();
     }
 
 void initSharedTimer()

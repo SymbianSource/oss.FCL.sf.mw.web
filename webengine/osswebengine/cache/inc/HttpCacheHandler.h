@@ -45,6 +45,7 @@ class CHttpCacheEvictionHandler;
 class THttpCacheEntry;
 class CHttpCacheObserver;
 class CHttpCacheFileWriteHandler;
+class CHttpCacheFileHash;
 
 // CLASS DECLARATION
 
@@ -57,91 +58,6 @@ NONSHARABLE_CLASS( THttpCachePostponeParameters )
         TInt    iFreeRamThreshold;
         TInt    iImmediateWriteThreshold;
         TInt    iWriteTimeout;
-    };
-
-NONSHARABLE_CLASS( TCompressedEntry )
-    {
-    public:
-        ~TCompressedEntry() { if(!IsCompressed()) delete iName.iNameAsHBuf; };
-        static TCompressedEntry *NewL( const TEntry& aEntry );
-
-    private:
-        TCompressedEntry(){};
-        void ConstructL( const TEntry& aEntry );
-        enum {
-            EFilenameStoredAsUint32 = 0x01
-        };
-
-    public:
-        TBool IsCompressed() { return (iFlags && TCompressedEntry::EFilenameStoredAsUint32); };
-        static TBool ConvertANameToUint32( const TDesC& aName, TUint32& aConverted);
-        static TInt ConvertAsciiToIntSingleHexDigit(const TUint16& aDigitChar);
-        TUint32 GetSize() { return iSize; };
-        HBufC* GetNameL();
-        TUint32 GetCompressedName() { return iName.iNameAsUint32; };
-
-    private:
-        TUint32 iFlags;
-        TUint32 iSize;
-        union {
-            TUint32 iNameAsUint32;
-            HBufC*  iNameAsHBuf;
-        }iName;
-    };
-
-NONSHARABLE_CLASS( CCustomCacheDirList ) : public CBase
-    {
-    public:
-        static CCustomCacheDirList* NewL(CDir *aSrc);
-        ~CCustomCacheDirList() { iDirList.ResetAndDestroy(); };
-
-    public:
-        TBool ValidateCacheEntryL( const CHttpCacheEntry& aEntry );
-        TInt Count();
-        HBufC* NameAtL( TInt aIndex );
-
-    private:
-        CCustomCacheDirList();
-        void ConstructL(CDir *aSrc);
-
-    private:
-        RPointerArray<TCompressedEntry> iDirList;
-    };
-
-NONSHARABLE_CLASS( CCacheDirectoryFiles ) : public CBase
-    {
-    public:
-        static CCacheDirectoryFiles* NewL(RFs aRfs, const TDesC& aDir);
-        static CCacheDirectoryFiles* NewLC(RFs aRfs, const TDesC& aDir);
-
-    public:
-        /*
-         * Check to see if the entry passed in has a valid file in the directory listing
-         * returns ETrue if file present and size matches entry
-         * otherwise EFalse.
-         * Removes matching files from stored list.
-         */
-        TBool ValidateEntryL(const CHttpCacheEntry& aEntry);
-
-        /*
-         * Delete any files in the stored list from the filesystem
-         * Intended to be called after you have validated all the entries
-         * against the list - the content of the list will now only be the
-         * orphan files in the cache subdirectories.
-         * IMPORTANT: only call this once you've looked at all your entries.
-         */
-        void RemoveLeftoverFilesL();
-
-    private:
-        CCacheDirectoryFiles(RFs aRfs, const TDesC& aDir) : iRfs(aRfs), iDir(aDir) {};
-        ~CCacheDirectoryFiles();
-        void ConstructL();
-
-    private:
-        RFs iRfs;
-        const TDesC& iDir;
-
-        RPointerArray<CCustomCacheDirList> iDirContent;
     };
 
 /**
@@ -422,13 +338,14 @@ class CHttpCacheHandler : public CBase
          */
         void GenerateValidationFilename(TDes& aFilename, const TDesC& aIndexFilename) const;
 
+    public:
         /**
          *
          * @since 7.1
          * @param
          * @return
          */
-        void ValidateCacheEntriesL();
+        void ValidateCacheEntriesL(CHttpCacheFileHash *aDiskContent);
 
     private:    // Data
 
@@ -444,8 +361,10 @@ class CHttpCacheHandler : public CBase
         HBufC*                          iDirectory; // owned
         // name of the index file
         HBufC*                          iIndexFile; // owned
+    public:
         // Observing changes in cache
         CHttpCacheObserver* iHttpCacheObserver; // owned
+    private:
         // An opened and configured file server session
         RFs iRfs;
         //

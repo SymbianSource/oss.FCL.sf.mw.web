@@ -505,6 +505,7 @@ private:
   CActive::TPriority iFormatPriority;
   CWmlControl*           iWmlControl;
   TBool iShouldActivate;
+  TBool iDrag;
 };
 
 #endif  // EPOC32VIEW_H

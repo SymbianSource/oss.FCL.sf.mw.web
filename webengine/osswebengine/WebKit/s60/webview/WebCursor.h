@@ -66,6 +66,7 @@ class WebCursor : public CBase
         void increaseTransparencyMoveCount();
         void resetTransparency();
         void scrollAndMoveCursor(int dir, int scrollRange, bool auto);
+        void simpleScroll(int dir, int scrollRange, bool auto=true);
         WebFrame* getFrameUnderCursor();
         bool navigableNodeUnderCursor(WebFrame& webFrame, TPoint& aPoint, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect) const;
         WebFrame* getFrameAtPoint(const TPoint& viewPos_);
@@ -82,6 +83,7 @@ class WebCursor : public CBase
         bool frameHasContentToScroll(WebFrame* frame, TPoint& delta);
         WebFrame*  determineScrollingFrame(int border1, int border2, int pos, 
         		                           WebFrame* fr1, WebFrame* fr2, TPoint& delta);
+        void scrollingDirection(int dir, int& lr, int& tb);
     private:
 
         WebCursor();

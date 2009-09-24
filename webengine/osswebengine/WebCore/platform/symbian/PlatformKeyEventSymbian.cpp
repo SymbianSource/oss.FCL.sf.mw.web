@@ -74,8 +74,9 @@ static String KeyIdentifierForKeyEvent(TInt code)
             return "End";
         // "Enter"
         case EKeyEnter:
-        case EKeyDevice3: // Macintosh calls the one on the main keyboard Return, but Windows calls it Enter, so we'll do the same for the DOM
             return "Enter";
+        case EKeyDevice3: // Macintosh calls the one on the main keyboard Return, but Windows calls it Enter, so we'll do the same for the DOM
+            return "MSK";
 
         // "EraseEof"
 

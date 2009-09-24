@@ -1443,14 +1443,16 @@ const Vector<StyleDashboardRegion>& RenderStyle::noneDashboardRegions()
 }
 
 #if PLATFORM(SYMBIAN)
-void RenderStyle::deleteDefaultRenderStyle()
-{
-	//goes to overridden delete operator but calls destructor
-	delete defaultStyle;
-	//release cell allocated because overridder delete does not do that.
-	free(defaultStyle);
-	defaultStyle = NULL;
+struct cleanupDefaultRenderStyle  {
+    ~cleanupDefaultRenderStyle() {
+    //goes to overridden delete operator but calls destructor
+    delete defaultStyle;
+    //release cell allocated because overridder delete does not do that.
+    free(defaultStyle);
+    defaultStyle = NULL;
 }
+};
+struct cleanupDefaultRenderStyle defaultRenderStyle;
 #endif
 
 }

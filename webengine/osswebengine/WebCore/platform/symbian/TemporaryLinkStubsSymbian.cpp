@@ -65,6 +65,11 @@
 #include "DragData.h"
 #include "DocumentFragment.h"
 
+#include "../bidi.h"
+#include <stringloader.h>
+#include <webkit.rsg>
+
+
 namespace WebCore {
 
 static void notImplemented() { /*puts("Not yet implemented"); */}
@@ -144,7 +149,14 @@ void Icon::paint(GraphicsContext*, const IntRect&) { notImplemented(); }
 void Widget::invalidate() { }
 void Widget::invalidateRect(const IntRect& r) { }
 
-String fileButtonChooseFileLabel() { return "Choose File"; }
+String fileButtonChooseFileLabel() 
+    { 
+    String chooseLabel;
+    HBufC* loadStr = StringLoader::LoadLC(R_QTN_BROWSER_CHOOSE_FILE_SYM);
+    chooseLabel.append(*loadStr);
+    CleanupStack::PopAndDestroy();
+    return chooseLabel;
+    }
 
 // editor
 PassRefPtr<Clipboard> Editor::newGeneralClipboard(ClipboardAccessPolicy policy) { return 0; }

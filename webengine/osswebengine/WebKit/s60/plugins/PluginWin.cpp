@@ -81,9 +81,8 @@ void PluginWin::ConstructL( const WebView& view )
     } else {
         SetContainerWindowL(*view.brCtl()->CCoeControlParent());
         m_bitmap = new (ELeave) CFbsBitmap();
-        m_bitmap->Create(TSize(0,0),WebCore::StaticObjectsContainer::instance()->webSurface()->displayMode());
-        m_mask = new (ELeave) CFbsBitmap();
-        m_mask->Create(TSize(0,0),EGray2);
+        TDisplayMode mode = m_transparentPlugin ? EColor16MA : WebCore::StaticObjectsContainer::instance()->webSurface()->displayMode();
+        m_bitmap->Create(TSize(0,0), mode);
     }
     // Add the focus/foreground observer
     ControlEnv()->AddForegroundObserverL( *this ) ;
@@ -102,9 +101,6 @@ PluginWin::~PluginWin()
     // Remove the foreground observer
     ControlEnv()->RemoveForegroundObserver( *this );
     delete m_bitmap;
-    delete m_mask;
-    delete m_bitmapDeviceMask;
-    delete m_bitmapContextMask;
 }
 
 // -----------------------------------------------------------------------------
@@ -145,12 +141,6 @@ void PluginWin::windowChanged()
     if (ret != KErrNone) {
         delete m_bitmap;
         m_bitmap = NULL;
-        delete m_mask;
-        m_mask = NULL;
-        delete m_bitmapDeviceMask;
-        m_bitmapDeviceMask = NULL;
-        delete m_bitmapContextMask;
-        m_bitmapContextMask = NULL;
     }
     if (m_forceScroll)
     	m_forceScroll = EFalse;
@@ -193,24 +183,7 @@ void PluginWin::windowChangedL()
         if (m_windowedPlugin) {
              window.window =  (MPluginAdapter*)this;
         } else {
-             //m_bitmap->Resize(myRect.Size());
-             // Resize does not work!
-             // Once the bug is fixed we can call Resize() instead of creating a new bitmap every time.
-             if (!m_bitmap || m_bitmap->SizeInPixels() != myRect.Size()) {
-                 delete m_bitmap;
-                 m_bitmap = NULL;
-                 m_bitmap = new (ELeave) CFbsBitmap();
-                 TDisplayMode mode = m_transparentPlugin ? EColor16MA : WebCore::StaticObjectsContainer::instance()->webSurface()->displayMode();
-                 m_bitmap->Create(myRect.Size(), mode);
-                 delete m_mask;
-                 m_mask = NULL;
-                 if (m_transparentPlugin) {
-                     m_mask = new (ELeave) CFbsBitmap();
-                     m_mask->Create(myRect.Size(), mode);
-                     m_bitmapDeviceMask = CFbsBitmapDevice::NewL( m_mask );
-                     User::LeaveIfError(m_bitmapDeviceMask->CreateContext(m_bitmapContextMask));
-                 }
-             }
+             m_bitmap->Resize(rect.Size());
              window.window = (CFbsBitmap*)m_bitmap;
         }
 		if (!m_windowedPlugin || m_windowCreated)

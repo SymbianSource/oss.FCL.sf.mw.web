@@ -173,13 +173,16 @@ void QualifiedName::init()
     }
 }
 
-void QualifiedName::cleanup() 
-{
+
+struct cleanupQualifiedName  {
+    ~cleanupQualifiedName() {
     if( gNameCache ) {
         gNameCache->clear();
         delete gNameCache;
         gNameCache=NULL;
     }
-}
+    }
+};
+struct cleanupQualifiedName qualifiedName;
 
 }

@@ -62,6 +62,9 @@ NONSHARABLE_CLASS(CHttpCacheObserver) : public CActive
     public: // new functions
         void StartObserver();
 
+        inline TBool Updated() const { return (IsActive() && iStatus != KRequestPending); };
+        void Queue();
+        
     public: // from base class CActive
         void RunL();
         TInt RunError(TInt aError);

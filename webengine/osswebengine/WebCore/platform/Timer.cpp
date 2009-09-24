@@ -228,7 +228,13 @@ void TimerBase::heapDecreaseKey()
 {
     ASSERT(m_nextFireTime != 0);
     checkHeapIndex();
-    push_heap(TimerHeapIterator(0), TimerHeapIterator(m_heapIndex + 1));
+    #if PLATFORM(SYMBIAN)
+    // check for valid heap index
+    if(m_heapIndex < static_cast<int>(timerHeap->size()))
+    #endif
+        {
+        push_heap(TimerHeapIterator(0), TimerHeapIterator(m_heapIndex + 1));
+        }
     checkHeapIndex();
 }
 
@@ -376,6 +382,23 @@ void TimerBase::fireTimersInNestedEventLoop()
     timersReadyToFire = 0;
     updateSharedTimer();
 }
+
+#if PLATFORM(SYMBIAN)
+void TimerBase::deleteTimerHeap()
+{
+    if (timerHeap)
+    {
+        while (!timerHeap->isEmpty())
+        {
+            TimerBase* timer = timerHeap->first();
+            timer->m_nextFireTime = 0;
+            timer->heapDeleteMin();        
+        }
+        delete timerHeap ;
+        timerHeap = NULL ;
+    }
+}
+#endif
 
 // ----------------
 

@@ -79,9 +79,16 @@ void CBrowserSelectElementDlg::ConstructL( const TDesC& aTitle )
     {
     // Create the active object for this object
     iAsyncExit = CBrowserDialogsProviderAsyncExit::NewL( *this );
-
     // Resource
-    TInt resource = R_AVKON_SOFTKEYS_OK_CANCEL__MARK;
+    iResource = R_AVKON_SOFTKEYS_OK_CANCEL__MARK;
+    // Enable find pane
+    TBool bIsFindPaneEnabled = (iBrCtlSelectOptionType & 0x100) ? ETrue : EFalse ;
+    
+    if(bIsFindPaneEnabled)
+        {
+        iBrCtlSelectOptionType = (TBrCtlSelectOptionType )(iBrCtlSelectOptionType & 0xEFF) ;
+        }
+    
     if (iBrCtlSelectOptionType == ESelectTypeSingle )
         {
         // It was decided that Radio Buttons add little value and unnecessary 
@@ -90,7 +97,7 @@ void CBrowserSelectElementDlg::ConstructL( const TDesC& aTitle )
         }
     else if ( iBrCtlSelectOptionType == ESelectTypeOkOnly ) 
         {
-        resource = R_AVKON_SOFTKEYS_OK_EMPTY__OK;
+        iResource = R_AVKON_SOFTKEYS_OK_EMPTY__OK;
         }
 
     // Construct listbox and popup
@@ -100,7 +107,7 @@ void CBrowserSelectElementDlg::ConstructL( const TDesC& aTitle )
             new ( ELeave ) CBrowserSelectElementListBox(
                                                     iBrCtlSelectOptionType, 
                                                     iOptionsOrg );
-        CAknPopupList::ConstructL( iListBox, resource, 
+        CAknPopupList::ConstructL( iListBox, iResource, 
                                                 AknPopupLayouts::EMenuWindow );
         iListBox->ConstructL( *this );
         iListBox->ItemDrawer()->ColumnData()->EnableMarqueeL( ETrue );
@@ -120,6 +127,7 @@ void CBrowserSelectElementDlg::ConstructL( const TDesC& aTitle )
                         new ( ELeave ) CDesCArrayFlat ( KGranularityMedium );
 
         CleanupStack::PushL(items);
+        iResource = R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT;
         for ( TInt i = 0; i<iOptionsOrg.Count(); i++ )
             {
             items->AppendL( iOptionsOrg.At(i).Text() );
@@ -129,12 +137,8 @@ void CBrowserSelectElementDlg::ConstructL( const TDesC& aTitle )
         iHistoryList = new ( ELeave ) CAknSinglePopupMenuStyleListBox;
 
         // create popup
-        CAknPopupList::ConstructL( iHistoryList, 
-                                            R_AVKON_SOFTKEYS_SELECT_CANCEL__SELECT, 
-                                            AknPopupLayouts::EMenuWindow );
-        
-        
-        
+        CAknPopupList::ConstructL( iHistoryList, iResource, AknPopupLayouts::EMenuWindow );
+                        
         iHistoryList->ConstructL( this, EAknListBoxSelectionList );
         iHistoryList->ItemDrawer()->ColumnData()->EnableMarqueeL( ETrue );
         iHistoryList->CreateScrollBarFrameL( ETrue );
@@ -142,7 +146,7 @@ void CBrowserSelectElementDlg::ConstructL( const TDesC& aTitle )
                     ( CEikScrollBarFrame::EOff, CEikScrollBarFrame::EAuto );
         
         CTextListBoxModel* model = iHistoryList->Model();
-    TBool hasItems = iOptionsOrg.Count();
+        TBool hasItems = iOptionsOrg.Count();
         if ( hasItems  ) 
             {
             model->SetItemTextArray( items );
@@ -160,8 +164,14 @@ void CBrowserSelectElementDlg::ConstructL( const TDesC& aTitle )
           iHistoryList->SetCurrentItemIndex( 0 );
           }
         SetTitleL( aTitle );
-        EnableFind();
-        }    
+        if (bIsFindPaneEnabled)
+          {
+          EnableFind();
+          STATIC_CAST( CAknFilteredTextListBoxModel*,
+                    ListBox()->Model())->Filter()->SetObserver( this );
+          }        
+        }  
+    
     }
 
 //-----------------------------------------------------------------------------
@@ -202,14 +212,29 @@ void CBrowserSelectElementDlg::HandleControlEventL
                     aEventType == MCoeControlObserver::EEventRequestCancel ) )
         {
         AttemptExitL( EFalse );
-        }
-    //Some text has been written to findbox, in filtered selectioncase 
-    //highlight selectable item.
+        }   
     else if ( aControl == ((CCoeControl*)FindBox()) && 
-        aEventType == MCoeControlObserver::EEventStateChanged)
-        {
-        STATIC_CAST ( CBrowserSelectElementListBox*,
+        aEventType == MCoeControlObserver::EEventStateChanged )
+        {        
+        CEikButtonGroupContainer * cbaGroup = CEikButtonGroupContainer::Current();
+        /*Some text has been written to findbox, in filtered selectioncase 
+          highlight selectable item. */ 
+        if ( iBrCtlSelectOptionType != ESelectTypeNone)
+            {
+            STATIC_CAST ( CBrowserSelectElementListBox*,
                                         ListBox() )->HighlightSelectableItem();
+            }
+        if ( iBrCtlSelectOptionType == ESelectTypeOkOnly ) return;            
+        if ( STATIC_CAST( CAknFilteredTextListBoxModel*, ListBox()->Model())->Filter()->FilteredNumberOfItems() == 0 ) 
+            {
+            cbaGroup->SetCommandSetL(R_AVKON_SOFTKEYS_CANCEL); 
+            cbaGroup->DrawNow();             
+            } 
+        else  
+            {
+            cbaGroup->SetCommandSetL(iResource); 
+            cbaGroup->DrawNow(); 
+            }        
         }
     }
 

@@ -54,6 +54,8 @@ _LIT( KXmlDataTypeInt, "int" );
 _LIT( KXmlDataTypeString, "string" );
 _LIT( KXmlDataTypeUid, "uid" );
 
+static const TInt KWidgetPropertyListVersion32 = 1;
+static const TInt KWidgetPropertyListVersion71 = 3;
 // MODULE DATA STRUCTURES
 
 // LOCAL FUNCTION PROTOTYPES
@@ -165,8 +167,10 @@ void CWidgetEntry::InternalizeBinaryL( RReadStream& aReadStream )
 
     // For now, leave if version doesn't match compiled-in version,
     // FUTURE do something smarter
+    //WIDGETPROPERTYLISTVERSION is 1 in case of Tiger engine and 3 in case of Leopard engine. Therefore, modifying the check such that 
+    //when the Version id is 1 or 3, we do not treat the file as corrupt.
     if ( ( EWidgetPropTypeUnknown == (*this)[EWidgetPropertyListVersion].iType )
-         || ( WIDGETPROPERTYLISTVERSION != (*this)[EWidgetPropertyListVersion] ) )
+         || ( (KWidgetPropertyListVersion32 != (*this)[EWidgetPropertyListVersion] ) && (KWidgetPropertyListVersion71 != (*this)[EWidgetPropertyListVersion] )) )
         {
         User::Leave( KErrCorrupt );
         }
@@ -435,9 +439,71 @@ void CWidgetEntry::ExternalizeXmlL( RWriteStream& aWriteStream,
             break;
         case EWidgetPropTypeString:
             {
-            str.Append( (*this)[i] );
-            }
+			// start an encoding process for special characters for xml writing
+			// the special characters are:
+			// '&', Ampersand:   &amp; 
+			// '>', greater-than:   &gt; 
+			// '<', less-than:   &lt; 
+			// ''', apostrophe:   &apos; 
+			// '"', quote:   &quot;
+
+			TBuf<KMaxFileName> orig;
+			orig.Append((*this)[i]);
+			TUint16 * cur = (TUint16 *)orig.Ptr();
+			TUint16 * out = (TUint16 *)str.Ptr();
+			TInt len = orig.Length();
+			for ( TInt i = 0; i < orig.Length(); i++, cur++ )
+			{
+			// By default one have to encode at least '<', '>', '"' and '&' !
+			 if (*cur == '<') {
+				 *out++ = '&';
+				 *out++ = 'l';
+				 *out++ = 't';
+				 *out++ = ';';
+				 len += 3;
+			 } else if (*cur == '>') {
+				 *out++ = '&';
+				 *out++ = 'g';
+				 *out++ = 't';
+				 *out++ = ';';
+				 len += 3;
+			 } else if (*cur == '&') {
+				 *out++ = '&';
+				 *out++ = 'a';
+				 *out++ = 'm';
+				 *out++ = 'p';
+				 *out++ = ';';
+				 len += 4;
+			 } else if (*cur == '"') {
+				 *out++ = '&';
+				 *out++ = 'q';
+				 *out++ = 'u';
+				 *out++ = 'o';
+				 *out++ = 't';
+				 *out++ = ';';
+				 len += 5;
+			 } else if (*cur == '\'') {
+				 *out++ = '&';
+				 *out++ = 'a';
+				 *out++ = 'p';
+				 *out++ = 'o';
+				 *out++ = 's';
+				 *out++ = ';';
+				 len += 5;
+			 } else if (*cur == '\r') {
+				 *out++ = '&';
+				 *out++ = '#';
+				 *out++ = '1';
+				 *out++ = '3';
+				 *out++ = ';';
+				 len += 4;
+			 } else {
+				 *out++ = *cur;
+			 }
+			}
+			str.SetLength(len );
             break;
+			}
         case EWidgetPropTypeUid:
             const TUid& u = (*this)[i];
             TInt l = u.iUid;

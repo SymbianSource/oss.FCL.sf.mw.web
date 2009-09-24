@@ -472,7 +472,7 @@ class PluginSkin : public CBase,
         WTF::HashSet<PluginStream*>  m_streams;
         
         RArray<NPN_GenericElement>*  iGenericElementArray;
-        TPoint   m_oldPos;
+        TRect   m_oldRect;
         TRect    m_oldViewport;
         
 

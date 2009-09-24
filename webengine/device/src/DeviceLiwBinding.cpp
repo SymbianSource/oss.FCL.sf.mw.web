@@ -123,7 +123,7 @@ void CDeviceLiwBinding::ConstructL()
             {
             User::Leave( KErrGeneral );
             }
-#ifdef SECURITYMANAGER_PROMPT_ENHANCEMENT
+#ifdef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
 		m_scriptSession->SetPromptOption(RTPROMPTUI_PROVIDER);   //  This is for setting the new prompting method
 #endif
         CleanupStack::PopAndDestroy( trust );
@@ -903,9 +903,9 @@ JSValue* CDeviceLiwBinding::LiwVariant2JsVal(
             jsList.append( jsNumber( variant.AsMap()->Count() ) );
             JSObject * rval = new DeviceLiwMap(exec->lexicalInterpreter()->builtinArray()->construct(
                 exec, jsList ), variant.AsMap(), this);
-            
+
             DevicePrivateBase* pMapData = (static_cast<DeviceLiwMap*> (rval))->getMapData();
-            
+
             for ( TInt i = 0; i < variant.AsMap()->Count(); i++ )
                 {
                 TBuf8<KMaxKeySize> name;
@@ -924,12 +924,12 @@ JSValue* CDeviceLiwBinding::LiwVariant2JsVal(
                             DevicePrivateBase* itData = itObj->getIterableData();
                             itData->SetParent( pMapData );
                             pMapData->AddChild( itData );
-                            }                   
-                        else if ( v.TypeId() == EVariantTypeMap )    
+                            }
+                        else if ( v.TypeId() == EVariantTypeMap )
                             {
                             DeviceLiwMap* mapObj = static_cast<DeviceLiwMap*> (jsval);
                             DevicePrivateBase* mapData = mapObj->getMapData();
-                            mapData->SetParent( pMapData ); 
+                            mapData->SetParent( pMapData );
                             pMapData->AddChild( mapData );
                             }
                         }
@@ -1089,23 +1089,23 @@ JSValue* CDeviceLiwBinding::LiwGenericParamList2JsArray(
         {
         TBuf8<KMaxKeySize> name( (*aLiwList)[i].Name() );
         JSValue* jsval = LiwVariant2JsVal( exec, (*aLiwList)[i].Value() );
-        // connect DeviceLiwResult to DeviceLiwIterable  
+        // connect DeviceLiwResult to DeviceLiwIterable
         if ( managed )
-            { 
+            {
             if ( (*aLiwList)[i].Value().TypeId() == EVariantTypeIterable )
                 {
                 DeviceLiwIterable* itObj = static_cast<DeviceLiwIterable*> (jsval);
                 DevicePrivateBase* itData = itObj->getIterableData();
-                itData->SetParent( retData ); 
+                itData->SetParent( retData );
                 retData->AddChild( itData );
                 }
             else if ( (*aLiwList)[i].Value().TypeId() == EVariantTypeMap )
                 {
                 DeviceLiwMap* mapObj = static_cast<DeviceLiwMap*> (jsval);
                 DevicePrivateBase* mapData = mapObj->getMapData();
-                mapData->SetParent( retData ); 
+                mapData->SetParent( retData );
                 retData->AddChild( mapData );
-                }    
+                }
             }
         rval->put( exec, Identifier( (const char*) name.PtrZ() ), jsval);  //??? should call AtL?
         }
@@ -1123,11 +1123,11 @@ JSValue* CDeviceLiwBinding::LiwGenericParamList2JsArray(
 void CDeviceLiwBinding::SetUid( const TUint& aValue)
     {
     m_Uid.iUid = aValue;
-#ifdef SECURITYMANAGER_PROMPT_ENHANCEMENT    
+#ifdef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
     SetAppName();
-#endif    
+#endif
     }
-#ifdef SECURITYMANAGER_PROMPT_ENHANCEMENT
+#ifdef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
 // ----------------------------------------------------------------------------
 // CDeviceLiwBinding::SetAppName
 // Sets the widget display name
@@ -1147,7 +1147,7 @@ void CDeviceLiwBinding::SetAppName()
         {
         User::Leave( ret );
         }
-    
+
     CWidgetPropertyValue* displayname = widgetregistry.GetWidgetPropertyValueL(m_Uid, EBundleDisplayName );
     User::LeaveIfError(widgetregistry.Disconnect());
     CleanupStack::PopAndDestroy(); //widgetregistry

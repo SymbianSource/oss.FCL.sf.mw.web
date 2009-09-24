@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:  
+* Description: 
 *
 */
 
@@ -24,7 +24,15 @@
 
 namespace WebCore {
 
-class OOMHandler : public MMemoryCollector, public MOOMStopper
+/*
+ * This handles collecting memory when OOM occurs, by clearing the cache.
+ * The StopScheduler has two collection modes, low and middle priority.
+ * When memory is at a certain threshold, all collectors low and above are called.
+ * When memory is at a critical threshold, all collectors middle and above are called.
+ * We want the cache to always clear whenever OOM happens so this collector's
+ * priority is high.
+ */
+class OOMHandler : public MMemoryCollector
 {
 public:
     OOMHandler();
@@ -33,9 +41,6 @@ public:
     // from collector
     TUint Collect(TUint aRequired);
     void Restore();
-
-    // from stopper
-    void Stop();
 
     TOOMPriority Priority()     { return EOOM_PriorityHigh; }
 };

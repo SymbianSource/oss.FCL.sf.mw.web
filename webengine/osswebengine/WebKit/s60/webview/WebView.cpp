@@ -98,6 +98,7 @@ using namespace HTMLNames;
 #include "eikon.hrh"
 #include "WebScrollbarDrawer.h"
 #include "EventNames.h"
+#include "Editor.h"
 
 using namespace WebCore;
 using namespace EventNames;
@@ -582,7 +583,7 @@ void WebView::syncRepaint()
         }
         layoutPending = false;
     }
-    
+
     if ( !layoutPending || !isLoading()) {
         bool needsDraw = false;
         m_repaints.Tidy();
@@ -862,12 +863,12 @@ bool WebView::handleEditable(const TKeyEvent& keyevent, TEventCode eventcode, Fr
     if ( !consumed && isNaviKey(keyevent) ) {
         if (m_webfeptexteditor->validateTextFormat() ) {
             setFocusNone();
-        } 
+        }
         else {
             consumed = true;
         }
     }
-    
+
     return consumed;
 }
 
@@ -880,29 +881,40 @@ bool WebView::handleEventKeyDown(const TKeyEvent& keyevent, TEventCode eventcode
 }
 
 
+void WebView::sendMouseEventToEngineIfNeeded(TPointerEvent::TType eventType, TPoint pos, Frame* frame)
+{
+    if (m_brctl->settings()->getNavigationType() != SettingsContainer::NavigationTypeTabbed &&
+        (m_brctl->settings()->brctlSetting(TBrCtlDefs::ESettingsCursorShowMode) == TBrCtlDefs::ENoCursor))
+        {
+        return;
+        }
+
+	sendMouseEventToEngine(eventType, pos, frame);
+}
+
 void WebView::sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, Frame* frame)
 {
     TPointerEvent event;
     event.iPosition = pos;
     event.iModifiers = 0;
     event.iType = eventType;
-    
+
     switch (eventType) {
         case TPointerEvent::EButton1Down:
         {
             frame->eventHandler()->handleMousePressEvent(PlatformMouseEvent(event));
             break;
         }
-    
-        case TPointerEvent::EButton1Up: 
+
+        case TPointerEvent::EButton1Up:
         {
             frame->eventHandler()->handleMouseReleaseEvent(PlatformMouseEvent(event));
             break;
         }
-        
+
         case TPointerEvent::EMove:
         {
-            frame->eventHandler()->handleMouseMoveEvent(PlatformMouseEvent(event)); 
+            frame->eventHandler()->handleMouseMoveEvent(PlatformMouseEvent(event));
             break;
         }
     };
@@ -919,26 +931,33 @@ void WebView::setFocusedNode(Frame* frame)
     }
 }
 
-bool WebView::needDeactivateEditable(const TKeyEvent& keyevent, TEventCode eventcode)
+bool WebView::needDeactivateEditable(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)
 {
-    bool upOrDown = ((keyevent.iCode == EKeyDevice3) ||
-                    (keyevent.iCode == EKeyUpArrow) ||
+    bool upOrDown = ((keyevent.iCode == EKeyUpArrow) ||
                     (keyevent.iCode == EStdKeyUpArrow) ||
                     (keyevent.iCode == EKeyRightUpArrow) ||
                     (keyevent.iCode == EKeyDownArrow) ||
                     (keyevent.iCode == EStdKeyDownArrow) ||
                     (keyevent.iCode == EKeyLeftDownArrow));
+    bool shouldEndEditing = frame->editor()->client()->shouldEndEditing(NULL);
     bool inEditState  = (m_isEditable && (m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox));
     bool isSelectBoxActive = (m_focusedElementType == TBrCtlDefs::EElementSelectBox);
-    bool deactivateInputBox = (inEditState && upOrDown);
+    bool deactivateInputBox = (inEditState && upOrDown && m_webfeptexteditor->validateTextFormat());
     bool deactivateSelectBox = (isSelectBoxActive && isNaviKey(keyevent));
 
-    return deactivateInputBox || deactivateSelectBox; 
+    bool deactivateEditable = (m_isEditable && shouldEndEditing && m_webfeptexteditor->validateTextFormat());
+    return deactivateEditable || deactivateSelectBox; 
 }
 
 
 bool WebView::deactivateEditable()
 {
+    WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+    Frame* frame = page()->focusController()->focusedOrMainFrame();
+    SelectionController* sc = frame->selectionController();
+    TRect rect = sc->caretRect().Rect();
+    TPoint pos = kit(frame)->frameView()->frameCoordsInViewCoords(rect.iBr);
+    cursor->setPosition(pos);
     setFocusNone();
     m_prevEditMode = true;
     setEditable( EFalse );
@@ -947,51 +966,33 @@ bool WebView::deactivateEditable()
 
 bool WebView::handleEventKeyL(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)
 {
-    WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
     bool consumed = false;
     bool tabbedNavigation = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
-    bool navigationNone = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone); 
+    bool navigationNone = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone);
     TKeyEvent oldKeyEvent(m_currentEventKey);
-    oldKeyEvent.iCode = keyevent.iCode; 
+    oldKeyEvent.iCode = keyevent.iCode;
     TEventCode oldKeyCode = m_currentEventCode;
-    bool downEventConsumed = false;
     m_currentEventKey = keyevent;
     m_currentEventCode = eventcode;
 
     if (navigationNone) {
-        consumed = handleInputElement(keyevent, eventcode, frame);
-        if (!consumed)
-            consumed = sendKeyEventToEngine(keyevent, eventcode, frame);
+        if (oldKeyCode == EEventKeyDown) {
+            consumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame);
+        }
     }
     else {
-        if (needDeactivateEditable(keyevent, eventcode)) {
-            consumed = deactivateEditable();
-            handleKeyNavigation(keyevent, eventcode, frame);
-        }
-        else if (keyevent.iCode == EKeyDevice3) {
-            sendMouseEventToEngine(TPointerEvent::EButton1Down,
-                                   cursor->position(), frame);
+        if (keyevent.iCode == EKeyDevice3) { //selection key (MSK)
                 // mimic ccb's behavior of onFocus
-            setFocusedNode(frame);
-            if (oldKeyCode == EEventKeyDown && 
-                (m_focusedElementType != TBrCtlDefs::EElementActivatedInputBox)){
-                sendKeyEventToEngine(oldKeyEvent, EEventKeyDown, frame);
-            }
-           
+           consumed = handleMSK(keyevent, oldKeyCode, frame);
+
            // Toolbar is activated on long key press only if the element
            // type is EElementNone during EEventKeyDown and EEventKey.
            // This prevents toolbar from popping up in DHTML pages. Also,
            // toolbar is activated when the user is not in fast scroll
            // mode, or in page overview mode, or on wml page.
-           if ( ( m_focusedElementType == TBrCtlDefs::EElementNone ||
-                  m_focusedElementType == TBrCtlDefs::EElementBrokenImage ) &&
-                  keyevent.iRepeats && !m_brctl->wmlMode() ) {
-               launchToolBarL();
-           }
-           consumed = true;
-        } 
+        }
         else if (isNaviKey(keyevent)) {
-            consumed = handleNaviKeyEvent(oldKeyEvent, oldKeyCode, frame);
+            consumed = handleNaviKeyEvent(keyevent, oldKeyCode, frame);
         } // if (m_brctl->settings()->getNavigationType()
         else { // Not an arrow key..
                  // activate hovered input element by just start typing
@@ -1004,31 +1005,54 @@ bool WebView::handleEventKeyL(const TKeyEvent& keyevent, TEventCode eventcode, F
     return consumed;
 }
 
-bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)  
+bool WebView::handleMSK(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)
+{
+    WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+    bool prevEditableState = m_isEditable;
+    if (m_focusedElementType != TBrCtlDefs::EElementActivatedInputBox ) {
+        sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Down,
+                               cursor->position(), frame);
+    }
+    setFocusedNode(frame);
+    bool textAreaJustActivated = (!prevEditableState && m_isEditable &&
+                                  m_focusedElementType == TBrCtlDefs::EElementTextAreaBox);
+    if (eventcode == EEventKeyDown && 
+        m_focusedElementType != TBrCtlDefs::EElementActivatedInputBox &&
+        !textAreaJustActivated) {
+        sendKeyEventToEngine(keyevent, EEventKeyDown, frame);
+    }
+     if ((m_focusedElementType == TBrCtlDefs::EElementNone ||
+          m_focusedElementType == TBrCtlDefs::EElementBrokenImage ) &&
+          keyevent.iRepeats && !m_brctl->wmlMode() ) {
+         launchToolBarL();
+     }
+     return true;
+}
+bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)
 {
     bool downEventConsumed = false;
     bool consumed = false;
     bool tabbedNavigation = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
     /*
-     * For each platform keyDown event EventHandler::keEvent() generates 
+     * For each platform keyDown event EventHandler::keEvent() generates
      * keydown and keypress.
-     * For keypress event we need a char code and since we don't 
-     * have it at the time of EEventKeyDown we pospond it until EEventKey 
+     * For keypress event we need a char code and since we don't
+     * have it at the time of EEventKeyDown we pospond it until EEventKey
      * and send it here.
      */
     if (eventcode == EEventKeyDown){
         downEventConsumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame);
     }
 
-    if (m_isEditable && !downEventConsumed && m_webfeptexteditor->validateTextFormat()) {
-        setFocusNone();
+    if (!downEventConsumed && needDeactivateEditable(keyevent, eventcode, frame)) {
+        deactivateEditable();
     }
 
     if (tabbedNavigation) {
         consumed = downEventConsumed || handleTabbedNavigation(m_currentEventKey, m_currentEventCode);
     }
-    else {  
-        consumed = (!m_isEditable &&  //avoid showing the cursor when we are in the input box 
+    else {
+        consumed = (!m_isEditable &&  //avoid showing the cursor when we are in the input box
                     handleKeyNavigation(keyevent, eventcode, frame)) ||
                     downEventConsumed;
     }
@@ -1040,23 +1064,23 @@ bool WebView::handleInputElement(const TKeyEvent& keyevent, TEventCode eventcode
 {
     WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
     bool sendMousedEvent = false;
-    if (m_focusedElementType == TBrCtlDefs::EElementInputBox || 
+    if (m_focusedElementType == TBrCtlDefs::EElementInputBox ||
         m_focusedElementType == TBrCtlDefs::EElementTextAreaBox) {
         sendMousedEvent = true;
     }
     else if (m_focusedElementType == TBrCtlDefs::EElementSelectBox ||
         m_focusedElementType == TBrCtlDefs::EElementSelectMultiBox) {
-        if (m_brctl->settings()->getNavigationType() != SettingsContainer::NavigationTypeNone || 
+        if (m_brctl->settings()->getNavigationType() != SettingsContainer::NavigationTypeNone ||
             keyevent.iCode == EKeyDevice3) {
             sendMousedEvent = true;
         }
     }
     if (sendMousedEvent) {
-        sendMouseEventToEngine(TPointerEvent::EButton1Down, cursor->position(), frame);
-        sendMouseEventToEngine(TPointerEvent::EButton1Up, cursor->position(), frame);
+        sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Down, cursor->position(), frame);
+        sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Up, cursor->position(), frame);
 
         if (m_focusedElementType == TBrCtlDefs::EElementInputBox ||
-            m_focusedElementType == TBrCtlDefs::EElementTextAreaBox || 
+            m_focusedElementType == TBrCtlDefs::EElementTextAreaBox ||
             m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox) {
             if (!m_fepTimer) {
                 m_fepTimer = new WebCore::Timer<WebView>(this, &WebView::fepTimerFired);
@@ -1088,8 +1112,15 @@ bool WebView::handleKeyNavigation(const TKeyEvent& keyevent, TEventCode eventcod
     if(!pageView()) {
        m_savedPosition = mainFrame()->frameView()->contentPos();
     }
-
-    cursor->scrollAndMoveCursor(keyevent.iCode, m_scrollingSpeed, fastscroll);
+    // simple scrolling if no cursor mode
+    if (m_brctl->settings()->getNavigationType() != SettingsContainer::NavigationTypeTabbed &&
+            (m_brctl->settings()->brctlSetting(TBrCtlDefs::ESettingsCursorShowMode) == TBrCtlDefs::ENoCursor)){
+        setFocusNone();
+        cursor->simpleScroll(keyevent.iCode, m_scrollingSpeed);
+    }
+    else{
+        cursor->scrollAndMoveCursor(keyevent.iCode, m_scrollingSpeed, fastscroll);
+    }
     updateScrollbars();
     if (!fastscroll) {
         m_fastScrollTimer->Start(KCursorInitialDelay,KCursorUpdateFrquency,TCallBack(&scrollTimerCb,this));
@@ -1100,9 +1131,9 @@ bool WebView::handleKeyNavigation(const TKeyEvent& keyevent, TEventCode eventcod
     consumed = handleMinimapNavigation();
 
     if (!fastscroll) {
-        sendMouseEventToEngine(TPointerEvent::EMove, cursor->position(), frame);
+        sendMouseEventToEngineIfNeeded(TPointerEvent::EMove, cursor->position(), frame);
     }
-    
+
     consumed = true;
     return consumed;
 }
@@ -1111,7 +1142,7 @@ bool WebView::handleKeyNavigation(const TKeyEvent& keyevent, TEventCode eventcod
 bool WebView::handleMinimapNavigation()
 {
     int scrollingTime = millisecondsScrolled();
-    if (!AknLayoutUtils::PenEnabled() && m_pageScalerEnabled && 
+    if (!AknLayoutUtils::PenEnabled() && m_pageScalerEnabled &&
           m_pageScaler && !isSmallPage() &&
           m_brctl->settings()->brctlSetting(TBrCtlDefs::ESettingsPageOverview) &&
          (scrollingTime > KPanningPageScalerStart || m_pageScaler->Visible())) {
@@ -1182,13 +1213,13 @@ bool WebView::handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, 
     bool consumed = false;
     TInt delay = 2 * KCursorInitialDelay;
     WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
-    
+
     m_fastScrollTimer->Cancel();
     m_scrollingSpeed = KNormalScrollRange*100/scalingFactor();
 
     if (viewIsFastScrolling()) {
         setViewIsFastScrolling(false);
-        sendMouseEventToEngine(TPointerEvent::EMove, cursor->position(), frame);
+        sendMouseEventToEngineIfNeeded(TPointerEvent::EMove, cursor->position(), frame);
         toggleRepaintTimer(true);
         if (!inPageViewMode()) {
             delay = 0;
@@ -1202,19 +1233,19 @@ bool WebView::handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, 
     //If we adjusted iCode we have to reset it to 0 after we
     //create PlatformKeyEventSymbian when we send the key event.
     //Otherwise the character will be drawn twice - by fep editor and by
-    //WebEditorClient. These two custom eventcodes serves as indicator that 
+    //WebEditorClient. These two custom eventcodes serves as indicator that
     //PlatformKeyEventSymbian::m_symbianEvent.iCode nee to be reset to 0.
     if (correctedKeyEvent.iCode != m_currentEventKey.iCode) {
         eventCodeDown = (TEventCode)(EEventUser + 1);
-        eventCodeUp = (TEventCode)(EEventUser + 2);    
+        eventCodeUp = (TEventCode)(EEventUser + 2);
     }
-    
+
     if ( (keyevent.iScanCode == EStdKeyDevice3) ||
        (keyevent.iScanCode == EStdKeyEnter) ) {
        // pass it to webcore
 
         if (( m_focusedElementType == TBrCtlDefs::EElementInputBox ||
-            m_focusedElementType == TBrCtlDefs::EElementTextAreaBox) && 
+            m_focusedElementType == TBrCtlDefs::EElementTextAreaBox) &&
             m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed ) {
             if (!m_prevEditMode) {
                 setEditable(true);
@@ -1225,7 +1256,7 @@ bool WebView::handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, 
         }
         if (m_brctl->settings()->getNavigationType() != SettingsContainer::NavigationTypeNone) {
             if (!sendKeyEventToEngine(correctedKeyEvent, eventcode, frame)) {
-                sendMouseEventToEngine(TPointerEvent::EButton1Up, cursor->position(), frame);
+                sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Up, cursor->position(), frame);
             }
             consumed = true;
         }
@@ -1247,10 +1278,10 @@ TUint WebView::correctKeyCode()
 {
     TUint code = m_currentEventKey.iCode;
     // if fep editor was invoked then it consume TKeyEvent and as
-    // result we have KeyEvent.iCode == 0. So we assume here that 
+    // result we have KeyEvent.iCode == 0. So we assume here that
     // if element is editable and no iCode in KeyEvent then fep editor
-    // already put the right character into the input area and we can get 
-    // the correct iCode from the last entered char. 
+    // already put the right character into the input area and we can get
+    // the correct iCode from the last entered char.
     if (m_isEditable && !m_currentEventKey.iCode && m_webfeptexteditor) {
         TInt len = m_webfeptexteditor->DocumentLengthForFep();
         if (len > 0) {
@@ -1261,7 +1292,7 @@ TUint WebView::correctKeyCode()
             }
         }
     }
-    
+
     return code;
 }
 
@@ -1270,22 +1301,10 @@ bool WebView::sendKeyEventToEngine(const TKeyEvent& keyevent,
 {
     bool tabbedNavigation = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
     Node* targetNode = frame->document()->focusedNode();
-    bool hasOnKeyDown = false;
-    bool hasOnKeyUp = false;
-    bool hasOnKeyPress = false;    
-    
-    for (Node* n = targetNode; n; n = n->parentNode()) {
-        EventTargetNode* tnode = static_cast<EventTargetNode*>(n);
-        hasOnKeyDown = tnode->getHTMLEventListener(keydownEvent);
-        hasOnKeyUp = tnode->getHTMLEventListener(keyupEvent);
-        hasOnKeyPress = tnode->getHTMLEventListener(keypressEvent);
-        if (hasOnKeyDown || hasOnKeyUp || hasOnKeyPress) {
-            break;
-        }
-    }
-    
-    
-    if (!m_isEditable && !(hasOnKeyDown || hasOnKeyUp || hasOnKeyPress)) {
+    if (!m_isEditable) {
+
+
+
         frame->document()->setFocusedNode(NULL);
     }
     bool consumed = frame->eventHandler()->keyEvent(PlatformKeyboardEvent(keyevent,eventcode));
@@ -1296,7 +1315,7 @@ bool WebView::sendKeyEventToEngine(const TKeyEvent& keyevent,
         TKeyEvent ke = keyevent;
         TChar c(ke.iCode);
         // Not consumed by WebCore, is alphanumeric and does not have any modifier
-        if (c.IsAlphaDigit() && 
+        if (c.IsAlphaDigit() &&
             !(ke.iModifiers & (EModifierCtrl | EModifierAlt | EModifierShift))) {
             ke.iModifiers = EModifierCtrl;
             frame->eventHandler()->keyEvent(PlatformKeyboardEvent(ke,EEventKeyDown));
@@ -1566,10 +1585,14 @@ void WebView::setEditable(TBool editable)
     Frame* focusedFrame = page()->focusController()->focusedFrame();
 
     if (editable && focusedFrame) {
+        if (!AknLayoutUtils::PenEnabled())
+            notifyFullscreenModeChangeL(EFalse);
         m_webfeptexteditor->UpdateEditingMode();
         focusedNode = focusedFrame->document()->focusedNode();
     }
     else {
+        if (!AknLayoutUtils::PenEnabled())
+            notifyFullscreenModeChangeL(ETrue);
         m_webfeptexteditor->CancelEditingMode();
     }
 
@@ -1617,11 +1640,17 @@ void WebView::SizeChanged()
     if (m_pageFullScreenHandler) {
         m_pageFullScreenHandler->SizeChanged();
     }
-    
+
     if (m_pageScrollHandler) {
         m_pageScrollHandler->scrollbarDrawer()->redrawScrollbar();
     }
-    
+
+    if (m_toolbar && m_toolbarinterface) {
+        m_toolbar->AnimateToolBarClosing(EFalse);
+        closeToolBarL();
+        launchToolBarL();
+    }
+
 }
 
 TSize WebView::maxBidiSize() const
@@ -1669,7 +1698,7 @@ void WebView::scrollBuffer(TPoint to, TPoint from, TBool usecopyscroll)
                 r.Grow(1, 1);
             m_repaints.AddRect(r);
         }
-        
+
         region.Close();
     }
     else {
@@ -2280,25 +2309,25 @@ void WebView::setZoomLevelAdaptively()
 
   // Double Tap Zooming: it toggles between default, maxiZoomLevel.
   // Depending on the current zoom level:
-  //   A. If the current is already the max, it zooms to the max 
+  //   A. If the current is already the max, it zooms to the max
   //   B. If the current is bigger than/equal to the default zoom level zooms to the default, it zooms to the max
-  //   C. Otherwise it zooms to the default level first. 
+  //   C. Otherwise it zooms to the default level first.
   // For the mobile pages, such as google.com and cnn.com, minimum zoom level equals
   // to the default zoom level. Zooming is only possible between default and maximum
   // zoom level, double tap only won't reach logic C
   //
-  // For both mobile and non-mobile pages, it creates the same end user double tap 
-  // experiences 
-  
+  // For both mobile and non-mobile pages, it creates the same end user double tap
+  // experiences
+
     if (m_currentZoomLevel == m_maxZoomLevel ) {
-        zoomLevel = KZoomLevelDefaultValue;    	
+        zoomLevel = KZoomLevelDefaultValue;
     }
     else if (m_currentZoomLevel >= KZoomLevelDefaultValue ) {
         zoomLevel = m_maxZoomLevel;
-    }	
+    }
     else {
-        zoomLevel = KZoomLevelDefaultValue;    	
-    } 
+        zoomLevel = KZoomLevelDefaultValue;
+    }
 
     // move the content
     WebFrameView* view = mainFrame()->frameView();
@@ -2692,8 +2721,8 @@ void WebView::focusedElementChanged(Element* element)
             event.iPosition = StaticObjectsContainer::instance()->webCursor()->position();
             event.iModifiers = 0;
             event.iType = TPointerEvent::EMove;
-            core(mainFrame())->eventHandler()->handleMouseMoveEvent(PlatformMouseEvent(event));            
-            
+            core(mainFrame())->eventHandler()->handleMouseMoveEvent(PlatformMouseEvent(event));
+
         }
         else {
             int x, y;
@@ -2709,11 +2738,11 @@ void WebView::focusedElementChanged(Element* element)
                 event.iPosition = StaticObjectsContainer::instance()->webCursor()->position();
                 event.iModifiers = 0;
                 event.iType = TPointerEvent::EMove;
-                core(mainFrame())->eventHandler()->handleMouseMoveEvent(PlatformMouseEvent(event));            
+                core(mainFrame())->eventHandler()->handleMouseMoveEvent(PlatformMouseEvent(event));
             }
         }
 
-        if (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed) { 
+        if (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed) {
             m_tabbedNavigation->focusedElementChanged(element);
         }
         // onload event on the first page could happen before the view becomes visible

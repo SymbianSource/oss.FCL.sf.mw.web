@@ -331,7 +331,8 @@ TKeyResponse CWidgetUiWindowContainer::OfferKeyEventL(
         // special case for readonly input box - if not activated then remove status pane and cba
         if( editing && aType == EEventKeyUp &&
             (Engine()->FocusedElementType() != TBrCtlDefs::EElementActivatedInputBox  &&
-             Engine()->FocusedElementType() != TBrCtlDefs::EElementActivatedObjectBox  ))
+             Engine()->FocusedElementType() != TBrCtlDefs::EElementActivatedObjectBox &&
+             Engine()->FocusedElementType() != TBrCtlDefs::EElementTextAreaBox))
             {
             iWindowManager.View()->UpdateStatusPane(EFalse);
             }

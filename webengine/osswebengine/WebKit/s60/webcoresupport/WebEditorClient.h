@@ -104,6 +104,7 @@ private:
 
 private:
     WebView* m_webView;
+    bool     m_shouldEndEditing;
 };
 
 

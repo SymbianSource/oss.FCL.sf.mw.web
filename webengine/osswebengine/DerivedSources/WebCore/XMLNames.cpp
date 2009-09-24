@@ -83,9 +83,8 @@ void init()
     new ((void*)&langAttr) QualifiedName(nullAtom, langAttrString, xmlNS);
     new ((void*)&spaceAttr) QualifiedName(nullAtom, spaceAttrString, xmlNS);
 }
-
-void remove()
-{
+struct cleanupXmlNames  {
+    ~cleanupXmlNames() {
 #ifndef __WINSCW__
     if( initialized ) {
         ((AtomicString*)&xmlNamespaceURI)->~AtomicString();
@@ -94,13 +93,15 @@ void remove()
         ((QualifiedName*)&spaceAttr)->~QualifiedName();
     }
 #endif // __WINSCW__
-    
-	xmlNSString = "";
-	baseAttrString = "";
-	langAttrString = "";
-	spaceAttrString = "";
-	initialized = false;
-}
+ 
+    xmlNSString = "";
+    baseAttrString = "";
+    langAttrString = "";
+    spaceAttrString = "";
+    initialized = false;
+    }
+};
+struct cleanupXmlNames xmlNames;
 
 } }
 

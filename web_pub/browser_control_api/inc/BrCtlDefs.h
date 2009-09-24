@@ -466,6 +466,10 @@ class TBrCtlDefs
             ESettingsZoomLevelMin,          ///< Minimum Zoom level supported
             ESettingsZoomLevelMax,          ///< Maximum Zoom level supported
             ESettingsZoomLevelDefault,      ///< Default Zoom level for new page
+            /*
+            * Browser cursor show mode -- some phone doesn't have cursor inside Browser
+            */
+            ESettingsCursorShowMode,
             ESettingsMaxEnum              ///< Must be last one
             };
 
@@ -816,8 +820,12 @@ class TBrCtlDefs
         EFormDataOnly,
         EFormDataPlusPassword
         };
+    enum TCursorSettings
+        {
+        ENoCursor = 0,
+        EDefaultCursor
+        };
     };
-
 #endif      // BRCTLDEFS_H
 
 // End of File

@@ -4142,6 +4142,10 @@ void CHttpDownload::LoadDownloadInfoL()
     READ_INT_L( inFile, iTargetApp );
     iStorage->LoadStorageInfoL( inFile );
     ReadHBufCL( inFile, iDlName );
+	if ( *iDlName == KNullDesC )
+	   {
+	    User::Leave( KErrNotSupported );
+	   }
     ReadHBufCL( inFile, iHashedMsgBody );
     READ_INT_L( inFile, iCodDownload );
     READ_INT_L( inFile, iNoMedia );

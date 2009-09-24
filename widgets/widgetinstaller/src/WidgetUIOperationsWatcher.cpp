@@ -19,6 +19,7 @@
 *
 */
 
+// INCLUDE FILES
 #include <f32file.h>
 #include <SWInstDefs.h>
 #include <zipfile.h>
@@ -235,8 +236,11 @@ void CWidgetUIOperationsWatcher::InstallSubfunctionL(
         // processing.  So here is a good place to put up the displays
         // (before RunL() is invoked) which lets other objects run.
 
-        iUIHandler->DisplayFinalizeDialogL(); // a dialog without a cancel option
-        iUIHandler->DisplayProgressDialogL(); // progress bar
+        if ( !iSilent )
+            {
+            iUIHandler->DisplayFinalizeDialogL(); // a dialog without a cancel option
+            iUIHandler->DisplayProgressDialogL(); // progress bar
+            }
 
         if ( replaceExisting )
             {
@@ -265,7 +269,9 @@ void CWidgetUIOperationsWatcher::InstallSubfunctionL(
     else
         {
         userCancel = ETrue;
-        iUIHandler->DisplayCancelL();
+
+        if ( !iSilent ) { iUIHandler->DisplayCancelL(); }
+
         TRequestStatus* status = &aRequestStatus;
         User::RequestComplete( status, KErrNone );
         }
@@ -317,7 +323,7 @@ void CWidgetUIOperationsWatcher::InstallL(
     TRAPD( error, InstallSubfunctionL( aFile, userCancel, aRequestStatus ) );
     if ( KErrNone != error )
         {
-        iUIHandler->DisplayErrorL( error );
+        if ( !iSilent ) { iUIHandler->DisplayErrorL( error ); }
         User::Leave( error );
         }
     else if ( userCancel )
@@ -447,12 +453,12 @@ TBool CWidgetUIOperationsWatcher::PreprocessWidgetBundleL()
             RApaLsSession apaLsSession;
             apaLsSession.Connect();
             TApaAppInfo info;
-                        
+
             User::LeaveIfError( apaLsSession.GetAppInfo( info, aUid ) );
             iWidgetName = info.iFullName;
             HBufC *widgetName = iWidgetName.AllocLC();
             HandleWidgetCommandL(apaLsSession, *widgetName, aUid, Deactivate);
-                        
+
             CleanupStack::PopAndDestroy( widgetName );
             apaLsSession.Close();
             }
@@ -630,10 +636,13 @@ void CWidgetUIOperationsWatcher::RunL()
                 CleanupStack::PopAndDestroy( 3 ); // file, buffer, stream
                 }
 
-            // more progress!!!
-            if ( member->UncompressedSize() )
+            if ( !iSilent )
                 {
-                iUIHandler->UpdateProgressDialogL( member->UncompressedSize() );
+                // more progress!!!
+                if ( member->UncompressedSize() )
+                    {
+                    iUIHandler->UpdateProgressDialogL( member->UncompressedSize() );
+                    }
                 }
 
             // if this is the icon file, then start icon processing
@@ -665,7 +674,7 @@ void CWidgetUIOperationsWatcher::RunL()
             }
         else // done with zip archive
             {
-            iUIHandler->CloseProgressDialogL();
+            if ( !iSilent ) { iUIHandler->CloseProgressDialogL(); }
             // and reveal finalize dialog underneath
 
             // finished unzip
@@ -685,9 +694,12 @@ void CWidgetUIOperationsWatcher::RunL()
         }
     else // user cancel (not DoCancel)
         {
-        iUIHandler->CloseProgressDialogL();
-        iUIHandler->CloseFinalizeDialogL();
-        iUIHandler->DisplayCancelL();
+        if ( !iSilent )
+            {
+            iUIHandler->CloseProgressDialogL();
+            iUIHandler->CloseFinalizeDialogL();
+            iUIHandler->DisplayCancelL();
+            }
 
         // stop icon conversion (if there is a converter)
         delete iIconConverter;
@@ -742,6 +754,7 @@ void CWidgetUIOperationsWatcher::FinishInstallL()
             {
             TUid uid = TUid::Uid( *(iPropertyValues[EUid]) );
             iRegistry.DeRegisterWidgetL( uid );
+            iAppManager->DeregisterWidgetL( uid );
             }
 
         // TODO if registration steps fail does it leave inconsistent state???
@@ -758,13 +771,11 @@ void CWidgetUIOperationsWatcher::FinishInstallL()
             {
             // delete backup
             (void)iFileMgr->RmDir( iBackupDir );
-            
-            // if widget was in home screen, add it back to home screen
             if ( iWidgetInHS )
                 {
                 RApaLsSession apaLsSession;
                 apaLsSession.Connect();
-       
+
                 HBufC* widgetName = iWidgetName.AllocLC();
                 HandleWidgetCommandL(apaLsSession, *widgetName, TUid::Uid( *(iPropertyValues[EUid]) ), WidgetRestart);
                 CleanupStack::PopAndDestroy( widgetName );
@@ -772,9 +783,11 @@ void CWidgetUIOperationsWatcher::FinishInstallL()
                 apaLsSession.Close();
                 }
             }
-
-        iUIHandler->CloseFinalizeDialogL();
-        iUIHandler->DisplayCompleteL();
+        if ( !iSilent )
+            {
+            iUIHandler->CloseFinalizeDialogL();
+            iUIHandler->DisplayCompleteL();
+            }
 
         HandleLogsL(*(iPropertyValues[EBundleDisplayName]), TUid::Uid( *(iPropertyValues[EUid]) ), *(iPropertyValues[ENokiaWidget]), SwiUI::ELogTaskActionInstall);
         }
@@ -844,9 +857,12 @@ void CWidgetUIOperationsWatcher::DoCancel()
 
     TRAP_IGNORE(
         {
-        iUIHandler->CloseProgressDialogL();
-        iUIHandler->CloseFinalizeDialogL();
-        iUIHandler->DisplayCancelL();
+        if ( !iSilent )
+            {
+            iUIHandler->CloseProgressDialogL();
+            iUIHandler->CloseFinalizeDialogL();
+            iUIHandler->DisplayCancelL();
+            }
 
         // stop icon conversion (if there is a converter)
         delete iIconConverter;
@@ -877,9 +893,12 @@ TInt CWidgetUIOperationsWatcher::RunError( TInt aError )
 
     TRAP_IGNORE(
         {
-        iUIHandler->CloseProgressDialogL();
-        iUIHandler->CloseFinalizeDialogL();
-        iUIHandler->DisplayErrorL( aError );
+        if ( !iSilent )
+            {
+            iUIHandler->CloseProgressDialogL();
+            iUIHandler->CloseFinalizeDialogL();
+            iUIHandler->DisplayErrorL( aError );
+            }
 
         // stop icon conversion (if there is a converter)
         delete iIconConverter;
@@ -933,7 +952,7 @@ void CWidgetUIOperationsWatcher::UninstallL(
 
     // save client status to use in finish uninstall
     iRequestStatus = &aRequestStatus;
-    
+
     TBuf<KWidgetRegistryVal> bundleName;
     iRegistry.GetWidgetBundleName( aUid, bundleName );
 
@@ -942,31 +961,37 @@ void CWidgetUIOperationsWatcher::UninstallL(
         FinishUninstallL( KErrCorrupt );
         return;
         }
-            
+
     TBool widgetinHomeScreen(EFalse);
-    widgetinHomeScreen = iRegistry.IsWidgetInMiniView( aUid ); 
+    widgetinHomeScreen = iRegistry.IsWidgetInMiniView( aUid );
+
+    TBool uninstall( ETrue );
+    if ( !iSilent )
+        {
+        uninstall = iUIHandler->DisplayUninstallL( bundleName,widgetinHomeScreen );
+        }
     // prompt user to uninstall
-    if( iUIHandler->DisplayUninstallL( bundleName,widgetinHomeScreen ) )
+    if( uninstall )
         {
         if(iRegistry.IsWidgetRunning( aUid ))
-        //Runnning widget should be first closed    
+        //Runnning widget should be first closed
             {
             RApaLsSession apaLsSession;
             apaLsSession.Connect();
             TApaAppInfo info;
-            
+
             User::LeaveIfError( apaLsSession.GetAppInfo( info, aUid ) );
-            HBufC* widgetName = info.iFullName.AllocLC();        
+            HBufC* widgetName = info.iFullName.AllocLC();
             HandleWidgetCommandL(apaLsSession,*widgetName,aUid,Deactivate);
-            
+
             CleanupStack::PopAndDestroy( widgetName );
-            apaLsSession.Close();            
+            apaLsSession.Close();
             }
-        iUIHandler->DisplayUninstallInProgressL();
+        if ( !iSilent ) { iUIHandler->DisplayUninstallInProgressL(); }
         TBuf<KWidgetRegistryVal> widgetPath;
         iRegistry.GetWidgetPath( aUid, widgetPath );
         TBool aVendor = *(iRegistry.GetWidgetPropertyValueL(aUid, ENokiaWidget));
-        
+
 
         // TODO if any of next steps leave does state become inconsistent?
 
@@ -976,11 +1001,11 @@ void CWidgetUIOperationsWatcher::UninstallL(
             {
             iFileMgr->RmDir( widgetPath );
             //Widget should delete any cookie it created
-            HBufC* fileName = HBufC::NewLC(KMaxFileName);            
+            HBufC* fileName = HBufC::NewLC(KMaxFileName);
             TPtr ptr(fileName->Des());
-            TBuf<8> buf1; 
+            TBuf<8> buf1;
             ptr = KCookieFile;
-            TInt pos = ptr.LocateReverse('.');            
+            TInt pos = ptr.LocateReverse('.');
             buf1.AppendNum(aUid.iUid,EHex);
             ptr.Insert(pos,_L("_"));
             ptr.Insert(pos+1,buf1);
@@ -999,7 +1024,7 @@ void CWidgetUIOperationsWatcher::UninstallL(
         }
     else
         {
-        iUIHandler->DisplayCancelL();
+        if ( !iSilent ) { iUIHandler->DisplayCancelL(); }
 
         // must return cancel because upper-levels will take uninstall
         // actions (remove widget from applications list) if we return KErrNone
@@ -1016,13 +1041,13 @@ void CWidgetUIOperationsWatcher::UninstallL(
 //
 void CWidgetUIOperationsWatcher::FinishUninstallL( TInt aErr )
     {
-    iUIHandler->CloseUninstallInProgressDialogL();
+    if ( !iSilent ) { iUIHandler->CloseUninstallInProgressDialogL(); }
     if ( aErr )
         {
-        iUIHandler->DisplayErrorL( aErr );
+        if ( !iSilent ) { iUIHandler->DisplayErrorL( aErr ); }
         User::Leave( aErr );
         }
-    iUIHandler->DisplayCompleteL();
+    if ( !iSilent ) { iUIHandler->DisplayCompleteL(); }
     User::RequestComplete( iRequestStatus, KErrNone );
     iRequestStatus = NULL;
     }
@@ -1164,22 +1189,32 @@ void CWidgetUIOperationsWatcher::ConvertIconL(
 //
 TBool CWidgetUIOperationsWatcher::PromptUserForInstallL( TBool aOverwrite )
     {
-    TBool userAnswer;
+    TBool userAnswer( ETrue );
 
-    if ( aOverwrite )
+    if ( !iSilent )
         {
-        userAnswer =
-            iUIHandler->DisplayOverwriteL( *(iPropertyValues[EBundleDisplayName]) );
+        if ( aOverwrite )
+            {
+            userAnswer =
+                iUIHandler->DisplayOverwriteL( *(iPropertyValues[EBundleDisplayName]) );
+            }
+        else
+            {
+            userAnswer =
+                iUIHandler->DisplayInstallL( *(iPropertyValues[EBundleDisplayName]) );
+            }
+        if ( userAnswer )
+            {
+            userAnswer = SelectMemoryL();
+            }
         }
     else
-        {
-        userAnswer =
-            iUIHandler->DisplayInstallL( *(iPropertyValues[EBundleDisplayName]) );
-        }
-    if ( userAnswer )
-        {
-        userAnswer = SelectMemoryL();
-        }
+            {
+            TDriveUnit selectedDrive(_L("C"));        // in real should be read from install options which are ignore too at the moment.
+            UpdateWidgetBasePathL( selectedDrive );
+            *(iPropertyValues[EDriveName]) = selectedDrive.Name();
+            }
+
     return userAnswer;
     }
 
@@ -1283,7 +1318,7 @@ void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUi
     params.iUid = aUid;
     params.iAction = aAction;
     params.iVendor.Copy((aVender ? _L("Nokia") : _L("Non-Nokia")));
-    
+
     TTime time;
     time.UniversalTime();
     params.iTime = time;
@@ -1292,7 +1327,7 @@ void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUi
     task->SetParameterL( pckg, 0 );
     iTaskManager->AddTaskL( task );
     iTaskManager->CommitL();
-    
+
     CleanupStack::Pop(task);
     }
 
@@ -1304,36 +1339,36 @@ void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUi
 void CWidgetUIOperationsWatcher::HandleWidgetCommandL( RApaLsSession& aSession,const TDesC& aWidget,const TUid& aUid,TUint32 aOperation )
     {
     const TInt size( 2* aWidget.Length() + 3*sizeof( TUint32 ) );
-    
+
     // Message format is <filenameLength><unicode_filename><someintegervalue>
     CApaCommandLine* cmd( CApaCommandLine::NewLC() );
     HBufC8* opaque( HBufC8::NewLC( size ) );
-    
+
     RDesWriteStream stream;
     TPtr8 des( opaque->Des() );
-    
+
     stream.Open( des );
     CleanupClosePushL( stream );
-    
+
     // Generate the command.
     stream.WriteUint32L( aUid.iUid );
     stream.WriteUint32L( aWidget.Length() );
     stream.WriteL( reinterpret_cast< const TUint8* >( aWidget.Ptr() ),
                    aWidget.Size() );
-    
+
     stream.WriteInt32L( aOperation );
-    
+
     CleanupStack::PopAndDestroy( &stream );
-    
+
     // Generate command.
     cmd->SetCommandL( EApaCommandBackgroundAndWithoutViews );
-    cmd->SetOpaqueDataL( *opaque );    
+    cmd->SetOpaqueDataL( *opaque );
 
     CleanupStack::PopAndDestroy( opaque );
-    
+
     cmd->SetExecutableNameL( KLauncherApp );
-    
+
     User::LeaveIfError( aSession.StartApp( *cmd ) );
-    CleanupStack::PopAndDestroy( cmd );    
+    CleanupStack::PopAndDestroy( cmd );
     }
 //  End of File

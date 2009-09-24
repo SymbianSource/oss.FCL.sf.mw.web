@@ -238,12 +238,15 @@ void HistoryHandler::navigationStateChanged(TBrCtlDefs::TBrCtlState state, bool 
 }
 
 CFbsBitmap* HistoryHandler::scaledPage()
-{
-    CFbsBitmap* scaledPage = m_brctl->wmlMode() ? m_brctl->wmlPageScaler().ScaledPage() :
-        m_brctl->webView()->pageScaler()->ScaledPage();
-
-    return scaledPage;
-
+{   
+    CFbsBitmap* scaledPage = NULL;   
+    if ( m_brctl->wmlMode() && &m_brctl->wmlPageScaler() ) {
+        scaledPage = m_brctl->wmlPageScaler().ScaledPage();
+    }
+    else if( !m_brctl->wmlMode() && m_brctl->webView()->pageScaler() ) {
+        scaledPage = m_brctl->webView()->pageScaler()->ScaledPage();
+    }
+    return scaledPage;    
 }
 
 void HistoryHandler::makeVisible(bool visible)
@@ -2452,3 +2455,5 @@ void CBrCtl::HandlePointerBufferReadyL()
 {
     m_webView->HandlePointerBufferReadyL();
 }
+
+

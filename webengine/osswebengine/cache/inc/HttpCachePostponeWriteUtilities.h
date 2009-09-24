@@ -56,7 +56,7 @@ public:
     TInt GetResult();   // KRequestPending, or a completion code.
 
 private:
-    CHttpCacheEntryAsyncWriteHelper(TRequestStatus& aStatus, MHttpCacheWriteSource* aSource, TInt aPriority = EPriorityNormal);
+    CHttpCacheEntryAsyncWriteHelper(TRequestStatus& aStatus, MHttpCacheWriteSource* aSource, TInt aPriority = EPriorityIdle);
 
     virtual void DoCancel();
     virtual void RunL();
@@ -86,7 +86,7 @@ public:
     virtual ~CSegmentedHeapBuffer();
     /*
      * aBufferSize is the size of each segment used for storage.
-     * aCompressGranularity is the multiple used when Compress()ing the last block.
+     * aCompressGranularity is used when Compress()ing the last block. If the block has at least this much free space, it is realloced to the correct size.
      */
     static CSegmentedHeapBuffer * NewL(TInt aBufferSize = 32768, TInt aCompressGranularity = 4096);
 

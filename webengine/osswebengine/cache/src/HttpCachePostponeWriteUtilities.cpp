@@ -194,16 +194,17 @@ CSegmentedHeapBuffer *CSegmentedHeapBuffer::NewL(TInt aBufferSize, TInt aCompres
 void CSegmentedHeapBuffer::AppendL(TInt& aRemainder, const TDesC8& aDes)
     {
     aRemainder = aDes.Length(); // consumed nothing yet.
-    TInt workingLen;
-    TInt workingOffset=0;   // read position in source descriptor
     HBufC8* currentBuffer;
 
+    // 90% of cached objects are less than 4KB.
+    // Lots of them also come in two parts from the http stack.
+#define HTTPSEGMENTEDBUFFER_OPTION_INCREMENT_GRADUALLY
+#ifndef HTTPSEGMENTEDBUFFER_OPTION_INCREMENT_GRADUALLY
     TInt lastBuffer = iBufferList.Count()-1;
     if ( lastBuffer < 0 )
         {
         // TODO: Make the first block only equal to the size of data we need?
         // Take some traces to see what happens.
-
         // no blocks allocated.  May leave here if we can't get space.
         currentBuffer = HBufC8::NewLC(iBufferSize);
         iBufferList.AppendL(currentBuffer);
@@ -215,6 +216,8 @@ void CSegmentedHeapBuffer::AppendL(TInt& aRemainder, const TDesC8& aDes)
         currentBuffer = iBufferList[lastBuffer];
         }
 
+    TInt workingLen;
+    TInt workingOffset=0;   // read position in source descriptor
     // here, currentBuffer always points to a buffer we can use.
     while ( aRemainder )
         {
@@ -236,6 +239,123 @@ void CSegmentedHeapBuffer::AppendL(TInt& aRemainder, const TDesC8& aDes)
             CleanupStack::Pop(currentBuffer);
             }
         }
+#else
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteFormatLog(0, _L("CHttpCacheSegmentedBuffer::AppendL %08x adding %d bytes to %d"), this, aRemainder, this->Length());
+#endif
+    // because most items are small, increment buffers up to the configured segment size as data is added...
+    TInt workingOffset = 0;
+    TInt lastBuffer = iBufferList.Count()-1;
+    if ( lastBuffer < 0 )
+        {
+        // special case for first allocation.
+        // no blocks allocated.  May leave here if we can't get space.
+        if( aRemainder <= iBufferSize)  // we can fit the first block into a single segment
+            {
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteFormatLog(0, _L(" First alloc %d into buffer fits inside %d"), aRemainder, iBufferSize );
+#endif
+            // fast path optimisation for first alloc into an empty segmented buffer.
+            currentBuffer = aDes.AllocLC();
+            iBufferList.AppendL( currentBuffer );
+            CleanupStack::Pop( currentBuffer );
+            aRemainder = 0;
+            }
+        else
+            {
+            // the segmented buffer is empty and the first block to add is bigger than the configured block size
+            // fill the first segment and leave the rest for the loop
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteFormatLog(0, _L(" First alloc %d is bigger than %d"), aRemainder, iBufferSize );
+#endif
+            currentBuffer = HBufC8::NewLC( iBufferSize );
+            iBufferList.AppendL( currentBuffer );
+            CleanupStack::Pop( currentBuffer );
+            currentBuffer->Des().Copy( aDes.Ptr(), iBufferSize );
+            workingOffset = iBufferSize;    // when we add the remaining data, we start from here.
+            aRemainder -= iBufferSize;
+            }
+        }
+    else
+        {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteFormatLog(0, _L(" Buffer already contains data"));
+#endif
+        currentBuffer = iBufferList[lastBuffer];
+        }
+    
+    // When we get to here the following state applies.
+    // currentBuffer points to an allocated and filled HBufC8
+    // workingOffset tells us how far into the supplied descriptor the data we want is
+    // aRemainder tells us how much data is left to copy.
+    while( aRemainder )
+        {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteFormatLog(0, _L(" %d bytes left to add to buffer"), aRemainder);
+#endif
+        TInt possibleConsumptionInThisBlock = iBufferSize - currentBuffer->Length();
+        if( possibleConsumptionInThisBlock == 0 )
+            {
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteFormatLog(0, _L(" Buffer cannot be extended."));
+#endif
+            // block cannot extend, alloc a new one
+            // the new one is either the correct length, or iBufferSize if aRemainder is too big.
+            TInt spaceToAlloc = aRemainder < iBufferSize ? aRemainder : iBufferSize;
+            currentBuffer = HBufC8::NewLC( spaceToAlloc );
+            iBufferList.AppendL( currentBuffer );
+            CleanupStack::Pop( currentBuffer );
+            possibleConsumptionInThisBlock = spaceToAlloc;            
+#ifdef __CACHELOG__
+            HttpCacheUtil::WriteFormatLog(0, _L(" New buffer of %d bytes allocated"), spaceToAlloc);
+#endif
+            // fill the block as far as possible
+            currentBuffer->Des().Append( aDes.Mid( workingOffset, possibleConsumptionInThisBlock ));
+            workingOffset += possibleConsumptionInThisBlock;
+            aRemainder -= possibleConsumptionInThisBlock;
+            }
+        else
+            {
+            // block can extend
+            if( possibleConsumptionInThisBlock >= aRemainder )
+                {
+#ifdef __CACHELOG__
+                HttpCacheUtil::WriteFormatLog(0, _L(" Current buffer can be extended to hold all data."));
+#endif
+                // we can realloc this buffer big enough to hold all the remaining data.
+                currentBuffer = currentBuffer->ReAllocL( currentBuffer->Length() + aRemainder );
+                CleanupStack::PushL( currentBuffer );
+                iBufferList.Remove(iBufferList.Count()-1);
+                iBufferList.AppendL( currentBuffer );
+                CleanupStack::Pop( currentBuffer );
+                // copy the data
+                currentBuffer->Des().Append( aDes.Mid( workingOffset, aRemainder ));
+                aRemainder = 0;
+                }
+            else
+                {
+#ifdef __CACHELOG__
+                HttpCacheUtil::WriteFormatLog(0, _L(" Buffer cannot be extended to hold all data, consuming %d bytes."), possibleConsumptionInThisBlock);
+#endif
+                // this buffer cannot extend to hold all the data.
+                // take as much as we can - we will allocate a new buffer next time around.
+                currentBuffer = currentBuffer->ReAllocL( currentBuffer->Length() + possibleConsumptionInThisBlock );
+                CleanupStack::PushL( currentBuffer );
+                iBufferList.Remove(iBufferList.Count()-1);
+                iBufferList.AppendL( currentBuffer );
+                CleanupStack::Pop( currentBuffer );
+                // copy the data
+                currentBuffer->Des().Append( aDes.Mid( workingOffset, possibleConsumptionInThisBlock ));
+                // set up variables for next time around
+                workingOffset += possibleConsumptionInThisBlock;
+                aRemainder -= possibleConsumptionInThisBlock;
+                }
+            }
+        }
+#endif
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteFormatLog(0, _L(" exiting AppendL. Segmented buffer now contains %d bytes"), this->Length());
+#endif
     // will only exit here if we consumed all data
     }
 
@@ -350,7 +470,7 @@ CSegmentedHeapBuffer::CSegmentedHeapBuffer(TInt aBufferSize, TInt aCompressGranu
 // -----------------------------------------------------------------------------
 //
 CHttpCacheWriteTimeout::CHttpCacheWriteTimeout( const TInt aTimeout )
-    : CActive(EPriorityStandard),
+    : CActive(EPriorityIdle),
       iTimeout(aTimeout) // Standard priority
     {
     }

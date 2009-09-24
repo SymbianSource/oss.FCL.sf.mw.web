@@ -107,12 +107,26 @@ CHttpCacheEntry* CHttpCacheEntry::NewLC(
 //
 CHttpCacheEntry::~CHttpCacheEntry()
     {
+#ifdef __CACHELOG__
+    HttpCacheUtil::WriteFormatLog(0, _L("Deleting CHttpCacheEntry %08x"), this);
+#endif
     // Clean up eviction handler
     if ( iEvictionCandidate && iEvictionHandler )
         {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteLog(0, _L("Removing from eviction candidate list"));
+#endif
         iEvictionHandler->Remove( *this );
         }
 
+    if( iDeleteObserver )
+        {
+#ifdef __CACHELOG__
+        HttpCacheUtil::WriteFormatLog(0, _L("Notifying delete observer %08x"), this);
+#endif
+        iDeleteObserver->EntryDeleted(this);
+        }
+    
     // Close files, this will commit changes
     iBodyFile.Close();
 
@@ -495,4 +509,13 @@ void CHttpCacheEntry::CancelBodyWrite()
         }
     }
 
+void CHttpCacheEntry::SetDeleteObserver(MHttpCacheEntryDeleteObserver* aObserver)
+    {
+    iDeleteObserver = aObserver;
+    }
+
+void CHttpCacheEntry::ClearDeleteObserver()
+    {
+    iDeleteObserver = NULL;
+    }
 //  End of File

@@ -125,7 +125,8 @@ class CWidgetUiWindow :  public CBase,
                                  const TDesC& aMimeType);
 
        /**
-        * Called to show or hide softkeys
+        * Called to show or hide softkeys from menu client callback
+        *  -- sets a flag to reflect user preference 
         * @since 3.1
         * @param aVisible ETrue to show softkeys, EFalse when full screen is needed
         */
@@ -482,6 +483,25 @@ class CWidgetUiWindow :  public CBase,
         */              
         void DetermineNetworkState();
         
+        
+        /**
+         * MakeSoftkeysVisible
+         * Called to show or hide softkeys 
+         * @since Browser 7.1
+         * @param aVisible ETrue to show softkeys, EFalse when full screen is needed
+         * @param aTextBoxUpdate ETrue when called due to textbox update (via updatestatuspane), else EFalse
+         */
+        void MakeSoftkeysVisible(TBool aVisible, TBool aTextBoxUpdate);
+        
+        /**
+         * NetworkModeWait
+         * returns pointer to NetworkMode wait object
+         * @since 7.1
+         * @return CActiveSchedulerWait*
+         */
+        CActiveSchedulerWait* NetworkModeWait() { return iNetworkModeWait; }
+
+        
     protected:
 
         /**
@@ -578,6 +598,7 @@ class CWidgetUiWindow :  public CBase,
         TTime                           iOOMWidgetStartTime; 
         TBool                           iWidgetLoadStarted; // Set to true when widget load starts
         CJpgSaver*                       iJpgSaver; 
+        CActiveSchedulerWait*           iNetworkModeWait;
                             
    };
 

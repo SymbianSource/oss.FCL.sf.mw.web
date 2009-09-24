@@ -321,8 +321,8 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
                 npWindow->y = rect.iTl.iY;
                 npWindow->width = rect.Width();
                 npWindow->height = rect.Height();
-                npWindow->type = NPWindowTypeWindow;
-                npWindow->window = NULL;
+                npWindow->type = pluginWin->Windowed() ? NPWindowTypeWindow : NPWindowTypeDrawable;
+                npWindow->window = pluginWin->Windowed() ? NULL : (MPluginAdapter*) pluginWin;
             
                 NPRect clipRect = {0,0,0,0};
                 npWindow->clipRect = clipRect;
@@ -389,6 +389,17 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
             }
         }
         break;  // for code consistency
+        
+       case NPNVSupportsWindowless:{
+            PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
+               if (pluginWin) {
+                   *((TBool*) aRetValue) = ETrue;
+               }
+               else {
+                   err = NPERR_GENERIC_ERROR;
+               }
+       }
+       break;		   
         default:
             {
             *((TBool*) aRetValue) = EFalse;

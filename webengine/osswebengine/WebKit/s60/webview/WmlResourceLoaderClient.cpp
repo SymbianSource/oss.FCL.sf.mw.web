@@ -145,7 +145,7 @@ void WmlResourceLoaderClient::didReceiveData(const char* data, int length, long 
         chunkIndex++;     
     }
 
-    if (m_contentType && m_charset && m_url) {
+    if (m_contentType && m_charset && m_url && m_wmldispatcher) {
         m_wmldispatcher->WmlParameters( data, length, *m_contentType, *m_charset, m_httpStatus, chunkIndex, *m_url);        
     }
     
@@ -155,20 +155,26 @@ void WmlResourceLoaderClient::didReceiveData(const char* data, int length, long 
 void WmlResourceLoaderClient::didFinishLoading()
 {
     TInt chunkIndex = -1;      // last chunk
-    if (m_contentType && m_charset && m_url) {
+    if (m_contentType && m_charset && m_url && m_wmldispatcher) {
         m_wmldispatcher->WmlParameters( NULL, 0, *m_contentType, *m_charset, m_httpStatus, chunkIndex, *m_url );
     }
-    m_wmldispatcher->HandleError(0,KErrCompletion);
+    if ( m_wmldispatcher ) {
+        m_wmldispatcher->HandleError(0,KErrCompletion);
+    }
 }
 
 void WmlResourceLoaderClient::didFail(const WebCore::ResourceError& error)
 {    
-    m_wmldispatcher->HandleError(0,error.errorCode());
+    if ( m_wmldispatcher ) {
+        m_wmldispatcher->HandleError(0,error.errorCode());
+    }
 }
 
 void WmlResourceLoaderClient::didCancel(const WebCore::ResourceError& error)
 {
-    m_wmldispatcher->HandleError(0,error.errorCode());
+    if ( m_wmldispatcher ) {
+        m_wmldispatcher->HandleError(0,error.errorCode());
+    }
 }
 
 // End of File

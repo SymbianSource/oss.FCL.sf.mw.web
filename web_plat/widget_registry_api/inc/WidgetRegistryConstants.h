@@ -127,6 +127,7 @@ enum TWidgetPropertyId
     ENokiaWidget,               // int 0 (not Nokia DTD) or 1 (Nokia DTD)
     EMiniViewEnable,            //optional; int internally 0 0r 1
     EBlanketPermGranted,              //optional; int internally 0 0r 1
+    EPreInstalled,              // optional; int internally 0 or 1
 
     // end property list, begin special values
     EWidgetPropertyIdCount,     // must be at end of properties

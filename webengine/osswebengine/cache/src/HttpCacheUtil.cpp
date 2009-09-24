@@ -1178,12 +1178,9 @@ void HttpCacheUtil::WriteFormatLog(
         {
         VA_LIST args;
         VA_START(args, aBuf);
-        // Be careful of string length when debugging
         TBuf16<1024> string;
-        // TDes16OverflowIgnore, not supported in 3.2.3
-        // TDes16OverflowIgnore overflow;
-        // string.AppendFormatList(aBuf, args, &overflow);
-        string.AppendFormatList(aBuf, args);
+        TDes16IgnoreOverflow overflow;
+        string.AppendFormatList(aBuf, args, &overflow);
         RFileLogger::WriteFormat(_L("Browser"), fileName, EFileLoggingModeAppend, string);
         VA_END(args);
         }
@@ -1831,6 +1828,130 @@ TInt HttpCacheUtil::ExtractCacheControlDirectiveValue(
         }
     User::Free( valuestr );
     return status;
+    }
+
+
+// -----------------------------------------------------------------------------
+// FilePathHash
+// Hash function for Symbian file paths: discards case first
+// -----------------------------------------------------------------------------
+static TUint32 FilepathHash(const TDesC& aDes)
+{
+    //since this function is intensively used by the HashMap,
+    //keeping (slow) heap allocation out of it.
+    TBuf<KMaxPath> normalized ( aDes );
+
+    normalized.LowerCase();
+    return DefaultHash::Des16( normalized );
+}
+
+// -----------------------------------------------------------------------------
+// FilepathIdent
+// Comparator for Symbian file paths: Use case-insensitive compare
+// -----------------------------------------------------------------------------
+static TBool FilepathIdent(const TDesC& aL, const TDesC& aR)
+{
+    return ( aL.CompareF(aR) == 0 );
+}
+
+
+void HttpCacheUtil::GenerateCacheContentHashMapL(CHttpCacheFileHash*& aHashMap, RFs& aRfs, const TDesC& aCacheFolder, const TInt aInitialValue)
+    {
+    // need to be able to initialise hash here, but use it sensibly in calling function hence rather strange object construction
+    aHashMap = CHttpCacheFileHash::NewLC(aInitialValue);
+    
+    CDirScan* scanner = CDirScan::NewLC( aRfs );
+
+    //Configure CDirScan to tell you all contents of a particular directory hierarchy
+    scanner->SetScanDataL( aCacheFolder, KEntryAttNormal, ESortNone );
+    CDir* matchingFiles( 0 );
+
+    //Step 1. Find out all files on disk: by walking the directory hierarchy, one directory at a time
+    for (;;)
+        {
+        //1a. Get list of files in current directory, NULL if no directory left in tree
+        scanner->NextL( matchingFiles );
+        if ( !matchingFiles )
+            break;
+
+        TPtrC dir( scanner->FullPath() );
+
+        //1b. Add any files found to the HashTable
+        const TInt nMatches = matchingFiles->Count();
+        for ( TInt i = 0; i < nMatches; i++ )
+            {
+            TEntry entry ( (*matchingFiles)[i] ) ;
+            aHashMap->InsertAndStoreL( entry, dir );
+            }
+
+        delete matchingFiles;
+        } // End of step 1: adding all known files on disk to Map
+
+    CleanupStack::PopAndDestroy( 1, scanner );
+    CleanupStack::Pop( aHashMap );
+    
+#ifdef __CACHELOG__
+    {
+    HttpCacheUtil::WriteFormatLog(0, _L("-----------START PRINTING MAP OF SIZE %d---------"), aHashMap->HashMap().Count());
+    THttpCacheFileHashIter iter(aHashMap->HashMap());
+    const TDesC* key;
+    while ((key = iter.NextKey()) != 0)
+        {
+        const TFileInfo* val = iter.CurrentValue();
+        HttpCacheUtil::WriteFormatLog(0, _L("MAP WALK: %S, with size = %d, value = %d "), key, val->iFileSize, val->iUserInt);
+        }
+    HttpCacheUtil::WriteFormatLog(0, _L("-----------DONE PRINTING MAP-------------"));
+    }
+#endif
+    }
+
+void HttpCacheUtil::EnsureTrailingSlash( TDes& aPath )
+    {
+    // fix folder by appending trailing \\ to the end -symbian thing
+    // unless it is already there
+    if (aPath.LocateReverse('\\') != aPath.Length() - 1)
+        {
+        aPath.Append(_L("\\"));
+        }
+    
+    }
+
+
+CHttpCacheFileHash::CHttpCacheFileHash(const TInt aInitialValue, const THashFunction32<TDesC>& aHash, const TIdentityRelation<TDesC>& aIdentity) : iHashMap(aHash, aIdentity), iInitialValue(aInitialValue)
+    {
+    }
+
+CHttpCacheFileHash* CHttpCacheFileHash::NewLC(const TInt iInitialValue)
+    {
+    CHttpCacheFileHash* obj = new (ELeave) CHttpCacheFileHash(iInitialValue, &FilepathHash, &FilepathIdent);
+    CleanupStack::PushL(obj);
+    obj->ConstructL();
+    return obj;
+    }
+
+CHttpCacheFileHash::~CHttpCacheFileHash()
+    {
+    iStringStorage.ResetAndDestroy();
+    delete iFileInfoStorage;
+    iHashMap.Close();
+    }
+
+void CHttpCacheFileHash::ConstructL()
+    {
+    iFileInfoStorage = new (ELeave) CArrayFixSeg<TFileInfo>(64);    // 64 objects at a time
+    }
+
+void CHttpCacheFileHash::InsertAndStoreL(const TEntry& aEntry, const TDesC& aDir)
+    {
+    TFileInfo& info = iFileInfoStorage->ExtendL();
+    info.iFileSize = aEntry.iSize;
+    info.iUserInt = iInitialValue;
+    HBufC* fullPath = HBufC::NewL( aDir.Length() + aEntry.iName.Length() );
+    iStringStorage.AppendL( fullPath ); //keep object safe for later destruction
+    TPtr path(fullPath->Des());
+    path.Copy( aDir );
+    path.Append( aEntry.iName );
+    iHashMap.Insert( fullPath , &info );
     }
 
 //  End of File

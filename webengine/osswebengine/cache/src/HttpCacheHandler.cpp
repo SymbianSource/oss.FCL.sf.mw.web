@@ -63,10 +63,10 @@ void PanicCacheHandler(
 // ============================ MEMBER FUNCTIONS ===============================
 THttpCachePostponeParameters::THttpCachePostponeParameters()
     {
-    iEnabled = EFalse;
-    iFreeRamThreshold = 0;
-    iImmediateWriteThreshold = 0;
-    iWriteTimeout = 0;
+    iEnabled = ETrue;               // Postpone enabled always
+    iFreeRamThreshold = 6*1024*1024;    // 6MB free required
+    iImmediateWriteThreshold = 0;   // Items below this size always written immediately
+    iWriteTimeout = 30000000;        // 45s timeout
     }
 
 // -----------------------------------------------------------------------------
@@ -127,30 +127,6 @@ void CHttpCacheHandler::ConstructL(
 
     // set path for the entries
     iRfs.SetSessionPath( aDirectory );
-#ifdef __USE_VALIDATION_FILES__
-    // create validation file
-    TFileName validateFile;
-    GenerateValidationFilename(validateFile, aIndexFile);
-
-    TBool validateCacheEntries( EFalse );
-    RFile validate;
-    TInt validateErr = validate.Create(iRfs, validateFile, EFileShareExclusive | EFileWrite);
-    if ( validateErr != KErrNone )
-        {
-        if ( validateErr == KErrAlreadyExists )
-            {
-            validateCacheEntries = ETrue;
-            }
-#ifdef _DEBUG
-        else
-            {
-            // oh dear, we failed to create the file for some other reason, something must have gone properly wrong...
-            User::Panic(_L("CacheHandler"), -9999);
-            }
-#endif
-        }
-    validate.Close();
-#endif
     //
     iEvictionHandler = CHttpCacheEvictionHandler::NewL();
     //
@@ -158,7 +134,7 @@ void CHttpCacheHandler::ConstructL(
     //
     if ( aPostpone.iEnabled )
         {
-        iPostponeHandler = CHttpCacheFileWriteHandler::NewL(this, iStreamHandler, iRfs, aPostpone.iWriteTimeout);
+        iPostponeHandler = CHttpCacheFileWriteHandler::NewL(this, iStreamHandler, iRfs, aPostpone);
         }
     //
     iLookupTable = CHttpCacheLookupTable::NewL( *iEvictionHandler, *iStreamHandler );
@@ -170,12 +146,6 @@ void CHttpCacheHandler::ConstructL(
         iLookupTable = NULL;
         iLookupTable = CHttpCacheLookupTable::NewL( *iEvictionHandler, *iStreamHandler );
         }
-#ifdef __USE_VALIDATION_FILES__
-    if ( validateCacheEntries )
-#endif
-        // ensure that the disk content matches the cache content
-        ValidateCacheEntriesL();
-
     //
     iHttpCacheObserver = CHttpCacheObserver::NewL(iDirectory, iIndexFile, this);
     iHttpCacheObserver->StartObserver();
@@ -1443,7 +1413,6 @@ TBool CHttpCacheHandler::SaveBuffer(
 void CHttpCacheHandler::UpdateLookupTable()
     {
     TRAP_IGNORE(UpdateLookupTableL());
-    iHttpCacheObserver->StartObserver();
     }
 
 // -----------------------------------------------------------------------------
@@ -1458,30 +1427,8 @@ void CHttpCacheHandler::UpdateLookupTableL()
     CHttpCacheLookupTable* lookupTable = CHttpCacheLookupTable::NewL( *evictionHandler, *iStreamHandler );
     CleanupStack::PushL(lookupTable);
     OpenLookupTableL(lookupTable);
-    iLookupTable->MergeL(lookupTable, iRfs);
+    iLookupTable->MergeL(lookupTable, iRfs, iDirectory->Des() );
     CleanupStack::PopAndDestroy(2); // lookupTable, evictionHandler
-    }
-
-// -----------------------------------------------------------------------------
-// CHttpCacheHandler::GenerateValidationFilename
-// -----------------------------------------------------------------------------
-//
-#ifdef __USE_VALIDATION_FILES__
-    void CHttpCacheHandler::GenerateValidationFilename(TDes& aFilename, const TDesC& aIndexFilename) const
-#else
-    void CHttpCacheHandler::GenerateValidationFilename(TDes& /*aFilename*/, const TDesC& /*aIndexFilename*/) const
-#endif
-    {
-#ifdef __USE_VALIDATION_FILES__
-    _LIT(KValidationExtension, ".val");
-    TParse filenameParser;
-    filenameParser.Set(aIndexFilename, NULL, NULL);
-    aFilename.Copy(filenameParser.DriveAndPath());
-    aFilename.Append(filenameParser.Name());
-    aFilename.Append(KValidationExtension);
-#else
-    PanicCacheHandler(KErrNotSupported);
-#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -1498,371 +1445,60 @@ static void DestroyBadUrlArray(TAny* aPtr)
 // CHttpCacheHandler::ValidateCacheEntriesL
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheHandler::ValidateCacheEntriesL()
+void CHttpCacheHandler::ValidateCacheEntriesL(CHttpCacheFileHash *aDiskContent)
     {
     // iterate through entries and check if file is present.
     // if not, add URL to a list of bad ones otherwise remove directory entry from list
     // at the end, go through list of bad entries and remove them from cache,
-    // go through list of unreferenced files and delete them too.
     THttpCacheLookupTableEntryIterator iter;
     iLookupTable->BeginEntryIteration(iter);
 #ifdef __CACHELOG__
     HttpCacheUtil::WriteLog(0, _L("CHttpCacheHandler::ValidateCacheEntriesL"));
 #endif
-    // if the cache contains no items, we should still do this so we detect other files.
 
-    // get list of files on disk
-    CCacheDirectoryFiles *dirFiles = CCacheDirectoryFiles::NewLC(iRfs, *iDirectory);
-
+    // mark our index file as 'no delete'
+    RHttpCacheFileHashMap& hashmap = aDiskContent->HashMap();
+    TFileName indexFile;
+    indexFile.Copy( iDirectory->Des() );
+    indexFile.Append( iIndexFile->Des() );
+    TFileInfo *info = hashmap.Find( indexFile );
+    if( info )
+        {
+        info->iUserInt = KCacheFileNoDelete;  
+        }
+    
     // look for bad entries
     RPointerArray<HBufC8> badEntries;
     CleanupStack::PushL(TCleanupItem(DestroyBadUrlArray, &badEntries));
     const CHttpCacheEntry *tmpEntry;
     while(tmpEntry = iLookupTable->NextEntry(iter), tmpEntry)
         {
-        if(!dirFiles->ValidateEntryL(*tmpEntry))
+        // check the files associated with the cache entry are present where they should be
+        // if the file is present AND the size matches the entry, mark the hashmap value with noDelete.
+        // otherwise, mark the hash map with delete and remove the entry.
+        info = hashmap.Find(tmpEntry->Filename());
+        if(info && info->iFileSize == tmpEntry->BodySize())
+            {
+            info->iUserInt = KCacheFileNoDelete; // noDelete
+            }
+        else
             {
 #ifdef __CACHELOG__
             HttpCacheUtil::WriteUrlToLog(0, _L("Bad Entry: "), tmpEntry->Url() );
 #endif
             badEntries.AppendL(tmpEntry->Url().AllocL());
+            if(info)
+                info->iUserInt = KCacheFileNeedsDelete; // needs delete
             }
         }
 
-    // remove bad entries
+    // remove entries from cache where files don't match content on disk, either file is missing or size is incorrect.
+    // needed to save URIs because that's the only interface we have here.
     for(TInt i=0; i < badEntries.Count(); i++)
         {
         iLookupTable->Remove(badEntries[i]->Des());
         }
     CleanupStack::PopAndDestroy(1); // bad entry list
-
-    // remove orphan files
-    dirFiles->RemoveLeftoverFilesL();
-    CleanupStack::PopAndDestroy(dirFiles);
     }
 
-// -----------------------------------------------------------------------------
-// CCacheDirectoryFiles::NewL
-// -----------------------------------------------------------------------------
-//
-CCacheDirectoryFiles* CCacheDirectoryFiles::NewL(RFs aRfs, const TDesC& aDir)
-    {
-    CCacheDirectoryFiles* me = CCacheDirectoryFiles::NewLC(aRfs, aDir);
-    CleanupStack::Pop(me);
-    return me;
-    }
-
-// -----------------------------------------------------------------------------
-// CCacheDirectoryFiles::NewLC
-// -----------------------------------------------------------------------------
-//
-CCacheDirectoryFiles* CCacheDirectoryFiles::NewLC(RFs aRfs, const TDesC& aDir)
-    {
-    CCacheDirectoryFiles *me = new (ELeave) CCacheDirectoryFiles(aRfs, aDir);
-    CleanupStack::PushL(me);
-    me->ConstructL();
-    return me;
-    }
-
-// -----------------------------------------------------------------------------
-// CCacheDirectoryFiles::ValidateEntryL
-// -----------------------------------------------------------------------------
-//
-TBool CCacheDirectoryFiles::ValidateEntryL(const CHttpCacheEntry& aEntry)
-    {
-    // check the files associated with the cache entry are present where they should be
-    // if the file is present, then remove it from the dir list
-    // if the file is present AND the size matches the entry, then return ETrue in aPresentAndValid
-    // otherwise, return EFalse there.
-    TBool presentAndValid = EFalse;
-
-    TParse tmpParse;
-    tmpParse.Set(aEntry.Filename(), NULL, NULL);
-    // for this file to be part of the cache it must meet the following rules..
-    // length of name is 8 chars
-    if(tmpParse.Name().Length() != 8)
-        return presentAndValid;
-
-    // this filename has a chance of existing and we can assume correct format from now on
-    TUint32 cacheUintName;
-    if(TCompressedEntry::ConvertANameToUint32(tmpParse.Name(), cacheUintName))
-        {
-        TInt arrayIndex = cacheUintName & 0x0000000F;
-        presentAndValid = iDirContent[arrayIndex]->ValidateCacheEntryL( aEntry );
-        }
-    // after all cache entries have been checked against the list, it should only contain orphaned files
-    // files which match but are corrupt will have been removed from this list
-    // however they should be cleaned up when the 'corrupt' entries are removed at a later date.
-    return presentAndValid;
-    }
-
-// -----------------------------------------------------------------------------
-// CCacheDirectoryFiles::RemoveLeftoverFilesL
-// -----------------------------------------------------------------------------
-//
-void CCacheDirectoryFiles::RemoveLeftoverFilesL()
-    {
-    // delete all the files which are still listed.
-    TFileName tempFilename;
-    for (TInt subDir=0; subDir < 16; subDir++)
-        {
-        for (TInt fileIdx = 0; fileIdx < iDirContent[subDir]->Count(); fileIdx++ )
-            {
-            // each file needs to have the full path prepended in order to delete
-            HBufC *name = iDirContent[subDir]->NameAtL(fileIdx);
-            tempFilename.Format(_L("%S%x\\%S"), &iDir, subDir, name);
-#ifdef __CACHELOG__
-            HttpCacheUtil::WriteFormatLog(0, _L("Deleting file %S"), &tempFilename);
-#endif
-            iRfs.Delete(tempFilename);
-            delete name;
-            }
-        }
-    }
-
-// -----------------------------------------------------------------------------
-// CCacheDirectoryFiles::~CCacheDirectoryFiles
-// -----------------------------------------------------------------------------
-//
-CCacheDirectoryFiles::~CCacheDirectoryFiles()
-    {
-    iDirContent.ResetAndDestroy();
-    }
-
-// -----------------------------------------------------------------------------
-// CCacheDirectoryFiles::ConstructL
-// -----------------------------------------------------------------------------
-//
-void CCacheDirectoryFiles::ConstructL()
-    {
-    CDir* baseDirs;
-    User::LeaveIfError(iRfs.GetDir(iDir,KEntryAttDir,ESortByName,baseDirs));
-    CleanupStack::PushL(baseDirs);
-
-    // we know that the cache format is a single letter directory from 0-f
-    // so we ignore any other directories - they might belong to other caches
-    // and our cache will not have written any files out into anywhere except the
-    // 0-f dirs, even if we lost track of something.
-    // See HttpCacheUtil::GenerateNameLC
-    iDirContent.ReserveL(16);
-
-    TInt numdirs = baseDirs->Count();
-    // storage for <c:/system/cache/> + '0/'
-    HBufC* currentDir = HBufC::NewLC( iDir.Length() + KSubdirNameLength );
-    for(TInt i=0; i < numdirs; i++)
-        {
-        TInt arrayIndex = -1;
-        const TEntry& entry = (*baseDirs)[i];
-        if(entry.IsDir() && entry.iName.Length()==1)
-            {
-            TUint16 chr = *(entry.iName.Right(1).Ptr());
-            arrayIndex = TCompressedEntry::ConvertAsciiToIntSingleHexDigit(chr);
-            }
-
-        if(arrayIndex >=0 && arrayIndex <= 15)
-            {
-            // initialise subdir name to base directory
-            currentDir->Des().Copy(iDir);
-            currentDir->Des().AppendFormat(_L("%x\\"), arrayIndex); // if base path wasn't terminated with trailing / we would have blown up at creation time.
-
-            // get subdirectory content
-            CDir *dir;
-            iRfs.GetDir(currentDir->Des(), KEntryAttMatchExclude | KEntryAttDir, ESortByName, dir); // only files this time...
-            if(dir)
-                {
-                iDirContent.Insert( CCustomCacheDirList::NewL( dir ), arrayIndex );
-                }
-            delete dir;
-            }
-        }
-        CleanupStack::PopAndDestroy(2); // baseDirs & currentDir
-    }
-
-// -----------------------------------------------------------------------------
-// CCustomCacheDirList::NewL
-// -----------------------------------------------------------------------------
-//
-CCustomCacheDirList* CCustomCacheDirList::NewL(CDir *aSrc)
-    {
-    CCustomCacheDirList *me = new (ELeave) CCustomCacheDirList;
-    CleanupStack::PushL( me );
-    me->ConstructL( aSrc );
-    CleanupStack::Pop( me );
-    return me;
-    }
-
-// -----------------------------------------------------------------------------
-// CCustomCacheDirList::ValidateCacheEntryL
-// -----------------------------------------------------------------------------
-//
-TBool CCustomCacheDirList::ValidateCacheEntryL( const CHttpCacheEntry& aEntry )
-    {
-    TBool presentAndValid = EFalse;
-    TUint32 shortName;
-    if( TCompressedEntry::ConvertANameToUint32( aEntry.Filename().Right(8), shortName) )
-        {
-        for(TInt i=0; i<iDirList.Count(); i++)
-            {
-            if(iDirList[i]->IsCompressed() &&
-                    (iDirList[i]->GetCompressedName() == shortName) &&
-                    (iDirList[i]->GetSize() == aEntry.BodySize()))
-                {
-                presentAndValid = ETrue;
-                iDirList.Remove(i);
-                break;
-                }
-            }
-        }
-    return presentAndValid;
-    }
-
-// -----------------------------------------------------------------------------
-// CCustomCacheDirList::Count
-// -----------------------------------------------------------------------------
-//
-TInt CCustomCacheDirList::Count()
-    {
-    return iDirList.Count();
-    }
-
-// -----------------------------------------------------------------------------
-// CCustomCacheDirList::NameAtL
-// -----------------------------------------------------------------------------
-//
-HBufC* CCustomCacheDirList::NameAtL( TInt aIndex )
-    {
-    return iDirList[aIndex]->GetNameL();
-    }
-
-// -----------------------------------------------------------------------------
-// CCustomCacheDirList::CCustomCacheDirList
-// -----------------------------------------------------------------------------
-//
-CCustomCacheDirList::CCustomCacheDirList()
-    {
-    }
-
-// -----------------------------------------------------------------------------
-// CCustomCacheDirList::ConstructL
-// -----------------------------------------------------------------------------
-//
-void CCustomCacheDirList::ConstructL(CDir *aSrc)
-    {
-    TInt items = aSrc->Count();
-    if(items)
-        {
-        iDirList.ReserveL(items);
-        for(TInt i=0; i < items; i++)
-            {
-            TCompressedEntry *newDirEntry = TCompressedEntry::NewL( (*aSrc)[i] );
-            iDirList.AppendL( newDirEntry );
-            }
-        }
-    }
-
-// -----------------------------------------------------------------------------
-// TCompressedEntry::NewL
-// -----------------------------------------------------------------------------
-//
-TCompressedEntry *TCompressedEntry::NewL( const TEntry& aEntry )
-    {
-    TCompressedEntry *newEntry = new (ELeave) TCompressedEntry;
-    CleanupStack::PushL( newEntry );
-    newEntry->ConstructL( aEntry );
-    CleanupStack::Pop( newEntry );
-
-    return newEntry;
-    }
-
-// -----------------------------------------------------------------------------
-// TCompressedEntry::ConstructL
-// -----------------------------------------------------------------------------
-//
-void TCompressedEntry::ConstructL( const TEntry& aEntry )
-    {
-    TUint32 compressedName;
-    if ( ConvertANameToUint32(aEntry.iName, compressedName) )
-        {
-        iFlags |= EFilenameStoredAsUint32;
-        iName.iNameAsUint32 = compressedName;
-        }
-    else
-        {
-        iName.iNameAsHBuf = aEntry.iName.AllocL();
-        }
-    iSize = aEntry.iSize;
-    }
-
-// -----------------------------------------------------------------------------
-// TCompressedEntry::ConvertANameToUint32
-// -----------------------------------------------------------------------------
-//
-TBool TCompressedEntry::ConvertANameToUint32( const TDesC& aName, TUint32& aConverted)
-    {
-    TBool success = EFalse;
-    aConverted = 0;
-
-    if ( aName.Length() == 8 )
-        {
-        TUint32 scratch = 0;
-        for ( TInt i=0; i < 8; i++ )
-            {
-            scratch <<= 4;
-            TInt val = TCompressedEntry::ConvertAsciiToIntSingleHexDigit(aName[i]);
-            if ( val >= 0 )
-                {
-                scratch += val & 0x0F;
-                }
-            else
-                break;
-
-            if ( i==7 )
-                {
-                aConverted = scratch;
-                success = ETrue;
-                }
-            }
-        }
-
-    return success;
-    }
-
-// -----------------------------------------------------------------------------
-// TCompressedEntry::ConvertAsciiToIntSingleHexDigit
-// -----------------------------------------------------------------------------
-//
-TInt TCompressedEntry::ConvertAsciiToIntSingleHexDigit(const TUint16& aDigitChar)
-    {
-    if ( aDigitChar >=48 && aDigitChar <=57 )
-        {
-        return (aDigitChar - 48); //numerals
-        }
-    else if ( aDigitChar >= 65 && aDigitChar <= 70 )
-        {
-        return (aDigitChar - 55); // uppercase hex letters
-        }
-    else if ( aDigitChar >= 97 && aDigitChar <= 102 )
-        {
-        return (aDigitChar - 87); // lowercase hex letters
-        }
-
-    return -1;
-    }
-
-// -----------------------------------------------------------------------------
-// TCompressedEntry::GetNameL
-// -----------------------------------------------------------------------------
-//
-HBufC* TCompressedEntry::GetNameL()
-    {
-    if ( !IsCompressed() )
-        {
-        return iName.iNameAsHBuf->AllocL();
-        }
-
-    HBufC* name = HBufC::NewL(8);
-    name->Des().Format(_L("%08x"), iName.iNameAsUint32);
-
-    return name;
-    }
 //  End of File

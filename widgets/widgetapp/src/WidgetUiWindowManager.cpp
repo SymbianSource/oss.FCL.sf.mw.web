@@ -120,7 +120,8 @@ CWidgetUiWindowManager::CWidgetUiWindowManager(CWidgetUiAppUi& aAppUi):
     iAppUi(aAppUi),
     iStrictMode(ETrue),
     iNetworkMode(EUnknownMode),
-    iNetworkConnected(EFalse)
+    iNetworkConnected(EFalse),
+    iWidgetCursorMode(TBrCtlDefs::EDefaultCursor)
     {
     }
 
@@ -144,9 +145,14 @@ void CWidgetUiWindowManager::ConstructL()
     if (!error)
         {
         TInt strictMode;
+        TInt cursorMode = -1;
         if (cenRep->Get( KWidgetInstallerStrictMode, strictMode ) == KErrNone)
             {
             iStrictMode = strictMode;
+            }
+        if (cenRep->Get( KWidgetCursorShowMode, cursorMode ) == KErrNone)
+            {
+            iWidgetCursorMode = (TBrCtlDefs::TCursorSettings) cursorMode;
             }
         delete cenRep;
         }
@@ -328,22 +334,35 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
         case WidgetOnline:
             {
             iNetworkMode = EOnlineMode;
-            GetWindow( aUid )->DetermineNetworkState();
+            CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
+#ifdef BRDO_WRT_HS_FF
+            if ( wdgt_window->NetworkModeWait()->IsStarted() )
+                {
+                wdgt_window->NetworkModeWait()->AsyncStop();
+                }
+#endif
+            wdgt_window->DetermineNetworkState();
             }
             break;
        case WidgetOffline:
             {
             iNetworkMode = EOfflineMode;
+            CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
+#ifdef BRDO_WRT_HS_FF
+            if ( wdgt_window->NetworkModeWait()->IsStarted() )
+                {
+                wdgt_window->NetworkModeWait()->AsyncStop();
+                }
+#endif
             // if no full view widgets open, then close the network connection
             if ( ( !FullViewWidgetsOpen() ) && ( iConnection->Connected() ) )
                 {
-                CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
                 wdgt_window->Engine()->HandleCommandL( 
                         (TInt)TBrCtlDefs::ECommandIdBase +
                         (TInt)TBrCtlDefs::ECommandDisconnect );
                 iConnection->StopConnectionL();
                 }
-            GetWindow( aUid )->DetermineNetworkState();
+            wdgt_window->DetermineNetworkState();
             }
             break;
        case WidgetRestart:
@@ -546,8 +565,9 @@ TBool CWidgetUiWindowManager::CloseWindow( CWidgetUiWindow* aWidgetWindow )
     if ( !lastOne )
         {
         // Starting JS timer, since we stopped it for deactivating miniview widget
+        //If there is a widget on HS then the timer will not be started
         CWidgetUiWindow* window = iWindowList[iWindowList.Count() - 1];
-        if ( window)
+        if ( window && AnyWidgetPublishing())
                TRAP_IGNORE ( window->Engine()->HandleCommandL( 
                               (TInt)TBrCtlDefs::ECommandAppForeground + 
                               (TInt)TBrCtlDefs::ECommandIdBase));
@@ -1271,7 +1291,29 @@ void CWidgetUiWindowManager::SendAppToBackground()
     {
     iAppUi.SendAppToBackground();    
     }
-    
+
+TBool CWidgetUiWindowManager::AnyWidgetOnHs()
+    {
+    for ( TInt i = 0; i < iWindowList.Count(); ++i )
+        {
+        CWidgetUiWindow* window( iWindowList[i] );
+        if( window->WidgetMiniViewState() != EMiniViewEnabled && window->WidgetMiniViewState() != EMiniViewNotEnabled )
+            return ETrue;
+        }
+    return EFalse;
+    }
+
+TBool CWidgetUiWindowManager::AnyWidgetPublishing()
+    {
+    for ( TInt i = 0; i < iWindowList.Count(); ++i )
+        {
+        CWidgetUiWindow* window( iWindowList[i] );
+        if( window->WidgetMiniViewState() == EPublishStart )
+            return ETrue;
+        }
+    return EFalse;
+    }
+
 CRequestRAM::CRequestRAM(CWidgetUiWindowManager* aWidgetUiWindowManager, const TUid& aUid, TUint32 aOperation):
     CActive( EPriorityStandard ),
     iOperation(aOperation),

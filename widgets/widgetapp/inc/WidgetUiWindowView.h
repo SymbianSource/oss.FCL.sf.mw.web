@@ -217,7 +217,16 @@ class CWidgetUiWindowView : public CAknView,
         * @return void
         */
         void Redraw() const;
+        
+      private:
+          
+          /**
+          * IsEditMode check if over an editable element
+          * @return ETrue is over an editable element ; otherwise return EFalse
+          */        
+          TBool IsEditMode();
 
+          
       private :  // Data
 
         CWidgetUiWindowContainer*           iContainer;     // Component container owned

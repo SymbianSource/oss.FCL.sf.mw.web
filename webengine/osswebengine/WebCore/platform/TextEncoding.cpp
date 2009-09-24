@@ -233,8 +233,8 @@ const TextEncoding& WindowsLatin1Encoding()
     return *globalWindowsLatin1Encoding;
 }
 
-void deleteTextEncodings() {
-
+struct cleanupTextEncodings  {
+    ~cleanupTextEncodings() {
     // Delete all encodings and set to NULL
     delete globalASCIIEncoding;
     globalASCIIEncoding = NULL;
@@ -253,6 +253,7 @@ void deleteTextEncodings() {
     delete globalWindowsLatin1Encoding;
     globalWindowsLatin1Encoding = NULL;
 
-}
-
+    }
+};
+struct cleanupTextEncodings textEncodings;
 } // namespace WebCore

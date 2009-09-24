@@ -321,7 +321,7 @@ CArrayPtrFlat<CHttpCacheEntry>* CHttpCacheEvictionHandler::EvictL(
             }
 #endif
             // evacuate nonactive entries only
-            if( entry && entry->State() == CHttpCacheEntry::ECacheComplete )
+            if( entry && entry->State() == CHttpCacheEntry::ECacheComplete && !entry->BodyDataPartiallyWritten())
                 {
                 // watch out for 32 bit. it might overflow secInt.
                 currTime.SecondsFrom( entry->LastAccessed(), secInt );

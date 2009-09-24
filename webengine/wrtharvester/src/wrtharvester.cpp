@@ -222,8 +222,12 @@ void CWrtHarvester::ConstructL()
     User::LeaveIfError( iApaSession.Connect() );
     iWidgetUIListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetUIState );
     iWidgetRegListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetRegAltered );
-    iWidgetMMCListener =  CWrtHarvesterPSNotifier::NewL( this, EWidgetMMCAltered );
-    iWidgetUsbListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetMassStorageMode );
+    
+    User::LeaveIfError( iFs.Connect() );
+    iWidgetUsbListener = CWidgetMMCHandler::NewL( this, iFs );
+    
+    iWidgetUsbListener->Start();
+    SetMSMode(0);
     
     TFileName resourceFileName;  
     TParse parse;    
@@ -275,6 +279,7 @@ CWrtHarvester::~CWrtHarvester()
     delete iWidgetMMCListener;
     delete iWidgetUsbListener;
     iWidgetOperations.Close();
+    iHSWidgets.ResetAndDestroy();
     iApaSession.Close();
     }
     
@@ -293,10 +298,21 @@ void CWrtHarvester::UpdateL()
 //  
 void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const TDesC8& aTrigger )
     {
+    
+    //Do not send the Operations to the Widgets when in Mass storage mode.. . .  
+    if( IsInMSMode() == 1 )
+        {
+         if(aTrigger == KDeActive)
+         RemovePublisherAndObserverL(aContentId);
+         return;              
+        }
+   
     TUid uid( WidgetUid( aContentId ) );
     TWidgetOperations operation( Uninitialized );
     if( aTrigger == KActive )
         {
+        HBufC* temp = aContentId.Alloc();
+        iHSWidgets.Append( temp );
         iHSCount++;	
         // queue the activated state event only for network accessing widgets
         if ( CheckNetworkAccessL( uid) )
@@ -315,6 +331,17 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
         {
         iHSCount--;
         operation = Deactivate;
+        HBufC *temp = aContentId.Alloc();
+        TPtr ptr (temp->Des());
+        for( TInt i=0; i<iHSWidgets.Count(); i++ )
+          {
+          if( ! ptr.Compare(iHSWidgets[i]->Des()))
+            {
+            iHSWidgets.Remove(i);
+            break;
+            }
+          }
+        delete temp;        
         }
     else if( aTrigger == KSuspend )
         {
@@ -564,6 +591,22 @@ void CWrtHarvester::RemoveObserver(const TDesC& aBundleId)
 //
 void CWrtHarvester::RemovePublisherAndObserverL( const TDesC& aBundleId )
     {
+    
+    if( IsInMSMode() == 1 )
+      {
+      HBufC *temp = aBundleId.Alloc();
+      TPtr ptr (temp->Des());
+      for( TInt i=0; i<iHSWidgets.Count(); i++ )
+        {
+
+        if( ptr.Compare(iHSWidgets[i]->Des()) == 0)
+          {
+           return;
+          }
+        }
+
+      }   
+              
     RemoveObserver( aBundleId );
     
     __UHEAP_MARK;
@@ -952,4 +995,3 @@ void CGlobalQueryHandlerAO::ShowGlobalQueryDialogL(const TDesC& aMessage, TInt a
     }
 
  //  End of File
-

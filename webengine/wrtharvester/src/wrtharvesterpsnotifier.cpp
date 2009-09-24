@@ -132,11 +132,7 @@ void CWrtHarvesterPSNotifier::RunL()
     if( iKey != EWidgetMMCAltered && iKey != EWidgetMassStorageMode )
     	{
     	iProperty.Get( KPropertyCat, iKey, value );	
-    	}
-    else if( iKey == EWidgetMMCAltered )
-        {        
-        r = iProperty.Get( KPSUidUikon, KUikMMCInserted , value );   
-        }    
+    	}    
     else
         {        
         r = iProperty.Get( allDrivesStatus );
@@ -154,31 +150,7 @@ void CWrtHarvesterPSNotifier::RunL()
             }
         else if( iKey == EWidgetRegAltered && value == 1 )
             {
-            iHarvester->UpdateL();
-            }
-        else if( iKey == EWidgetMMCAltered )
-            {            
-            iHarvester->UpdateL();    
-            } 
-        else if( iKey == EWidgetMassStorageMode )
-            {            
-            TInt count = allDrivesStatus.Length()/2;
-             for ( TInt i = 0; i < count; i++ )
-                 {
-                 TInt driveNumber = allDrivesStatus[2*i];
-                 TInt driveStatus = allDrivesStatus[2*i+1];
-                 switch( driveStatus )
-                     {
-                     case EUsbMsDriveState_Connected:
-                     case EUsbMsDriveState_Disconnected:
-                         {                           
-                         iHarvester->UpdateL();
-                         }
-                         break;                     
-                     default:
-                         break;
-                     }
-                 }            
+             iHarvester->UpdateL();
             }
         }
     }

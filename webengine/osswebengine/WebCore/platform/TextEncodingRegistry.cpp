@@ -248,9 +248,10 @@ bool noExtendedTextEncodingNameUsed()
     return !didExtendTextCodecMaps;
 }
 
+
 #if PLATFORM(SYMBIAN)
-void deleteEncodingMaps()
-{
+struct cleanupEncodingMaps  {
+    ~cleanupEncodingMaps() {
     if( textEncodingNameMap ) {
         textEncodingNameMap->clear();
         delete textEncodingNameMap;
@@ -262,7 +263,9 @@ void deleteEncodingMaps()
         textCodecMap = NULL;
     }
     didExtendTextCodecMaps = false;
-}
+    }
+};
+struct cleanupEncodingMaps encodingMaps;
 #endif
 
 } // namespace WebCore

@@ -144,7 +144,7 @@ CDownloadsListDlg::~CDownloadsListDlg()
     {
     CLOG_ENTERFN("CDownloadsListDlg::~CDownloadsListDlg");
 
-
+    iDlgObserver.SetDownloadListHide( ETrue );
     if ( iMenuBar )
         {
         HideMenu();

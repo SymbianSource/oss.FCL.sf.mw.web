@@ -22,6 +22,7 @@
 #include <e32base.h>
 #include <f32file.h>
 #include "HttpCacheHandler.h"
+#include "HttpCacheEntry.h"
 #include "MemoryManager.h"
 
 // CONSTANTS
@@ -43,7 +44,7 @@ class CHttpCacheWriteTimeout;
 *  @lib
 *  @since 5.0
 */
-NONSHARABLE_CLASS(CHttpCacheFileWriteHandler) : public CActive, public MMemoryCollector
+NONSHARABLE_CLASS(CHttpCacheFileWriteHandler) : public CActive, public MMemoryCollector, public MHttpCacheEntryDeleteObserver
     {
     public:  // Constructors and destructor
 
@@ -54,7 +55,7 @@ NONSHARABLE_CLASS(CHttpCacheFileWriteHandler) : public CActive, public MMemoryCo
         * @param
         * @return CacheFileWriteHandler object.
         */
-        static CHttpCacheFileWriteHandler* NewL(CHttpCacheHandler* aManager, CHttpCacheStreamHandler* aStreamHandler, RFs& aRfs, const TInt aWriteTimeout);
+        static CHttpCacheFileWriteHandler* NewL(CHttpCacheHandler* aManager, CHttpCacheStreamHandler* aStreamHandler, RFs& aRfs, const THttpCachePostponeParameters& aParams);
 
         /**
         * Destructor.
@@ -97,6 +98,10 @@ NONSHARABLE_CLASS(CHttpCacheFileWriteHandler) : public CActive, public MMemoryCo
          */
         TBool IsCacheEntryPostponed(const CHttpCacheEntry* aEntry);
 
+    public: // from MHttpCacheEntryDeleteObserver
+        virtual void EntryDeleted(CHttpCacheEntry *aEntry); 
+        
+        
     public: // new functions
         enum TAddStatus {
             EAddedOk,
@@ -148,7 +153,7 @@ NONSHARABLE_CLASS(CHttpCacheFileWriteHandler) : public CActive, public MMemoryCo
         /**
         * By default Symbian 2nd phase constructor is private.
         */
-        void ConstructL(const TInt aWriteTimeout);
+        void ConstructL(const THttpCachePostponeParameters& aParams);
 
         /**
          * from CActive
@@ -166,6 +171,7 @@ NONSHARABLE_CLASS(CHttpCacheFileWriteHandler) : public CActive, public MMemoryCo
 
         // sort by size function for arrays of CHttpCacheEntry objects.
         static TInt CompareHttpCacheEntrySize( const CHttpCacheEntry& aFirst, const CHttpCacheEntry& aSecond );
+
         void CollectMemory( TUint aRequired );
 
         /**

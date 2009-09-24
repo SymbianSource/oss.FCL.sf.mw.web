@@ -362,6 +362,9 @@ void CHttpCacheLookupTable::InternalizeL(
         {
         // read directory stub and validate it
         TInt len = aReadStream.ReadInt32L();
+        if(!len)
+            return;
+            
         HBufC* dirstub = HBufC::NewLC(len);
         TPtr dirstubptr = dirstub->Des();
         aReadStream.ReadL( dirstubptr, len );
@@ -796,8 +799,22 @@ TBool CHttpCacheLookupTable::BoundaryCheck(
 //
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable, RFs aRfs )
+void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable, RFs aRfs, const TDesC& aDirectory )
     {
+    CHttpCacheFileHash *onDiskFilesMap = NULL;
+    
+    // creating this object will use some memory, so this may fail.
+    TRAPD(err, HttpCacheUtil::GenerateCacheContentHashMapL( onDiskFilesMap, aRfs, aDirectory , 0 ));
+    // if it does fail, we fall back to examining the disk.
+    if(err != KErrNone)
+        {
+        onDiskFilesMap = NULL;
+        }
+    else
+        {
+        CleanupStack::PushL( onDiskFilesMap );
+        }
+    
     TInt myCount = iEntries->Count();
     TInt i = 0;
     for (i = myCount - 1; i >= 0; i--)
@@ -824,8 +841,9 @@ void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable
             else // (newEntry)
                 {
                 // Entry is not in the new index file
+                // Entry is in RAM index, may not be on disk yet due to postpone operation.
                 TUint att;
-                if (aRfs.Att(entry->Filename(), att) != KErrNone)
+                if ( !entry->BodyDataCached() && (onDiskFilesMap ? onDiskFilesMap->HashMap().Find( entry->Filename() ) == NULL : (aRfs.Att(entry->Filename(), att) != KErrNone)) )
                     {
                     TInt thePos = Probe(entry->Url(), EFalse);
                     if (Valid(thePos))
@@ -845,7 +863,7 @@ void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable
             CHttpCacheEntry* newEntry = aHttpCacheLookupTable->iEntries->At(i);
             TInt pos = aHttpCacheLookupTable->Probe(newEntry->Url(), EFalse);
             TUint att;
-            if (aRfs.Att(newEntry->Filename(), att) == KErrNone)
+            if ( onDiskFilesMap ? (onDiskFilesMap->HashMap().Find(newEntry->Filename()) != NULL ) : (aRfs.Att(newEntry->Filename(), att) == KErrNone) )
                 {
                 CHttpCacheEntry* myEntry = InsertL(newEntry->Url());
                 myEntry->SetState( CHttpCacheEntry::ECacheComplete );
@@ -856,6 +874,9 @@ void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable
             aHttpCacheLookupTable->iCount--;
             }
         }
+    
+    if( onDiskFilesMap )
+        CleanupStack::PopAndDestroy( onDiskFilesMap );
     }
 
 // -----------------------------------------------------------------------------

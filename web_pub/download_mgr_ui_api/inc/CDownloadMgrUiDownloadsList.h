@@ -146,6 +146,17 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
         */
         inline TBool IsProgressiveDownloadEnabled() {return iProgressiveDownload; }
         
+        /**
+        * Gets the value of downloadlist hide
+        * @return TBool 
+        */
+        inline TBool GetDownloadHide() { return iDownloadListHide; }
+
+        /**
+        * Sets the value of downloadlist hide
+        * @return void 
+        */
+        virtual void SetDownloadListHide( TBool aHide );
 
     public: // Functions from CDownloadMgrUiBase
 
@@ -256,6 +267,7 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
 		TBool						iIsCancelInProgress;
 		TBool                       iPlatformSupportsGallery;
 
+        TBool                       iDownloadListHide;
     private: // Friend classes
 
         friend class CDownloadsListExtension;

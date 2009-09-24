@@ -97,10 +97,11 @@ private:// Data
    TUint iFontSize;
    //stores the value for the small screen setting can be 0 or 1
    TUint iFullScreen;
-   // Custom access point provided by the operator. If specified, contains an id of a read only
-   // access point what is then set as default  and it cannot be changed manually. If not 
-   // defined, operator menu works as before.
-   // from operator menu( 0 - not specified, otherwise contains the access point id)
+   // Custom access point provided by the operator. 
+   // If specified, contains a WAP id of a read only access point,  
+   // which is then set as the default and it cannot be changed manually by the user. 
+   // If not defined, operator menu works as before.
+   // From the operator menu( 0 = not specified, otherwise contains the WAP id of the access point.)
    TUint iCustomAp;
    // Allow the contextId of the call to be passed as a parameter
    TUint iContextId;   

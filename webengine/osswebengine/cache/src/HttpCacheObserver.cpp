@@ -88,6 +88,23 @@ CHttpCacheObserver::~CHttpCacheObserver()
     iFsSession.Close();
     }
 
+void CHttpCacheObserver::Queue()
+    {
+    if(IsActive())
+        {
+        User::WaitForAnyRequest();  // consume signal
+        }
+    else
+        {
+        SetActive();
+        }
+
+    // queue next notification
+    iFsSession.NotifyChange(ENotifyWrite, iStatus, *iFileName);
+    }
+
+
+
 // -----------------------------------------------------------------------------
 // CHttpCacheObserver::RunL
 //
@@ -95,6 +112,7 @@ CHttpCacheObserver::~CHttpCacheObserver()
 //
 void CHttpCacheObserver::RunL()
     {
+    Queue();
     iHttpCacheHandler->UpdateLookupTable();
     }
 

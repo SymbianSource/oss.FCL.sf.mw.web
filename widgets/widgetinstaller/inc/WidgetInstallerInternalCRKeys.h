@@ -37,4 +37,7 @@ const TUint32 KWidgetPreInstall =            0x00000003;
 // Valid values: 0 = no prompt, 1 = prompt
 const TUint32 KWidgetSecurityPromptUntrustedInstall =   0x00000004;
 
+// The setting to define the cursor show mode inside widgets
+// Valid values: 0 = not showing the cursor, 1 = cursor shown
+const TUint32 KWidgetCursorShowMode =   0x00000005;
 #endif

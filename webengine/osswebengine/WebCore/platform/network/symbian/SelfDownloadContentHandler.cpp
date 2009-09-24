@@ -29,6 +29,7 @@
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
 #include "HttpSessionManager.h"
+#include "HttpFilterCommonStringsExt.h"
 #include <Uri8.h>
 #include <http/rhttptransaction.h>
 #include <http/mhttpdatasupplier.h>
@@ -36,7 +37,6 @@
 
 // CONSTANTS
 _LIT(KTempFilePath, "c:\\system\\temp\\browser\\");
-
 
 // -----------------------------------------------------------------------------
 // CTempFile::CTempFile
@@ -405,10 +405,9 @@ TInt SelfDownloadContentHandler::ResponseCompleteL(RHTTPTransaction httpTransact
 		// remove the selfDownloadCallbackStr property
         RHTTPTransactionPropertySet propSet = httpTransaction.PropertySet();
 		RStringPool strPool = httpTransaction.Session().StringPool();
-		RStringF selfDownloadCallbackStr = strPool.OpenFStringL( KSelfDownloadCallback );
-		CleanupClosePushL<RStringF>( selfDownloadCallbackStr);
-		propSet.RemoveProperty(selfDownloadCallbackStr);
-		CleanupStack::PopAndDestroy(); // selfDownloadCallbackStr
+
+		propSet.RemoveProperty( strPool.StringF(HttpFilterCommonStringsExt::ESelfDownloadCallback,
+                                    HttpFilterCommonStringsExt::GetTable()) );
     }
 	StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->ResetOutstandingSelfDl();
     return status;

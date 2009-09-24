@@ -1247,9 +1247,11 @@ void init()
     new ((void*)&widthAttr) QualifiedName(nullAtom, widthAttrString, nullAtom);
     new ((void*)&wrapAttr) QualifiedName(nullAtom, wrapAttrString, nullAtom);
 }
+struct cleanupHtmlNames  {
+    ~cleanupHtmlNames() {
+    // This will destroy the AtomicString table
+    // All other atomic string destruction must be done before this call
 
-void remove()
-{
 #ifndef __WINSCW__
     if( initialized ) {
         size_t num(0);
@@ -1563,10 +1565,12 @@ void remove()
     widthAttrString = "";
     wrapAttrString = "";
 
-	AtomicString::remove();
+    AtomicString::remove();
 
-	initialized = false;
-} //remove()
+    initialized = false;
+    } 
+};
+struct cleanupHtmlNames htmlNames;
 
 } //HTMLNames
 

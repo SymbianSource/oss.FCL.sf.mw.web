@@ -1803,6 +1803,10 @@ DeprecatedString &DeprecatedString::format(const char *format, ...)
     // Do the format once to get the length.
 #if COMPILER(MSVC) 
     int result = _vscprintf(format, args);
+#elif PLATFORM(SYMBIAN)
+    Vector<char, 256> buffer;
+    buffer.resize(256);
+    int result = vsnprintf(buffer.data(), buffer.size()-1, format, args);
 #else
     char ch;
     int result = vsnprintf(&ch, 1, format, args);

@@ -1961,67 +1961,70 @@ void FrameLoader::load(const FrameLoadRequest& request, bool lockHistory, bool u
 void FrameLoader::load(const KURL& URL, const String& referrer, FrameLoadType newLoadType,
     const String& frameName, Event* event, PassRefPtr<FormState> formState)
 {
-    bool isFormSubmission = formState;
+    if ( URL != KURL("about:blank") )
+    {
+        bool isFormSubmission = formState;
+        
+        ResourceRequest request(URL);
+        if (!referrer.isEmpty())
+            request.setHTTPReferrer(referrer);
+        addExtraFieldsToRequest(request, true, event || isFormSubmission);
+        if (newLoadType == FrameLoadTypeReload)
+            request.setCachePolicy(ReloadIgnoringCacheData);
     
-    ResourceRequest request(URL);
-    if (!referrer.isEmpty())
-        request.setHTTPReferrer(referrer);
-    addExtraFieldsToRequest(request, true, event || isFormSubmission);
-    if (newLoadType == FrameLoadTypeReload)
-        request.setCachePolicy(ReloadIgnoringCacheData);
-
-    ASSERT(newLoadType != FrameLoadTypeSame);
-
-    NavigationAction action(URL, newLoadType, isFormSubmission, event);
-
-    if (!frameName.isEmpty()) {
-        if (Frame* targetFrame = m_frame->tree()->find(frameName))
-            targetFrame->loader()->load(URL, referrer, newLoadType, String(), event, formState);
-        else
-            checkNewWindowPolicy(action, request, formState, frameName);
-        return;
-    }
-
-    RefPtr<DocumentLoader> oldDocumentLoader = m_documentLoader;
-
-    bool sameURL = shouldTreatURLAsSameAsCurrent(URL);
+        ASSERT(newLoadType != FrameLoadTypeSame);
     
-    // Make sure to do scroll to anchor processing even if the URL is
-    // exactly the same so pages with '#' links and DHTML side effects
-    // work properly.
-    if (!isFormSubmission
-        && newLoadType != FrameLoadTypeReload
-        && newLoadType != FrameLoadTypeSame
-        && !shouldReload(URL, url())
-        // We don't want to just scroll if a link from within a
-        // frameset is trying to reload the frameset into _top.
-        && !m_frame->isFrameSet()) {
-
-        // Just do anchor navigation within the existing content.
+        NavigationAction action(URL, newLoadType, isFormSubmission, event);
+    
+        if (!frameName.isEmpty()) {
+            if (Frame* targetFrame = m_frame->tree()->find(frameName))
+                targetFrame->loader()->load(URL, referrer, newLoadType, String(), event, formState);
+            else
+                checkNewWindowPolicy(action, request, formState, frameName);
+            return;
+        }
+    
+        RefPtr<DocumentLoader> oldDocumentLoader = m_documentLoader;
+    
+        bool sameURL = shouldTreatURLAsSameAsCurrent(URL);
         
-        // We don't do this if we are submitting a form, explicitly reloading,
-        // currently displaying a frameset, or if the new URL does not have a fragment.
-        // These rules are based on what KHTML was doing in KHTMLPart::openURL.
-        
-        // FIXME: What about load types other than Standard and Reload?
-        
-        oldDocumentLoader->setTriggeringAction(action);
-        stopPolicyCheck();
-        checkNavigationPolicy(request, oldDocumentLoader.get(), formState,
-            callContinueFragmentScrollAfterNavigationPolicy, this);
-    } else {
-        // must grab this now, since this load may stop the previous load and clear this flag
-        bool isRedirect = m_quickRedirectComing;
-        load(request, action, newLoadType, formState);
-        if (isRedirect) {
-            m_quickRedirectComing = false;
-            if (m_provisionalDocumentLoader)
-                m_provisionalDocumentLoader->setIsClientRedirect(true);
-        } else if (sameURL)
-            // Example of this case are sites that reload the same URL with a different cookie
-            // driving the generated content, or a master frame with links that drive a target
-            // frame, where the user has clicked on the same link repeatedly.
-            m_loadType = FrameLoadTypeSame;
+        // Make sure to do scroll to anchor processing even if the URL is
+        // exactly the same so pages with '#' links and DHTML side effects
+        // work properly.
+        if (!isFormSubmission
+            && newLoadType != FrameLoadTypeReload
+            && newLoadType != FrameLoadTypeSame
+            && !shouldReload(URL, url())
+            // We don't want to just scroll if a link from within a
+            // frameset is trying to reload the frameset into _top.
+            && !m_frame->isFrameSet()) {
+    
+            // Just do anchor navigation within the existing content.
+            
+            // We don't do this if we are submitting a form, explicitly reloading,
+            // currently displaying a frameset, or if the new URL does not have a fragment.
+            // These rules are based on what KHTML was doing in KHTMLPart::openURL.
+            
+            // FIXME: What about load types other than Standard and Reload?
+            
+            oldDocumentLoader->setTriggeringAction(action);
+            stopPolicyCheck();
+            checkNavigationPolicy(request, oldDocumentLoader.get(), formState,
+                callContinueFragmentScrollAfterNavigationPolicy, this);
+        } else {
+            // must grab this now, since this load may stop the previous load and clear this flag
+            bool isRedirect = m_quickRedirectComing;
+            load(request, action, newLoadType, formState);
+            if (isRedirect) {
+                m_quickRedirectComing = false;
+                if (m_provisionalDocumentLoader)
+                    m_provisionalDocumentLoader->setIsClientRedirect(true);
+            } else if (sameURL)
+                // Example of this case are sites that reload the same URL with a different cookie
+                // driving the generated content, or a master frame with links that drive a target
+                // frame, where the user has clicked on the same link repeatedly.
+                m_loadType = FrameLoadTypeSame;
+        }
     }
 }
 

@@ -1781,6 +1781,10 @@ TInt CWidgetRegistry::AppArchWidgetUids( RArray< TUid >& aUids )
         {
         aUids.Reset();
         }
+	else 
+		{
+		error = KErrNone;
+		}
     LOG_CODE( if ( aUids.Count() ) )
     LOG1( "AppArchWidgetUids done widget count %d",
               aUids.Count() );

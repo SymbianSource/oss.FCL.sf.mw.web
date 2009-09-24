@@ -64,7 +64,7 @@
 */ 
 // #elif defined(__S60_51__)
 // un-comment following line for 5.1/TB9.1 platforms
-//#define __PLATFORM_VERSION_51__
+// #define __PLATFORM_VERSION_51__
 
 /*
 * ===================
@@ -74,7 +74,7 @@
 // #elif defined(__S60_52__)
 
 // un-comment following line for 5.2/TB9.2 platforms
- #define __PLATFORM_VERSION_52__
+#define __PLATFORM_VERSION_52__
 //
 #endif
 
@@ -148,6 +148,9 @@ Default is WML support enabled
 // Enable/Disable compilation of some of Search Integration specific code 
 #define BRDO_SEARCH_INTEGRATION_FF
 
+// Defines whether SAPI Security Manager Prompt Enhancement is available
+#define BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
+
 /*
 * ===================
 *        S60 3.23
@@ -175,6 +178,9 @@ Default is WML support enabled
 
 // Disable compilation of some of Search Integration specific code
 #undef BRDO_SEARCH_INTEGRATION_FF
+
+// Defines whether SAPI Security Manager Prompt Enhancement is available
+#undef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
 
 // Missing from 3.23 platform_paths.hrh
 
@@ -231,8 +237,14 @@ Default is WML support enabled
 // Defines WRT widgets feature to publish on homescreen
 #undef BRDO_WRT_HS_FF
 
+// Gallery App is present
+#define BRDO_APP_GALLERY_SUPPORTED_FF
+
 // Disable compilation of some of Search Integration specific code
 #undef BRDO_SEARCH_INTEGRATION_FF
+
+// Defines whether SAPI Security Manager Prompt Enhancement is available
+#undef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
 
 #if __GNUC__ >= 3
 #define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../../platform/mw/exported)
@@ -301,6 +313,9 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_51__)
 
+// Defines whether SAPI Security Manager Prompt Enhancement is available
+#undef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
+
 #define BRDO_BROWSER_50_FF
 #define BRDO_BROWSER_51_FF
 
@@ -328,6 +343,9 @@ Default is WML support enabled
 * ===================
 */ 
 #elif defined(__PLATFORM_VERSION_52__)
+
+// Defines whether SAPI Security Manager Prompt Enhancement is available
+#undef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
 
 #define BRDO_BROWSER_50_FF
 #define BRDO_BROWSER_51_FF

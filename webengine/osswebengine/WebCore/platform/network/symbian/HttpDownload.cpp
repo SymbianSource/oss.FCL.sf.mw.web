@@ -67,7 +67,12 @@ void HttpDownload::initDownloadMgrL()
     }
     int master = !m_sessionManager->m_embedded;
     RProcess myProcess;
-    m_downloadMgr.ConnectL( myProcess.Identity(), *this, master );
+    
+    TRAPD( errMngr, m_downloadMgr.ConnectL( myProcess.Identity(), *this, master ));
+    if ( errMngr == KErrAlreadyExists && master ) { 
+        m_downloadMgr.ConnectL( myProcess.Identity(), *this, EFalse );
+    }
+    
     if( !master ){
         // Browser is embedded. Downloads must be paused when the user closes
         // the embedded Browser (that is always started from the Launcher), and

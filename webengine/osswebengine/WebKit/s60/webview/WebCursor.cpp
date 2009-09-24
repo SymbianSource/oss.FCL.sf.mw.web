@@ -262,7 +262,12 @@ void WebCursor::setCursor(CursorTypes type)
 // -----------------------------------------------------------------------------
 void WebCursor::cursorUpdate(bool visible)
 {
-    if (!m_view || !m_view->brCtl()->settings())
+    if (!m_view || !m_view->brCtl() || !m_view->brCtl()->settings())
+        return;
+    //If cursor show mode defined inside cenrep key is no cursor shown in non-tab navigation mode,
+    //then no need to update the cursor
+    if (m_view->brCtl()->settings()->getNavigationType() != SettingsContainer:: NavigationTypeTabbed &&
+            (m_view->brCtl()->settings()->brctlSetting(TBrCtlDefs::ESettingsCursorShowMode) == TBrCtlDefs::ENoCursor))
         return;
     if ( m_view->showCursor() ) {
         m_visible = visible && ((m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeCursor)|| m_view->focusedElementType() == TBrCtlDefs::EElementSelectMultiBox); // check for tabbedNavigation here because it is called from so many places.
@@ -562,6 +567,60 @@ WebFrame* WebCursor::calculateScrollableFrameView(TPoint& pos, TPoint& delta, TR
 
 
 //-------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------
+// WebCursor::scrollingDirection()
+//-------------------------------------------------------------------------------
+void WebCursor::scrollingDirection(int dir, int& lr, int& tb)
+{
+     switch (dir)
+       {
+         case EKeyUpArrow:             // North
+           tb = -1;
+           break;
+
+         case EKeyRightUpArrow:        // Northeast
+         case EStdKeyDevice11:         //   : Extra KeyEvent supports diagonal event simulator wedge
+           tb = -1;
+           lr = +2;                    // Make it run closer to 45 degrees
+           break;
+
+         case EKeyRightArrow:          // East
+           lr = +1;
+           break;
+
+         case EKeyRightDownArrow:      // Southeast
+         case EStdKeyDevice12:         //   : Extra KeyEvent supports diagonal event simulator wedge
+           tb = +1;
+           lr = +2;
+           break;
+
+         case EKeyDownArrow:           // South
+           tb = +1;
+           break;
+
+         case EKeyLeftDownArrow:       // Southwest
+         case EStdKeyDevice13:         //   : Extra KeyEvent supports diagonal event simulator wedge
+           tb = +1;
+           lr = -2;
+           break;
+
+         case EKeyLeftArrow:           // West
+           lr = -1;
+           break;
+
+         case EKeyLeftUpArrow:         // Northwest
+         case EStdKeyDevice10:         //   : Extra KeyEvent supports diagonal event simulator wedge
+           tb = -1;
+           lr = -2;
+           break;
+
+         default:
+           break;
+       }
+    }
+
+
+//-------------------------------------------------------------------------------
 // WebCursor::scrollAndMoveCursor
 //
 // Method that scrolls and moves the cursor based on the navigation algorithm
@@ -578,53 +637,7 @@ void WebCursor::scrollAndMoveCursor(int dir, int scrollRange, bool autoscroll)
     int deltaX;
     int deltaY;
 
-    switch (dir)
-      {
-
-        case EKeyUpArrow:             // North
-          tb = -1;
-          break;
-
-        case EKeyRightUpArrow:        // Northeast
-        case EStdKeyDevice11:         //   : Extra KeyEvent supports diagonal event simulator wedge
-          tb = -1;
-          lr = +2;                    // Make it run closer to 45 degrees
-          break;
-
-        case EKeyRightArrow:          // East
-          lr = +1;
-          break;
-
-        case EKeyRightDownArrow:      // Southeast
-        case EStdKeyDevice12:         //   : Extra KeyEvent supports diagonal event simulator wedge
-          tb = +1;
-          lr = +2;
-          break;
-
-        case EKeyDownArrow:           // South
-          tb = +1;
-          break;
-
-        case EKeyLeftDownArrow:       // Southwest
-        case EStdKeyDevice13:         //   : Extra KeyEvent supports diagonal event simulator wedge
-          tb = +1;
-          lr = -2;
-          break;
-
-        case EKeyLeftArrow:           // West
-          lr = -1;
-          break;
-
-        case EKeyLeftUpArrow:         // Northwest
-        case EStdKeyDevice10:         //   : Extra KeyEvent supports diagonal event simulator wedge
-          tb = -1;
-          lr = -2;
-          break;
-
-        default:
-          break;
-
-      }
+    scrollingDirection(dir, lr, tb);
 
     deltaX = lr * scrollRange/2;
     deltaY = tb * scrollRange;
@@ -705,6 +718,47 @@ void WebCursor::scrollAndMoveCursor(int dir, int scrollRange, bool autoscroll)
             if (m_view->pageView())
                 m_view->brCtl()->DrawNow();
         }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// WebCursor::simpleScroll
+// -----------------------------------------------------------------------------
+void WebCursor::simpleScroll(int dir, int scrollRange, bool autoscroll)
+{
+    if (!m_view)
+        return;
+
+    int lr = 0;
+    int tb = 0;
+
+    scrollingDirection(dir, lr, tb);
+
+    int deltaX = lr * scrollRange/2;
+    int deltaY = tb * scrollRange;
+
+    TPoint delta = TPoint(deltaX, deltaY);
+    WebFrameView* fv = m_view->mainFrame()->frameView();
+    TPoint oldpos = fv->contentPos();
+
+    if (autoscroll || m_view->pageView()) {
+        // just simple scroll
+        fv->scrollTo(oldpos + delta);
+    }
+
+    if (!m_view->pageView()) {
+        TPoint cp = position();
+        if (fv->contentPos() == oldpos) {
+            // not scrolling, move the cursor instead
+            cp.iX += deltaX;
+            cp.iY += deltaY;
+        } else {
+            // move cursor slowly out of the way
+            cp.iX += deltaX/6;
+            cp.iY += deltaY/6;
+        }
+        setPosition(cp);
+        reset();
     }
 }
 

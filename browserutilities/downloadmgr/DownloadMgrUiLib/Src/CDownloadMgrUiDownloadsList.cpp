@@ -406,9 +406,16 @@ void CDownloadsListExecuter::ExecuteLD()
         }
     else
         {
-        iDialog = NULL;
-        // Reset owner pointer to this object.
-        if ( iReferer )
+            if( !iDownloadsList.GetDownloadHide() )
+                {
+                delete iDialog;
+                }
+           
+            iDownloadsList.SetDownloadListHide( EFalse );
+      
+            iDialog = NULL;
+            // Reset owner pointer to this object.
+       	    if ( iReferer )
             {
             *iReferer = 0;
             CLOG_WRITE(" referer set was to 0");
@@ -2544,6 +2551,14 @@ void CDownloadMgrUiDownloadsList::InitializeAIWPlugInMenusL( TInt aResourceId,
         }
     }
 
+// -----------------------------------------------------------------------------
+// CDownloadMgrUiDownloadsList::SetDownloadListHide
+// -----------------------------------------------------------------------------
+//
+void CDownloadMgrUiDownloadsList::SetDownloadListHide( TBool aHide )
+    {
+    iDownloadListHide = aHide;
+    }
 #ifdef __WINS__
 #include <commdb.h>
 #include <AknLists.h>

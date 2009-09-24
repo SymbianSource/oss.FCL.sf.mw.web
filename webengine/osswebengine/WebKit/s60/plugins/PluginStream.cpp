@@ -300,6 +300,11 @@ void PluginStream::generateTempFileL()
         if (i >= 0) {
             fileExtPtr.Set(fileExtPtr.Mid(i));
         }
+        else{
+                        TBuf8<KMaxFileName> fileName(fileExtPtr);
+                        fileName.Append(tempFileName.Mid((tempFileName.LocateReverse('.'))));
+                        fileExtPtr.Set(fileName);
+            }
     }
         
             

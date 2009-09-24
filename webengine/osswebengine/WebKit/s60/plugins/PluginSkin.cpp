@@ -159,7 +159,8 @@ PluginSkin::PluginSkin( WebFrame& frame )
       m_instance(0),    
       m_pluginfuncs(0),
       m_resized(false),
-      m_oldPos(TPoint(-1,-1))
+      m_oldRect(TRect(0,0,0,0)),
+      m_oldViewport(TRect(0,0,0,0))
   {
   }
 
@@ -740,15 +741,16 @@ void PluginSkin::positionChanged()
     if ( !m_pluginwin ) {
         return;
     }
-    TRect rect = m_rect;
-    TPoint newPos = m_frame->frameView()->frameCoordsInViewCoords(rect.iTl);
+    TPoint tl = m_frame->frameView()->frameCoordsInViewCoords(m_rect.iTl);
+    TPoint br = m_frame->frameView()->frameCoordsInViewCoords(m_rect.iBr);      
+    TRect rect = TRect(tl, br);
     TRect newViewport = m_frame->frameView()->topView()->DocumentViewport();
     
-    if (m_oldPos != newPos || m_oldViewport != newViewport) {
-        m_oldPos = newPos;
+    if (m_oldRect != rect || m_oldViewport != newViewport) {
+        m_oldRect = rect;
         m_oldViewport = newViewport;
         TRect clipRect(frameVisibleRect());
-        clipRect.Intersection(rect);
+        clipRect.Intersection(m_rect);
         setClipRect(clipRect);
         setPluginWinClipedRect();
     }

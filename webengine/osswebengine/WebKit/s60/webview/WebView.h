@@ -459,10 +459,12 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
         bool handleEditable(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame );
         bool isNaviKey(const TKeyEvent& keyevent);
-        bool needDeactivateEditable(const TKeyEvent& keyevent, TEventCode eventcode);
+        bool needDeactivateEditable(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
         bool deactivateEditable();
         TUint correctKeyCode();
         bool handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame); 
+        bool handleMSK(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
+        void sendMouseEventToEngineIfNeeded(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
    
     public:
         void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);

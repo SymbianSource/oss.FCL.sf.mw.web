@@ -146,7 +146,7 @@ class CHttpCacheLookupTable : public CBase
         * @param
         * @return
         */
-        void MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable, RFs aRfs  );
+        void MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable, RFs aRfs, const TDesC& aDirectory );
 
         /**
          *

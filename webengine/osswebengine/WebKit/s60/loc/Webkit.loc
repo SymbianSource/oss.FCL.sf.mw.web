@@ -417,4 +417,6 @@
 //
 #define qtn_browser_dialog_scriptlog_disable_msg     "Are you sure you want to disable the javascript log? You can re-enable it in Browser Settings/General tab."
 
+#define qtn_browser_choose_file_text     "Choose File"
+
 // End of File

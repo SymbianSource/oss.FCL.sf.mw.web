@@ -24,7 +24,7 @@
 #include <contentharvesterplugin.h>
 #include <widgetappdefs.rh>
 #include "wrtharvesterregistryaccess.h"
-
+#include "wrtusbhandler.h"
 
 // FORWARD DECLARATIONS
 class CWrtHarvesterPSNotifier;
@@ -32,6 +32,8 @@ class CWrtHarvesterPublisherObserver;
 class MLiwInterface;
 class CLiwGenericParamList;
 class CWrtInfo;
+class CWidgetMMCHandler;
+
 
 // CONSTANTS
 
@@ -111,7 +113,11 @@ class CWrtHarvester: public CContentHarvesterPlugin
     	*/
 		void QueueOperationL(  TWidgetOperations aOperation, TUid aUid );	
 		
-		void DialogShown(){ iDialogShown = EFalse; }	
+		void DialogShown(){ iDialogShown = EFalse; }
+		//to check if the device is in mass memory mode
+		TInt IsInMSMode() { return iMSMode; }
+		void  SetMSMode(TInt val)  { iMSMode = val; }
+		 
 		
 	private:
         
@@ -265,7 +271,7 @@ class CWrtHarvester: public CContentHarvesterPlugin
          * Publish & Subscribe listener
          * own
          */        
-        CWrtHarvesterPSNotifier* iWidgetUsbListener;
+        CWidgetMMCHandler* iWidgetUsbListener;
         
 		/**
     	* 
@@ -311,6 +317,18 @@ class CWrtHarvester: public CContentHarvesterPlugin
          *
          */
          TBool        iDialogShown;
+        /**
+         *
+         *
+         */
+         TInt        iMSMode;
+         
+         RFs iFs;
+        /**
+         *
+         *
+         */
+         RPointerArray<HBufC> iHSWidgets;
     };
 
 #endif // C_WRTCONTENTHARVESTER_H 

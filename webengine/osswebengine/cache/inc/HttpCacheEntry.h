@@ -38,8 +38,14 @@ class RFileWriteStream;
 class RFileReadStream;
 class CHttpCacheEvictionHandler;
 class CHttpCacheStreamHandler;
+class CHttpCacheEntry;
 
 // CLASS DECLARATION
+class MHttpCacheEntryDeleteObserver
+    {
+public:
+    virtual void EntryDeleted(CHttpCacheEntry *aEntry) = 0;
+    };
 
 /**
 *
@@ -290,6 +296,24 @@ class CHttpCacheEntry : public CBase, public MHttpCacheWriteSource
          */
          void UnsetEvictionCandidate() { iEvictionCandidate = EFalse; };    // this only exists because when EvictL removes an item from the eviction candidate list, it can't tell the entry that this has happened and so the entry then goes on to attempt to remove itself later when it's being deleted.
 
+        /**
+         *
+         * @since 7.1
+         * @param
+         * @return
+         *
+         */
+         void SetDeleteObserver(MHttpCacheEntryDeleteObserver* aObserver);
+
+        /**
+         *
+         * @since 7.1
+         * @param
+         * @return
+         *
+         */
+         void ClearDeleteObserver();
+         
     public :
 
         // support linked list
@@ -388,6 +412,9 @@ class CHttpCacheEntry : public CBase, public MHttpCacheWriteSource
         TUint32                         iWriteState;
         //
         CHttpCacheEntryAsyncWriteHelper* iWriteHelper;      //owned
+        //
+        MHttpCacheEntryDeleteObserver* iDeleteObserver;    // NOT owned
+       
     };
 
 #endif      // CHTTPCACHEENTRY_H

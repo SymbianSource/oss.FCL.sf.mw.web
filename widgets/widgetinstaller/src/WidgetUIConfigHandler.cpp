@@ -64,6 +64,7 @@ _LIT( KNokiaDisplayName,           "DisplayName" );             // required
 _LIT( KNokiaVersion,               "Version" );                 // optional
 _LIT( KNokiaMiniViewEnabled,       "MiniViewEnabled" );         // optional
 _LIT( KBlanketPermGranted,         "BlanketPermissionGranted" ); 
+_LIT( KPreInstalled,               "PreInstalled" );            // optional
 
 // Apple/Nokia shared key names
 _LIT( KMainHTML,                   "MainHTML" );                // required
@@ -217,6 +218,11 @@ CWidgetUIConfigHandler::CWidgetUIConfigHandler()
     iProperties[EPropertyDescriptionNokiaPromptNeeded].name.Set( KBlanketPermGranted );
     iProperties[EPropertyDescriptionNokiaPromptNeeded].type = EWidgetPropTypeInt;
     iProperties[EPropertyDescriptionNokiaPromptNeeded].flags = CONFIG_NOKIA_MAY;
+    //
+    iProperties[EPropertyDescriptionNokiaPreInstalled].id = EPreInstalled;
+    iProperties[EPropertyDescriptionNokiaPreInstalled].name.Set( KPreInstalled );
+    iProperties[EPropertyDescriptionNokiaPreInstalled].type = EWidgetPropTypeBool;
+    iProperties[EPropertyDescriptionNokiaPreInstalled].flags = CONFIG_NOKIA_MAY;
     }
 
 // ============================================================================

@@ -104,8 +104,7 @@ bool WebEditorClient::shouldBeginEditing(WebCore::Range*)
 //-----------------------------------------------------------------------------
 bool WebEditorClient::shouldEndEditing(WebCore::Range*)
 {
-    notImplemented();
-    return false;
+    return m_shouldEndEditing;
 }
 
 //-----------------------------------------------------------------------------
@@ -327,6 +326,7 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
         return;
     }
 
+    m_shouldEndEditing = false;
     // Move to the right frame
     frame = m_webView->page()->focusController()->focusedOrMainFrame();
 
@@ -367,7 +367,18 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                 break;
 
             case EKeyLeftArrow:
-                frame->editor()->execCommand("MoveLeft");
+                if (select) //If shift is pressed then highlight the selection
+                {
+                //Webview Passes EEventKeyDown and EEventKey due to which 2 characters are getting selected in one key press
+                //Avoiding one Event so that for each key press it selects 1 character only
+                 if(kevent->isKeyDown())
+                    break;
+                 frame->editor()->execCommand("MoveLeftAndModifySelection");//from createCommandMap()
+                }
+                else
+                {
+                 frame->editor()->execCommand("MoveLeft");
+                }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
                 if (frame->selectionController()->start() != startPos &&
                     frame->selectionController()->end() != endPos) {
@@ -376,7 +387,18 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                 break;
 
             case EKeyRightArrow:
-                frame->editor()->execCommand("MoveRight");
+                if (select)//If shift is pressed then highlight the selection
+                {
+                //Webview Passes EEventKeyDown and EEventKey due to which 2 characters are getting selected in one key press
+                //Avoiding one Event so that for each key press it selects 1 character only
+                 if(kevent->isKeyDown())
+                    break;
+                 frame->editor()->execCommand("MoveRightAndModifySelection");
+                }
+                else
+                {
+                 frame->editor()->execCommand("MoveRight");
+                }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
                 if (frame->selectionController()->start() != startPos &&
                     frame->selectionController()->end() != endPos) {
@@ -391,6 +413,9 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     frame->selectionController()->end() != endPos) {
                     event->setDefaultHandled();
                 }
+                else {
+                    m_shouldEndEditing = true;
+                }
                 break;
 
             case EKeyDownArrow:
@@ -400,9 +425,13 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     frame->selectionController()->end() != endPos) {
                     event->setDefaultHandled();
                 }
+                else {
+                    m_shouldEndEditing = true;
+                }
                 break;
                 
             case EKeyEnter:
+            case EKeyDevice3:    
             	// If we are in a textarea, add a newline
                 if (m_webView->fepTextEditor()->IsTextAreaFocused()) {
                     if (m_webView->fepTextEditor()->DocumentLengthForFep() <

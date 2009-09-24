@@ -4222,7 +4222,8 @@ void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
 				currPosition.iY = iDeviceContext->Origin()->y;
 				ScrollTo(currPosition+nextPosition);
 			}
-			break;        							        	
+            iDrag = ETrue;
+            break;
     }
     
     NW_ADT_Vector_Metric_t i;
@@ -4304,9 +4305,16 @@ void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
                 {
                 if (iShouldActivate)
                     {
-                    NW_Evt_ActivateEvent_t actEvent;
-                    NW_Evt_ActivateEvent_Initialize (&actEvent);
-                    ProcessEvent (NW_Evt_EventOf(&actEvent));
+                      if(!iDrag)
+                        {
+                         NW_Evt_ActivateEvent_t actEvent;
+                         NW_Evt_ActivateEvent_Initialize (&actEvent);
+                         ProcessEvent (NW_Evt_EventOf(&actEvent));
+                        }
+                    else
+                        {
+                        iDrag = EFalse;
+                        }
                     }
                 }
             break;

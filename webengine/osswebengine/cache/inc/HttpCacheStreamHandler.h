@@ -179,7 +179,7 @@ class CHttpCacheStreamHandler : public CBase
         * @param
         * @return
         */
-        TBool CreateNewBodyFile( CHttpCacheEntry& aCacheEntry );
+        TBool CreateNewBodyFile( CHttpCacheEntry& aCacheEntry, TBool aUseDirectIO = EFalse );
 
     private:
 

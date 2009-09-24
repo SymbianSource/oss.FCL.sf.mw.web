@@ -81,6 +81,7 @@ SettingsContainer::SettingsContainer(WebView* view, HistoryControllerInterface* 
     brctlSettings[TBrCtlDefs::ESettingsToolbarButton6Cmd] = 12;
     brctlSettings[TBrCtlDefs::ESettingsToolbarButton7Cmd] = 13;
     brctlSettings[TBrCtlDefs::ESettingsScriptLog] = 0;
+    brctlSettings[TBrCtlDefs::ESettingsCursorShowMode] = 1;
 
     updatePageSetting(TBrCtlDefs::ESettingsAutoLoadImages);
     updatePageSetting(TBrCtlDefs::ESettingsFontSize);
@@ -246,6 +247,7 @@ unsigned int SettingsContainer::brctlSetting(TBrCtlDefs::TBrCtlSettings setting)
         case TBrCtlDefs::ESettingsScriptLog:
         case TBrCtlDefs::ESettingsZoomLevelMin:
         case TBrCtlDefs::ESettingsZoomLevelMax:
+        case TBrCtlDefs::ESettingsCursorShowMode:    
         case TBrCtlDefs::ESettingsZoomLevelDefault:
             {
             retVal = brctlSettings[setting];

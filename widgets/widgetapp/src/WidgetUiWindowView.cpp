@@ -187,11 +187,7 @@ void CWidgetUiWindowView::HandleCommandL( TInt aCommand )
 
     DeActivateOptionsMenu();
 
-    TBrCtlDefs::TBrCtlElementType elementtype =
-            iWindowManager.ActiveWindow()->Engine()->FocusedElementType();
-
-    TBool editing = (elementtype == TBrCtlDefs::EElementActivatedInputBox) ||
-                    (elementtype == TBrCtlDefs::EElementActivatedObjectBox);
+    TBool editing = IsEditMode();
 
     switch( aCommand )
         {
@@ -341,6 +337,13 @@ void CWidgetUiWindowView::UpdateStatusPane( TBool aVisible )
         StatusPane()->SwitchLayoutL(R_AVKON_STATUS_PANE_LAYOUT_USUAL_FLAT);
         StatusPane()->ApplyCurrentSettingsL();
         }
+    
+    // update softkeys display to match status pane visibility
+    if( iWindowManager.ActiveWindow() )
+        {
+        iWindowManager.ActiveWindow()->MakeSoftkeysVisible(visible,ETrue);
+        }
+  
     }
 
 // ---------------------------------------------------------
@@ -378,6 +381,14 @@ void CWidgetUiWindowView::StateChanged(
                 delete iRepository;
                 iRepository = NULL;
             }
+        case TBrCtlDefs::EStateFullscreenBrowsing:
+            {
+            if (!iPenEnabled && IsEditMode())
+                {
+                UpdateStatusPane(!aValue);
+                }
+            break;
+            }            
         default:
             break;
         }
@@ -414,5 +425,19 @@ void CWidgetUiWindowView::UpdateToolbar(TBool aShow)
     else
         AppUi()->CurrentFixedToolbar()->SetToolbarVisibility(EFalse);
 #endif
+    }
+
+// -----------------------------------------------------------------------------
+// CWidgetUiWindowView::IsEditMode
+// -----------------------------------------------------------------------------
+TBool CWidgetUiWindowView::IsEditMode()
+    {
+    TBrCtlDefs::TBrCtlElementType focusedElementType =
+                   iWindowManager.ActiveWindow()->Engine()->FocusedElementType();
+
+    TBool retVal = ((focusedElementType == TBrCtlDefs:: EElementActivatedInputBox) ||
+                    (focusedElementType == TBrCtlDefs:: EElementInputBox) ||
+                    (focusedElementType == TBrCtlDefs:: EElementTextAreaBox));
+    return  (retVal);
     }
 // End of File

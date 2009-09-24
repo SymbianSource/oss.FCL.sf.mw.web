@@ -84,7 +84,9 @@ void PopupMenu::showL(FrameView* v, int index)
         }
     }
     
-    dialogs->DialogSelectOptionL(KNullDesC(), ESelectTypeSingle, *options);
+    
+    dialogs->DialogSelectOptionL(KNullDesC(), (TBrCtlSelectOptionType)(ESelectTypeSingle | ESelectTypeWithFindPane), *options);
+
     int newIndex = index;
     CleanupStack::PopAndDestroy(&items);
 

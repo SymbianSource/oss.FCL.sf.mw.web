@@ -143,6 +143,7 @@ SOURCE ICUSymbian.cpp
 SOURCE KURLSymbian.cpp
 SOURCE MimeTypeRegistrySymbian.cpp
 SOURCE OOMHandler.cpp
+SOURCE OOMStopper.cpp
 SOURCE PasteboardSymbian.cpp
 SOURCE PathSymbian.cpp
 SOURCE PictographSymbian.cpp
@@ -167,6 +168,7 @@ SOURCE WidgetSymbian.cpp
 
 SOURCEPATH ../../../../../WebCore/platform/symbian/bitmap
 SOURCE AnimationDecoder.cpp
+SOURCE AnimationDecoderWrapped.cpp
 SOURCE BitmapTiler.cpp
 SOURCE MaskedBitmap.cpp
 SOURCE SyncDecodeThread.cpp

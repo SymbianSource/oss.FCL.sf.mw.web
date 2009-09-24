@@ -22,6 +22,7 @@
 #include "HttpCacheStreamHandler.h"
 #include "HttpCachePostponeWriteUtilities.h"
 #include "HttpCacheUtil.h"
+#include "HttpCacheObserver.h"
 #include <HttpCacheManagerInternalCRKeys.h>
 #include <centralrepository.h>
 #include <hal.h>
@@ -69,7 +70,7 @@ void CHttpCacheFileWriteHandler::OutputQueueContentToDebug()
 // -----------------------------------------------------------------------------
 //
 CHttpCacheFileWriteHandler::CHttpCacheFileWriteHandler(CHttpCacheHandler* aHandler, CHttpCacheStreamHandler* aStreamHandler, RFs& aRfs)
-    : CActive(EPriorityHigh),
+    : CActive(EPriorityIdle),
       iCacheHandler( aHandler ),
       iCacheStreamHandler(aStreamHandler),
       iFs(aRfs)
@@ -81,14 +82,17 @@ CHttpCacheFileWriteHandler::CHttpCacheFileWriteHandler(CHttpCacheHandler* aHandl
 // Symbian 2nd phase constructor can leave.
 // -----------------------------------------------------------------------------
 //
-void CHttpCacheFileWriteHandler::ConstructL(const TInt aWriteTimeout)
+void CHttpCacheFileWriteHandler::ConstructL(const THttpCachePostponeParameters& aParams)
     {
     iObjectQueue.Reset();
     iObjectQueue.ReserveL(32);
 
-    iWaitTimer = CHttpCacheWriteTimeout::NewL( aWriteTimeout );
+    iWaitTimer = CHttpCacheWriteTimeout::NewL( aParams.iWriteTimeout );
     CActiveScheduler::Add(this);
 
+    iFreeRamThreshold = aParams.iFreeRamThreshold;
+    iImmediateWriteThreshold = aParams.iImmediateWriteThreshold;
+    
     MemoryManager::AddCollector(this);
     }
 
@@ -97,14 +101,13 @@ void CHttpCacheFileWriteHandler::ConstructL(const TInt aWriteTimeout)
 // Two-phased constructor.
 // -----------------------------------------------------------------------------
 //
-CHttpCacheFileWriteHandler* CHttpCacheFileWriteHandler::NewL(CHttpCacheHandler* aHandler, CHttpCacheStreamHandler* aStreamHandler, RFs& aRfs, const TInt aWriteTimeout)
+CHttpCacheFileWriteHandler* CHttpCacheFileWriteHandler::NewL(CHttpCacheHandler* aHandler, CHttpCacheStreamHandler* aStreamHandler, RFs& aRfs, const THttpCachePostponeParameters& aParams)
     {
     CHttpCacheFileWriteHandler* self = new( ELeave ) CHttpCacheFileWriteHandler(aHandler, aStreamHandler, aRfs);
 
     CleanupStack::PushL( self );
-    self->ConstructL(aWriteTimeout);
+    self->ConstructL(aParams);
     CleanupStack::Pop();
-
     return self;
     }
 
@@ -141,6 +144,7 @@ void CHttpCacheFileWriteHandler::DumpAllObjects()
     for ( TInt i=0; i < iObjectQueue.Count(); i++ )
         {
         iCacheStreamHandler->Flush(*iObjectQueue[i]);
+        iObjectQueue[i]->ClearDeleteObserver();
         }
         iObjectQueue.Reset();
 #ifdef __CACHELOG__
@@ -185,15 +189,22 @@ void CHttpCacheFileWriteHandler::CollectMemory(TUint aRequired)
         return;
         }
 
+    TInt skip = 0;
     TInt count = KMaxCollectCount;
     while ( aRequired && count && iObjectQueue.Count() )
         {
-        count--;
-        CHttpCacheEntry* entry = iObjectQueue[0];
-        iObjectQueue.Remove(0);
-        TInt size = entry->BodySize();
-        iCacheStreamHandler->Flush(*entry);
-        aRequired -= size;
+        CHttpCacheEntry* entry = iObjectQueue[skip];
+        if(entry != iObjectFlushing)
+            {
+            count--;
+            iObjectQueue.Remove(skip);
+            entry->ClearDeleteObserver();
+            TInt size = entry->BodySize();
+            iCacheStreamHandler->Flush(*entry);
+            aRequired -= size;
+            }
+        else
+            skip++;
         }
     }
 
@@ -247,29 +258,46 @@ TInt CHttpCacheFileWriteHandler::AddEntry(TAddStatus &aAddStatus, CHttpCacheEntr
     // if we get here, we're not in low memory state any more.
     iLowMemoryState = EFalse;
 
+    // If we re-request an item on the page which was non-cacheable, we will update it's content
+    // and add it back to the cache here, even though we have reused the same CHttpCache object.
+ 
+    // check for re-adding pre-existing objects with updated content - size may differ, so need to remove and reinsert.
+    TInt index = iObjectQueue.Find( aEntry ); 
+    if( index >= 0)
+        {
+        iObjectQueue.Remove( index );
+        }
     // add entry to queue
-    TInt err = iObjectQueue.InsertInOrderAllowRepeats(aEntry, TLinearOrder<CHttpCacheEntry>(CompareHttpCacheEntrySize));
+    TInt err = iObjectQueue.Append( aEntry );
 
-    #ifdef __CACHELOG__
-    HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE: CHttpCacheFileWriteHandler: Added object %08x to postpone queue."), aEntry);
-    OutputQueueContentToDebug();
-#endif
-
-    // reset timer
-    if ( err == KErrNone )
+    // sort by size
+    iObjectQueue.Sort(CompareHttpCacheEntrySize);
+    
+    switch( err )
         {
-        aAddStatus = EAddedOk;
-        iWaitTimer->Start( CHttpCacheFileWriteHandler::WriteTimeout, this );
-        }
-    else
-        {
-        aAddStatus = ECheckReturn;
-        }
+        case KErrNone:
 
+            // set up notification of delete operation
+            aEntry->SetDeleteObserver(this);
+            
+        #ifdef __CACHELOG__
+            HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE: CHttpCacheFileWriteHandler: Added object %08x to postpone queue."), aEntry);
+            OutputQueueContentToDebug();
+        #endif
+
+            aAddStatus = EAddedOk;
+            iWaitTimer->Start( CHttpCacheFileWriteHandler::WriteTimeout, this );
+            break;
+        case KErrNoMemory:
+            aAddStatus = ENotEnoughFreeMemory;
+            break;
+        default:
+            aAddStatus = ECheckReturn;
+            break;
+        }
 #ifdef __CACHELOG__
     HttpCacheUtil::WriteLog(0, _L("CACHEPOSTPONE: <<FileWriteHandler::AddEntry"));
 #endif
-
     return err;
     }
 
@@ -305,6 +333,8 @@ CHttpCacheEntry* CHttpCacheFileWriteHandler::RemoveEntry(CHttpCacheEntry *aEntry
         if ( index >= 0 )
             {
             iObjectQueue.Remove( index );
+            aEntry->ClearDeleteObserver();
+            
             if ( !iObjectQueue.Count() )
                 {
 #ifdef __CACHELOG__
@@ -330,6 +360,11 @@ CHttpCacheEntry* CHttpCacheFileWriteHandler::RemoveEntry(CHttpCacheEntry *aEntry
 void CHttpCacheFileWriteHandler::RemoveAll()
     {
     // empty list - note that HttpCacheEntries aren't owned.
+    // deregister for delete events.
+    for(TInt index = 0; index < iObjectQueue.Count(); index++)
+        {
+        iObjectQueue[index]->ClearDeleteObserver();
+        }
     iObjectQueue.Reset();
     // stop us if we're active
     Cancel();
@@ -363,6 +398,19 @@ void CHttpCacheFileWriteHandler::BeginWriting()
 
     if ( !IsActive() )
         {
+#ifdef HTTPCACHE_FILEWRITEDEBUG_ALWAYS_FIRE_OBSERVER
+        // trigger index.dat observer
+        RFile tempIndexFile;
+        TInt err = tempIndexFile.Open(iFs, _L("C:\\system\\cache\\index.dat"), EFileWrite);
+        if(err == KErrNone)
+            {
+            tempIndexFile.Seek(ESeekEnd, err);
+            _LIT8(KIndexGarbage, "blahblah");
+            tempIndexFile.Write(KIndexGarbage());
+            tempIndexFile.Flush();
+            tempIndexFile.Close();
+            }
+#endif
 #ifdef __CACHELOG__
         HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE:   Setting FileWriteHandler %08x to active."), this);
 #endif
@@ -424,6 +472,8 @@ void CHttpCacheFileWriteHandler::RunL()
 #endif
             // the object might not exist in the queue.. how can this happen?
             iObjectQueue.Remove(index);
+            iObjectFlushing->ClearDeleteObserver();
+            
             //
             if ( result != KErrNone )
                 {
@@ -453,21 +503,33 @@ void CHttpCacheFileWriteHandler::RunL()
         // remove any items from the top of the queue which have no body data.
         while ( iObjectQueue.Count() && iObjectQueue[0]->BodySize() == 0 )
             {
+            iObjectQueue[0]->ClearDeleteObserver();
             iObjectQueue.Remove(0);
             };
 
+        TBool goIdle = ETrue;
         // check to see if there is anything ready to write out
         if ( iObjectQueue.Count() )
             {
-            SetActive();
-            iStatus = KRequestPending;
-            iCacheStreamHandler->FlushAsync( *iObjectQueue[0], iStatus );
-            iObjectFlushing = iObjectQueue[0];
-#ifdef __CACHELOG__
-            HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE:     FileWriteHandler::RunL continue cache flush, Starting object %08x."), iObjectFlushing);
-#endif
+            // merge index if it's changed
+            if(iCacheHandler->iHttpCacheObserver->Updated())
+                iCacheHandler->iHttpCacheObserver->RunL();
+            
+            // check again, merge may have removed all items
+            if( iObjectQueue.Count() && !IsActive() )    // Collect could be triggered during RunL execution and already have made this object active, we can't tell in 'collect' if we were in here or not.
+                {
+                iStatus = KRequestPending;
+                SetActive();
+                iCacheStreamHandler->FlushAsync( *iObjectQueue[0], iStatus );
+                iObjectFlushing = iObjectQueue[0];
+                goIdle = EFalse;
+    #ifdef __CACHELOG__
+                HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE:     FileWriteHandler::RunL continue cache flush, Starting object %08x."), iObjectFlushing);
+    #endif
+                }
             }
-        else
+        
+        if(goIdle)
             {   // nothing left to write, go idle.
     #ifdef __CACHELOG__
             HttpCacheUtil::WriteLog(0, _L("CACHEPOSTPONE:     FileWriteHandler::RunL complete with nothing else to write."));
@@ -542,4 +604,9 @@ TBool CHttpCacheFileWriteHandler::IsCacheEntryPostponed(const CHttpCacheEntry* a
     return EFalse;
     }
 
+
+void CHttpCacheFileWriteHandler::EntryDeleted(CHttpCacheEntry *aEntry)
+    {
+    RemoveEntry(aEntry);
+    }
 //  End of File

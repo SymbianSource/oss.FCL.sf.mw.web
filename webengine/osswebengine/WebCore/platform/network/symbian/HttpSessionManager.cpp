@@ -312,11 +312,13 @@ void HttpSessionManager::downloadL(ResourceHandle* handle, const ResourceRequest
 			RHTTPTransactionPropertySet propSet = connTransaction->PropertySet();
 			RStringPool stringPool = m_httpSession.StringPool();
 
-			RStringF selfDownloadCallbackStr = stringPool.OpenFStringL( KSelfDownloadCallback );
 			// Add own adress to the transaction properties		
-			propSet.RemoveProperty(selfDownloadCallbackStr);
-			propSet.SetPropertyL(selfDownloadCallbackStr, ((TInt) (MHTTPTransactionCallback*)m_SelfDownloadContentHandler));
-			if (connection->totalContentSize()) {
+			propSet.RemoveProperty( stringPool.StringF(HttpFilterCommonStringsExt::ESelfDownloadCallback,
+                                    HttpFilterCommonStringsExt::GetTable()) );
+			propSet.SetPropertyL( stringPool.StringF(HttpFilterCommonStringsExt::ESelfDownloadCallback,
+                                    HttpFilterCommonStringsExt::GetTable()), 
+                                    ((TInt) (MHTTPTransactionCallback*)m_SelfDownloadContentHandler));
+            if (connection->totalContentSize()) {
 				m_SelfDownloadContentHandler->HandleResponseBodyL(*connTransaction);
 			}
 		}

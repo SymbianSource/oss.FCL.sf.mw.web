@@ -381,6 +381,24 @@ class CWidgetUiWindowManager : public CBase
         * @return void
         */        
         void NotifyConnecionChange(TBool aConn);
+        TBrCtlDefs::TCursorSettings CursorShowMode() {return iWidgetCursorMode;}
+
+        /**
+        * AnyWidgetOnHs
+        * Checks to see if any widget is on HS
+        * @since 5.0
+        * @return TBool
+        */		
+		TBool AnyWidgetOnHs();
+		
+        /**
+        * AnyWidgetOnHs
+        * Checks to see if any widget is Publishing on HS
+        * @since 5.0
+        * @return TBool
+        */  		
+		TBool AnyWidgetPublishing();
+        
         
 #ifdef  OOM_WIDGET_CLOSEALL
         /**
@@ -547,6 +565,7 @@ class CWidgetUiWindowManager : public CBase
         CInternetConnectionManager*         iConnection;        // owned, responsible for deleting
         TNetworkMode                        iNetworkMode;       // unknown mode =  0, online mode = 1, offline mode = 2
         TBool                               iNetworkConnected;  // ETrue if there is an active network connection, else EFalse
+        TBrCtlDefs::TCursorSettings                     iWidgetCursorMode;
 #ifdef BRDO_WRT_HS_FF       
         CCpsPublisher*                      iCpsPublisher;      // Owned, interface to publish bitmap to CPS
 #endif

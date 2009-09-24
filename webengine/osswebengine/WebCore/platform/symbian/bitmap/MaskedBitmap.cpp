@@ -23,8 +23,6 @@
 #include <bitstd.h>
 #include <bitdev.h>
 
-// CONSTANTS
-static const TInt KCompressRatioThreshold = 16;
 
 // ======================== STATIC FACTORY FUNCTIONS ===========================
 #define GET_PIX_GRAY2(buf, x, y, w)     (((TUint32*)((TUint8*)buf + y*w))[x>>5] & (1<<(x&0x1f)))
@@ -626,16 +624,15 @@ TBool CMaskedBitmap::IsFullyTransparent()
     return ETrue;
     }
 
-void CMaskedBitmap::CompressIfNeeded( TInt aRawSize )
+void CMaskedBitmap::CompressInBackground( )
     {
-    // check if the image is highly compressed
-    TSize sz = iBitmap->SizeInPixels();
-    if( KCompressRatioThreshold * aRawSize < sz.iWidth * sz.iHeight )
-        {
-        iBitmap->Compress();
-        if( HasMask() )
-            iMask->Compress();
-        }
+    
+		if ( iBitmap && iBitmap->Handle() ) 
+			iBitmap->CompressInBackground();
+		
+        if ( iMask && iMask->Handle() )
+            iMask->CompressInBackground();
+        
     }
 
 CMaskedBitmap* CMaskedBitmap::ScaleImageToSize( TSize newSize )

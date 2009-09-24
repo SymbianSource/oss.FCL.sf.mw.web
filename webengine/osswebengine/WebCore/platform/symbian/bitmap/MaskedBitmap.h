@@ -136,7 +136,7 @@ class CMaskedBitmap : public CBase
 
         void Resize(TSize aSize);
         
-        void CompressIfNeeded( TInt aRawDataSize );
+        void CompressInBackground( );
 
         CMaskedBitmap* ScaleImageToSize( TSize newSize );
 

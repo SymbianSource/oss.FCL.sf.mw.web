@@ -27,7 +27,7 @@
  */
 
 #include "config.h"
-#include "OOMHandler.h"
+#include "OOMStopper.h"
 /*
  * Copyright (C) 2007 Nokia, Inc.  All rights reserved.
  *
@@ -61,31 +61,27 @@
 #include "WebView.h"
 #include "WebFrame.h"
 #include "Cache.h"
-#include "OOMHandler.h"
 #include "StaticObjectsContainer.h"
 
 namespace WebCore {
 
-OOMHandler::OOMHandler()
+OOMStopper::OOMStopper()
 {
-    MemoryManager::AddCollector(this);
+    MemoryManager::AddStopper(this);
 }
 
-OOMHandler::~OOMHandler()
+OOMStopper::~OOMStopper()
 {
-    MemoryManager::RemoveCollector(this);
+    MemoryManager::RemoveStopper(this);
 }
 
-TUint OOMHandler::Collect(TUint aRequired)
+void OOMStopper::Stop()
 {
-    // clear all cached images.
-    cache()->clearImages();
-    return 0;
-}
-
-void OOMHandler::Restore()
-{
-    // tot fixme: do nothing so far.
+    // the first step is to stop all the active loadings
+    const Vector<CBrCtl*>& ctrls = StaticObjectsContainer::instance()->activeBrowserControls();
+    for (int i=0; i<ctrls.size(); ++i) {
+        ctrls[i]->webView()->mainFrame()->stopLoading();
+    }
 }
 
 }

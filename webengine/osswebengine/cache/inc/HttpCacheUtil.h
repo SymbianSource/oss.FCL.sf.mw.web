@@ -20,6 +20,7 @@
 
 //  INCLUDES
 #include <e32base.h>
+#include <e32hashtab.h>
 #include <f32file.h>
 #include <http/rhttpheaders.h>
 
@@ -54,7 +55,11 @@ const TUint32 KSubdirNameLength = 2;
 const TUint32 KFilenameLength = 8;
 _LIT( KHttpCacheHeaderExt, ".h" );
 
-#ifdef _DEBUG
+const TInt KCacheFileNeedsDelete( 1 );    
+const TInt KCacheFileNoDelete( 0 );
+
+
+#ifdef HTTP_CACHE_LOGGING
 #define __CACHELOG__
 #endif
 
@@ -70,7 +75,11 @@ class RHTTPTransaction;
 class MHTTPDataSupplier;
 class RStringPool;
 class CHttpCacheEntry;
+class CHttpCacheFileHash;
+class TFileInfo;
 
+typedef TPtrHashMapIter<TDesC, TFileInfo> THttpCacheFileHashIter;
+typedef RPtrHashMap<TDesC, TFileInfo> RHttpCacheFileHashMap;
 // CLASS DECLARATION
 
 /**
@@ -297,6 +306,25 @@ class HttpCacheUtil
         */
         static void WriteUrlToLog( TInt aLogLevel, const TDesC& aTxt, const TDesC8& aUrl, TInt aAny = 0xffff );
 
+        /**
+         * @since 7.1
+         * 
+         * example:
+         * CCacheFileHash *hash;
+         * GenerateCacheContentHashMapL(hash, rfs, _L("Cachelocation"), <a TInt you can use for whatever you like>);
+         * When you return, you should push onto the cleanup stack as usual.
+         * When you're finished with the hash just do:
+         * CleanupStack::PopAndDestroy(); to clean up both hash and string array.
+         */
+        static void GenerateCacheContentHashMapL(CHttpCacheFileHash*& aHashMap, RFs& aRfs, const TDesC& aCacheFolder, const TInt aInitialValue);
+
+        /**
+         * @since 7.1
+         * 
+         * Ensure trailing slash on paths
+         */
+        static void EnsureTrailingSlash( TDes& aPath );
+        
     private:
 
         /**
@@ -333,6 +361,37 @@ class HttpCacheUtil
         static TInt ExtractCacheControlDirectiveValue( RStringPool aStrP, RStringF& aDirective,  TDesC8& aValue, TInt64* aDirectiveValue,
             char** aExtraValue );
     };
+
+NONSHARABLE_CLASS( TFileInfo )
+    {
+    public:
+        TInt iUserInt;
+        TUint32 iFileSize;
+    };
+
+NONSHARABLE_CLASS( CHttpCacheFileHash ) : public CBase
+    {
+    friend class HttpCacheUtil;
+    protected:
+        static CHttpCacheFileHash* NewLC(const TInt aInitialValue);
+        void InsertAndStoreL(const TEntry& aEntry, const TDesC& aDir);
+        
+    private:
+        void ConstructL();
+        CHttpCacheFileHash(const TInt aInitialValue, const THashFunction32<TDesC>& aHash, const TIdentityRelation<TDesC>& aIdentity);
+        
+    public:
+        ~CHttpCacheFileHash();
+        RHttpCacheFileHashMap& HashMap() { return iHashMap; };
+        
+    private:
+        RHttpCacheFileHashMap   iHashMap;
+        RPointerArray<HBufC> iStringStorage;
+        CArrayFixSeg<TFileInfo>* iFileInfoStorage;
+        const TInt iInitialValue;
+    };
+
+
 
 #endif      // CHTTPCACHEUTIL_H
 
