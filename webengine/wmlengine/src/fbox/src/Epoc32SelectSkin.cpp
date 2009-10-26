@@ -720,6 +720,7 @@ NW_FBox_Epoc32SelectSkin_SelectPromptResp (NW_Dlg_SelectData_t *data,
         }
         // CAUTION: this eventually calls NW_UI_CreateCard which may remove 'skin' if onpick to intradeck card exists in content
         NW_FBox_OptionBox_ChangeState( optionBox );
+        break;
       }
     }
   }

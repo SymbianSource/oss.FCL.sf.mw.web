@@ -82,6 +82,8 @@ SettingsContainer::SettingsContainer(WebView* view, HistoryControllerInterface* 
     brctlSettings[TBrCtlDefs::ESettingsToolbarButton7Cmd] = 13;
     brctlSettings[TBrCtlDefs::ESettingsScriptLog] = 0;
     brctlSettings[TBrCtlDefs::ESettingsCursorShowMode] = 1;
+    brctlSettings[TBrCtlDefs::ESettingsEnterKeyMode] = TBrCtlDefs::EEnterKeyCanActivateLink;
+    
 
     updatePageSetting(TBrCtlDefs::ESettingsAutoLoadImages);
     updatePageSetting(TBrCtlDefs::ESettingsFontSize);
@@ -249,6 +251,7 @@ unsigned int SettingsContainer::brctlSetting(TBrCtlDefs::TBrCtlSettings setting)
         case TBrCtlDefs::ESettingsZoomLevelMax:
         case TBrCtlDefs::ESettingsCursorShowMode:    
         case TBrCtlDefs::ESettingsZoomLevelDefault:
+        case TBrCtlDefs::ESettingsEnterKeyMode:
             {
             retVal = brctlSettings[setting];
             break;

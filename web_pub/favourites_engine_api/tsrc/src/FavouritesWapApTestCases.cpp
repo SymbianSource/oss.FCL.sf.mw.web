@@ -1,21 +1,24 @@
 /*
-* Copyright (c) 2002 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+* ============================================================================
+*  Name:      FavouritesWapApTestCases.cpp
+*  Part of:   FavouritesEngineTest class member functions   
 *
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
+*  Description:
 *
-* Contributors:
+*  Version:   0.5
 *
-* Description: 
+*  Copyright (C) 2002 Nokia Corporation.
+*  This material, including documentation and any related 
+*  computer programs, is protected by copyright controlled by 
+*  Nokia Corporation. All rights are reserved. Copying, 
+*  including reproducing, storing,  adapting or translating, any 
+*  or all of this material requires the prior written consent of 
+*  Nokia Corporation. This material also contains confidential 
+*  information which may not be disclosed to others without the 
+*  prior written consent of Nokia Corporation.
 *
-*
+* ============================================================================
 */
-
 
 
 // INCLUDE FILES
@@ -146,6 +149,58 @@ TInt CFavouritesEngineTest::WapApAssignWithApTest( TTestResult& aResult )
 	    _LIT( KDescription , "Test case failed");
 	    aResult.SetResult( KErrGeneral, KDescription );
 	    }
+
+    // Case was executed
+    return KErrNone;
+    }
+
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: WapApAssignSelfWithApTest
+
+    Description: Test the WapAp assign(=) operater using a WapAp as the argument.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Approved
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::WapApAssignSelfWithApTest( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Test the WapAp assign(=) operater using the same WapAp as the argument");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    TFavouritesWapAp accessPoint1, accessPoint2;
+    
+    accessPoint1 = 222;
+    
+    accessPoint1 = accessPoint1;
+    
+    _LIT( KData2 ,"Finished" );
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if(accessPoint1.ApId() == 222)
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
 
     // Case was executed
     return KErrNone;

@@ -24,6 +24,7 @@
 #include <e32hashtab.h>
 #include <apgcli.h>
 #include <Browser_platform_variant.hrh>
+#include <apgnotif.h>
 #include "WidgetRegistryData.h"
 #include "WidgetRegistryConstants.h"
 #include "WidgetPropertyValue.h"
@@ -36,7 +37,6 @@
 
 // FORWARD DECLARATIONS
 class RFs;
-class CWidgetMMCHandler;
 class CWidgetEntry;
 class CWidgetInstaller;
 class CWidgetRegistryXml;
@@ -58,7 +58,7 @@ typedef RPointerArray<CWidgetEntry> RWidgetArray;
 *  @since 3.1
 */
 
-class CWidgetRegistry : public CBase
+class CWidgetRegistry : public CBase, public MApaAppListServObserver
     {
 public:
     /**
@@ -200,7 +200,10 @@ public:
      * dirty flag is true only in non leave case and some change
      * needs to be written out
      */
-    void InternalizeL( TBool& aDirtyFlag );
+    void InternalizeL( TBool aDoConsistency,
+                       TBool aIgnoreParseError,
+                       TBool& aDirtyFlag,
+                       TInt& aParseError );
 
     /**
      * Store widget information to a file
@@ -211,6 +214,9 @@ public:
      * Returns security policyId.
      */
      TInt SecurityPolicyId() { return FetchSecurityPolicyIdL(); }
+
+		//from MApaAppListServObserver
+		void HandleAppListEvent(TInt aEvent);
 
 private:
 
@@ -361,9 +367,9 @@ private:
 
     // map of language code to lproj dir
     RPtrHashMap<TInt,HBufC8>    iLangDirList;
-    CWidgetMMCHandler*          iMMCHandler;
     TInt                        iPolicyId;
     CWidgetRegistryXml*         iXmlProcessor;
+    CApaAppListNotifier* iApaAppListNotifier;
 public:
     LOG_MEMBER_VARS
     };

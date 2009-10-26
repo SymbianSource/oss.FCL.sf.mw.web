@@ -32,6 +32,7 @@ VENDORID       VID_DEFAULT
 //#define _DEBUG
 
 START RESOURCE  ../Data/DownloadMgrUiLib.rss
+DEPENDS avkon.rsg
 HEADER
 #ifdef __S60_32__
 LANG sc 

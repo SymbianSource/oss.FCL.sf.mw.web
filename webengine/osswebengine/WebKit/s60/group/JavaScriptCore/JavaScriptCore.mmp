@@ -177,5 +177,6 @@ SOURCE          npscript.cpp
 LIBRARY         estlib.lib
 LIBRARY         euser.lib
 LIBRARY		memman.lib
+LIBRARY     charconv.lib
 
 

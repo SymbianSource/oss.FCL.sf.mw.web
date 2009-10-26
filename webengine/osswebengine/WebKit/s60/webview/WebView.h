@@ -67,6 +67,12 @@ class WebPageFullScreenHandler;
 class WebFrameView;
 class WebFrameBridge;
 
+
+const TUint KMouseEventFired = 0x00000001;
+const TUint KKeyEventFired = 0x00000002;
+
+
+
 class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, private MPageScalerCallback, public MOOMStopper
     {
     public:
@@ -459,13 +465,14 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
         bool handleEditable(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame );
         bool isNaviKey(const TKeyEvent& keyevent);
-        bool needDeactivateEditable(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
+        bool needDeactivateEditable(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame, bool consumed);
         bool deactivateEditable();
         TUint correctKeyCode();
         bool handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame); 
         bool handleMSK(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
-        void sendMouseEventToEngineIfNeeded(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
-   
+	    void sendMouseEventToEngineIfNeeded(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
+	    void setFocusedNodeUnderCursor(WebCore::Frame* frame);
+	    
     public:
         void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
         void fepTimerFired(WebCore::Timer<WebView>*);
@@ -478,6 +485,14 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void focusedElementChanged(WebCore::Element* element);
         void windowObjectCleared() const;
 
+        bool isMouseEventFired() { return m_firedEvent & KMouseEventFired; }
+        bool isKeyEventFired() { return m_firedEvent & KKeyEventFired; }
+        void setMouseEventFired() { m_firedEvent |= KMouseEventFired; }
+        void setKeyEventFired() { m_firedEvent |= KKeyEventFired; }
+        void clearMouseEventFired() { m_firedEvent &= ~KMouseEventFired; }
+        void clearKeyEventFired() { m_firedEvent &= ~KKeyEventFired; }
+        void clearEventFired() { m_firedEvent = 0; }
+        
     private:
         WebCore::Page*          m_page;
         WebFrameView*           m_frameView;
@@ -559,7 +574,8 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         //Indicates any plugin is activated/deactivated
         bool                m_showCursor;
         bool                m_allowRepaints;
-        bool                m_prevEditMode; 
+        bool                m_prevEditMode;
+        int                 m_firedEvent;
     };
 
 #endif

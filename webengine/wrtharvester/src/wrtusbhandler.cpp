@@ -1,45 +1,60 @@
-/*
-* Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
-*
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
-*
-* Contributors:
-*
-* Description:  Handle notifications of MMC events.
-*
-*
-*
-*/
+//
+// ============================================================================
+//  Name     : WidgetMMCHandler.cpp
+//  Part of  : SW Installer UIs / WidgetInstallerUI
+//
+//  Description: Handle notifications of MMC events.
+//
+//
+//  Version     : 3.1
+//
+//  Copyright © 2006 Nokia Corporation.
+//  This material, including documentation and any related
+//  computer programs, is protected by copyright controlled by
+//  Nokia Corporation. All rights are reserved. Copying,
+//  including reproducing, storing, adapting or translating, any
+//  or all of this material requires the prior written consent of
+//  Nokia Corporation. This material also contains confidential
+//  information which may not be disclosed to others without the
+//  prior written consent of Nokia Corporation.
+// ==============================================================================
+///
 
+// INCLUDE FILES
 #include "wrtusbhandler.h"
 #include "wrtharvester.h"
 #include "wrtusbhandler.h"
+#include <DriveInfo.h>
 
 // CONSTANTS
 
 
+static TInt TimerCallBack( TAny* ptr )
+{    
+    CWrtUsbHandler* temp = static_cast<CWrtUsbHandler*>(ptr);
+    if(temp)
+        {
+        temp->DeleteTimer();
+        temp->DoScanAndUpdate();       
+        }
+    return 0;    
+}
 // ============================================================================
-// CWidgetMMCHandler::NewL()
+// CWrtUsbHandler::NewL()
 // two-phase constructor
 //
 // @since 3.1
 // @param aRegistry - Widget registry for callback.
 // @param aFs - file session
-// @return pointer to CWidgetMMCHandler
+// @return pointer to CWrtUsbHandler
 // ============================================================================
 //
-CWidgetMMCHandler* CWidgetMMCHandler::NewL(
+CWrtUsbHandler* CWrtUsbHandler::NewL(
     CWrtHarvester* aHarvester,
     RFs& aFs )
     {
-    CWidgetMMCHandler* self =
-        new(ELeave) CWidgetMMCHandler( aHarvester , aFs );
+    CWrtUsbHandler* self =
+        new(ELeave) CWrtUsbHandler( aHarvester , aFs );
     CleanupStack::PushL( self );
     self->ConstructL();
     CleanupStack::Pop( self );
@@ -47,13 +62,13 @@ CWidgetMMCHandler* CWidgetMMCHandler::NewL(
     }
 
 // ============================================================================
-// CWidgetMMCHandler::CWidgetMMCHandler()
+// CWrtUsbHandler::CWrtUsbHandler()
 // C++ default constructor
 //
 // @since 3.1
 // ============================================================================
 //
-CWidgetMMCHandler::CWidgetMMCHandler( CWrtHarvester* aHarvester,
+CWrtUsbHandler::CWrtUsbHandler( CWrtHarvester* aHarvester,
                                       RFs& aFs )
     : CActive( CActive::EPriorityUserInput ),
       iHarvester( aHarvester ),
@@ -64,159 +79,139 @@ CWidgetMMCHandler::CWidgetMMCHandler( CWrtHarvester* aHarvester,
     }
 
 // ============================================================================
-// CWidgetMMCHandler::ConstructL()
+// CWrtUsbHandler::ConstructL()
 // Symbian default constructor
 //
 // @since 3.1
 // ============================================================================
 //
-void CWidgetMMCHandler::ConstructL()
+void CWrtUsbHandler::ConstructL()
     {
     if ( KErrNone != ScanDrives( iDriveFlags ) )
         {
         iDriveFlags = 0;
-        }
-        RDebug::Print(_L("iDriveFlags ConstructL() : %x %d"), iDriveFlags,iDriveFlags);
+        }        
     }
 
 // ============================================================================
-// CWidgetMMCHandler::~CWidgetMMCHandler()
+// CWrtUsbHandler::~CWrtUsbHandler()
 // destructor
 //
 // @since 3.1
 // ============================================================================
-CWidgetMMCHandler::~CWidgetMMCHandler()
+CWrtUsbHandler::~CWrtUsbHandler()
     {
     Cancel();
-
     }
 
 // ============================================================================
-// CWidgetMMCHandler::Start()
+// CWrtUsbHandler::Start()
 // Start monitoring.
 //
 // @since 5.0
 // ============================================================================
-void CWidgetMMCHandler::Start()
+void CWrtUsbHandler::Start()
     {
     iFs.NotifyChange( ENotifyDisk, iStatus );
     SetActive();
     }
 
 // ============================================================================
-// CWidgetMMCHandler::RunL()
+// CWrtUsbHandler::RunL()
 // Handle notifications of MMC events.
 //
 // @since 3.1
 // ============================================================================
-void CWidgetMMCHandler::RunL()
+void CWrtUsbHandler::RunL()
     {
     if ( iStatus == KErrNone )
-      {
-        TInt driveFlags = 0;
-        TInt deltaDriveFlags = 0;
-      
+        {
+        //Call back Timer
+        iCallBackTimer = CPeriodic::NewL(CActive::EPriorityLow);
+        iCallBackTimer->Start(10000000,0,TCallBack(&TimerCallBack,this));         
+        }
+    }
 
-         User::After( 10000000 );
-         
-       if ( KErrNone == ScanDrives( driveFlags ) )
-         {
-            deltaDriveFlags = iDriveFlags ^ driveFlags;
-            
-            iDriveFlags = driveFlags;
-         }
-        
-       if ( deltaDriveFlags )
-          {
-          //Unpluging USB from Mass storage . . . 
-          if(iHarvester->IsInMSMode() == 1)
-            {
-             iHarvester->SetMSMode(0);
-             iHarvester->ClearAllOperations();
-             iHarvester->UpdateL();
-             
-             iFs.NotifyChange( ENotifyDisk, iStatus );
-             SetActive();
-             return;
+void CWrtUsbHandler::DoScanAndUpdate()
+    {
+    TInt err = 0;
+    TInt driveFlags = 0;
+    TInt deltaDriveFlags = 0;
+    if ( KErrNone == ScanDrives( driveFlags ) )
+        {
+        deltaDriveFlags = iDriveFlags ^ driveFlags;
+        iDriveFlags = driveFlags;
+        }
+    
+    if ( deltaDriveFlags )
+        {           
+        //Unpluging USB from Mass storage . . . 
+        if(iHarvester->IsInMSMode() == 1)
+            {                  
+            iHarvester->SetMSMode(0);
+            iHarvester->ClearAllOperations();
+            TRAP(err, iHarvester->UpdateL() );            
+            iFs.NotifyChange( ENotifyDisk, iStatus );
+            SetActive();
+            return;
             }
 
-          TVolumeInfo volInfo;
-          TInt temp = deltaDriveFlags;
-          TBool massMemAltered = EFalse;
-          TBool mmcAltered = EFalse;
-          for(TInt DriveNo = EDriveA+1 ; DriveNo<=EDriveY; DriveNo++ )
-            {
-                
+        TVolumeInfo volInfo;
+        TInt temp = deltaDriveFlags;
+        TBool massMemAltered = EFalse;        
+        for(TInt DriveNo = EDriveA+1 ; DriveNo<=EDriveY; DriveNo++ )
+            {   
             temp =  temp >> 1;
             if( temp & 01)
-              {
-                switch (DriveNo)
-                  {
-                    case EDriveE :
-                      {
-                      massMemAltered = ETrue;   
-                      break; 
-                      }
-                    case EDriveF:
-                      {
-                           
-                      mmcAltered = ETrue;
-                      break;
-                      }
-                         
-                   }
-              }
-            
+                {
+                TUint status(0);
+                err = DriveInfo::GetDriveStatus( iFs, DriveNo , status );
+                if(!err && (status & DriveInfo::EDriveExternallyMountable) && (status & DriveInfo::EDriveInternal ))
+                    {
+                    //Internal Memory
+                    massMemAltered = ETrue;
+                    }                     
+                }            
             }
-                     
-       if( !massMemAltered && mmcAltered)    
-         {
-          iHarvester->UpdateL();   
-         }
-       else if( massMemAltered )
-         {
-          iHarvester->SetMSMode(1);  
-          iHarvester->UpdateL(); 
-         }
-
+       if( massMemAltered )
+           {           
+           iHarvester->SetMSMode(1);            
+           }
+       
+        TRAP( err, iHarvester->UpdateL() ); 
         }
-      }
-      
-      
     iFs.NotifyChange( ENotifyDisk, iStatus );
     SetActive();
     }
 
+
 // ============================================================================
-// CWidgetMMCHandler::RunError()
+// CWrtUsbHandler::RunError()
 // Ignore errors from RunL.
 //
 // @since 5.0
 // ============================================================================
-TInt CWidgetMMCHandler::RunError( TInt /* aError */ )
+TInt CWrtUsbHandler::RunError( TInt /* aError */ )
     {
-
     return KErrNone; // indicates error was handled
     }
 
 // ============================================================================
-// CWidgetMMCHandler::DoCancel()
+// CWrtUsbHandler::DoCancel()
 // Cancel the MMC event handler
 //
 // @since 3.1
 // ============================================================================
-void CWidgetMMCHandler::DoCancel()
+void CWrtUsbHandler::DoCancel()
     {
-
     iFs.NotifyChangeCancel();
     }
 
 /* Scans drives and records a bit flag for those that exist and are
  * suitable for installing widgets to.
  */
-TInt CWidgetMMCHandler::ScanDrives( TInt& aDriveFlags )
+TInt CWrtUsbHandler::ScanDrives( TInt& aDriveFlags )
     {
-
     // List all drives in the system
     TDriveList driveList;
     TInt error = iFs.DriveList( driveList );
@@ -258,4 +253,10 @@ TInt CWidgetMMCHandler::ScanDrives( TInt& aDriveFlags )
         }
 
     return error;
+    }
+void CWrtUsbHandler::DeleteTimer()
+    {
+    iCallBackTimer->Cancel();
+    delete iCallBackTimer;
+    iCallBackTimer = NULL; 
     }

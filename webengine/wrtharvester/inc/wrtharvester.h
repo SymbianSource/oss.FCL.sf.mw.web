@@ -32,7 +32,7 @@ class CWrtHarvesterPublisherObserver;
 class MLiwInterface;
 class CLiwGenericParamList;
 class CWrtInfo;
-class CWidgetMMCHandler;
+class CWrtUsbHandler;
 
 
 // CONSTANTS
@@ -271,7 +271,7 @@ class CWrtHarvester: public CContentHarvesterPlugin
          * Publish & Subscribe listener
          * own
          */        
-        CWidgetMMCHandler* iWidgetUsbListener;
+        CWrtUsbHandler* iWidgetUsbListener;
         
 		/**
     	* 

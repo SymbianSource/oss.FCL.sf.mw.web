@@ -1,20 +1,23 @@
 /*
-* Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+* ==============================================================================
+*  Name        : FavouritesEngineTest.cpp
+*  Part of     : ?Subsystem_name / FavouritesEngineTest
 *
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
+*  Description : FavouritesBCTest class member functions
+*  Version:   0.5
 *
-* Contributors:
+*  Copyright (C) 2006 Nokia Corporation.
+*  This material, including documentation and any related 
+*  computer programs, is protected by copyright controlled by 
+*  Nokia Corporation. All rights are reserved. Copying, 
+*  including reproducing, storing,  adapting or translating, any 
+*  or all of this material requires the prior written consent of 
+*  Nokia Corporation. This material also contains confidential 
+*  information which may not be disclosed to others without the 
+*  prior written consent of Nokia Corporation.
 *
-* Description:  FavouritesBCTest class member functions
-*
+* ============================================================================
 */
-
 
 
 // INCLUDE FILES
@@ -249,7 +252,9 @@ const TCaseInfo CFavouritesEngineTest::Case (
         ENTRY( "Item NewLC test", CFavouritesEngineTest::ItemNewLCTestL ),
         ENTRY( "Item NewL test", CFavouritesEngineTest::ItemNewLTestL ),
         ENTRY( "Item Destructor test", CFavouritesEngineTest::ItemDestructorTestL ),
-        ENTRY( "Item Assign(=) operator test", CFavouritesEngineTest::ItemAssignTestL ),
+        ENTRY( "Item Assign(=) operator basic test", CFavouritesEngineTest::ItemAssignTestL ),
+        ENTRY( "Item Assign(=) to Self test", CFavouritesEngineTest::ItemAssignSelfTestL ),        
+        ENTRY( "Item Assign(=) Complete test", CFavouritesEngineTest::ItemAssignCompleteTestL ),        
         ENTRY( "Item Uid test", CFavouritesEngineTest::ItemUidTestL ),
         ENTRY( "Item ParentFolder test", CFavouritesEngineTest::ItemParentFolderTestL ),
         ENTRY( "Item Type test", CFavouritesEngineTest::ItemTypeTestL ),
@@ -259,19 +264,30 @@ const TCaseInfo CFavouritesEngineTest::Case (
         ENTRY( "Item UserName test", CFavouritesEngineTest::ItemUserNameTestL ),
         ENTRY( "Item Password test", CFavouritesEngineTest::ItemPasswordTestL ),
         ENTRY( "Item ContextId test", CFavouritesEngineTest::ItemContextIdTestL ),
-        ENTRY( "Item IsItem test", CFavouritesEngineTest::ItemIsItemTestL ),
-        ENTRY( "Item IsFolder test", CFavouritesEngineTest::ItemIsFolderTestL ),
+        ENTRY( "Item IsItem Default test", CFavouritesEngineTest::ItemIsItemTestL ),
+        ENTRY( "Item IsItem Folder test", CFavouritesEngineTest::ItemIsItemEFolderTestL ),        
+        ENTRY( "Item IsFolder Default test", CFavouritesEngineTest::ItemIsFolderTestL ),
+        ENTRY( "Item IsFolder Folder test", CFavouritesEngineTest::ItemIsFolderEFolderTestL ),      
         ENTRY( "Item IsFactoryItem test", CFavouritesEngineTest::ItemIsFactoryItemTestL ),
         ENTRY( "Item IsReadOnly test", CFavouritesEngineTest::ItemIsReadOnlyTestL ),
         ENTRY( "Item Modified test", CFavouritesEngineTest::ItemModifiedTestL ),
         ENTRY( "Item ClearL test", CFavouritesEngineTest::ItemClearLTestL ),
         ENTRY( "Item SetParentFolder test", CFavouritesEngineTest::ItemSetParentFolderTestL ),
-        ENTRY( "Item SetType test", CFavouritesEngineTest::ItemSetTypeTestL ),
-        ENTRY( "Item SetNameL test", CFavouritesEngineTest::ItemSetNameLTestL ),
-        ENTRY( "Item SetUrlL test", CFavouritesEngineTest::ItemSetUrlLTestL ),
+        ENTRY( "Item SetType Default test", CFavouritesEngineTest::ItemSetTypeTestL ),
+        ENTRY( "Item SetType None test", CFavouritesEngineTest::ItemSetTypeNoneTestL ),       
+        ENTRY( "Item SetName Default test", CFavouritesEngineTest::ItemSetNameLTestL ),
+        ENTRY( "Item SetName Truncate test", CFavouritesEngineTest::ItemSetNameMaxLengthTruncateLTestL ),
+        ENTRY( "Item SetName TrimString test", CFavouritesEngineTest::ItemSetNameTrimStringLTestL ),
+        ENTRY( "Item SetName RTLMark test", CFavouritesEngineTest::ItemSetNameRTLMarkLTestL ),
+        ENTRY( "Item SetName EmptyString test", CFavouritesEngineTest::ItemSetNameEmptyStringLTestL ),
+        ENTRY( "Item SetName WhiteSpace test", CFavouritesEngineTest::ItemSetNameWhiteSpaceLTestL ),        
+        ENTRY( "Item SetName ForFolder test", CFavouritesEngineTest::ItemSetNameFolderLTestL ),
+        ENTRY( "Item SetUrl test", CFavouritesEngineTest::ItemSetUrlLTestL ),
         ENTRY( "Item SetWapAp test", CFavouritesEngineTest::ItemSetWapApTestL ),
-        ENTRY( "Item SetUserNameL test", CFavouritesEngineTest::ItemSetUserNameLTestL ),
-        ENTRY( "Item SetPasswordL test", CFavouritesEngineTest::ItemSetPasswordLTestL ),
+        ENTRY( "Item SetUserName test", CFavouritesEngineTest::ItemSetUserNameLTestL ),
+        ENTRY( "Item SetUserName MaxLengthErr test", CFavouritesEngineTest::ItemSetUserNameMaxLengthLTestL ),        
+        ENTRY( "Item SetUserName Truncate test", CFavouritesEngineTest::ItemSetUserNameTruncateLengthLTestL ),        
+        ENTRY( "Item SetPassword test", CFavouritesEngineTest::ItemSetPasswordLTestL ),
         ENTRY( "Item SetContextId test", CFavouritesEngineTest::ItemSetContextIdTestL ),
         ENTRY( "List Constructor test", CFavouritesEngineTest::ListConstructorTestL ),
         ENTRY( "List Destructor test", CFavouritesEngineTest::ListDestructorTestL ),
@@ -321,6 +337,7 @@ const TCaseInfo CFavouritesEngineTest::Case (
         ENTRY( "WapAp Constructor test", CFavouritesEngineTest::WapApConstructorTest ),
         ENTRY( "WapAp Assign with Ap test", CFavouritesEngineTest::WapApAssignWithApTest ),
         ENTRY( "WapAp Assign with ApId test", CFavouritesEngineTest::WapApAssignWithApIdTest ),
+        ENTRY( "WapAp Self-Assign with ApId test", CFavouritesEngineTest::WapApAssignSelfWithApTest ),        
         ENTRY( "WapAp SetNull test", CFavouritesEngineTest::WapApSetNullTest ),
         ENTRY( "WapAp SetDefault test", CFavouritesEngineTest::WapApSetDefaultTest ),
         ENTRY( "WapAp SetApId test", CFavouritesEngineTest::WapApSetApIdTest ),
@@ -346,7 +363,9 @@ const TCaseInfo CFavouritesEngineTest::Case (
         ENTRY( "Notifier constructor test", CFavouritesEngineTest::NotifierConstructorTestL ),
         ENTRY( "Notifier destructor test", CFavouritesEngineTest::NotifierDestructorTestL ),
         ENTRY( "Notifier Start test", CFavouritesEngineTest::NotifierStartTestL ),
-        ENTRY( "Db DeleteFolder test", CFavouritesEngineTest::DbDeleteFolderTestL )
+        ENTRY( "Db DeleteFolder test", CFavouritesEngineTest::DbDeleteFolderTestL ),
+        ENTRY( "Item IsHidden test", CFavouritesEngineTest::ItemIsHiddenTestL ),
+        ENTRY( "Item SetHidden test", CFavouritesEngineTest::ItemSetHiddenTestL )
         };
 
     // Verify that case number is valid

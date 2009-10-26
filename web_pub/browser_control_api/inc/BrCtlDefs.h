@@ -470,6 +470,13 @@ class TBrCtlDefs
             * Browser cursor show mode -- some phone doesn't have cursor inside Browser
             */
             ESettingsCursorShowMode,
+            
+            /*
+             * Enter key mode - default behavior is like in desktop browser - submit the form
+             * The alternative is to select the link is one is activated.
+             */
+            ESettingsEnterKeyMode, 
+            
             ESettingsMaxEnum              ///< Must be last one
             };
 
@@ -824,6 +831,12 @@ class TBrCtlDefs
         {
         ENoCursor = 0,
         EDefaultCursor
+        };
+    
+    enum TEnterKeySettings
+        {
+        EEnterKeyDefault = 0,
+        EEnterKeyCanActivateLink
         };
     };
 #endif      // BRCTLDEFS_H

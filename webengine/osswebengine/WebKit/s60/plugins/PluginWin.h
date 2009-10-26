@@ -104,7 +104,7 @@ class PluginWin :  public CCoeControl,
         * @since 3.1
         * @return The error code from the plugin
         */
-        TInt refreshPlugin(CFbsBitGc& bitmapContext);
+        TInt refreshPlugin(CFbsBitGc& bitmapContext,TRect aRect);
 
 
         /**

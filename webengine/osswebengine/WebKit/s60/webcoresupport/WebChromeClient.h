@@ -99,13 +99,20 @@ class WebChromeClient : public WebCore::ChromeClient {
         virtual void setToolTip(const WebCore::String&) {}
 
         virtual void print(WebCore::Frame*) {}
-        void setElementVisibilityChanged(bool visibility) {
-            m_visibility = visibility;
-        }
+        void setElementVisibilityChanged(bool visibility);
 
         bool elementVisibilityChanged() {
             return m_visibility;   
         }
+		
+		 bool elementVisibilityChangedByMouse() {
+            return m_visibilityByMouse;
+        }
+        
+        bool elementVisibilityChangedByKey() {
+            return m_visibilityByKey;
+        }
+		
         virtual void focusedElementChanged(WebCore::Element*);
         
 protected: // new functions
@@ -115,6 +122,8 @@ private:
     WebView *m_webView;
     void GetDateAndTimeL(TDes& date, TDes& time) const;
     bool m_visibility;
+    bool m_visibilityByMouse;
+    bool m_visibilityByKey;
 };
 
 

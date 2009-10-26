@@ -107,6 +107,8 @@ namespace WebCore {
 #if PLATFORM(SYMBIAN)
         virtual void setElementVisibilityChanged(bool visibility) = 0;
         virtual bool elementVisibilityChanged() = 0;
+        virtual bool elementVisibilityChangedByMouse() = 0;
+        virtual bool elementVisibilityChangedByKey() = 0;
         virtual void focusedElementChanged(Element*) = 0;
 #endif
 };

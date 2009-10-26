@@ -29,12 +29,17 @@
 #include "PageScaler.h"
 #include "webkitlogger.h"
 #include "BrCtl.h"
+#include "SettingsContainer.h"
+#include "StaticObjectsContainer.h"
+#include "WebTabbedNavigation.h"
+
 using namespace WebCore;
 
 WebFrameView::WebFrameView() : 
       m_parent(NULL),
       m_hasBorder(true),
-      m_refCount(1)
+      m_refCount(1),
+	  m_isVisible(ETrue)
 {
     m_hScrollbar = new WebCore::PlatformScrollbar(this, WebCore::HorizontalScrollbar, WebCore::RegularScrollbar);
     m_vScrollbar = new WebCore::PlatformScrollbar(this, WebCore::VerticalScrollbar, WebCore::RegularScrollbar); 
@@ -323,7 +328,14 @@ void WebFrameView::scrollTo(const TPoint& aPoint)
 
             //Update scroll bar , thumb position
             m_topView->updateScrollbars(m_contentSize.iHeight, m_contentPos.iY, m_contentSize.iWidth, m_contentPos.iX);
-            
+
+            if (m_topView->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed) {
+                int h = (to.iX - from.iX);
+                int v = (to.iY - from.iY);
+                h = (h != 0) ? ((h > 0) ? 1 : -1) : h;
+                v = (v != 0) ? ((v > 0) ? 1 : -1) : v;
+                m_topView->tabbedNavigation()->updateCursorPosAfterScroll(core(m_frame.get()), h, v);
+            }
             // trigger painting
             m_topView->syncRepaint();
         }
@@ -506,6 +518,13 @@ TPoint WebFrameView::frameCoordsInViewCoords(const TPoint &aPoint)
     return pt;
 }
 
+TRect WebFrameView::frameCoordsInViewCoords(const TRect &aRect)
+{
+    TSize s = aRect.Size(); 
+    return TRect(frameCoordsInViewCoords(aRect.iTl), toViewCoords(s));
+}
+
+
 TRect WebFrameView::rectInGlobalCoords() const
 {
     TRect rect(toViewCoords(m_frameRect));
@@ -526,6 +545,7 @@ void WebFrameView::setFocus(TBool aFocus)
 
 void WebFrameView::makeVisible(TBool aVisible) 
 {
+    m_isVisible = aVisible;
 }
 
 TBool WebFrameView::isFocused() const
@@ -535,7 +555,7 @@ TBool WebFrameView::isFocused() const
 
 TBool WebFrameView::isVisible() const
 {
-    return ETrue;
+    return m_isVisible;
 }
 
 TSize WebFrameView::contentSize() const

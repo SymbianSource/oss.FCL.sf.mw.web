@@ -118,9 +118,12 @@ namespace WebCore {
         // e.g., in overflow:auto sections.  The clip rects coordinates are in the containing window's coordinate space.
         // This clip includes any clips that the widget itself sets up for its children.
         virtual IntRect windowClipRect() const;
-
+#if PLATFORM(SYMBIAN)
+        virtual void handleEvent(Event* event);
+#else
         virtual void handleEvent(Event*) { }
-
+#endif
+        
 #if PLATFORM(WIN)
         void setContainingWindow(HWND);
         HWND containingWindow() const;

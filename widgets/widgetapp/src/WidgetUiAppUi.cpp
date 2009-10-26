@@ -166,6 +166,7 @@ void CWidgetUiAppUi::HandleCommandL(TInt aCommand)
         {
         case EEikCmdExit:
             {
+            iWindowManager->CloseAllWidgets();
             Exit();
             break;
             }

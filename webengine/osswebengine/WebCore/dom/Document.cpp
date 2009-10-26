@@ -3520,6 +3520,12 @@ PassRefPtr<NameNodeList> Document::getElementsByName(const String &elementName)
 void Document::finishedParsing()
 {
     setParsing(false);
+    if (this->hasListenerType(DOMCONTENTLOADED_LISTENER)) 
+        {
+        ExceptionCode ec = 0;
+        dispatchEvent(new MutationEvent(DOMContentLoadedEvent, false, false,
+                                 this, String(), String(), String(), 0), ec);
+        }
     if (Frame* f = frame())
         f->loader()->finishedParsing();
 }

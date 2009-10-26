@@ -29,6 +29,7 @@ CAPABILITY		CAP_GENERAL_DLL
 SOURCEPATH      ../Src
 
 START RESOURCE	../SrcData/BrowserDialogsProvider.rss
+DEPENDS avkon.rsg
 HEADER
 TARGETPATH   RESOURCE_FILES_DIR
 #ifdef __S60_32__

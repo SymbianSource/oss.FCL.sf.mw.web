@@ -89,6 +89,7 @@ public:
 #if PLATFORM(SYMBIAN)
     IntRect itemRect(int tx, int ty, int index) { return itemBoundingBoxRect(tx, ty, index); }
     int indexOffset() {return m_indexOffset;}
+    int getSize() {return size();}
 #endif
 
 private:

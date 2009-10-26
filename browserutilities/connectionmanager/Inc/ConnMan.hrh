@@ -24,3 +24,4 @@ enum TConnManDlgCtl
 	EConnManWaitNote = 8747,
 	EConnManInfoNote
 	};
+	

@@ -39,6 +39,8 @@
 #include "Platform.h"
 #if USE(ICU_UNICODE) && !USE(SYMBIAN_UNICODE)
 #include <unicode/ucnv.h>
+#elif PLATFORM(SYMBIAN)
+#include <utf.h>
 #endif
 
 namespace KJS { namespace Bindings {
@@ -88,21 +90,33 @@ void convertUTF8ToUTF16(const NPUTF8 *UTF8Chars, int UTF8Length, NPUTF16 **UTF16
             (*UTF16Chars)[i] = UTF8Chars[i] & 0xFF;
     }
 #elif PLATFORM(SYMBIAN)
-// fixme: this needs to be a little bit more sophisticated
     if (UTF8Length == -1)
         UTF8Length = strlen(UTF8Chars);
 
-    *UTF16Length = UTF8Length;
+    *UTF16Length = 0;
+    *UTF16Chars = 0;
 
-    *UTF16Chars = (NPUTF16 *)malloc(sizeof(NPUTF16) * (*UTF16Length));
-
-    for (unsigned i = 0; i < *UTF16Length; i++)
-        (*UTF16Chars)[i] = UTF8Chars[i] & 0xFF;
-
+    TPtrC8 buf8((TUint8*) UTF8Chars, UTF8Length);
+    HBufC *hbuf16 = HBufC::New(UTF8Length+1);
+    if (!hbuf16)
+        return;
+    TPtr16 buf16 = hbuf16->Des();
+    CnvUtfConverter::ConvertToUnicodeFromUtf8(buf16, buf8);
+    *UTF16Chars = new NPUTF16[buf16.Length()+1];
+    if (!(*UTF16Chars)) {
+        delete hbuf16;
+        return;
+    }
+    memcpy((void*)*UTF16Chars, (const char*)(buf16.Ptr()), buf16.Size());
+    *UTF16Length = buf16.Length();
+    (*UTF16Chars)[(*UTF16Length)] = 0;
+    delete hbuf16;
 #else
     assert(!"Implement me!");    
 #endif
 }
+
+
 
 // Variant value must be released with NPReleaseVariantValue()
 void convertValueToNPVariant(ExecState *exec, JSValue *value, NPVariant *result)

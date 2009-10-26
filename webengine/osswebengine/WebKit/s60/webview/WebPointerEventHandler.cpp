@@ -148,7 +148,9 @@ void WebPointerEventHandler::HandleGestureL( const TGestureEvent& aEvent )
       }
     }
     updateCursor(aEvent.CurrentPos());
-
+    if (IS_TABBED_NAVIGATION) {
+        m_webview->tabbedNavigation()->updateCursorPosition(m_highlightPos);
+    }
     switch (gtype) {
       // sent on touch down
       case EGestureStart:  
@@ -195,7 +197,7 @@ void WebPointerEventHandler::HandleGestureL( const TGestureEvent& aEvent )
       {
           m_ignoreTap = false;
           if (!IS_NAVIGATION_NONE) {
-          handleTouchUp(aEvent);      
+              handleTouchUp(aEvent);
           }
           else {
               Frame* frm = m_webview->page()->focusController()->focusedOrMainFrame();
@@ -265,7 +267,7 @@ void WebPointerEventHandler::handleTouchDownL(const TGestureEvent& aEvent)
     }
 
     if (!IS_NAVIGATION_NONE) {
-    m_webview->pageScrollHandler()->handleTouchDownGH(aEvent);
+        m_webview->pageScrollHandler()->handleTouchDownGH(aEvent);
     }
 
     if ( TBrCtlDefs::EElementActivatedObjectBox == elType) {
@@ -305,7 +307,7 @@ void WebPointerEventHandler::handleTouchUp(const TGestureEvent& aEvent)
     PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
     pluginHandler->setPluginToActivate(NULL);
     if (!IS_NAVIGATION_NONE) {
-    m_webview->pageScrollHandler()->handleTouchUpGH(aEvent);
+        m_webview->pageScrollHandler()->handleTouchUpGH(aEvent);
     }
 }
 
@@ -360,12 +362,6 @@ void WebPointerEventHandler::HandlePointerEventL(const TPointerEvent& aPointerEv
         else if (aPointerEvent.iType == TPointerEvent::EButton1Up) {
             m_webview->GetContainerWindow().DisablePointerMoveBuffer();
         }
-
-        }
-
-
-    if (m_webview->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed) {
-        m_webview->tabbedNavigation()->updateCursorPosition(aPointerEvent.iPosition);
     }
 
 #ifdef BRDO_USE_GESTURE_HELPER
@@ -412,35 +408,31 @@ TBrCtlDefs::TBrCtlElementType WebPointerEventHandler::highlitableElement()
     TBrCtlDefs::TBrCtlElementType elType = TBrCtlDefs::EElementNone;
     Frame* coreFrame = core(m_webview->mainFrame());
     WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
-    m_webview->page()->chrome()->client()->setElementVisibilityChanged(false);
+    
     TPointerEvent event;
     TPoint pos = cursor->position();
-    IntPoint point(pos.iX, pos.iY);   
-    HitTestResult htresult = coreFrame->eventHandler()->hitTestResultAtPoint(point, true);
-    Node* eventNode = htresult.innerNode();
-    Frame* frm = eventNode->document()->frame();
-    WebFrame* wfrm = kit(frm);
+    WebFrame* wfrm = cursor->getFrameAtPoint(pos);
+    Frame* frm = core(wfrm);
     TPoint pt(wfrm->frameView()->viewCoordsInFrameCoords(pos));
     TPoint nodePoint;
     
+    Element* eventNode = frm->document()->elementFromPoint(pos.iX, pos.iY);
+    
     m_highlightedNode = NULL;
 
-    frm->bridge()->getTypeFromElement(eventNode, elType, elRect);
+    Node* retNode = 0;
+    frm->bridge()->getTypeFromElement(eventNode, elType, elRect, retNode);
+
     if (elType == TBrCtlDefs::EElementNone) {
-        
         Node* n = wfrm->getClosestAnchorElement(cursor->position(), pos);
-        if (n) {
-            point.setX(pos.iX);
-            point.setY(pos.iY);
-            htresult = coreFrame->eventHandler()->hitTestResultAtPoint(point, true);
-            eventNode = htresult.innerNode();
-            frm = eventNode->document()->frame();
-            frm->bridge()->getTypeFromElement(eventNode, elType, elRect);
+        if (n) {          
+            wfrm = cursor->getFrameAtPoint(pos);
+            frm = core(wfrm);
+            eventNode = frm->document()->elementFromPoint(pos.iX, pos.iY);
+            frm->bridge()->getTypeFromElement(eventNode, elType, elRect, retNode);
             TPoint nodePoint = n->getRect().Rect().Center();
             m_offset = (pt.iX- nodePoint.iX)*(pt.iX- nodePoint.iX) +
                        (pt.iY- nodePoint.iY)*(pt.iY- nodePoint.iY);
-            
-            
         }
     }
     m_highlightedNode = eventNode;
@@ -493,13 +485,17 @@ void WebPointerEventHandler::doTapL()
     }
 #endif // BRDO_TOUCH_ENABLED_FF
     
-
-     // We assume that if element visibility has been changed  
-     // between "up" and "down" that means that some node event 
-     // listener (onMouseOver etc) handling happened and we don't 
-     // want to send a click (mouse press + mouse release) event.
-     if (!IS_NAVIGATION_NONE && 
-         m_webview->page()->chrome()->client()->elementVisibilityChanged()) {
+     /*
+      * We assume that if element visibility has been changed  
+      * between "up" and "down" that means that some node event 
+      * listener (onMouseOver etc) handling happened and we don't 
+      * want to send a click (mouse press = mouse release) event.
+      * The exception is editable element, since we want VKB anyway
+      */
+     if (!IS_NAVIGATION_NONE &&
+         elType != TBrCtlDefs::EElementActivatedInputBox && 
+         elType != TBrCtlDefs::EElementTextAreaBox &&     
+         m_webview->page()->chrome()->client()->elementVisibilityChangedByMouse()) {
          return;
      }
 
@@ -509,12 +505,11 @@ void WebPointerEventHandler::doTapL()
 
     // don't pass the event if the text input is not in valid format
     if (isHighlitableElement(elType) || m_webview->fepTextEditor()->validateTextFormat()) {
-        // because of scrolling we delay sending EButton1Down till we get EButton1Up event and if the content is not scrolling
-        coreFrame->eventHandler()->handleMouseReleaseEvent(PlatformMouseEvent(m_lastTapEvent));
+        m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Up,  m_lastTapEvent.iPosition, coreFrame);
     }
 
     // special handling for broken image (why is this here??)
-    if (m_webview->focusedElementType() == TBrCtlDefs::EElementBrokenImage) {
+    if (elType == TBrCtlDefs::EElementBrokenImage) {
         loadFocusedImage(m_webview);
     }
     else if (elType == TBrCtlDefs::EElementActivatedObjectBox) {
@@ -601,6 +596,21 @@ void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
     }
     m_isHighlighted = (m_highlightedNode != NULL) && (elType != TBrCtlDefs::EElementNone) ;
     
+    m_webview->page()->chrome()->client()->setElementVisibilityChanged(false);
+    
+    /*
+     * Tabbed navigation might already set the focused node.
+     * If it's the same as m_highlightedNode FocuseController::setFocusedNode()
+     * wouldn't do anything and setEditable won't be called.
+     * So we are setting focused node to NULL here and let mouse event handler
+     * set it through ocuseController::setFocusedNode()
+     */
+    if (IS_TABBED_NAVIGATION &&
+        elType == TBrCtlDefs::EElementInputBox || 
+        elType == TBrCtlDefs::EElementTextAreaBox) {
+        coreFrame->document()->setFocusedNode(NULL);
+    }
+         
     m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
 
     m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, coreFrame);

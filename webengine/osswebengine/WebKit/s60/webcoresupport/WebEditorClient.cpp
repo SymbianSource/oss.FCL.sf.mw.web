@@ -384,6 +384,9 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     frame->selectionController()->end() != endPos) {
                     event->setDefaultHandled();
                 }
+                else {
+                    m_shouldEndEditing = !m_webView->fepTextEditor()->IsTextAreaFocused();
+                }
                 break;
 
             case EKeyRightArrow:
@@ -403,6 +406,9 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                 if (frame->selectionController()->start() != startPos &&
                     frame->selectionController()->end() != endPos) {
                     event->setDefaultHandled();
+                }
+                else {
+                    m_shouldEndEditing = !m_webView->fepTextEditor()->IsTextAreaFocused();
                 }
                 break;
 

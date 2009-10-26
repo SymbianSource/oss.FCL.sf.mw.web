@@ -98,7 +98,8 @@ public:
     TPoint frameCoordsInViewCoords(const TPoint& aPoint);
     TPoint viewCoordsInFrameCoords(const TPoint& aPoint);
     TRect rectInGlobalCoords() const;
-
+    TRect frameCoordsInViewCoords(const TRect &aRect);
+    
     void checkScrollbarVisibility();
     int getBidiWidth();
     bool needScroll(const TPoint& aPoint);
@@ -125,6 +126,7 @@ private:
 
     bool    m_resizeByEngine;
     int     m_refCount;
+	TBool   m_isVisible;
 };
 
 #endif // END OF FILE

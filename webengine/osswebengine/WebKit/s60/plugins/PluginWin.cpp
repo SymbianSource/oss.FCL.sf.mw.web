@@ -341,7 +341,7 @@ void PluginWin::HandlePointerEventL(const TPointerEvent& aPointerEvent)
 // Refresh the plugin. - Called by PluginSkin
 // -----------------------------------------------------------------------------
 //
-TInt PluginWin::refreshPlugin(CFbsBitGc& bitmapContext)
+TInt PluginWin::refreshPlugin(CFbsBitGc& bitmapContext,TRect aRect)
 {
     if (m_control && IsVisible() && m_control->DrawableWindow())
         m_control->DrawNow();
@@ -352,12 +352,7 @@ TInt PluginWin::refreshPlugin(CFbsBitGc& bitmapContext)
         if (m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event) {
             m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), static_cast<void*>(&event));
         }
-        WebFrameView* fv = m_pluginskin->frame()->frameView();
-        TRect rect(Rect());
-        rect = TRect(fv->viewCoordsInFrameCoords(Rect().iTl), fv->viewCoordsInFrameCoords(Rect().iBr));
-        rect = fv->toViewCoords(rect);
-        rect.SetSize(m_bitmap->SizeInPixels()); // toViewCoords sometimes grows the rect by 1, which wil cause the bitmap to not draw
-        bitmapContext.DrawBitmap(rect, m_bitmap, rect.Size());
+        bitmapContext.DrawBitmap(aRect, m_bitmap);
     }
     return KErrNone;
 }
@@ -758,6 +753,21 @@ TBool PluginWin::HandleGesture(const TGestureEvent& aEvent)
                                                          static_cast<void*>(&event));
         }
     }
+    else if(!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event){
+        TRect cliprect = m_pluginskin->getClipRect();
+        TPoint newpos = aEvent.CurrentPos();
+        if(cliprect.Contains(newpos)){
+           TGestureEvent gestEvent(aEvent);
+           NPEvent event;
+           NPEventPointer ev;
+           event.event = ENppEventPointer;
+           ev.reserved = &gestEvent;
+           ev.pointerEvent = NULL;
+           event.param = &ev;
+           ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
+                                                         static_cast<void*>(&event));
+        }
+    }    
     return ret;
 
 }

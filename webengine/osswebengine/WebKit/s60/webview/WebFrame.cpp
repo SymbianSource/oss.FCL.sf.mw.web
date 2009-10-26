@@ -347,8 +347,8 @@ WebFrame* WebFrame::frameAtPoint(const TPoint& pt_)
     WTF::Vector<WebFrame*> ch = childFrames();
     WebFrame* frm = 0;
     // Check the children of the frame only if this frame also contains pt_
-    // If a child iframe is bigger than the parent, it should not be picked.
-    if (m_view->rectInGlobalCoords().Contains(pt_)) {
+    // If a child iframe is bigger than the parent, it should not be picked.    
+    if (m_view->isVisible() && m_view->rectInGlobalCoords().Contains(pt_)) {
         Vector<WebFrame*>::iterator end = ch.end();
         for (Vector<WebFrame*>::iterator itr = ch.begin(); itr != end; itr++) {
             WebFrame* f = (*itr);

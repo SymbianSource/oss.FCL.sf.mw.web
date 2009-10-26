@@ -174,7 +174,7 @@ private:
     
     void securityTimerFired(Timer<RenderText>*);
     Timer<RenderText> m_securityTimer;
-    
+    unsigned m_offset;
 #endif //PLATFORM(SYMBIAN)
     
 };

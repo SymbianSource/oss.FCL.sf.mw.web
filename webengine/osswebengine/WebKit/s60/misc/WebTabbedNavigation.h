@@ -24,6 +24,7 @@ class WebView;
 namespace WebCore {
     class Element;
     class Node;
+    class Frame;
 };
 
 class WebTabbedNavigation {
@@ -36,11 +37,19 @@ class WebTabbedNavigation {
         void initializeForPage();
         void updateCursorPosition(const TPoint& pos);
         void focusedElementChanged(WebCore::Element* element);
-
+        TPoint updateCursorPosAfterScroll(WebCore::Frame* frame, int horizontalDir, int verticalDir);
     private:
         bool selectNode(int horizontalDir, int verticalDir, TRect& selectedRect, TRect& newNodeRect, TPoint& selectedPoint, TPoint& newFocusPoint);
         TPoint potentialFocusPoint(int horizontalDir, int verticalDir, TRect& newNodeRect);
         int distanceFunction(int horizontalDir, int verticalDir, TRect& rect, TPoint& point);
+        WebCore::Node* bestFitFocusableNode(WebCore::Frame* topFrame, TRect& viewRect, int horizontalDir, int verticalDir,
+                                            TPoint& selectedPoint, TRect& selectedRect );
+        void handleMultiSelect(int horizontalDir, int verticalDir);
+        void resetNavigationIfNeeded(TPoint& contentPos, TSize& contentSize, WebCore::Frame* focusedFrame,
+                                                         int horizontalDir, int verticalDir);
+        TPoint focusPointFromFocusedNode(WebCore::Frame* frame, int horizontalDir, int verticalDir);
+        void calcSearchViewRect(int horizontalDir, int verticalDir, TRect& view);
+        bool shouldConsiderRect(TRect& rect, TRect& searchRect, int horizontalDir, int verticalDir);
 
     private:
         TRect m_selectedElementRect;

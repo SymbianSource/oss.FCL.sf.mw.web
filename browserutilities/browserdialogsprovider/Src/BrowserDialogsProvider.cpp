@@ -159,19 +159,19 @@ EXPORT_C void CBrowserDialogsProvider::DialogNotifyErrorL( TInt aErrCode )
         case EHttpTemporaryRedirect:
             {
             // Id for r_nw_stat_too_many_redirects is -20019, browser errors start at -20000 
-            msg.Set( textresolver->ResolveErrorString( KErrTooManyRedirects ));  
+            msg.Set( textresolver->ResolveErrorString( KErrTooManyRedirects )); 
+            DialogNoteL( msg );
             break;
             }
         default:
             {
             // Handle all others as system error dialog
-            msg.Set( textresolver->ResolveErrorString( aErrCode ));            
-        	  break;
+            CCoeEnv::Static()->HandleError( aErrCode );
+        	break;
             }
         }   // end of switch
 	
-       DialogNoteL( msg );
-       CleanupStack::PopAndDestroy(); //textresolver
+   CleanupStack::PopAndDestroy(); //textresolver
        
 	if ( iObserver )
     	{

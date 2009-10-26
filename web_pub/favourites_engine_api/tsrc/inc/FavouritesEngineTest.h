@@ -1,20 +1,23 @@
 /*
-* Copyright (c) 2002 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+* ==============================================================================
+*  Name        : FavouritesEngineTest.h
+*  Part of     : ?Subsystem_name / FavouritesEngineTest
 *
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
+*  Description : FavouritesEngineTest test module.
+*  Version:   0.5
 *
-* Contributors:
+*  Copyright (C) 2002 Nokia Corporation.
+*  This material, including documentation and any related 
+*  computer programs, is protected by copyright controlled by 
+*  Nokia Corporation. All rights are reserved. Copying, 
+*  including reproducing, storing,  adapting or translating, any 
+*  or all of this material requires the prior written consent of 
+*  Nokia Corporation. This material also contains confidential 
+*  information which may not be disclosed to others without the 
+*  prior written consent of Nokia Corporation.
 *
-* Description:  FavouritesEngineTest test module.
-*
+* ============================================================================
 */
-
 
 
 #ifndef FAVOURITESENGINETEST_H
@@ -342,6 +345,24 @@ NONSHARABLE_CLASS(CFavouritesEngineTest) : public CTestModuleBase
         TInt ItemAssignTestL( TTestResult& aResult );
 
         /**
+        * FavouritesItem Assign(=) operator test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemAssignSelfTestL( TTestResult& aResult );
+
+        /**
+        * FavouritesItem Assign(=) operator test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemAssignCompleteTestL( TTestResult& aResult );
+        
+        /**
         * FavouritesItem Uid test case.
         * @since ?Series60_version
         * @param aResult Test case result (PASS/FAIL)
@@ -432,13 +453,32 @@ NONSHARABLE_CLASS(CFavouritesEngineTest) : public CTestModuleBase
         TInt ItemIsItemTestL( TTestResult& aResult );
 
         /**
-        * FavouritesItem IsFolder test case.
+        * FavouritesItem IsItemEFolder test case.
         * @since ?Series60_version
         * @param aResult Test case result (PASS/FAIL)
         * @return Symbian OS error code (test case execution error 
         *   that is not returned as test case result in aResult)
         */
+        TInt ItemIsItemEFolderTestL( TTestResult& aResult );
+
+        /**
+        * FavouritesItem IsFolder test case for type EItem.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        
         TInt ItemIsFolderTestL( TTestResult& aResult );
+        /**
+         * FavouritesItem IsFolder test case for type EFolder.
+         * @since ?Series60_version
+         * @param aResult Test case result (PASS/FAIL)
+         * @return Symbian OS error code (test case execution error 
+         *   that is not returned as test case result in aResult)
+         */
+        
+        TInt ItemIsFolderEFolderTestL( TTestResult& aResult );
 
         /**
         * FavouritesItem IsFactoryItem test case.
@@ -495,6 +535,15 @@ NONSHARABLE_CLASS(CFavouritesEngineTest) : public CTestModuleBase
         TInt ItemSetTypeTestL( TTestResult& aResult );
 
         /**
+        * FavouritesItem SetTypeNone test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemSetTypeNoneTestL( TTestResult& aResult );        
+
+        /**
         * FavouritesItem SetNameL test case.
         * @since ?Series60_version
         * @param aResult Test case result (PASS/FAIL)
@@ -502,6 +551,60 @@ NONSHARABLE_CLASS(CFavouritesEngineTest) : public CTestModuleBase
         *   that is not returned as test case result in aResult)
         */
         TInt ItemSetNameLTestL( TTestResult& aResult );
+
+        /**
+        * FavouritesItem ItemSetNameMaxLengthTruncateLTestL test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemSetNameMaxLengthTruncateLTestL( TTestResult& aResult );
+
+        /**
+        * FavouritesItem ItemSetNameTrimStringLTestL test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemSetNameTrimStringLTestL( TTestResult& aResult );
+
+        /**
+        * FavouritesItem ItemSetNameRTLMarkLTestL test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemSetNameRTLMarkLTestL( TTestResult& aResult );
+
+        /**
+        * FavouritesItem ItemSetNameEmptyStringLTestL test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemSetNameEmptyStringLTestL( TTestResult& aResult );   
+        
+        /**
+        * FavouritesItem ItemSetNameWhiteSpaceLTestL test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemSetNameWhiteSpaceLTestL( TTestResult& aResult );   
+        
+        /**
+        * FavouritesItem SetNameFolderL test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */   
+        TInt ItemSetNameFolderLTestL( TTestResult& aResult );
 
         /**
         * FavouritesItem SetUrlL test case.
@@ -529,6 +632,25 @@ NONSHARABLE_CLASS(CFavouritesEngineTest) : public CTestModuleBase
         *   that is not returned as test case result in aResult)
         */
         TInt ItemSetUserNameLTestL( TTestResult& aResult );
+     
+  
+        /**
+        * FavouritesItem ItemSetUserNameMaxLengthLTestL test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemSetUserNameMaxLengthLTestL( TTestResult& aResult );
+          
+        /**
+        * FavouritesItem ItemSetUserNameTruncateLengthLTestL test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemSetUserNameTruncateLengthLTestL( TTestResult& aResult );
 
         /**
         * FavouritesItem SetPasswordL test case.
@@ -984,6 +1106,24 @@ NONSHARABLE_CLASS(CFavouritesEngineTest) : public CTestModuleBase
         */
         TInt DbDeleteFolderTestL( TTestResult& aResult );
 
+        /**
+        * FavouritesItem IsHidden test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemIsHiddenTestL( TTestResult& aResult );
+        
+        /**
+        * FavouritesItem SetHidden test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt ItemSetHiddenTestL( TTestResult& aResult );
+
     private:   // Functions to test TFavouritesWapAp interface
 
         /**
@@ -1012,6 +1152,15 @@ NONSHARABLE_CLASS(CFavouritesEngineTest) : public CTestModuleBase
         *   that is not returned as test case result in aResult)
         */
         TInt WapApAssignWithApIdTest( TTestResult& aResult );
+
+        /**
+        * TFavouritesWapAp assign operator using self ApId test case.
+        * @since ?Series60_version
+        * @param aResult Test case result (PASS/FAIL)
+        * @return Symbian OS error code (test case execution error 
+        *   that is not returned as test case result in aResult)
+        */
+        TInt WapApAssignSelfWithApTest( TTestResult& aResult );
 
         /**
         * TFavouritesWapAp SetNull test case.

@@ -59,10 +59,8 @@ namespace KJS
         public:
             DevicePrivate(Device* jsobj);
             ~DevicePrivate();
-            void SetUid( const TUint& aValue);
 
         private:
-            MDeviceBinding* m_deviceBinding;                 // Owned
             Identifier m_propName;
             ExecState* m_exec;                               // not owned
             Device* m_jsobj;                                 // not owned
@@ -162,6 +160,7 @@ namespace KJS
 
         private:
             DevicePrivate* m_privateData;   // private object to hold data
+            MDeviceBinding* m_deviceBinding; // Owned
             TBool m_valid;                   // object is valid or not
         };
 

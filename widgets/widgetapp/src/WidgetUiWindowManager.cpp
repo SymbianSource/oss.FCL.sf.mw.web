@@ -146,6 +146,8 @@ void CWidgetUiWindowManager::ConstructL()
         {
         TInt strictMode;
         TInt cursorMode = -1;
+        TInt enterKeyMode = -1;
+        
         if (cenRep->Get( KWidgetInstallerStrictMode, strictMode ) == KErrNone)
             {
             iStrictMode = strictMode;
@@ -154,6 +156,12 @@ void CWidgetUiWindowManager::ConstructL()
             {
             iWidgetCursorMode = (TBrCtlDefs::TCursorSettings) cursorMode;
             }
+        
+        if (cenRep->Get( KWidgetEnterKeyMode, enterKeyMode ) == KErrNone)
+            {
+            iWidgetEnterKeyMode = (TBrCtlDefs::TEnterKeySettings) enterKeyMode;
+            }
+        
         delete cenRep;
         }
         
@@ -1286,6 +1294,16 @@ TBool  CWidgetUiWindowManager::CloseAllWidgetsUnderOOM()
     }
  
 #endif  //OOM_WIDGET_CLOSEALL    
+void CWidgetUiWindowManager::CloseAllWidgets()  
+   {   
+   TInt nWidgetsCount = iWindowList.Count();  
+       for ( TInt i = (nWidgetsCount-1); i >= 0; i-- )  
+           {  
+           CWidgetUiWindow* window = iWindowList[i];    
+           delete window;  
+           }  
+   iWindowList.Reset();
+   } 
 
 void CWidgetUiWindowManager::SendAppToBackground()
     {

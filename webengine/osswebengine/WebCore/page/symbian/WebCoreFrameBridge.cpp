@@ -325,7 +325,7 @@ void WebCoreFrameBridge::setWritingDirectionRtl(bool isRtl)
     }
 }
 
-bool WebCoreFrameBridge::getTypeFromElement(Node* node, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect) const
+bool WebCoreFrameBridge::getTypeFromElement(Node* node, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect, Node*& aRNode) const
 { 
      
     if(node && m_frame) {
@@ -335,6 +335,7 @@ bool WebCoreFrameBridge::getTypeFromElement(Node* node, TBrCtlDefs::TBrCtlElemen
             if( n->isFocusable() ) {
                 aElType = nodeTypeB(n, m_frame);
                 aFocusRect = n->getRect();
+                aRNode = n;
                 return true;
             }
             else {
@@ -347,6 +348,7 @@ bool WebCoreFrameBridge::getTypeFromElement(Node* node, TBrCtlDefs::TBrCtlElemen
                     || etn->getHTMLEventListener(mouseupEvent)) ) {                
                     aFocusRect = n->getRect();
                     aElType = TBrCtlDefs::EElementMouseButtonListener;
+                    aRNode = n;
                     return true;
                 }
                 else if (n->isElementNode() && n->hasTagName(areaTag)) {
@@ -354,6 +356,7 @@ bool WebCoreFrameBridge::getTypeFromElement(Node* node, TBrCtlDefs::TBrCtlElemen
                     if(!e->getAttribute(hrefAttr).isNull()) {
                         aElType = TBrCtlDefs::EElementAreaBox;
                         aFocusRect = n->getRect();
+                        aRNode = n;
                         return true;
                     }
                 }
@@ -366,6 +369,7 @@ bool WebCoreFrameBridge::getTypeFromElement(Node* node, TBrCtlDefs::TBrCtlElemen
                             if(!ep->getAttribute(hrefAttr).isNull()) {
                                 aElType = nodeTypeB(np, m_frame);
                                 aFocusRect = np->getRect();
+                                aRNode = np;
                                 return true;
                             }
                         }
@@ -386,6 +390,7 @@ bool WebCoreFrameBridge::getTypeFromElement(Node* node, TBrCtlDefs::TBrCtlElemen
                         }
                     }
                     aFocusRect = n->getRect().Rect();
+                    aRNode = n;
                     return true;
                 }
                 else if (n->renderer() && n->renderer()->layer()) {

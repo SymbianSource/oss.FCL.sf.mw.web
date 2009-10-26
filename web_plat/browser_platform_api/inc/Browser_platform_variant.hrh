@@ -151,6 +151,9 @@ Default is WML support enabled
 // Defines whether SAPI Security Manager Prompt Enhancement is available
 #define BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
 
+// Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
+//Flag need to be removed after this fix is supplied to Symbian 9.4
+#define BRDO_HTTP_STACK_93
 /*
 * ===================
 *        S60 3.23
@@ -270,6 +273,9 @@ Default is WML support enabled
 #define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
 #define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
 
+// Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
+//Flag need to be removed after this fix is supplied to Symbian 9.4
+#undef BRDO_HTTP_STACK_93
 /*
 * ===================
 *        S60 5.0 PF5250+ / Ivalo / Saga
@@ -306,6 +312,9 @@ Default is WML support enabled
 #define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
 #define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
 
+// Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
+//Flag need to be removed after this fix is supplied to Symbian 9.4
+#undef BRDO_HTTP_STACK_93
 /*
 * ===================
 *        S60 5.1
@@ -337,6 +346,9 @@ Default is WML support enabled
 #define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
 #define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
 
+// Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
+//Flag need to be removed after this fix is supplied to Symbian 9.4
+#undef BRDO_HTTP_STACK_93
 /*
 * ===================
 *        S60 5.2
@@ -354,6 +366,10 @@ Default is WML support enabled
 // BrDo MultipartParser not used from S60 5.2 onward
 // un-comment this line for week21 release
 #undef BRDO_MULTIPART_PARSER_FF
+
+// Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
+//Flag need to be removed after this fix is supplied to Symbian 9.4
+#undef BRDO_HTTP_STACK_93
 
 #define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
 #define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)

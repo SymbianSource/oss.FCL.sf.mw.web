@@ -357,3 +357,8 @@ void WebChromeClient::focusedElementChanged(Element* element)
     m_webView->focusedElementChanged(element);
 }
 
+void WebChromeClient::setElementVisibilityChanged(bool visibility) {
+    m_visibility = visibility;
+    m_visibilityByMouse = m_visibility && m_webView->isMouseEventFired();
+    m_visibilityByKey = m_visibility && m_webView->isKeyEventFired();
+}

@@ -831,6 +831,9 @@ void RenderText::setTextWithOffset(PassRefPtr<StringImpl> text, unsigned offset,
     }
 
     m_linesDirty = dirtiedLines;
+#if PLATFORM(SYMBIAN)
+    m_offset = offset;
+#endif     
     setText(text, force, backspace);
 }
 
@@ -921,19 +924,19 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text, bool backspace)
             case TSNONE:
                 break;
             case TSCIRCLE:
-                m_text = m_text->secureShowLast(whiteBullet);
+            	m_text = m_text->secureShowOffset(bullet, m_offset);
                 break;
             case TSDISC:
                 if(backspace){
                 	m_text = m_text->secure(bullet);
                 }
                 else{
-                	m_text = m_text->secureShowLast(bullet);
+                    m_text = m_text->secureShowOffset(bullet, m_offset);
                 }
                 	
                 break;
             case TSSQUARE:
-                m_text = m_text->secureShowLast(blackSquare);
+                m_text = m_text->secureShowOffset(blackSquare, m_offset);
         }
         
         if (style()->textSecurity() != TSNONE) {

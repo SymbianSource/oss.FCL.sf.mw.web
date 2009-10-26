@@ -58,7 +58,7 @@ WidgetPreferences::WidgetPreferences() :m_widgetid(0),
 // ----------------------------------------------------------------------------
 WidgetPreferences::~WidgetPreferences()
 {
-    TRAP_IGNORE( saveL() );
+    //TRAP_IGNORE( saveL() );
     if (m_preferences) {
         m_preferences->ResetAndDestroy();
         m_preferences->Close();
@@ -262,6 +262,9 @@ void WidgetPreferences::setPreferenceL( const TDesC& akey, const TDesC& avalue)
         }
 
         CleanupStack::Pop();   // k
+
+        // Save update to persistent storage
+		saveL();
     }
 
 }
@@ -301,6 +304,9 @@ void WidgetPreferences::removePreferenceL( const TDesC& akey, const TDesC& avalu
         }
 
         CleanupStack::PopAndDestroy();   // k
+
+        // Save update to persistent storage
+		saveL();
     }
 }
 

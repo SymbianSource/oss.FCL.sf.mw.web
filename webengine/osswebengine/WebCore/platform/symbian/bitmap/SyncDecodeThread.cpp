@@ -252,7 +252,8 @@ CSynDecodeThread::~CSynDecodeThread()
 void CSynDecodeThread::ConstructL()
 {   
     _LIT(KThreadName, "ImgDecoder");
-    User::LeaveIfError(iDecoderThread.Create(KThreadName, CSynDecodeThread::ScaleInThread, KDefaultStackSize, KMinHeapSize, KMaxHeapSize, NULL));
+    RAllocator &allocator = User::Allocator();
+    User::LeaveIfError(iDecoderThread.Create(KThreadName, CSynDecodeThread::ScaleInThread, KDefaultStackSize, &allocator, NULL));
     iDecoderThread.SetPriority(EPriorityMore);
     TRequestStatus status = KRequestPending;
     iDecoderThread.Rendezvous(status);

@@ -382,6 +382,8 @@ class CWidgetUiWindowManager : public CBase
         */        
         void NotifyConnecionChange(TBool aConn);
         TBrCtlDefs::TCursorSettings CursorShowMode() {return iWidgetCursorMode;}
+        
+        TBrCtlDefs::TEnterKeySettings  EnterKeyMode() {return iWidgetEnterKeyMode;}
 
         /**
         * AnyWidgetOnHs
@@ -423,7 +425,13 @@ class CWidgetUiWindowManager : public CBase
         */        
         void SetLastWidgetRestartTime(TTime aStartTime){iTimeLastWidgetOpen = aStartTime;}
 #endif  // OOM_WIDGET_CLOSEALL
-        
+           /**  
+           * CloseAllWidgets  
+           * Basic pre-exit routine to make sure all widgets are closed out  
+           * @param none  
+           * @return none  
+           */          
+           void CloseAllWidgets(); 
     protected:
 
         /**
@@ -566,6 +574,8 @@ class CWidgetUiWindowManager : public CBase
         TNetworkMode                        iNetworkMode;       // unknown mode =  0, online mode = 1, offline mode = 2
         TBool                               iNetworkConnected;  // ETrue if there is an active network connection, else EFalse
         TBrCtlDefs::TCursorSettings                     iWidgetCursorMode;
+        TBrCtlDefs::TEnterKeySettings       iWidgetEnterKeyMode;
+        
 #ifdef BRDO_WRT_HS_FF       
         CCpsPublisher*                      iCpsPublisher;      // Owned, interface to publish bitmap to CPS
 #endif

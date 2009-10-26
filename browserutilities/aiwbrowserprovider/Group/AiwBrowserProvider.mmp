@@ -44,6 +44,7 @@ TARGETPATH    ECOM_RESOURCE_DIR
 END
 
 START RESOURCE    ../data/AiwBrowserProvider.rss
+DEPENDS avkon.rsg
 HEADER
 TARGET      AiwBrowserProvider
 TARGETPATH    RESOURCE_FILES_DIR

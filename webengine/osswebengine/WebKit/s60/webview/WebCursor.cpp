@@ -202,7 +202,7 @@ void WebCursor::setCursor(CursorTypes type)
 {
     
     m_type = type;
-    if (m_visible && (m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeCursor)) {
+    if (m_visible) {
         CFbsBitmap*  img = NULL;
         CFbsBitmap*  msk = NULL;
         switch( type )
@@ -264,19 +264,22 @@ void WebCursor::cursorUpdate(bool visible)
 {
     if (!m_view || !m_view->brCtl() || !m_view->brCtl()->settings())
         return;
+
+    bool tabbedNavigation = (m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
+    bool navigationNone = (m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone); 
+    bool cursorNavigation = (m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeCursor);
+    TBrCtlDefs::TBrCtlElementType elType = m_view->focusedElementType();
     //If cursor show mode defined inside cenrep key is no cursor shown in non-tab navigation mode,
     //then no need to update the cursor
-    if (m_view->brCtl()->settings()->getNavigationType() != SettingsContainer:: NavigationTypeTabbed &&
-            (m_view->brCtl()->settings()->brctlSetting(TBrCtlDefs::ESettingsCursorShowMode) == TBrCtlDefs::ENoCursor))
+    if (!tabbedNavigation &&
+         (m_view->brCtl()->settings()->brctlSetting(TBrCtlDefs::ESettingsCursorShowMode) == TBrCtlDefs::ENoCursor))
         return;
-    if ( m_view->showCursor() ) {
-        m_visible = visible && ((m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeCursor)|| m_view->focusedElementType() == TBrCtlDefs::EElementSelectMultiBox); // check for tabbedNavigation here because it is called from so many places.
-    }
+
+    m_visible = visible && ((cursorNavigation && m_view->showCursor()) || 
+                            (tabbedNavigation && (elType == TBrCtlDefs::EElementSelectMultiBox)));
 
     resetTransparency();
-    CursorTypes type = PointerCursor;
-    TBrCtlDefs::TBrCtlElementType elType = m_view->focusedElementType();
-
+    CursorTypes type = PointerCursor;    
     if (m_visible) {
         if      (    elType == TBrCtlDefs::EElementNone
                   || elType == TBrCtlDefs::EElementImageBox
@@ -285,7 +288,7 @@ void WebCursor::cursorUpdate(bool visible)
         else if (    elType == TBrCtlDefs::EElementSmartLinkTel
                   || elType == TBrCtlDefs::EElementSmartLinkEmail )
             type = IBeamCursor;
-        else if (    elType == TBrCtlDefs::EElementSelectMultiBox && m_view->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed)
+        else if (    elType == TBrCtlDefs::EElementSelectMultiBox && tabbedNavigation)
             type = SelectMultiCursor;
         else
             type = HandCursor;
@@ -364,8 +367,21 @@ void WebCursor::setOpaqueUntil(int microsecs)
     {
     setTransparent(false);
     m_transtimer->Cancel();
-    m_transtimer->Start(microsecs,0,TCallBack(TransparencyTimerCb,this));
+    
+    if (m_visible)
+        {
+        m_transtimer->Start(microsecs,0,TCallBack(TransparencyTimerCb,this));
+        }
     }
+
+void WebCursor::stopTransparencyTimer()
+    {
+    if (m_transtimer && m_transtimer->IsActive())
+        {
+        m_transtimer->Cancel();
+        }
+    }
+
 
 // -----------------------------------------------------------------------------
 // WebCursor::increaseTransparencyMoveCount
@@ -503,14 +519,20 @@ WebFrame* WebCursor::calculateScrollableFrameView(TPoint& pos, TPoint& delta, TR
         pfRect = TRect(ppfv->frameCoordsInViewCoords(pfRect.iTl),
                           ppfv->frameCoordsInViewCoords(pfRect.iBr));
     }
-
+    else { 
+        pfRect.SetRect(0, 0, pfRect.iBr.iX * z / 100, pfRect.iBr.iY * z / 100);
+    }
+    
     WebFrameView* fv = frame->frameView();
     TRect framerect = fv ->rect();
     if (frame->parentFrame()) {// frame is not a main frame
        framerect = TRect(pfv->frameCoordsInViewCoords(framerect.iTl),
                          pfv->frameCoordsInViewCoords(framerect.iBr));
     }
-
+    else {
+        framerect.SetRect(0, 0, framerect.iBr.iX * z / 100, framerect.iBr.iY * z / 100);
+    }
+    
     TRect pfInnerRect = pfRect;
     innerRect(pfInnerRect);
     TRect fInnerRect = framerect;
@@ -776,6 +798,9 @@ void WebCursor::updatePositionAndElemType(const TPoint& pt)
     if (m_view && navigableNodeUnderCursor(*frame, point, elType, r)) {
         m_view->setFocusedElementType(elType);
     }
+    else {
+        m_view->setFocusedElementType(TBrCtlDefs::EElementNone);
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -881,19 +906,19 @@ void WebCursor::moveCursor(int lr,int tb, int scrollRange)
     }
 
 
-// -----------------------------------------------------------------------------
-// WebCursor::navigableNodeUnderCursor
-// -----------------------------------------------------------------------------
-bool WebCursor::navigableNodeUnderCursor(WebFrame& webFrame, TPoint& aPoint, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect) const
+bool WebCursor::navigableNodeUnderCursor(WebFrame& webFrame, TPoint& aPoint, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect)
 {
     Frame* coreFrame = core(&webFrame);
     if (!coreFrame->renderer() )
         return false;
 
     Element* node = coreFrame->document()->elementFromPoint(aPoint.iX, aPoint.iY);
-
+    m_elementUnderCursor = node;
     if (node) {
-        return coreFrame->bridge()->getTypeFromElement(node, aElType, aFocusRect);
+        Node* retNode = 0;
+        bool ret = coreFrame->bridge()->getTypeFromElement(node, aElType, aFocusRect, retNode);
+        m_elementUnderCursor = static_cast<Element *>(retNode);
+        return ret;
     }
 
     return false;

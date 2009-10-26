@@ -398,32 +398,18 @@ void CWebFepTextEditor::SetCursorSelectionForFepL(const TCursorSelection& aCurso
     // The other part of the rather hackish way to check if we are at the end of the editing field
     // see WebEditorClient::handleKeypress
     Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
-    if ( frame ) {
-        SelectionController* sc = frame->selectionController();
-        Node* editNode = sc->base().node();
-        if ( IsTextAreaFocused() ) {
-            while(editNode && !editNode->isTextNode()){
-                editNode = editNode->previousSibling();
-            }
-			TInt position( aCursorSelection.iAnchorPos );
-			TInt offset( 0 );
-            TInt extentoffset   = 0;
-			if ( editNode ) {
-				editNode = findTextNodeForCurPos( editNode, position );
-		    if(aCursorSelection.iAnchorPos >= position) {
-                offset = aCursorSelection.iAnchorPos - position;
-                extentoffset = aCursorSelection.iCursorPos - position;
-            }
-            extentoffset = extentoffset < 0 ? 0 : extentoffset; 
-            Position base( editNode, offset );
-			Position extent(editNode,extentoffset);
-			sc->moveTo( base, extent, DOWNSTREAM );
-			}
+    Node*  focusedNode = frame->document()->focusedNode();
+    if ( frame && focusedNode) {
+        TInt lowPos = aCursorSelection.LowerPos();
+        TInt highPos = aCursorSelection.HigherPos();
+        if (focusedNode->hasTagName(HTMLNames::textareaTag)) {
+            HTMLTextAreaElement* textArea = static_cast<HTMLTextAreaElement*>(focusedNode);
+            textArea->setSelectionRange(lowPos, highPos);
 		}
-		else if ( editNode && editNode->isTextNode() ) {
-			Position base( sc->baseNode(), aCursorSelection.iAnchorPos );
-			Position extent( sc->baseNode(), aCursorSelection.iCursorPos );
-			sc->moveTo( base, extent, DOWNSTREAM );
+		else if (focusedNode->hasTagName(HTMLNames::inputTag)) {
+		    HTMLInputElement* inputElement = static_cast<HTMLInputElement*>(focusedNode);
+		    inputElement->setSelectionStart(lowPos);
+		    inputElement->setSelectionEnd(highPos);
 		}
 		HandleUpdateCursor();
     }
@@ -439,27 +425,21 @@ void CWebFepTextEditor::GetCursorSelectionForFep(TCursorSelection& aCursorSelect
     aCursorSelection.SetSelection(0,0);
 
     Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
-    if ( frame ) {
-        SelectionController* sc = frame->selectionController();
-        Node* editNode = sc->base().node();
-		if ( frame && frame->document()->focusedNode() ) {
-			if ( IsTextAreaFocused() ) {
-                HTMLTextAreaElement* ie = static_cast<HTMLTextAreaElement*>(frame->document()->focusedNode());                                                 
-                while(editNode && !editNode->isTextNode()) {
-                    editNode = editNode->previousSibling();
-                }
-				TInt len( 0 );
-				if ( editNode ) {
-					findPrevSiblingTextLen( editNode, len );
-				}
-				aCursorSelection.SetSelection( ((sc->baseOffset()+len > ie->value().length()) ? 0 : sc->baseOffset()+len),
-                                                  ((sc->extentOffset()+len > ie->value().length()) ? 0 : sc->extentOffset()+len));
-			}
-			else {
-				aCursorSelection.SetSelection(sc->baseOffset(), sc->extentOffset());
-			}
-		}
-	}
+    Node*  focusedNode = frame->document()->focusedNode();
+    if (frame && focusedNode) {
+        if (focusedNode->hasTagName(HTMLNames::textareaTag)) {
+            HTMLTextAreaElement* textArea = static_cast<HTMLTextAreaElement*>(focusedNode);
+            TInt anchorPos = textArea->selectionStart();
+            TInt cursorPos = textArea->selectionEnd();
+            aCursorSelection.SetSelection(cursorPos, anchorPos);
+        }
+        else if (focusedNode->hasTagName(HTMLNames::inputTag)) {
+            HTMLInputElement* inputElement = static_cast<HTMLInputElement*>(focusedNode);
+            TInt anchorPos = inputElement->selectionStart();
+            TInt cursorPos = inputElement->selectionEnd();
+            aCursorSelection.SetSelection(cursorPos, anchorPos);
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------

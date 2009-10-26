@@ -98,7 +98,12 @@ void HttpSessionManager::openHttpSessionIfNeededL()
 
         RStringF maxToPipeline = strP.StringF(HTTP::EMaxNumTransactionsToPipeline, stringTable );
         connInfo.SetPropertyL( maxToPipeline, THTTPHdrVal( KHttpMaxTransactionNumPerConnection ) );
-
+        
+#ifdef BRDO_HTTP_STACK_93
+        // Set optimal pipelining
+        RStringF strOptimalPipelineVal = strP.StringF(HTTP::EHttpEnableOptimalPipelining, RHTTPSession::GetTable());
+        connInfo.SetPropertyL(strP.StringF(HTTP::EHttpOptimalPipelining, RHTTPSession::GetTable()), strOptimalPipelineVal);
+#endif
 		//set HTTP receive Buffer Size property
 		RStringF receiveBuffSize = strP.StringF(HTTP::ERecvBufferSize, stringTable );
 		connInfo.SetPropertyL( receiveBuffSize, THTTPHdrVal(KHttpReceiveBuffSize));

@@ -37,6 +37,7 @@ TARGET          WidgetInstallerUI.rsc
 END
 
 START RESOURCE  ../data/WidgetInstallerUI.rss
+DEPENDS avkon.rsg
 DEPENDS swinstcommonui.rsg
 HEADER
 TARGETPATH      Resource

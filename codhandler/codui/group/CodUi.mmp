@@ -44,6 +44,7 @@ SOURCE      CodDialog.cpp
 SOURCE		CodConfirm.cpp 
 
 START RESOURCE ../data/CodUi.rss
+DEPENDS avkon.rsg
 HEADER
 TARGETPATH RESOURCE_FILES_DIR
 #ifdef __S60_32__

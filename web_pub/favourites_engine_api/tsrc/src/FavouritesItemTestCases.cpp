@@ -1,21 +1,24 @@
 /*
-* Copyright (c) 2008 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+* ============================================================================
+*  Name:      FavouritesItemTestCases.cpp
+*  Part of:   FavouritesEngineTest class member functions   
 *
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
+*  Description:
 *
-* Contributors:
+*  Version:   1.0
 *
-* Description: 
+*  Copyright (C) 2008 Nokia Corporation.
+*  This material, including documentation and any related 
+*  computer programs, is protected by copyright controlled by 
+*  Nokia Corporation. All rights are reserved. Copying, 
+*  including reproducing, storing,  adapting or translating, any 
+*  or all of this material requires the prior written consent of 
+*  Nokia Corporation. This material also contains confidential 
+*  information which may not be disclosed to others without the 
+*  prior written consent of Nokia Corporation.
 *
-*
+* ============================================================================
 */
-
 
 
 // INCLUDE FILES
@@ -260,6 +263,153 @@ TInt CFavouritesEngineTest::ItemAssignTestL( TTestResult& aResult )
 
     Class: CFavouritesEngineTest
 
+    Method: ItemAssignCompleteTestL
+
+    Description: Assigning one item to another with the Assign(=) method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Approved
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemAssignCompleteTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Assigning item with Assign(=) operator");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+    
+    TFavouritesWapAp accessPoint1;
+    accessPoint1.SetApId( 22 );
+
+    CFavouritesItem* item1 = CFavouritesItem::NewLC();
+    item1->SetNameL( _L("Item1") );
+    item1->SetUrlL( _L("http://www.nokia.com") );
+    item1->SetUserNameL( _L("Name 1"));
+    item1->SetPasswordL( _L("Password 1"));
+    item1->SetParentFolder(3);
+    item1->SetContextId(22);
+    item1->SetHidden(1);
+    item1->SetWapAp( accessPoint1 );   
+    
+    
+    TFavouritesWapAp accessPoint2;
+    accessPoint2.SetApId( 24 );
+
+    CFavouritesItem* item2 = CFavouritesItem::NewLC();
+    item2->SetNameL( _L("Item2") );
+    item2->SetUrlL( _L("http://www.google.com") );
+    item2->SetUserNameL( _L("Name 2"));
+    item2->SetPasswordL( _L("Password 2"));
+    item2->SetParentFolder(4);
+    item2->SetContextId(24);
+ //   item2->SetHidden(0);
+    item2->SetWapAp( accessPoint2 );   
+     
+    
+
+
+    *item1 = *item2;
+    
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (
+            (item1->Name() == item2->Name()) &&
+            (item1->Url() == item2->Url()) &&
+            (item1->UserName() == item2->UserName()) &&
+            (item1->Password() == item2->Password()) &&
+            (item1->ContextId() == item2->ContextId()) &&
+            (item1->ParentFolder() == item2->ParentFolder()) &&
+            (item1->Type() == item2->Type()) &&
+            (item1->WapAp().ApId() == item2->WapAp().ApId()) &&
+            (item1->IsItem() == item2->IsItem()) &&
+            (item1->IsFolder() == item2->IsFolder()) &&
+            (item1->IsHidden() == item2->IsHidden()) &&
+  //          (item1->Uid() == item2->Uid()) &&               
+            (item1->Modified() == item2->Modified()) 
+           
+        )    
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( 2 );   // item1, item2
+
+    // Case was executed
+    return KErrNone;
+    }
+
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemAssignSelfTestL
+
+    Description: Assigning one item to self with the Assign(=) method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Approved
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemAssignSelfTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Assigning item with Assign(=) operator");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item1 = CFavouritesItem::NewLC();
+    item1->SetNameL( _L("Item1") );
+  
+    *item1 = *item1; //copy to self, should not affect anything
+    
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (item1->Name() == _L("Item1"))
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item1 );   
+
+    // Case was executed
+    return KErrNone;
+    }
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
     Method: ItemUidTestL
 
     Description: Test getting the item's Uid using the Uid method.
@@ -391,7 +541,7 @@ TInt CFavouritesEngineTest::ItemTypeTestL( TTestResult& aResult )
     _LIT( KData2 ,"Finished");
     TestModuleIf().Printf( 0, KDefinition, KData2 );
 
-    if (itemType == 1)
+    if (itemType == CFavouritesItem::EItem)
 	    {
 	    _LIT( KDescription , "Test case passed");
 	    aResult.SetResult( KErrNone, KDescription );
@@ -769,6 +919,59 @@ TInt CFavouritesEngineTest::ItemIsItemTestL( TTestResult& aResult )
     return KErrNone;
     }
 
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemIsItemEFolderTestL
+
+    Description: Test if the folder is not an item using the IsItem method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Approved
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemIsItemEFolderTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Checking if the folder is not an item with IsItem method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    item->SetType(CFavouritesItem::EFolder);
+
+    TBool itemIsItem = item->IsItem();
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (!itemIsItem)
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
 /*
 -------------------------------------------------------------------------------
 
@@ -793,7 +996,7 @@ TInt CFavouritesEngineTest::ItemIsFolderTestL( TTestResult& aResult )
     {
     /* Simple server connect */
     _LIT( KDefinition ,"State");
-    _LIT( KData ,"Checking if the item is a folder with IsFolder method");
+    _LIT( KData ,"Checking if the item is not a folder with IsFolder method");
     TestModuleIf().Printf( 0, KDefinition, KData );
 
     CFavouritesItem* item = CFavouritesItem::NewLC();
@@ -813,6 +1016,58 @@ TInt CFavouritesEngineTest::ItemIsFolderTestL( TTestResult& aResult )
 	    _LIT( KDescription , "Test case failed");
 	    aResult.SetResult( KErrGeneral, KDescription );
 	    }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemIsFolderEFolderTestL
+
+    Description: Test if the item of type EFolder is a folder using the IsFolder method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Draft
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemIsFolderEFolderTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Checking if the folder is a folder with IsFolder method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    /* set item as folder type */
+    item->SetType(CFavouritesItem::EFolder);
+    TBool itemIsFolder = item->IsFolder();
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (itemIsFolder)
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
 
     CleanupStack::PopAndDestroy( item );
 
@@ -1084,7 +1339,7 @@ TInt CFavouritesEngineTest::ItemSetParentFolderTestL( TTestResult& aResult )
 
     Method: ItemSetTypeTestL
 
-    Description: Test setting the item's type using the SetType method.
+    Description: Test setting the item's type to EFolder using the SetType method.
   
     Parameters:  TTestResult& aErrorDescription: out:   
                     Test result and on error case a short description of error
@@ -1101,7 +1356,7 @@ TInt CFavouritesEngineTest::ItemSetTypeTestL( TTestResult& aResult )
     {
     /* Simple server connect */
     _LIT( KDefinition ,"State");
-    _LIT( KData ,"Setting the item's type with SetType method");
+    _LIT( KData ,"Setting the item's type to Folder with SetType method");
     TestModuleIf().Printf( 0, KDefinition, KData );
 
     CFavouritesItem* item = CFavouritesItem::NewLC();
@@ -1121,6 +1376,57 @@ TInt CFavouritesEngineTest::ItemSetTypeTestL( TTestResult& aResult )
 	    _LIT( KDescription , "Test case failed");
 	    aResult.SetResult( KErrGeneral, KDescription );
 	    }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetTypeNoneTestL
+
+    Description: Test setting the item's type to ENone using the SetType method. Type should not be affected.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Draft
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetTypeNoneTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's type to None with SetType method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    
+    item->SetType(CFavouritesItem::ENone);
+    
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+ 
+    if (item->Type() != CFavouritesItem::ENone)
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
 
     CleanupStack::PopAndDestroy( item );
 
@@ -1179,7 +1485,315 @@ TInt CFavouritesEngineTest::ItemSetNameLTestL( TTestResult& aResult )
     return KErrNone;
     }
 
+
 /*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetNameFolderLTestL
+
+    Description: Test setting the item (folder)'s name using the SetNameL method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Approved
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetNameFolderLTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's name with SetNameL method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    item->SetType(CFavouritesItem::EFolder);
+    item->SetNameL( _L("Fav Folder") );
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (item->Name() == _L("Fav Folder"))
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetNameMaxLengthTruncateLTestL
+
+    Description: Test setting the item's name and maxlength using the SetNameL method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Draft
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetNameMaxLengthTruncateLTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's name with SetNameL method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    TRAPD(err, item->SetNameL( _L("Item Name longer than KFavouritesMaxName limit which is 50 chars")));
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if ((item->Name().Length() == KFavouritesMaxName)&& (err==KErrOverflow))
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetNameTrimStringLTestL
+
+    Description: Test setting the item's name with trim using the SetNameL method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Draft
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetNameTrimStringLTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's name with SetNameL method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+     item->SetNameL( _L("  some   name    "));
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (item->Name()== _L("some   name"))
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetNameRTLMarkLTestL
+
+    Description: Test setting the item's name with trim using the SetNameL method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Draft
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetNameRTLMarkLTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's name with SetNameL method");
+   
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+     item->SetNameL( _L("\x200F  some   name   \x200F"));
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (item->Name()== _L("some   name"))
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetNameEmptyStringLTestL
+
+    Description: Test setting the item's name with trim using the SetNameL method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Draft
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetNameEmptyStringLTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's name with SetNameL method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+ 
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    TRAPD(err, item->SetNameL( _L("")));  //returns error
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (err!=KErrNone)
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetNameWhiteSpaceLTestL
+
+    Description: Test setting the item's name with trim using the SetNameL method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Draft
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetNameWhiteSpaceLTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's name with SetNameL method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+ 
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    TRAPD(err, item->SetNameL( _L("         ")));  //returns error
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (err!=KErrNone)
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+
+/*
+
 -------------------------------------------------------------------------------
 
     Class: CFavouritesEngineTest
@@ -1334,6 +1948,114 @@ TInt CFavouritesEngineTest::ItemSetUserNameLTestL( TTestResult& aResult )
     return KErrNone;
     }
 
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetUserNameMaxLengthLTestL
+
+    Description: Test setting the item's user name using the SetUserNameL method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Approved
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetUserNameMaxLengthLTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's user name with SetUserNameL method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+  //  TInt err;
+    
+    TRAPD(err, item->SetUserNameL( _L("New User name longer than allowed by the limit of KFavouritesMaxUserName which is 40 chars at this moment") ));
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (err==KErrOverflow)
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetUserNameTruncateLengthLTestL
+
+    Description: Test setting the item's user name using the SetUserNameL method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Approved
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetUserNameTruncateLengthLTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's user name with SetUserNameL method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    TInt truncLength;
+ 
+    TRAPD(err, item->SetUserNameL( _L("New User name longer than allowed by the limit of KFavouritesMaxUserName which is 40 chars at this moment") ));
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+    truncLength = item->UserName().Length();
+    
+    if ((truncLength==KFavouritesMaxUserName)&& (err==KErrOverflow))
+        {
+        _LIT( KDescription , "Test case passed");
+        aResult.SetResult( KErrNone, KDescription );
+        }
+    else
+        {
+        _LIT( KDescription , "Test case failed");
+        aResult.SetResult( KErrGeneral, KDescription );
+        }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+
 /*
 -------------------------------------------------------------------------------
 
@@ -1420,6 +2142,109 @@ TInt CFavouritesEngineTest::ItemSetContextIdTestL( TTestResult& aResult )
     TestModuleIf().Printf( 0, KDefinition, KData2 );
 
     if (item->ContextId() == 22)
+	    {
+	    _LIT( KDescription , "Test case passed");
+	    aResult.SetResult( KErrNone, KDescription );
+	    }
+    else
+	    {
+	    _LIT( KDescription , "Test case failed");
+	    aResult.SetResult( KErrGeneral, KDescription );
+	    }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemIsHiddenTestL
+
+    Description: Test if the item is hidden using the IsHidden method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Approved
+
+-------------------------------------------------------------------------------
+*/
+
+TInt CFavouritesEngineTest::ItemIsHiddenTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Checking if the item is hidden item with IsHidden method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    
+    TBool itemIsHidden = item->IsHidden();
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (!itemIsHidden)
+	    {
+	    _LIT( KDescription , "Test case passed");
+	    aResult.SetResult( KErrNone, KDescription );
+	    }
+    else
+	    {
+	    _LIT( KDescription , "Test case failed");
+	    aResult.SetResult( KErrGeneral, KDescription );
+	    }
+
+    CleanupStack::PopAndDestroy( item );
+
+    // Case was executed
+    return KErrNone;
+    }
+
+/*
+-------------------------------------------------------------------------------
+
+    Class: CFavouritesEngineTest
+
+    Method: ItemSetHiddenTestL
+
+    Description: Test setting the item's hidden value using the SetHidden method.
+  
+    Parameters:  TTestResult& aErrorDescription: out:   
+                    Test result and on error case a short description of error
+
+    Return Values: TInt: Always KErrNone to indicate that test was valid
+
+    Errors/Exceptions: None
+
+    Status: Approved
+
+-------------------------------------------------------------------------------
+*/
+TInt CFavouritesEngineTest::ItemSetHiddenTestL( TTestResult& aResult )
+    {
+    /* Simple server connect */
+    _LIT( KDefinition ,"State");
+    _LIT( KData ,"Setting the item's hidden value with SetHidden method");
+    TestModuleIf().Printf( 0, KDefinition, KData );
+
+    CFavouritesItem* item = CFavouritesItem::NewLC();
+    
+    item->SetHidden(1);
+
+    _LIT( KData2 ,"Finished");
+    TestModuleIf().Printf( 0, KDefinition, KData2 );
+
+    if (item->IsHidden() == 1)
 	    {
 	    _LIT( KDescription , "Test case passed");
 	    aResult.SetResult( KErrNone, KDescription );

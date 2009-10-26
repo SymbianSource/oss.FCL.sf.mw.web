@@ -1143,7 +1143,8 @@ void WebFrameLoaderClient::frameLoadCompleted()
 {
     if (brctl(m_webFrame)->wmlMode()) {
         TRAP_IGNORE(
-        m_WmlContentListener->CompleteL( 0, 0 );
+		if (m_WmlContentListener)
+        	m_WmlContentListener->CompleteL( 0, 0 );
         );
         return;
     }

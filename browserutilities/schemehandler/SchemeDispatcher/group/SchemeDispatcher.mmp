@@ -1,4 +1,4 @@
-/*
+  /*
 * Copyright (c) 2002 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
@@ -29,7 +29,8 @@ VENDORID    VID_DEFAULT
 
 SOURCEPATH ../data
 START RESOURCE SCHEME_DISPATCHER_UID_RSS_NAME
-	TARGET SchemeDispatcher.rsc
+DEPENDS avkon.rsg
+TARGET SchemeDispatcher.rsc
 END
 
 CAPABILITY  CAP_ECOM_PLUGIN

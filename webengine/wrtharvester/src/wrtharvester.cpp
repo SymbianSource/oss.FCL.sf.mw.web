@@ -224,7 +224,7 @@ void CWrtHarvester::ConstructL()
     iWidgetRegListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetRegAltered );
     
     User::LeaveIfError( iFs.Connect() );
-    iWidgetUsbListener = CWidgetMMCHandler::NewL( this, iFs );
+    iWidgetUsbListener = CWrtUsbHandler::NewL( this, iFs );
     
     iWidgetUsbListener->Start();
     SetMSMode(0);

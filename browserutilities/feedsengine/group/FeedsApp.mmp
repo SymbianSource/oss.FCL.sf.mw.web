@@ -34,6 +34,7 @@ VENDORID        VID_DEFAULT
 CAPABILITY      CAP_APPLICATION NetworkControl -Location
 
 START RESOURCE   ../data/FeedsApp.rss
+DEPENDS avkon.rsg
 HEADER
 TARGETPATH       APP_RESOURCE_DIR
 #ifdef __S60_32__

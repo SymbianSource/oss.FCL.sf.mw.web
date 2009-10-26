@@ -406,4 +406,8 @@ const TUint32 KBrowserSearchProviderUrl = 0x00000081;
 
 // Cursormode which defines the cursor display supported status depends on phones.
 const TUint32 KBrowserCursorShowMode =          0x00000082;
+
+// Controls whether enter key can activate a link, ot just has a default behavior. 
+const TUint32 KBrowserEnterKeyMode = 0x00000083;
+
 #endif      // BROWSERUISDKCRKEYS_H

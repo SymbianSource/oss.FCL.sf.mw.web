@@ -41,7 +41,6 @@ SOURCE WidgetRegistry.cpp
 SOURCE WidgetRegistrySession.cpp
 SOURCE WidgetRegistryServer.cpp
 SOURCE UidAllocator.cpp
-SOURCE WidgetMMCHandler.cpp
 
 USERINCLUDE       ../Server/inc
 USERINCLUDE       ../Common/inc

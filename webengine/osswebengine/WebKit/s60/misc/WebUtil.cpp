@@ -748,12 +748,12 @@ bool handleSelectElementScrolling(WebView* webView, int tb)
         	//scroll only for the list which is either multiple or single but with more than one lines
             if (isScrollList) {
                 RenderListBox* render = static_cast<RenderListBox*>(e->renderer());
-                if (render->isScrollable()) {
+                
                     HTMLSelectElement* selectElement = static_cast<HTMLSelectElement*>( e );
                     IntRect r = e->getRect();
                     int curIndex = render->listIndexAtOffset(point.x() - r.x(), point.y() - r.y());
                     int topIndex = render->indexOffset();
-                    int bottomIndex = topIndex + selectElement->size() - 1;
+                    int bottomIndex = topIndex + render->getSize() - 1;
                     TPoint curPointInSelectBox(point.x() - r.x(), point.y() - r.y());
                     IntRect itemRect = render->itemRect(0, 0, curIndex);
                     int centerOfRect = itemRect.y() + (itemRect.height() * 1) / 4;
@@ -785,7 +785,7 @@ bool handleSelectElementScrolling(WebView* webView, int tb)
                             ret = true;
                         }
                     }
-                }//isScrollable()
+                
             }//isScrollList
         } //isControl
     } //focusedElementType()

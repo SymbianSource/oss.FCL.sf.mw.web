@@ -151,7 +151,7 @@ public:
     StringImpl(const TDesC&);
     StringImpl(const TDesC8&);
     TPtrC des() const;
-    StringImpl* secureShowLast(UChar aChar) const;
+    StringImpl* secureShowOffset(UChar aChar, unsigned offset) const;
 #endif
 
     StringImpl(const DeprecatedString&);

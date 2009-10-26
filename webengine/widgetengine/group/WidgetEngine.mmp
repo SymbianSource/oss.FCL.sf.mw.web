@@ -116,6 +116,7 @@ SOURCE      MenuItemClient.cpp
 SOURCE      WidgetEngineBridge.cpp
 
 START RESOURCE ../Src/WidgetMenu.rss
+DEPENDS avkon.rsg
 HEADER
 TARGETPATH RESOURCE_FILES_DIR
 #ifdef __S60_32__

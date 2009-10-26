@@ -26,6 +26,8 @@ TARGETTYPE  lib
 VENDORID    VID_DEFAULT
 
 START RESOURCE ../../../data/webkit.rss
+DEPENDS avkon.rsg
+DEPENDS eikon.rsg
 HEADER
 TARGETPATH      RESOURCE_FILES_DIR
 #ifdef __S60_32__

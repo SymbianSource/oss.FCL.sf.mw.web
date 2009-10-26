@@ -33,6 +33,7 @@ SOURCEPATH  ../src
 SOURCE          DdViewer.cpp 
 
 START RESOURCE ../data/DdViewer.rss
+DEPENDS avkon.rsg
 HEADER
 TARGETPATH APP_RESOURCE_DIR
 #ifdef __S60_32__

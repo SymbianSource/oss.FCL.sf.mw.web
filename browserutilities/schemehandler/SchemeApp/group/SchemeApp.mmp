@@ -45,6 +45,7 @@ SOURCE	    SchemeDialog.cpp
 
 
 START RESOURCE ../data/SchemeApp.rss
+DEPENDS avkon.rsg
 HEADER
 TARGETPATH APP_RESOURCE_DIR
 #ifdef __S60_32__

@@ -278,9 +278,13 @@ void ScrollView::addChild(Widget* child )
         }
     }
 
-void ScrollView::removeChild(Widget*)
+void ScrollView::removeChild(Widget* child)
     {
     //child->removeFromSuperview();
+	if(child)
+	    {
+		child->hide();    
+	    }
     }
 
 void ScrollView::resizeContents(int w, int h)

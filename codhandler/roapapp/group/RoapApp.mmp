@@ -41,6 +41,8 @@ SOURCE      RequestCompleteCallback.cpp
 SOURCE      RoapAppLogger.cpp
 
 START RESOURCE ../data/RoapApp.rss
+DEPENDS eikon.rsg
+DEPENDS avkon.rsg
 HEADER
 TARGETPATH APP_RESOURCE_DIR
 #ifdef __S60_32__

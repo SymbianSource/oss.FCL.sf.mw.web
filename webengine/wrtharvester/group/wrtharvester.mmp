@@ -40,6 +40,7 @@ TARGET           wrtharvester.rsc
 END
 
 START RESOURCE  ../data/wrtharvester.rss 
+DEPENDS avkon.rsg
 HEADER
 TARGET          wrtharvester.rsc
 TARGETPATH      resource 
@@ -65,5 +66,6 @@ LIBRARY		  eiksrv.lib
 LIBRARY		  cone.lib 		    // CoeControl
 LIBRARY		  CommonEngine.lib
 LIBRARY       ws32.lib
+LIBRARY       PlatformEnv.lib
 
 //end of file

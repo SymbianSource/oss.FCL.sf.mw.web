@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description: 
+* Description:
 *
 */
 
@@ -121,7 +121,7 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
     iWidgetUiObserver = CWidgetUiObserver::NewL( *this );
 
     iWidgetUiDialogsProviderProxy = CWidgetUiDialogsProviderProxy::NewL(*(iWindowManager.DialogsProvider()), NULL, *this);
-    
+
 #ifdef BRDO_WRT_HS_FF
     iNetworkModeWait = new(ELeave) CActiveSchedulerWait();
 #endif
@@ -157,6 +157,7 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
         iWidgetUiObserver /* download observer */);
     //Set the cursor mode inside Widget
     iEngine->SetBrowserSettingL(TBrCtlDefs::ESettingsCursorShowMode, iWindowManager.CursorShowMode());
+    iEngine->SetBrowserSettingL(TBrCtlDefs::ESettingsEnterKeyMode, iWindowManager.EnterKeyMode());
 
     iEngine->AddLoadEventObserverL( iWidgetUiObserver );
     iEngine->AddStateChangeObserverL( view );
@@ -190,9 +191,9 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
         {
         SetWindowStateMiniViewL( EMiniViewNotEnabled );
         }
-     
+
     iDlId = 0;
-    
+
     // determine initial widget online/offline network state
     DetermineNetworkState();
     }
@@ -273,7 +274,7 @@ void CWidgetUiWindow::SetWindowStateFullView( TBool aWidgetFullViewState)
     {
 
     switch(widgetMiniViewState)
-    	{
+        {
         case 0: iWidgetWindowState.miniViewState = EMiniViewNotEnabled;
                 break;
         case 1: iWidgetWindowState.miniViewState = EMiniViewEnabled;
@@ -530,7 +531,7 @@ void CWidgetUiWindow::SetCurrentWindow( TBool aCurrent )
             Engine()->MakeVisible(EFalse);// hide the active widget
             }
         if ( !aCurrent &&  (EPublishStart != WidgetMiniViewState()) )
-            {			
+            {
             iWidgetExtension->HandleCommandL ( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase );
             if( iWindowManager.AnyWidgetOnHs() )
                 {
@@ -630,7 +631,7 @@ void CWidgetUiWindow::PublishSnapShot()
             {
             iMiniviewBitmap = new CFbsBitmap();
             }
-            
+
         if ( iMiniviewBitmap && iCpsPublisher)
             {
             TRAP_IGNORE(
@@ -668,15 +669,16 @@ TBool CWidgetUiWindow::HasMiniviewL()
 TBool CWidgetUiWindow::CheckNetworkAccessL()
     {
     // if widgets in offline mode, deny network access
-    if (iWindowManager.GetNetworkMode() == EOfflineMode)
+    if (iWindowManager.GetNetworkMode() == EOfflineMode && !( EMiniViewEnabled == WidgetMiniViewState() ||
+        EMiniViewNotEnabled == WidgetMiniViewState() ))
         {
-        // if widget is in full view, offer user the option to go to online mode
+        // if widget is in full view, offer user the option to go to online mode.The widget should be in HS else dont ask HS for prompt.
 #ifdef BRDO_WRT_HS_FF
         if ( WidgetFullViewState() && WidgetMiniViewState() != EPublishStart )
             {
             iCpsPublisher->NetworkConnectionAllowedL();
+            iNetworkModeWait->Start();
             }
-        iNetworkModeWait->Start();
 #endif
         if (iWindowManager.GetNetworkMode() == EOfflineMode)
             {
@@ -684,18 +686,18 @@ TBool CWidgetUiWindow::CheckNetworkAccessL()
             User::Leave( KErrAccessDenied );
             }
         }
-    
+
     // begin info.plist (declare EAllowNetworkAccess or EAllowFullAccess ?)
     RWidgetRegistryClientSession& widgetRegistry
                 = iWindowManager.WidgetUIClientSession();
 
-    CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL(iUid, EAllowNetworkAccess ); 
+    CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL(iUid, EAllowNetworkAccess );
     TInt networkAccess = *propValue;
     delete propValue;
     propValue = widgetRegistry.GetWidgetPropertyValueL(iUid, EAllowFullAccess );
     TInt fullAccess = *propValue;
     delete propValue;
- 
+
     if ( !( networkAccess || fullAccess ) )
         {
         SetNetworkAccessGrant( EDeny );
@@ -733,7 +735,7 @@ void CWidgetUiWindow::NetworkSecurityCheckL()
                 }
                 delete rep;
             }
-        
+
             if ( prompt )
                 {
                 CBrowserDialogsProvider* dialogProvider
@@ -746,7 +748,7 @@ void CWidgetUiWindow::NetworkSecurityCheckL()
                 CleanupStack::PopAndDestroy( 3 );
                 // save prompt result for session
                 SetNetworkAccessGrant( grant? EAllow : EDeny );
-                
+
                 CheckUserPermissionChanged( grant );
                 }
             else
@@ -779,7 +781,7 @@ void CWidgetUiWindow::ConnectionManagement()
         // 2.1. deal with access point settings
         TInt ask( 1 );
         TInt wmlId( KWmlNoDefaultAccessPoint );
-        TInt snapId( KWmlNoDefaultSnapId ); 
+        TInt snapId( KWmlNoDefaultSnapId );
         CRepository* rep( NULL );
         TRAPD( cenrepError, rep = CRepository::NewL( KCRUidBrowser ) );
         if ( KErrNone == cenrepError )
@@ -789,12 +791,12 @@ void CWidgetUiWindow::ConnectionManagement()
             (void)rep->Get( KBrowserNGDefaultSnapId, snapId );
             }
         delete rep;
-        if ( ask == EBrowserCenRepApSelModeDestination &&  
-           ( snapId != KWmlNoDefaultSnapId) )  
-            {  
-            iWindowManager.GetConnection()->SetRequestedSnap( snapId );  
-            iWindowManager.GetConnection()->SetConnectionType( CMManager::EDestination );  
-            }  
+        if ( ask == EBrowserCenRepApSelModeDestination &&
+           ( snapId != KWmlNoDefaultSnapId) )
+            {
+            iWindowManager.GetConnection()->SetRequestedSnap( snapId );
+            iWindowManager.GetConnection()->SetConnectionType( CMManager::EDestination );
+            }
 
         if ( !ask && (KWmlNoDefaultAccessPoint != wmlId) )
             {
@@ -840,7 +842,7 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
             // kicks in and sets a EDeny.
             User::Leave( connFailure );
             }
-		*aNewConn = ETrue;
+        *aNewConn = ETrue;
 
         }
     }
@@ -933,7 +935,7 @@ TBool CWidgetUiWindow::HandleDownloadL(RArray<TUint>* aTypeArray, CDesCArrayFlat
                             aTypeArray,
                             aDesArray,
                             paramFound );
-                            
+
     HBufC8* contentType8 = 0;
     if ( !paramFound )
         {
@@ -945,7 +947,7 @@ TBool CWidgetUiWindow::HandleDownloadL(RArray<TUint>* aTypeArray, CDesCArrayFlat
         // 16 bit buffer copied into 8 bit buffer.
         contentType8->Des().Copy( contentType );
         }
-        
+
     //Get the download Id of the transaction.
     //Because, resource loader will not delete the download
     //So after handling the download, it will be cleared.
@@ -954,16 +956,16 @@ TBool CWidgetUiWindow::HandleDownloadL(RArray<TUint>* aTypeArray, CDesCArrayFlat
                             aTypeArray,
                             aDesArray,
                             paramFound );
-    
+
     TLex lex(dlId);
-    User::LeaveIfError(lex.Val(iDlId));                        
-                            
+    User::LeaveIfError(lex.Val(iDlId));
+
     TDataType dataType( *contentType8 );
     CAiwGenericParamList* genericParamList =
         BrCtlParamList2GenericParamListL( aTypeArray, aDesArray );
     CleanupStack::PushL( genericParamList );
     RFile tempFile;
-    
+
     iWindowManager.DocHandler().SetExitObserver(this);
     iWindowManager.DocHandler().OpenTempFileL( fileName, tempFile );
     CleanupClosePushL( tempFile );
@@ -1120,10 +1122,10 @@ void CWidgetUiWindow::DetermineNetworkState()
     TNetworkState currNetState;
     RWidgetRegistryClientSession& widgetRegistry = iWindowManager.WidgetUIClientSession();
     TInt inMiniView = widgetRegistry.IsWidgetInMiniView( iUid);
-    CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowNetworkAccess ); 
+    CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowNetworkAccess );
     TInt netAccessWdgtProp = *propValue;    // AllowNetworkAccess in the info.plist file
-    
-    if ( netAccessWdgtProp && ((inMiniView && (iWindowManager.GetNetworkMode() == (TInt)EOnlineMode)) 
+
+    if ( netAccessWdgtProp && ((inMiniView && (iWindowManager.GetNetworkMode() == (TInt)EOnlineMode))
                                     || (!inMiniView && iUserPermission)) )
         {
         if ( iWindowManager.GetNetworkConn() )
@@ -1139,7 +1141,7 @@ void CWidgetUiWindow::DetermineNetworkState()
         {
         currNetState = ENetworkNotAllowed;
         }
-    
+
     if ( iNetworkState != currNetState )
         {
         iNetworkState = currNetState;
@@ -1173,7 +1175,7 @@ void CWidgetUiWindow::MakeSoftkeysVisible(TBool aVisible, TBool aTextBoxUpdate)
         //Check if the container rect needs change and then call setRect
         if(clientRect != iWindowManager.View()->Container()->Rect())
            iWindowManager.View()->Container()->SetRect(clientRect);
-        
+
         if (!aTextBoxUpdate)
             {
             // status pane always off unless in text box

@@ -30,7 +30,6 @@
 #include <libxml2_parser.h>
 #include <libxml2_tree.h>
 #include <xmlengxestd.h>
-#include "WidgetMMCHandler.h"
 #include "UidAllocator.h"
 #if defined( BRDO_WRT_SECURITY_MGR_FF )
 #include <RTSecManager.h>
@@ -189,9 +188,8 @@ CWidgetRegistry::~CWidgetRegistry()
     iAppArch.Close();
     delete iInstaller;
     iLangDirList.ResetAndDestroy();
-    delete iMMCHandler;
     delete iXmlProcessor;
-
+	delete iApaAppListNotifier;
     iFs.Close();
     LOG_DESTRUCT;
     }
@@ -220,8 +218,23 @@ void CWidgetRegistry::ConstructL()
     // it should be detected and corrected once the resource limit
     // that caused the leave is removed.
     TBool dirtyFlag = EFalse;
+    TInt parseError = KErrNone;
     iXmlProcessor = CWidgetRegistryXml::NewL();
-    TRAP_IGNORE( InternalizeL( dirtyFlag ) );
+    // For first attempt assume usual case that things are consistent
+    // and the registry entry file can be parsed and used.
+    TRAP_IGNORE( InternalizeL( EFalse, // aDoConsistency,
+                               EFalse, // aIgnoreParseError
+                               dirtyFlag,
+                               parseError ) );
+    if ( parseError )
+        {
+        // Special case where we need to do consistency because
+        // the widget registry entry file is corrupt.
+        TRAP_IGNORE( InternalizeL( ETrue, // aDoConsistency,
+                                   ETrue, // aIgnoreParseError
+                                   dirtyFlag,
+                                   parseError ) );
+        }
     if ( dirtyFlag )
         {
         // Basically same reason to ignore leaves here.
@@ -237,9 +250,7 @@ void CWidgetRegistry::ConstructL()
     LOG1( "ConstructL internalize done, registry count %d",
               iEntries.Count() );
     LOG_CLOSE;
-
-    iMMCHandler = CWidgetMMCHandler::NewL( *this, iFs );
-    iMMCHandler->Start();
+    iApaAppListNotifier = CApaAppListNotifier::NewL(this,CActive::EPriorityStandard);
     }
 
 // ============================================================================
@@ -496,7 +507,10 @@ void CWidgetRegistry::Remove( const TUid& aUid )
 // @since 3.1
 // ============================================================================
 //
-void CWidgetRegistry::InternalizeL( TBool& aDirtyFlag )
+void CWidgetRegistry::InternalizeL( TBool doConsistency, // in param
+                                    TBool aIgnoreParseError, // in param
+                                    TBool& aDirtyFlag, // out param
+                                    TInt& aParseError )// out param
     {
     LOG_OPEN;
     LOG( "Internalize" );
@@ -520,7 +534,10 @@ void CWidgetRegistry::InternalizeL( TBool& aDirtyFlag )
 
     CleanupClosePushL( appArchList );
     CleanupClosePushL( appArchListFlags );
-    TBool doConsistency = AppArchWidgets( appArchList, appArchListFlags );
+    if ( doConsistency )
+        {
+        doConsistency = AppArchWidgets( appArchList, appArchListFlags );
+        }
     if ( doConsistency )
         {
 
@@ -622,25 +639,31 @@ void CWidgetRegistry::InternalizeL( TBool& aDirtyFlag )
         // that caused the leave is removed.
         if ( xmlExists )
             {
-            TRAP_IGNORE( InternalizeXmlL( iRegistryXmlFileName,
-                                          driveUnit,
-                                          doConsistency,
-                                          appArchList,
-                                          appArchListFlags,
-                                          installedListForDrive,
-                                          installedListForDriveFlags,
-                                          dirtyFlag ) );
+            TRAP( aParseError,
+                  InternalizeXmlL( iRegistryXmlFileName,
+                                   driveUnit,
+                                   doConsistency,
+                                   appArchList,
+                                   appArchListFlags,
+                                   installedListForDrive,
+                                   installedListForDriveFlags,
+                                   dirtyFlag ) );
             }
         else if ( binaryExists )
             {
-            TRAP_IGNORE( InternalizeBinaryL( iRegistryBinaryFileName,
-                                             driveUnit,
-                                             doConsistency,
-                                             appArchList,
-                                             appArchListFlags,
-                                             installedListForDrive,
-                                             installedListForDriveFlags,
-                                             dirtyFlag ) );
+            TRAP( aParseError,
+                  InternalizeBinaryL( iRegistryBinaryFileName,
+                                      driveUnit,
+                                      doConsistency,
+                                      appArchList,
+                                      appArchListFlags,
+                                      installedListForDrive,
+                                      installedListForDriveFlags,
+                                      dirtyFlag ) );
+            }
+        if ( !aIgnoreParseError && aParseError )
+            {
+            User::Leave( aParseError );
             }
 
         if ( doConsistency )
@@ -2222,5 +2245,23 @@ void CWidgetRegistry::AppArchListConsistency( const RArray<TUid>& aAppArchList,
     LOG( "AppArchListConsistency done" );
     }
 
-
+void CWidgetRegistry::HandleAppListEvent(TInt aEvent)
+    {
+    TBool dirtyFlag = EFalse;
+    TInt parseError = KErrNone;
+    // Assume usual case and things are consistent
+    // and the registry entry file can be parsed and used.
+    TRAPD( error, InternalizeL( EFalse,
+                                EFalse,
+                                dirtyFlag,
+                                parseError ) );
+    if ( KErrNone == error )
+        {
+        // internalize consistency enforcement may have altered registry
+        if ( dirtyFlag )
+            {
+            TRAP_IGNORE( ExternalizeL(); );
+            }
+        }
+    }
 // End of File

@@ -27,6 +27,7 @@
 namespace WebCore {
     class IntRect;
     class IntPoint;
+    class Element;
 }
 #define KInitialOffset 5
 
@@ -68,10 +69,12 @@ class WebCursor : public CBase
         void scrollAndMoveCursor(int dir, int scrollRange, bool auto);
         void simpleScroll(int dir, int scrollRange, bool auto=true);
         WebFrame* getFrameUnderCursor();
-        bool navigableNodeUnderCursor(WebFrame& webFrame, TPoint& aPoint, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect) const;
+        bool navigableNodeUnderCursor(WebFrame& webFrame, TPoint& aPoint, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect);
         WebFrame* getFrameAtPoint(const TPoint& viewPos_);
+        WebCore::Element*  getElementUnderCursor() {return m_elementUnderCursor;}
+        void stopTransparencyTimer();
         
-
+       
   private:
         void moveCursor(int lr,int tb, int scrollRange);
         bool determineCursorPosition(WebFrame& webFrame, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect, TRect& aSearchRect, 
@@ -118,6 +121,7 @@ class WebCursor : public CBase
         CursorTypes                     m_type;
         int                             m_flipCounter;
         TPoint                          m_incrLimit;
+        WebCore::Element*               m_elementUnderCursor;
     };
 
 #endif

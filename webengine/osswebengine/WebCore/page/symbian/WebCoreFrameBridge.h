@@ -87,7 +87,7 @@ public:
     void updateThumbnail();
     Vector<WebCore::IntRect>* focusableRectList() { return &m_focusableNodeList; }
     bool searchFor(TPtrC string, bool forward, bool caseSensitive, bool wrapFlag, bool startInSelection);
-    bool getTypeFromElement(WebCore::Node* node, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect) const;
+    bool getTypeFromElement(WebCore::Node* node, TBrCtlDefs::TBrCtlElementType& aElType, TRect& aFocusRect, WebCore::Node*& aRNode) const;
     
     virtual ~WebCoreFrameBridge();
 

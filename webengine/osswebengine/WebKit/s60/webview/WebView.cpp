@@ -143,7 +143,10 @@ static WebFrame* incrementFrame(WebFrame* curr, bool forward, bool wrapFlag)
         : coreFrame->tree()->traversePreviousWithWrap(wrapFlag));
 }
 
-
+#define IS_UP_KEY(keyevent) ((keyevent.iCode == EKeyUpArrow) || (keyevent.iCode == EStdKeyUpArrow))
+#define IS_DOWN_KEY(keyevent) ((keyevent.iCode == EStdKeyDevice12) || (keyevent.iCode == EKeyDownArrow) || (keyevent.iCode == EStdKeyDownArrow))
+#define IS_RIGHT_KEY(keyevent) ((keyevent.iCode == EStdKeyDevice11) || (keyevent.iCode == EKeyRightArrow) || (keyevent.iCode == EStdKeyRightArrow))
+#define IS_LEFT_KEY(keyevent) ((keyevent.iCode == EStdKeyDevice13) || (keyevent.iCode == EKeyLeftArrow) || (keyevent.iCode == EStdKeyLeftArrow))
 
 // -----------------------------------------------------------------------------
 // WebView::NewL
@@ -196,11 +199,14 @@ m_brctl(brctl)
 , m_showCursor(false)
 , m_allowRepaints(true)
 , m_prevEditMode(false)
+, m_firedEvent(0)
 {
 }
 
 WebView::~WebView()
 {
+    StaticObjectsContainer::instance()->webCursor()->stopTransparencyTimer();
+
     // the zoom handler is a client of WebView (also owned by
     // WebView--a circular dependency) so it must be deleted before
     // the WebView object is destroyed because in its destructor it
@@ -782,6 +788,7 @@ void WebView::pageLoadFinished()
         m_focusedElementType = TBrCtlDefs::EElementNone;
     }
     m_brctl->updateDefaultSoftkeys();
+    page()->chrome()->client()->setElementVisibilityChanged(false);
 }
 
 void WebView::updatePageScaler()
@@ -898,7 +905,8 @@ void WebView::sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos,
     event.iPosition = pos;
     event.iModifiers = 0;
     event.iType = eventType;
-
+    
+    setMouseEventFired();
     switch (eventType) {
         case TPointerEvent::EButton1Down:
         {
@@ -918,6 +926,7 @@ void WebView::sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos,
             break;
         }
     };
+    clearMouseEventFired();
 }
 
 
@@ -931,22 +940,21 @@ void WebView::setFocusedNode(Frame* frame)
     }
 }
 
-bool WebView::needDeactivateEditable(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)
+bool WebView::needDeactivateEditable(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame, bool consumed)
 {
-    bool upOrDown = ((keyevent.iCode == EKeyUpArrow) ||
-                    (keyevent.iCode == EStdKeyUpArrow) ||
-                    (keyevent.iCode == EKeyRightUpArrow) ||
-                    (keyevent.iCode == EKeyDownArrow) ||
-                    (keyevent.iCode == EStdKeyDownArrow) ||
-                    (keyevent.iCode == EKeyLeftDownArrow));
-    bool shouldEndEditing = frame->editor()->client()->shouldEndEditing(NULL);
-    bool inEditState  = (m_isEditable && (m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox));
-    bool isSelectBoxActive = (m_focusedElementType == TBrCtlDefs::EElementSelectBox);
-    bool deactivateInputBox = (inEditState && upOrDown && m_webfeptexteditor->validateTextFormat());
-    bool deactivateSelectBox = (isSelectBoxActive && isNaviKey(keyevent));
-
+    /*
+     * Here we are making an assumption that if element visibility has been changed
+     * than JavaScript used the key event. If this the the case or consumed is tru and
+     * keys are Up or Down we don't want to deactivate an editable element.
+     * Google suggest is examples if such case.
+     */
+    bool upOrDownConsumed = (consumed ||    //JavaScript consumed event or
+                               (m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox && // style of input box     
+                                page()->chrome()->client()->elementVisibilityChanged())) &&      // changed
+                             (IS_UP_KEY(keyevent) || IS_DOWN_KEY(keyevent));
+    bool shouldEndEditing = frame->editor()->client()->shouldEndEditing(NULL) && !upOrDownConsumed;
     bool deactivateEditable = (m_isEditable && shouldEndEditing && m_webfeptexteditor->validateTextFormat());
-    return deactivateEditable || deactivateSelectBox; 
+    return deactivateEditable; 
 }
 
 
@@ -981,19 +989,12 @@ bool WebView::handleEventKeyL(const TKeyEvent& keyevent, TEventCode eventcode, F
         }
     }
     else {
-        if (keyevent.iCode == EKeyDevice3) { //selection key (MSK)
-                // mimic ccb's behavior of onFocus
+        if (keyevent.iCode == EKeyDevice3) { // selection key (MSK)
            consumed = handleMSK(keyevent, oldKeyCode, frame);
-
-           // Toolbar is activated on long key press only if the element
-           // type is EElementNone during EEventKeyDown and EEventKey.
-           // This prevents toolbar from popping up in DHTML pages. Also,
-           // toolbar is activated when the user is not in fast scroll
-           // mode, or in page overview mode, or on wml page.
         }
         else if (isNaviKey(keyevent)) {
             consumed = handleNaviKeyEvent(keyevent, oldKeyCode, frame);
-        } // if (m_brctl->settings()->getNavigationType()
+        } 
         else { // Not an arrow key..
                  // activate hovered input element by just start typing
             consumed = !m_isEditable && handleInputElement(keyevent, eventcode, frame);
@@ -1005,90 +1006,190 @@ bool WebView::handleEventKeyL(const TKeyEvent& keyevent, TEventCode eventcode, F
     return consumed;
 }
 
+
 bool WebView::handleMSK(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)
 {
     WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
     bool prevEditableState = m_isEditable;
-    if (m_focusedElementType != TBrCtlDefs::EElementActivatedInputBox ) {
-        sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Down,
-                               cursor->position(), frame);
+    bool tabbedNavigation = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
+    Node* focusedNode = frame->document()->focusedNode();
+    bool multiSelectInTabbed =  (m_focusedElementType == TBrCtlDefs::EElementSelectMultiBox) &&  // multiselect element
+                                     tabbedNavigation;                                               // in tabbed mode.
+        /*
+         * Avoiding resetting cursor position to top left corner of Select Box 
+         * See comment in handleInputElement
+         */                            
+        if (!multiSelectInTabbed) {
+            setFocusNone();
+        }
+         
+    sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Down,
+                                   cursor->position(), frame);    
+    if (!tabbedNavigation) {
+        setFocusedNode(frame); //TODO: Do we need it here?
     }
-    setFocusedNode(frame);
+    else {
+        /*
+         * Restore focused by tabbed navigation node since mouse event
+         * handler might set it to NULL.  
+         */
+        page()->focusController()->setFocusedNode(focusedNode, frame);
+    }
+    
+    /*
+     * MSK key event on editable will be interpreted as Enter.
+     * We don't want to send Enter key in case of activated
+     * input box. Also if the text area has been just activated
+     * we also don't want to send Enter since it will cause extra
+     * line feed.
+     */   
     bool textAreaJustActivated = (!prevEditableState && m_isEditable &&
                                   m_focusedElementType == TBrCtlDefs::EElementTextAreaBox);
+    
     if (eventcode == EEventKeyDown && 
         m_focusedElementType != TBrCtlDefs::EElementActivatedInputBox &&
         !textAreaJustActivated) {
+        
         sendKeyEventToEngine(keyevent, EEventKeyDown, frame);
     }
+
+    /* 
+     * Toolbar is activated on long key press only if the element
+     * type is EElementNone during EEventKeyDown and EEventKey.
+     * This prevents toolbar from popping up in DHTML pages. Also,
+     * toolbar is activated when the user is not in fast scroll
+     * mode, or in page overview mode, or on wml page.
+     */
      if ((m_focusedElementType == TBrCtlDefs::EElementNone ||
           m_focusedElementType == TBrCtlDefs::EElementBrokenImage ) &&
           keyevent.iRepeats && !m_brctl->wmlMode() ) {
          launchToolBarL();
      }
+    
      return true;
 }
-bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)
+
+bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)  
 {
     bool downEventConsumed = false;
     bool consumed = false;
     bool tabbedNavigation = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
     /*
-     * For each platform keyDown event EventHandler::keEvent() generates
+     * For each platform keyDown event EventHandler::keEvent() generates 
      * keydown and keypress.
-     * For keypress event we need a char code and since we don't
-     * have it at the time of EEventKeyDown we pospond it until EEventKey
+     * For keypress event we need a char code and since we don't 
+     * have it at the time of EEventKeyDown we pospond it until EEventKey 
      * and send it here.
      */
     if (eventcode == EEventKeyDown){
         downEventConsumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame);
     }
-
-    if (!downEventConsumed && needDeactivateEditable(keyevent, eventcode, frame)) {
+    /*
+     * downEventConsumed will be true if JavaScript consumes key event
+     * If we are not in the widget mode we want to deactivate input box
+     * regardless of whether event was consumed by JavaScript or not.
+     * Othrerwise we have a risk to be trapped inside input box.
+     */
+    bool widgetDownEventConsumed = downEventConsumed && (m_widgetextension != NULL);
+  
+    if (!widgetDownEventConsumed && needDeactivateEditable(keyevent, eventcode, frame, downEventConsumed)) {
         deactivateEditable();
     }
 
     if (tabbedNavigation) {
         consumed = downEventConsumed || handleTabbedNavigation(m_currentEventKey, m_currentEventCode);
     }
-    else {
-        consumed = (!m_isEditable &&  //avoid showing the cursor when we are in the input box
+    else {  
+        consumed = (!m_isEditable &&  //avoid showing the cursor when we are in the input box 
                     handleKeyNavigation(keyevent, eventcode, frame)) ||
                     downEventConsumed;
     }
     return consumed;
 }
 
-
 bool WebView::handleInputElement(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame)
 {
     WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+    TBrCtlDefs::TBrCtlElementType elTypeBeforeMouseEvent = m_focusedElementType;
+    bool tabbedNavigation = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
+    bool navigationNone = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone); 
+    bool prevEditableState = m_isEditable;
+    bool enterOnMultiSelectInTabbed = tabbedNavigation && (keyevent.iCode == EKeyEnter) &&           // EnterKey in case of
+                                      (m_focusedElementType == TBrCtlDefs::EElementSelectMultiBox);  // multiselect eelement in tabbed mode.
+    
+    
     bool sendMousedEvent = false;
     if (m_focusedElementType == TBrCtlDefs::EElementInputBox ||
-        m_focusedElementType == TBrCtlDefs::EElementTextAreaBox) {
+        m_focusedElementType == TBrCtlDefs::EElementTextAreaBox ||
+        (tabbedNavigation && 
+         (m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox))) {
         sendMousedEvent = true;
     }
     else if (m_focusedElementType == TBrCtlDefs::EElementSelectBox ||
         m_focusedElementType == TBrCtlDefs::EElementSelectMultiBox) {
-        if (m_brctl->settings()->getNavigationType() != SettingsContainer::NavigationTypeNone ||
-            keyevent.iCode == EKeyDevice3) {
+        if (!navigationNone || keyevent.iCode == EKeyDevice3) {
             sendMousedEvent = true;
         }
     }
+    
+    if (m_focusedElementType == TBrCtlDefs::EElementTextAreaBox || 
+        m_focusedElementType == TBrCtlDefs::EElementInputBox ||
+        m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox) {
+        page()->chrome()->client()->setElementVisibilityChanged(false);
+    }
+        
     if (sendMousedEvent) {
+        /*
+         * Sending mouse event to WebCore will trigger FocusController->setFocusedNode() to be called.
+         * It will do anything only if focused node has been changed. Among other thing it will 
+         * trigger the setEditable() call, which we need. The exception is the case when 
+         * we have tabbed navigation and EnterKey was hit in MultiSelect Box. 
+         * In this case we just want to select item in the select element.  
+         * HTMLSelectElement::listBoxDefaultEventHandler() will call focus() which will
+         * set the focused node, which is already set anyway, but this will cause the 
+         * reseting cursor position to the top left corner of the select box.  
+         * To avoid thos we put the check here before we reset the foocusedNode.  
+         */   
+        if (!enterOnMultiSelectInTabbed) { 
+            frame->document()->setFocusedNode(NULL);
+        }
+        
+        /*
+         * Tweek the m_isEditable flag, so setEditable will do something
+         * usefull when it's called from FocusController->setFocusedNode()
+         */
+        if (m_isEditable && tabbedNavigation) {
+            m_isEditable = false;
+        }
+        
         sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Down, cursor->position(), frame);
         sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Up, cursor->position(), frame);
+        
+        /*
+         * If enter key was pressed to activate an input box we don't want to 
+         * send it to WebCore since it may cause immediate form submission.
+         * Same for MultiSelect Box in tabbed mode. 
+         */
+        bool inputBoxJustActivated = (!prevEditableState &&  m_isEditable && 
+                                      (m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox||
+                                       m_focusedElementType == TBrCtlDefs::EElementTextAreaBox));
+        bool inputBoxJustActivatedByEnter = inputBoxJustActivated && (keyevent.iCode == EKeyEnter);
+        if (!inputBoxJustActivatedByEnter &&
+            !enterOnMultiSelectInTabbed &&
+            (m_focusedElementType == TBrCtlDefs::EElementInputBox ||
+             m_focusedElementType == TBrCtlDefs::EElementTextAreaBox || 
+             m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox)) {
 
-        if (m_focusedElementType == TBrCtlDefs::EElementInputBox ||
-            m_focusedElementType == TBrCtlDefs::EElementTextAreaBox ||
-            m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox) {
             if (!m_fepTimer) {
                 m_fepTimer = new WebCore::Timer<WebView>(this, &WebView::fepTimerFired);
             }
 
             m_fepTimer->startOneShot(0.2f);
-            setEditable(true);
+            if (!m_isEditable) {
+                setEditable(true);
+            }
         }
+               
         m_keyevent = keyevent;
         m_eventcode = eventcode;
         return true;
@@ -1122,6 +1223,16 @@ bool WebView::handleKeyNavigation(const TKeyEvent& keyevent, TEventCode eventcod
         cursor->scrollAndMoveCursor(keyevent.iCode, m_scrollingSpeed, fastscroll);
     }
     updateScrollbars();
+    /*
+     * In order to Enter key activate a link the link node has to be focused.
+     * When WebCursor is finding next node to snap it stores it, so here we can
+     * set it to focused.  
+     */
+    if (m_brctl->settings()->brctlSetting(TBrCtlDefs::ESettingsEnterKeyMode) == 
+                                  TBrCtlDefs::EEnterKeyCanActivateLink) {
+        setFocusedNodeUnderCursor(frame);
+    }
+
     if (!fastscroll) {
         m_fastScrollTimer->Start(KCursorInitialDelay,KCursorUpdateFrquency,TCallBack(&scrollTimerCb,this));
         m_scrollingStartTime.HomeTime();
@@ -1138,6 +1249,18 @@ bool WebView::handleKeyNavigation(const TKeyEvent& keyevent, TEventCode eventcod
     return consumed;
 }
 
+void WebView::setFocusedNodeUnderCursor(Frame* frame)
+{
+    WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+    // focus the node we snapped to 
+    if (m_focusedElementType != TBrCtlDefs::EElementNone) {
+        frame->document()->setFocusedNode(cursor->getElementUnderCursor());
+    }
+    // or reset if there is none
+    else if (frame->document()->focusedNode() != NULL) {
+        frame->document()->setFocusedNode(NULL);
+    }
+}
 
 bool WebView::handleMinimapNavigation()
 {
@@ -1255,8 +1378,10 @@ bool WebView::handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, 
             }
         }
         if (m_brctl->settings()->getNavigationType() != SettingsContainer::NavigationTypeNone) {
-            if (!sendKeyEventToEngine(correctedKeyEvent, eventcode, frame)) {
-                sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Up, cursor->position(), frame);
+            if (!sendKeyEventToEngine(correctedKeyEvent, eventcode, frame)) {        
+                if (keyevent.iScanCode == EStdKeyDevice3) { //MSK
+                    sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Up, cursor->position(), frame);
+                }
             }
             consumed = true;
         }
@@ -1301,10 +1426,12 @@ bool WebView::sendKeyEventToEngine(const TKeyEvent& keyevent,
 {
     bool tabbedNavigation = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
     Node* targetNode = frame->document()->focusedNode();
-    if (!m_isEditable) {
-
-
-
+    /* 
+     * we dont want to send key event for navi key to the elements 
+     * like select element since it has default key event handling, 
+     * which will prevent user to leave the element.  
+     */
+    if (!m_isEditable && isNaviKey(keyevent)) {
         frame->document()->setFocusedNode(NULL);
     }
     bool consumed = frame->eventHandler()->keyEvent(PlatformKeyboardEvent(keyevent,eventcode));

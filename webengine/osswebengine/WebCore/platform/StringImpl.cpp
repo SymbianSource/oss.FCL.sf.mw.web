@@ -491,14 +491,13 @@ StringImpl* StringImpl::secure(UChar aChar) const
 
 #if PLATFORM(SYMBIAN)
 
-StringImpl* StringImpl::secureShowLast(UChar aChar) const
+StringImpl* StringImpl::secureShowOffset(UChar aChar, unsigned offset) const
 {
     StringImpl* temp = secure(aChar);
     if (m_data && temp) {
-        temp->remove(m_length-1);
-        temp->insert(&(m_data[m_length-1]), 1, m_length-1);
+        temp->remove(offset);
+        temp->insert(&(m_data[offset]), 1, offset);
         }
-    
     return temp; 
 }
 

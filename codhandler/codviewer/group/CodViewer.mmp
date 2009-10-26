@@ -33,6 +33,7 @@ SOURCEPATH      ../src
 SOURCE          CodViewer.cpp 
 
 START RESOURCE ../data/CodViewer.rss
+DEPENDS avkon.rsg
 HEADER
 TARGETPATH APP_RESOURCE_DIR
 #ifdef __S60_32__

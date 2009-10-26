@@ -40,4 +40,9 @@ const TUint32 KWidgetSecurityPromptUntrustedInstall =   0x00000004;
 // The setting to define the cursor show mode inside widgets
 // Valid values: 0 = not showing the cursor, 1 = cursor shown
 const TUint32 KWidgetCursorShowMode =   0x00000005;
+
+// Controls whether enter key can activate a link or just has a default behavior.
+const TUint32 KWidgetEnterKeyMode =  0x00000006;
+
+
 #endif

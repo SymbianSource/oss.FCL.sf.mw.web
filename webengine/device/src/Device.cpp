@@ -49,13 +49,17 @@ const TInt INIT_ARRAY_SIZE = 10;   // initial service object array
 Device::Device( ExecState* exec )
     : JSObject()
     {
-    m_privateData = new DevicePrivate(this);
-    if (!m_privateData || !m_privateData->m_deviceBinding )
-        m_valid = EFalse;
-    else
-        m_valid = ETrue;
+    m_valid = EFalse;
+    TRAP_IGNORE(
+        m_deviceBinding = CDeviceLiwBinding::NewL();
+    )    
+    if (m_deviceBinding)
+        {
+        m_privateData = new DevicePrivate(this);
+        if (m_privateData)
+            m_valid = ETrue;
+        }
     }
-
 
 // ----------------------------------------------------------------------------
 // Device::SetUid
@@ -64,8 +68,8 @@ Device::Device( ExecState* exec )
 //
 void Device::SetUid( const TUint& aValue)
     {
-    if(m_privateData)
-        m_privateData->SetUid( aValue);
+    if(m_deviceBinding)
+        m_deviceBinding->SetUid( aValue);
     }
 
 // ----------------------------------------------------------------------------
@@ -81,6 +85,8 @@ void Device::Close()
     m_valid = EFalse;
     delete m_privateData;
     m_privateData = NULL;
+    delete m_deviceBinding;
+    m_deviceBinding = NULL;
     }
 
 
@@ -141,7 +147,7 @@ JSValue* Device::getValueProperty(ExecState *exec, int token) const
         {
         case getServiceObject:
         case listProviders:
-                return new DeviceFunc( exec, m_privateData->m_deviceBinding, token );
+                return new DeviceFunc( exec, m_deviceBinding, token );
 
         default:
             return throwError(exec, GeneralError);
@@ -222,11 +228,8 @@ void DevicePrivateBase::RemoveChild( DevicePrivateBase* aValue )
 // ---------------------------------------------------------------------------
 DevicePrivate::DevicePrivate( Device* jsobj )
     {
-    m_deviceBinding = NULL;
-    TRAP_IGNORE(
-        m_deviceBinding = CDeviceLiwBinding::NewL();
-        m_jsobj = jsobj;
-        m_exec = NULL;)
+    m_jsobj = jsobj;
+    m_exec = NULL;
     }
 
 // ---------------------------------------------------------------------------
@@ -238,19 +241,6 @@ DevicePrivate::~DevicePrivate()
     // invalid the Device
     if (m_jsobj)
         m_jsobj->m_valid = EFalse;
-        
-    delete m_deviceBinding;
-    m_deviceBinding = NULL;
-    }
-
-// ---------------------------------------------------------------------------
-// DevicePrivate SetUid
-//
-// ---------------------------------------------------------------------------
-void DevicePrivate::SetUid( const TUint& aValue)
-    {
-    if(m_deviceBinding)
-        m_deviceBinding->SetUid( aValue);
     }
 
 // ----------------------------------------------------------------------------
@@ -338,7 +328,7 @@ JSValue* DeviceFunc::callAsFunction(ExecState *exec, JSObject *thisObj, const Li
 
 MDeviceBinding* Device::GetDeviceBinding()
 {
-    return m_privateData->m_deviceBinding;
+    return m_deviceBinding;
 }
 
 //END OF FILE

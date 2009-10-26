@@ -474,7 +474,7 @@ void PluginSkin::draw( WebCoreGraphicsContext& context,
         {
         positionChanged();
         // Force the control to be redrawn.
-        m_pluginwin->refreshPlugin(*gc);
+        m_pluginwin->refreshPlugin(*gc,newRect);
         }
     }
 

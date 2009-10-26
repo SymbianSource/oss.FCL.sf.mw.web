@@ -137,15 +137,22 @@ void HTMLAnchorElement::defaultEventHandler(Event* evt)
     // when pressing Enter in the combo.
     if (m_isLink && (evt->type() == clickEvent || (evt->type() == keydownEvent && m_focused))) {
         MouseEvent* e = 0;
-        if (evt->type() == clickEvent && evt->isMouseEvent())
-    
-#if PLATFORM(SYMBIAN)        
+        
+            
+#if PLATFORM(SYMBIAN)
+        if (evt->type() == clickEvent && evt->isMouseEvent()) {
+            e = static_cast<MouseEvent*>(evt);
+
             if (m_soundstart) {
                 m_soundstart->OnClick(document()->frame());
             }
+        }
+#else 
+        if (evt->type() == clickEvent && evt->isMouseEvent())
+            e = static_cast<MouseEvent*>(evt);
 #endif   
 
-            e = static_cast<MouseEvent*>(evt);
+            
 
         KeyboardEvent* k = 0;
         if (evt->type() == keydownEvent && evt->isKeyboardEvent())

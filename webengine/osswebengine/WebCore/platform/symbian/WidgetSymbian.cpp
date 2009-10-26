@@ -24,9 +24,12 @@
 #include "IntRect.h"
 #include "IntPoint.h"
 #include "Cursor.h"
+#include "Event.h"
+#include "EventNames.h"
+#include "KeyboardEvent.h"
 
 namespace WebCore {
-
+using namespace EventNames;
 static bool deferFirstResponderChanges;
 static Widget *deferredFirstResponder;
 
@@ -239,4 +242,18 @@ bool Widget::isFocusable() const
         return getView()->isFocusable();
     return false;
     }
+
+void Widget::handleEvent(Event* event) 
+{ 
+    if (event->type() == keydownEvent && event->isKeyboardEvent()) {
+        KeyboardEvent* kevt = static_cast<KeyboardEvent*>(event);
+        if (kevt->keyIdentifier() == "Enter") {
+            MWebCoreWidget* view = getView();
+            if(view && view->isObjectView()) {
+                view->activate();
+            }
+        }
+    }
+}
+
 }
