@@ -182,7 +182,7 @@ TInt LatestCertainPointIndex( const TPointArray& aPoints, PointByIndexFunc aPoin
 /** @return last direction of dragging */
 inline TGestureCode LastDirection( const TPointArray& aPoints ) 
     {
-    TInt latestPointIndex = LatestCertainPointIndex( aPoints, TPointArray::operator[] );
+    TInt latestPointIndex = LatestCertainPointIndex( aPoints, &TPointArray::operator[] );
     if ( KErrNotFound != latestPointIndex )
         {
         return Direction( aPoints[latestPointIndex], LastPoint( aPoints ) );
@@ -196,7 +196,7 @@ inline TGestureCode LastDirection( const TPointArray& aPoints )
  */
 inline TBool IsTap( const TPointArray& aPoints )
     {
-    return KErrNotFound == LatestCertainPointIndex( aPoints, TPointArray::Raw );
+    return KErrNotFound == LatestCertainPointIndex( aPoints, &TPointArray::Raw );
     }  
     
 // ----------------------------------------------------------------------------
