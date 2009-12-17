@@ -30,7 +30,7 @@
 #include <DRMCommon.h>
 #include <aknmessagequerydialog.h>
 #include <hlplch.h>             
-#include <MultipartParser.h>
+#include <multipartparser.h>
 #include <AknQueryDialog.h>
 #include "CodDownloadImpl.h"
 #include "CodUiPanic.h"

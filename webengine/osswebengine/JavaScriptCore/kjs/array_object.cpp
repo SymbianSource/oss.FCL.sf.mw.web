@@ -34,7 +34,7 @@
 #include <stdio.h>
 
 #if PLATFORM(SYMBIAN)
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 #endif  // PLATFORM(SYMBIAN)
 
 using namespace KJS;

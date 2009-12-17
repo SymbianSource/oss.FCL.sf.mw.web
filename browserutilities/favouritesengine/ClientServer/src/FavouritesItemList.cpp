@@ -21,8 +21,8 @@
 // INCLUDE FILES
 
 #include <s32strm.h>
-#include "FavouritesItemList.h"
-#include "FavouritesItem.h"
+#include "favouritesitemlist.h"
+#include "favouritesitem.h"
 
 // CONSTANTS
 

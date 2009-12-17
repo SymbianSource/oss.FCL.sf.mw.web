@@ -15,17 +15,17 @@
 *
 */
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
 
-../inc/InternetConnectionManager.h     MW_LAYER_PLATFORM_EXPORT_PATH(InternetConnectionManager.h)
-../inc/MConnection.h                   MW_LAYER_PLATFORM_EXPORT_PATH(MConnection.h)
-../inc/ConnectionObservers.h           MW_LAYER_PLATFORM_EXPORT_PATH(ConnectionObservers.h)
-../inc/IdPair.h                        MW_LAYER_PLATFORM_EXPORT_PATH(IdPair.h)
-../inc/ApChangeObserver.h              MW_LAYER_PLATFORM_EXPORT_PATH(ApChangeObserver.h)
+../inc/internetconnectionmanager.h     MW_LAYER_PLATFORM_EXPORT_PATH(internetconnectionmanager.h)
+../inc/mconnection.h                   MW_LAYER_PLATFORM_EXPORT_PATH(mconnection.h)
+../inc/connectionobservers.h           MW_LAYER_PLATFORM_EXPORT_PATH(connectionobservers.h)
+../inc/idpair.h                        MW_LAYER_PLATFORM_EXPORT_PATH(idpair.h)
+../inc/apchangeobserver.h              MW_LAYER_PLATFORM_EXPORT_PATH(apchangeobserver.h)
 
 PRJ_MMPFILES

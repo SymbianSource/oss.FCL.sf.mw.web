@@ -19,7 +19,7 @@
 
 // INCLUDE FILES
 #include <Stiftestinterface.h>
-#include "DownloadMgrClientApiTest.h"
+#include "downloadmgrclientapitest.h"
 
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;

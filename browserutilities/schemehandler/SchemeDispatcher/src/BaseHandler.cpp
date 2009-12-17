@@ -28,7 +28,7 @@
 #include <stringloader.h>
 #include <bautils.h>
 #include <EscapeUtils.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #include <centralrepository.h>
 
 #include <apgcli.h>

@@ -28,7 +28,7 @@
 #include <bldvariant.hrh>
 #include <e32std.h>
 #include <centralrepository.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #include <DocumentHandler.h>
 #include <FeatMgr.h>
 

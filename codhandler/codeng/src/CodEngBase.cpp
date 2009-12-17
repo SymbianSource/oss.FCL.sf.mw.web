@@ -44,7 +44,7 @@
 #include <Oma2Agent.h>
 #include <RoapDef.h>
 #include <f32file.h>
-#include <BodyPart.h>
+#include <bodypart.h>
 #include <SysUtil.h>
 #include <pathinfo.h>
 #include "CodDefs.h"
@@ -66,7 +66,7 @@ LOCAL_D const TInt KCodDefaultFotaPkgId = -1;
 #ifdef RD_MULTIPLE_DRIVE
 #include <centralrepository.h>
 #include <driveinfo.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #endif //RD_MULTIPLE_DRIVE
 
 #include <bldvariant.hrh>

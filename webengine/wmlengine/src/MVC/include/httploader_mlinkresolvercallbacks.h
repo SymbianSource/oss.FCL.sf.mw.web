@@ -22,7 +22,7 @@
 
 
 #include "BrsrStatusCodes.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "urlloader_urlresponse.h"
 
 

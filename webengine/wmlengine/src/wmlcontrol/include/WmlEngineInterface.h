@@ -22,7 +22,7 @@
 
 #include <e32base.h>
 #include <COEDEF.H>
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "WmlEngineDefs.h"
 
 

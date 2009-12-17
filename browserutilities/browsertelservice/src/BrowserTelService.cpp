@@ -66,7 +66,7 @@
 // Const file name for make call
 #include <mmtsy_names.h>
 
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #include <centralrepository.h>
 
 #include <nwx_status.h>

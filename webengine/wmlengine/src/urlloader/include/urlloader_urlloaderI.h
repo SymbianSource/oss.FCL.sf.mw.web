@@ -24,7 +24,7 @@
 #include "urlloader_urlloaderint.h"
 #include "httploader_mlinkresolvercallbacks.h"
 #include "BrsrStatusCodes.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 
 #ifdef __cplusplus
 extern "C" {

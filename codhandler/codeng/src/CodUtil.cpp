@@ -29,7 +29,7 @@
 #include <f32file.h>
 #include <commdb.h>
 #include <ApSelect.h>
-#include <BodyPart.h>
+#include <bodypart.h>
 #include <AiwGenericParam.h>
 #include <caf/caf.h>
 

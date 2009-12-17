@@ -16,8 +16,8 @@
 */
 
 
-#include "FeedsServerClient.h"
-#include "FeedsServerFolderItem.h"
+#include "feedsserverclient.h"
+#include "feedsserverfolderitem.h"
 #include "FolderItemRequestHandlers.h"
 #include "FeedRequestHandlers.h"
 #include "ClientRequestHandlers.h"

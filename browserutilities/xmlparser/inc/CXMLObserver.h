@@ -24,8 +24,8 @@
 #include <e32std.h>
 #include <eikenv.h>
 #include "CXMLAttributes.h"
-#include "MXMLContentHandler.h"
-#include "MWBXMLContentHandler.h"
+#include "mxmlcontenthandler.h"
+#include "mwbxmlcontenthandler.h"
 
 
 // CLASS DECLARATION

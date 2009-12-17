@@ -24,7 +24,12 @@
 #include <eikedwin.h>
 #include <e32std.h>
 #include <PtiDefs.h>
+#ifndef SYMBIAN_ENABLE_SPLIT_HEADERS
 #include <txtrich.h>
+#else
+#include <txtrich.h>
+#include <txtclipboard.h>
+#endif
 #include <bautils.h>
 #include <webkit.rsg>
 #include <PUAcodes.hrh>

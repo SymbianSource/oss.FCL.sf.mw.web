@@ -23,7 +23,7 @@
 #define WIDGETREGISTRYSERVER_H
 
 // INCLUDES
-#include <WidgetRegistryConstants.h>
+#include <widgetregistryconstants.h>
 
 // FORWARD DECLARATIONS
 

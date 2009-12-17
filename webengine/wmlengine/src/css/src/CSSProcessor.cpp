@@ -46,7 +46,7 @@
 #include "nwx_settings.h"
 #include "nwx_http_defs.h"
 #include "GDIDeviceContext.h"
-#include "BodyPart.h"
+#include "bodypart.h"
 #include "nw_xhtml_xhtmlcontenthandler.h"
 #include "MVCShell.h"
 //#include "BrCtl.h"

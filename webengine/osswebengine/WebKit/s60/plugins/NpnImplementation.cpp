@@ -21,7 +21,7 @@
 #include "NpnImplementation.h"
 #include "PluginWin.h"
 #include "PluginSkin.h"
-#include <CUserAgent.h>
+#include <cuseragent.h>
 #include <Element.h>
 #include <HTMLPlugInElement.h>
 #include <HTMLNames.h>
@@ -481,7 +481,19 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
             {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             if (pluginWin) {
-                TPoint* cursorPos = static_cast<TPoint*>(aSetValue);
+            TPoint* cursorPos; 
+            
+            //EPMR-7XPHXV aSetValue is set as "(void*) 1" from
+            //"CBrowserPluginControl::GoNormalScreenL" from the flash plugin
+            //to avoid the Invalid pointer access, we are checking for 
+            //aSetValue and setting point as (0,0) and also for NULL Value 
+            if((aSetValue == (void*)1) || (!aSetValue)) {
+                TPoint position(0,0);
+                cursorPos = static_cast<TPoint*>(&position);
+                }
+                else {
+                cursorPos = static_cast<TPoint*>(aSetValue);
+                }
                 pluginWin->pluginDeactivate(*cursorPos);
             }
         }

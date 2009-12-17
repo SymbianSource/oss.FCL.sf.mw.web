@@ -17,6 +17,12 @@
 
 
 
+#ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
+#include <txtetext_internal.h>
+#include <txtclipboard.h>
+#include <txtetext_internal.h>
+#endif
+
 #include "config.h"
 #include "../../bidi.h"
 #include "StaticObjectsContainer.h"

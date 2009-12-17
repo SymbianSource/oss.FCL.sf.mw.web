@@ -17,7 +17,7 @@
 //#include <eikenv.h>
 //#include <eikbtgpc.h>
 //#include <avkon.hrh>
-#include "BrCtlApiTestObserver.h"
+#include "brctlapitestobserver.h"
 #include <aknmessagequerydialog.h>
 
 #ifndef RD_PF_SEC_APPARC

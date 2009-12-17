@@ -19,7 +19,7 @@
 #include "FeedsDatabase.h"
 #include "FeedHandler.h"
 #include "FeedsServer.h"
-#include "FeedsServerMsg.h"
+#include "feedsservermsg.h"
 #include "FeedsServerSession.h"
 #include "OpmlParser.h"
 #include "OpmlWriter.h"

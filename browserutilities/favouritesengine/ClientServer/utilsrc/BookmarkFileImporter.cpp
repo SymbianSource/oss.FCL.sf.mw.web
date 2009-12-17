@@ -21,7 +21,7 @@
 // INCLUDE FILES
 
 #include "BookmarkFileImporter.h"
-#include <FavouritesLimits.h>
+#include <favouriteslimits.h>
 // TEMP
 #include <s32file.h>
 // END TEMP

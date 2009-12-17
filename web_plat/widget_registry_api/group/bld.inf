@@ -15,16 +15,16 @@
 *
 */
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
 
-../inc/WidgetRegistryClient.h    MW_LAYER_PLATFORM_EXPORT_PATH(WidgetRegistryClient.h)
-../inc/WidgetPropertyValue.h     MW_LAYER_PLATFORM_EXPORT_PATH(WidgetPropertyValue.h)
-../inc/WidgetRegistryConstants.h MW_LAYER_PLATFORM_EXPORT_PATH(WidgetRegistryConstants.h)
-../inc/WidgetRegistryData.h      MW_LAYER_PLATFORM_EXPORT_PATH(WidgetRegistryData.h)
+../inc/widgetregistryclient.h    MW_LAYER_PLATFORM_EXPORT_PATH(widgetregistryclient.h)
+../inc/widgetpropertyvalue.h     MW_LAYER_PLATFORM_EXPORT_PATH(widgetpropertyvalue.h)
+../inc/widgetregistryconstants.h MW_LAYER_PLATFORM_EXPORT_PATH(widgetregistryconstants.h)
+../inc/widgetregistrydata.h      MW_LAYER_PLATFORM_EXPORT_PATH(widgetregistrydata.h)
 
 PRJ_MMPFILES

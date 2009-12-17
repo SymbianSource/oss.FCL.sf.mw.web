@@ -33,7 +33,7 @@
 
 #include <CenRepNotifyHandler.h>
 #include <centralrepository.h>
-#include <HttpCacheManagerInternalCRKeys.h>
+#include <httpcachemanagerinternalcrkeys.h>
 
 #include <stringloader.h>
 #include <webkit.rsg>
@@ -116,8 +116,8 @@
 
 #include "TEncodingMapping.h"
 #include "urlloader_urlloaderint.h"
-#include <BrCtlInterface.h>
-#include "BrCtlDialogsProvider.h"
+#include <brctlinterface.h>
+#include "brctldialogsprovider.h"
 
 #include "HistoryController.h"
 #include "WmlInterface.h"
@@ -1804,6 +1804,7 @@ CView::CView (CBrCtl* aBrCtl) :
   iVScrollPosition(0), iFormatPriority( ((CActive::TPriority)( CActive::EPriorityLow + 2 )) )
 {
     iBrCtl = aBrCtl;
+    iDrag = EFalse;
 }
 
 // -----------------------------------------------------------------------------
@@ -4208,7 +4209,8 @@ void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
     {
     switch (aPointerEvent.iType) {
         case TPointerEvent::EButton1Down:
-        	iLastPosition = aPointerEvent.iPosition;        	        	
+        	iLastPosition = aPointerEvent.iPosition;
+            iDrag = EFalse;
 			break;
 		case TPointerEvent::EDrag:
 			TPoint  currPosition;
@@ -4221,8 +4223,21 @@ void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
 				currPosition.iX = iDeviceContext->Origin()->x;
 				currPosition.iY = iDeviceContext->Origin()->y;
 				ScrollTo(currPosition+nextPosition);
-			}
-            iDrag = ETrue;
+
+                //This is for Drag event
+                //Introducing 10 pixel offset. This is introduced to tackle problem that occurs if user clicks
+                //link but still causes a very small pixel move. This gives a small difference in previous
+                //and next position. As a side effect iDrag will be true and request will not be sent even if
+                //there is very small pixel difference.
+                //Following logic tries to handle such scenario.
+                TInt nOffset = 10;
+                TBool bXOffset = ((nextPosition.iX > nOffset) || (nextPosition.iX < -nOffset));
+                TBool bYOffset = ((nextPosition.iY > nOffset) || (nextPosition.iY < -nOffset));
+                if(bXOffset || bYOffset)
+                {
+                    iDrag = ETrue;
+                }
+            } 
             break;
     }
     
@@ -4301,20 +4316,13 @@ void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
                 NW_LMgr_RootBox_SetFocusBox(iRootBox, tempBox);
                 Draw (NW_TRUE /*DrawNow*/);
                 }
-            if (aPointerEvent.iType == TPointerEvent::EButton1Up)
+            if ((aPointerEvent.iType == TPointerEvent::EButton1Up) && (iShouldActivate))
                 {
-                if (iShouldActivate)
+                    if((!iDrag))
                     {
-                      if(!iDrag)
-                        {
-                         NW_Evt_ActivateEvent_t actEvent;
-                         NW_Evt_ActivateEvent_Initialize (&actEvent);
-                         ProcessEvent (NW_Evt_EventOf(&actEvent));
-                        }
-                    else
-                        {
-                        iDrag = EFalse;
-                        }
+                        NW_Evt_ActivateEvent_t actEvent;
+                        NW_Evt_ActivateEvent_Initialize (&actEvent);
+                        ProcessEvent (NW_Evt_EventOf(&actEvent));
                     }
                 }
             break;

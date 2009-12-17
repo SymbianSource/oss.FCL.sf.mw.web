@@ -18,7 +18,7 @@
 
 #include "TestHarnessContainer.h"
 #include "TestHarnessView.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 
 
 // -----------------------------------------------------------------------------

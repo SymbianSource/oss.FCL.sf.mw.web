@@ -21,9 +21,9 @@
 // INCLUDE FILES
 
 #include <bacline.h>
-#include <FavouritesDb.h>
-#include <FavouritesLimits.h>
-#include <FavouritesItemList.h>
+#include <favouritesdb.h>
+#include <favouriteslimits.h>
+#include <favouritesitemlist.h>
 #include "UnicodeFile.h"
 
 // CONSTANTS

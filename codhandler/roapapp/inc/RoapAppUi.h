@@ -28,7 +28,7 @@
 #include <AknAppUi.h>
 #include <AknServerApp.h>
 #include <RoapObserver.h>
-#include <DownloadMgrClient.h>
+#include <downloadmgrclient.h>
 #include "RoapAppWaitDialog.h"
 #include <CentralRepository.h>
 

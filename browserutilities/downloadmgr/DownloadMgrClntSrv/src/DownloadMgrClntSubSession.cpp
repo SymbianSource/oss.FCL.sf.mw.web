@@ -19,7 +19,7 @@
 
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
-#include "DownloadMgrClient.h"
+#include "downloadmgrclient.h"
 #include "DownloadMgrServer.h"
 #include "DownloadMgrHandler.h"
 #include "DownloadMgrStart.h"
@@ -31,10 +31,10 @@
 
 #include <hash.h>
 #include <e32svr.h>
-#include <CodDownload.h>
+#include <coddownload.h>
 #include <AiwGenericParam.h>
 #include <eikenv.h>
-#include <HttpFilterCommonStringsExt.h>
+#include <httpfiltercommonstringsext.h>
 #include <EscapeUtils.h>
 
 // CONSTANTS

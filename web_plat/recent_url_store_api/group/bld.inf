@@ -15,13 +15,13 @@
 *
 */
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
 
-../inc/RecentUrlStore.h  MW_LAYER_PLATFORM_EXPORT_PATH(RecentUrlStore.h)
+../inc/recenturlstore.h  MW_LAYER_PLATFORM_EXPORT_PATH(recenturlstore.h)
 
 PRJ_MMPFILES

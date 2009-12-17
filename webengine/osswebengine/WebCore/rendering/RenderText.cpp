@@ -73,11 +73,9 @@ RenderText::RenderText(Node* node, PassRefPtr<StringImpl> str)
      , m_isAllASCII(charactersAreAllASCII(m_text.get()))
      
 #if PLATFORM(SYMBIAN)     
-
      , m_securityTimer(this, &RenderText::securityTimerFired)
-     
-#endif
-     
+     , m_offset(0) 
+#endif      
 {
     ASSERT(m_text);
     setRenderText();

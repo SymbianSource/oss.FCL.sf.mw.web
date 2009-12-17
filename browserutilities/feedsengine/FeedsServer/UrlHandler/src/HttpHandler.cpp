@@ -19,14 +19,14 @@
 #include <EscapeUtils.h>
 #include <http.h>
 #include <http/mhttpdatasupplier.h>
-#include <HttpFilterCommonStringsAddition.h>
+#include <httpfiltercommonstringsaddition.h>
 
 #include "HttpConnection.h"
 #include "HttpHandler.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "Logger.h"
 
-#include "CUserAgent.h"
+#include "cuseragent.h"
 
 // -----------------------------------------------------------------------------
 // CHttpHandler::NewL

@@ -20,10 +20,10 @@
 
 // INCLUDE FILES
 
-#include "FavouritesFile.h"
+#include "favouritesfile.h"
 #include "FavouritesMsg.h"
 #include "FavouritesPanic.h"
-#include "FavouritesDb.h"
+#include "favouritesdb.h"
 #include <f32file.h>
 
 // CLASS DECLARATION

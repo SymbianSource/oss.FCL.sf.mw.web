@@ -18,9 +18,9 @@
 
 
 // INCLUDE FILES
-#include    "CDownloadMgrUiLibRegistry.h"
-#include    "CDownloadMgrUiDownloadsList.h"
-#include    "CDownloadMgrUiUserInteractions.h"
+#include    "cdownloadmgruilibregistry.h"
+#include    "cdownloadmgruidownloadslist.h"
+#include    "cdownloadmgruiuserinteractions.h"
 #include    "DMgrUiLibPanic.h"
 #include    "UiLibLogger.h"
 

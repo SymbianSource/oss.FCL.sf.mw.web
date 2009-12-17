@@ -25,7 +25,7 @@
 #include <eikmenub.h>
 #include <gdi.h>
 #include <bitdev.h>
-#include "BrCtlInterface.h"
+#include "brctlinterface.h"
 #include "WidgetEngineCallbacks.h"
 
 #include "WidgetClient.h"

@@ -30,7 +30,7 @@
 #include "WmlControl.h"
 #include "HistoryController.h"
 #include "HistoryStack.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "HistoryEntry.h"
 #include "WmlInterface.h"
 

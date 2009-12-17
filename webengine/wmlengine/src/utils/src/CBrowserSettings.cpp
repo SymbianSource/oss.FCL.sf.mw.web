@@ -19,7 +19,7 @@
 #include <bldvariant.hrh>
 #include "CBrowserSettings.h"
 
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #include <centralrepository.h>
 
 #include <eikenv.h>

@@ -62,6 +62,8 @@ void NetscapePlugInStreamLoaderClient::ConstructL(const String& url, PluginSkin*
     m_loader = 0; 
     m_request = 0;
     m_pluginstream = 0;
+    m_pluginskin = pluginskin;
+    m_notifydata = notifydata;
     m_frame = frame;
     m_pluginstream = new (ELeave) PluginStream(pluginskin, this, notifydata);
     m_request = new (ELeave) ResourceRequest(m_frame->loader()->completeURL(url));
@@ -84,6 +86,8 @@ void NetscapePlugInStreamLoaderClient::ConstructL(const ResourceRequest& request
     m_loader = 0; 
     m_request = 0;
     m_pluginstream = 0;
+    m_pluginskin = pluginskin;
+    m_notifydata = notifydata;
     m_frame = frame;
     m_pluginstream = new (ELeave) PluginStream(pluginskin, this, notifydata);
     m_request = new (ELeave) ResourceRequest(request.url());
@@ -124,6 +128,8 @@ NetscapePlugInStreamLoaderClient::~NetscapePlugInStreamLoaderClient()
     
     delete m_request;     
     delete m_pluginstream;    
+    m_pluginskin = NULL;
+    m_notifydata = NULL;
     
 }
 
@@ -147,9 +153,12 @@ void NetscapePlugInStreamLoaderClient::stop()
 
 void NetscapePlugInStreamLoaderClient::cancelWithError(const ResourceError& error)
 {
-    if (m_loader && !m_loader->isDone()) 
-        m_loader->cancel(error);           
+    if (m_loader && !m_loader->isDone()){
+        if(m_pluginskin && m_pluginskin->getNPPluginFucs())
+            m_pluginskin->getNPPluginFucs()->urlnotify(m_pluginskin->m_instance, error.failingURL(), NPRES_NETWORK_ERR, m_notifydata);
+        m_loader->cancel(error);
     }
+}
 
 void NetscapePlugInStreamLoaderClient::didReceiveResponse(const ResourceResponse& response)
 {

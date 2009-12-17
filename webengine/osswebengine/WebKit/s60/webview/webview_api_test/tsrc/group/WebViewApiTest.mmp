@@ -18,7 +18,7 @@
 #include <domain/osextensions/platform_paths.hrh>
 #include <data_caging_paths.hrh>
 //#include "/../../../../WebEngine/OssWebEngine/WebKit/s60/group/common.mmpi"
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET          WebViewApiTest.dll
 TARGETTYPE      dll

@@ -40,7 +40,7 @@ extern "C" {
     
 // The "TEnterStatus", relates to what security state the page is going to.
 // This "page loading" status, is passed in HandleBrowserLoadEventL() using the
-// TBrCtlLoadEvent enum. (see BrCtlDefs.h)  
+// TBrCtlLoadEvent enum. (see brctldefs.h)  
 // These constants must stay in sync with viewshellobserver.h
 //R
 

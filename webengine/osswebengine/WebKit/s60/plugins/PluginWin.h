@@ -23,7 +23,7 @@
 //  INCLUDES
 #include <e32def.h>
 #include <coecntrl.h>
-#include <PluginAdapterInterface.h>
+#include <pluginadapterinterface.h>
 #include <npapi.h>
 #include <rt_gesturehelper.h>
 

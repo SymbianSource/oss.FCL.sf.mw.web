@@ -65,7 +65,7 @@
 #include <CommsDatTypeInfoV1_1.h>
 
 	//User Includes
-#include "InternetConnectionManager.h"
+#include "internetconnectionmanager.h"
 #include "connman.hrh"
 #include "connectionmanagerlogger.h"
 #include "connectionobservers.h"

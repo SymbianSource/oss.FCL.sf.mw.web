@@ -22,7 +22,7 @@ UID 0x10000079  0x10281111
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 MW_LAYER_SYSTEMINCLUDE
 USERINCLUDE ../../osswebengine/Webkit/S60/WebView

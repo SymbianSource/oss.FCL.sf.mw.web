@@ -20,8 +20,8 @@
 
 // INCLUDE FILES
 
-#include "FavouritesDbNotifier.h"
-#include "FavouritesDb.h"
+#include "favouritesdbnotifier.h"
+#include "favouritesdb.h"
 #include "FavouritesMsg.h"
 
 // ================= MEMBER FUNCTIONS =======================

@@ -26,7 +26,7 @@
 #include "ResourceHandleManagerSymbian.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceRequest.h"
-#include <BrCtlSpecialLoadObserver.h>
+#include <brctlspecialloadobserver.h>
 #include "brctl.h"
 #include "DeprecatedString.h"
 

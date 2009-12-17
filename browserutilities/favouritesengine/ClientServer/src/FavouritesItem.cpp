@@ -20,7 +20,7 @@
 
 // INCLUDE FILES
 
-#include "FavouritesItem.h"
+#include "favouritesitem.h"
 #include "FavouritesItemImpl.h"
 #include "FavouritesPanic.h"
 

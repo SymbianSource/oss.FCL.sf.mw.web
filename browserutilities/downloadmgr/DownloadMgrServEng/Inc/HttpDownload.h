@@ -25,7 +25,7 @@
 #include "HttpConnHandler.h"
 #include "DownloadDataServ.h"
 
-#include <HttpDownloadMgrCommon.h>
+#include <httpdownloadmgrcommon.h>
 #include <e32base.h>
 #include <es_sock.h>
 #include <http.h>

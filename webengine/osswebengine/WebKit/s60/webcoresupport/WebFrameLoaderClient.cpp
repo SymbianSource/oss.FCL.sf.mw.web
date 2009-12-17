@@ -15,7 +15,7 @@
 *
 */
 
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 #include "config.h"
 #include <../bidi.h>
 #include "WebFrameLoaderClient.h"
@@ -44,7 +44,7 @@
 #include "WebPolicyManager.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
-#include "BrCtlWindowObserver.h"
+#include "brctlwindowobserver.h"
 #include "WmlDispatcher.h"
 #include "WebUtil.h"
 #include "errordefs.h"

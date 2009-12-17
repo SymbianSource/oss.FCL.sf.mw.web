@@ -146,7 +146,7 @@ TBrowserStatusCode NW_NVPair_CalSize (NW_NVPair_t* thisObj,
   NW_ASSERT( thisObj->strTable == NULL );
   NW_ASSERT( name != NULL ); 
   
-  if (name[0] == '\0') {
+  if (name[0] == '\0' ||  value[0] == '\0') {
 
       return KBrsrSuccess;
   }

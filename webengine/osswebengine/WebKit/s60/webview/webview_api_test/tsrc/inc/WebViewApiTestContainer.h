@@ -15,10 +15,10 @@
 
 // INCLUDES
 //#include <coecntrl.h>
-#include <BrCtlInterface.h>
+#include <brctlinterface.h>
 
-#include "BrCtlApiTestObserver.h"
-#include "BrCtlApiTestDialogsProvider.h"
+#include "brctlapitestobserver.h"
+#include "brctlapitestdialogsprovider.h"
 
 #include <WebView.h> // interface under test
 

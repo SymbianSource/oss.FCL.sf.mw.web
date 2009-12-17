@@ -19,7 +19,7 @@
 
 // INCLUDE FILES
 #include <bldvariant.hrh>
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 
 #include "FileExt.h"
 #include "HttpClientApp.h"

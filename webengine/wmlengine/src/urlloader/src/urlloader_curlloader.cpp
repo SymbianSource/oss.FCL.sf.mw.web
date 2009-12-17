@@ -28,7 +28,7 @@
 #include "urlloader_loaderutils.h"
 #include "fileloader_cfileloader.h"
 #include "BrsrStatusCodes.h"
-#include <BrCtlSpecialLoadObserver.h>
+#include <brctlspecialloadobserver.h>
 #include "StringUtils.h"
 #include "nwx_defs.h"
 #include "httploader_mlinkresolvercallbacks.h"

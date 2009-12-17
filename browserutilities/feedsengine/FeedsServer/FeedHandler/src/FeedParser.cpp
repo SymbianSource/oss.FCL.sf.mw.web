@@ -20,7 +20,7 @@
 
 #include "FeedParser.h"
 #include "FeedParserObserver.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "XmlUtils.h"
 
 

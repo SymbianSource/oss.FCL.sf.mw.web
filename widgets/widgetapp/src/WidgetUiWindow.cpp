@@ -21,8 +21,8 @@
 #include "WidgetUiWindowContainer.h"
 #include "WidgetUiWindowManager.h"
 #include "WidgetUiDialogsProviderProxy.h"
-#include "WidgetRegistryConstants.h"
-#include "Browser_platform_variant.hrh"
+#include "widgetregistryconstants.h"
+#include "browser_platform_variant.hrh"
 #ifdef BRDO_WRT_HS_FF
 #include "cpspublisher.h"
 #endif
@@ -31,9 +31,9 @@
 #include <WidgetUi.rsg>
 
 #include <schemehandler.h>
-#include <InternetConnectionManager.h>
+#include <internetconnectionmanager.h>
 #include "WidgetInstallerInternalCRKeys.h"
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #include <StringLoader.h>
 #include <centralrepository.h>
 #include <ApUtils.h>

@@ -19,13 +19,13 @@
 
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../inc/AiwBrowserCommands.hrh MW_LAYER_PLATFORM_EXPORT_PATH(AiwBrowserCommands.hrh)
+../inc/AiwBrowserCommands.hrh MW_LAYER_PLATFORM_EXPORT_PATH(aiwbrowsercommands.hrh)
 
 PRJ_MMPFILES
 

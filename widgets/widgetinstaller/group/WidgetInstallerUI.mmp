@@ -20,7 +20,7 @@
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
 #include <bldvariant.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 // TARGET INFO
 TARGET          WidgetInstallerUI.dll
@@ -38,7 +38,6 @@ END
 
 START RESOURCE  ../data/WidgetInstallerUI.rss
 DEPENDS avkon.rsg
-DEPENDS swinstcommonui.rsg
 HEADER
 TARGETPATH      Resource
 #ifdef __S60_32__

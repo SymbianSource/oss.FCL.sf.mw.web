@@ -77,6 +77,8 @@ private:
     PluginStream* m_pluginstream;
     ResourceRequest* m_request;              
     NetscapePlugInStreamLoader* m_loader;
+    PluginSkin* m_pluginskin; // not owned
+    void* m_notifydata; // not owned
     int m_error;
     
 };

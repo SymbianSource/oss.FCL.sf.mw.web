@@ -20,8 +20,8 @@
 
 // INCLUDE FILES
 #include <e32math.h>
-#include "FavouritesEngineTest.h"
-#include "FavouritesDbTestObserver.h"
+#include "favouritesenginetest.h"
+#include "favouritesdbtestobserver.h"
 
 // EXTERNAL DATA STRUCTURES
 // None

@@ -66,6 +66,7 @@ static MouseEventType mouseEventForEventType(TPointerEvent::TType aType)
         case TPointerEvent::EButton2Up:
             return MouseEventReleased;
         case TPointerEvent::EDrag:
+        case TPointerEvent::EMove:
             return MouseEventMoved;
     }
 }

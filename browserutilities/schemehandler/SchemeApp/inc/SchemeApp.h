@@ -23,7 +23,7 @@
 
 #include <e32base.h>
 #include <eikapp.h>
-#include <SchemeDefs.hrh>
+#include <schemedefs.hrh>
 
 // CONSTANTS
 

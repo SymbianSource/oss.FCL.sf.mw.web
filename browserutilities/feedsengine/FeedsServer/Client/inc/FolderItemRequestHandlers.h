@@ -24,9 +24,9 @@
 
 // INCLUDES
 #include <f32file.h>
-#include <FeedsServerMsg.h>
-#include "FeedsEntity.h"
-#include "FeedsServerRequestHandler.h"
+#include <feedsservermsg.h>
+#include "feedsentity.h"
+#include "feedsserverrequesthandler.h"
 
 // CONSTANTS
 

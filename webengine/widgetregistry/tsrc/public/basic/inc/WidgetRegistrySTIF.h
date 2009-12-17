@@ -21,7 +21,7 @@
 #define WIDGETREGISTRYSTIF_H
 
 // INCLUDES
-#include <WidgetRegistryClient.h>
+#include <widgetregistryclient.h>
 #include <StifTestModule.h>
 #include <StifLogger.h>
 #include <f32file.h>

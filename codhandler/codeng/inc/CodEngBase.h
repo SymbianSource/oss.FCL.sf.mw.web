@@ -28,7 +28,7 @@
 #include <apmrec.h>
 #include <apparc.h>
 #include "CodSaver.h"
-#include <CodDownload.h>
+#include <coddownload.h>
 
 // FORWARD DECLARATION
 

@@ -29,7 +29,7 @@
 #include <e32std.h>
 #include <bautils.h>
 #include <oommonitorplugin.h>
-#include <BrowserDialogsProvider.h>
+#include <browserdialogsprovider.h>
 #include <e32property.h>
 
 #ifdef BRDO_WRT_HS_FF

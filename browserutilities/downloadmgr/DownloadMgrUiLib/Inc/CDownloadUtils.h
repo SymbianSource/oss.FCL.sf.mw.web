@@ -22,7 +22,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <HttpDownloadMgrCommon.h>
+#include <httpdownloadmgrcommon.h>
 
 // FORWARD DECLARATIONS
 class RHttpDownload;

@@ -28,7 +28,7 @@
 #include "ContentLoader.h"
 #include "MVCShell.h"
 #include "BrsrStatusCodes.h"
-#include <BrCtlSpecialLoadObserver.h>
+#include <brctlspecialloadobserver.h>
 #include "StringUtils.h"
 
 // CONSTANTS

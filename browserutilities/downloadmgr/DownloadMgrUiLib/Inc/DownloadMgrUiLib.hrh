@@ -46,7 +46,7 @@ enum TDownloadsListCommands
     };
 
 
-#define KUiLibMaxDefAttrLength 32 // See KMaxDefAttrLength in HttpDownloadMgrCommon.h!
+#define KUiLibMaxDefAttrLength 32 // See KMaxDefAttrLength in httpdownloadmgrcommon.h!
 
 enum TDMULAIWMENUIDs
     {

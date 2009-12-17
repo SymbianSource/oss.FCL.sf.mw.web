@@ -2174,11 +2174,11 @@ void RenderObject::setStyle(RenderStyle* style)
                 }
             }
 #if PLATFORM(SYMBIAN)
-            if (m_style->visibility() != style->visibility()) {            
-                document()->page()->chrome()->setElementVisibilityChanged(style->visibility() == VISIBLE); 
-            }
-                        
-            if (style->position() != StaticPosition) {
+            if (m_style->visibility() == HIDDEN && 
+                style->visibility() == VISIBLE)  {            
+                document()->page()->chrome()->setElementVisibilityChanged(true); 
+            }       
+            else if (style->position() != StaticPosition) {
                 
                 if (style->left() != m_style->left() ||
                     style->right() != m_style->right() ||
@@ -2188,6 +2188,17 @@ void RenderObject::setStyle(RenderStyle* style)
                     document()->page()->chrome()->setElementVisibilityChanged(true);
                 }
             }
+            else {
+                bool curr_style_hidden = (m_style->width().isFixed() && m_style->width().value() <= 0) ||
+                                         (m_style->height().isFixed() && m_style->height().value() <= 0);
+                bool new_style_hidden = (style->width().isFixed() && style->width().value() <= 0) ||
+                                        (style->height().isFixed() && style->height().value() <= 0);
+             
+                if (curr_style_hidden && !new_style_hidden) {
+                    document()->page()->chrome()->setElementVisibilityChanged(true);
+                }
+            }
+            
 #endif
         }
         // If we have no layer(), just treat a RepaintLayer hint as a normal Repaint.

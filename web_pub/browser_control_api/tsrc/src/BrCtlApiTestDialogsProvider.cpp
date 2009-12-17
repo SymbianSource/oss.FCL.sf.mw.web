@@ -23,7 +23,7 @@
 #include <BrowserDialogsProvider.h>
 
 // User includes
-#include "BrCtlApiTestDialogsProvider.h"
+#include "brctlapitestdialogsprovider.h"
 
 
 // CONSTANTS

@@ -19,7 +19,7 @@
 #include <e32base.h>
 #include <f32file.h>
 #include <s32mem.h>
-#include "WidgetRegistryClient.h"
+#include "widgetregistryclient.h"
 
 
 // ============================================================================

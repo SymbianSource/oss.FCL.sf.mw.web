@@ -15,7 +15,7 @@
 *
 */
 
-#include "../browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../browser_platform_api/inc/browser_platform_variant.hrh"
 
 
 #include "../aiw_browser_provider_api/group/bld.inf"

@@ -29,10 +29,10 @@
 #include "ResourceLoaderDelegate.h"
 #include "HttpCacheSupply.h"
 #include "HttpPostDataSupplier.h"
-#include <HttpFilterCommonStringsExt.h>
-#include <BrCtlDefs.h>
+#include <httpfiltercommonstringsext.h>
+#include <brctldefs.h>
 #include "BrCtl.h"
-#include "BrCtlSpecialLoadObserver.h"
+#include "brctlspecialloadobserver.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "DocumentLoader.h"
@@ -648,7 +648,10 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                     return;
                     }
                 int statusCode = m_transaction->Response().StatusCode();
-                if ( statusCode != 200) {
+                if ((statusCode == 404) && (aEvent.iStatus == THTTPEvent::EFailed) && (m_accumulatedSize != 0)) {
+                    complete(KErrNone);
+                }	
+                else if ( statusCode != 200) {
                     complete(-25000 - m_transaction->Response().StatusCode());
                 }
                 else if (statusCode == 200 && aEvent.iStatus == THTTPEvent::EFailed) {

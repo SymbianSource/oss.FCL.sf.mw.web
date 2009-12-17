@@ -297,6 +297,26 @@ class MemoryManager
         * @return
         */
         IMPORT_C static void CloseFastAllocator(RAllocator* aDefaultAllocator);
+
+        /**
+        * Create fast allocator and switch as default heap. Special case if fast allocator
+        * has to be created from SetupThreadHeap().
+        * 
+        * @since 9.2
+        * @param
+        * @return
+        */        
+        IMPORT_C static void MemoryManager::CreateFastAllocator();
+
+        /**
+        * Initialize MemoryManager library. Special case if CreateFastAllocator is
+        * called from SetupThreadHeap().
+        * 
+        * @since 9.2
+        * @param
+        * @return
+        */
+        IMPORT_C static void MemoryManager::InitFastAllocator();
     };
 
 #endif// !_MEMORYMANAGER_H_

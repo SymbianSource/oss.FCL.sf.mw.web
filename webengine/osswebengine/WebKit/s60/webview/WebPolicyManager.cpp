@@ -37,7 +37,6 @@ using namespace WebCore;
 
 // CONSTANTS
 const char* typeTextHtml = "text/html";
-const char* typeTextXml = "text/xml";
 const char* typeApplicationXhtml = "application/xhtml+xml";
 const char* typeTextPlain = "text/plain";
 const char* typeApplicationWapXhtml = "application/vnd.wap.xhtml+xml";
@@ -161,8 +160,7 @@ bool WebPolicyManager::canShowMIMEType(const String& MIMEType) const
     if (MIMEType == typeTextHtml ||
         MIMEType == typeApplicationXhtml ||
         MIMEType == typeApplicationWapXhtml ||
-        MIMEType == typeMultipartMixed || 
-        MIMEType == typeTextXml) {
+        MIMEType == typeMultipartMixed) {
         found = true;
     }
     //Check if the image type can be handled by the browser. If not

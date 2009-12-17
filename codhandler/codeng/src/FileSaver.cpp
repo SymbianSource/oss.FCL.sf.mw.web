@@ -19,7 +19,7 @@
 
 
 // INCLUDE FILES
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 #include "FileSaver.h"
 #include "CodBuffStorage.h"
 #include "CodLoadObserver.h"
@@ -32,7 +32,7 @@
 #include "CodData.h"
 
 #include <f32file.h>
-#include <HttpDownloadMgrCommon.h>
+#include <httpdownloadmgrcommon.h>
 #include <DocumentHandler.h>
 #include <pathinfo.h>
 

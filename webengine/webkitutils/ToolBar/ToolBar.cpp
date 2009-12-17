@@ -31,7 +31,7 @@
 
 #include "ToolBar.h"
 #include "ToolBarButton.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 
 #include "eikon.hrh"
 

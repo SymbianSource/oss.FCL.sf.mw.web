@@ -22,7 +22,7 @@
 #define WIDGETENTRY_H
 
 // INCLUDES
-#include "WidgetPropertyValue.h"
+#include "widgetpropertyvalue.h"
 #include "WidgetRegistryXml.h"
 
 // FORWARD DECLARATIONS

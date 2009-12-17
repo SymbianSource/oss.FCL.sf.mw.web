@@ -20,7 +20,7 @@
 #include "../../bidi.h"
 #include "PlatformString.h"
 #include <centralrepository.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #include "PluginSkin.h"
 #include "PluginWin.h"
 #include "PluginHandler.h"
@@ -33,7 +33,7 @@
 #include "BrCtl.h"
 #include "WebCoreGraphicsContext.h"
 #include "StaticObjectsContainer.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "SettingsContainer.h"
 #include <Uri8.h>
 #include <StringLoader.h>
@@ -47,12 +47,10 @@
 
 #include <ApEngineConsts.h>
 #include <Uri8.h>
-#include <InternetConnectionManager.h>
+#include <internetconnectionmanager.h>
 #include <es_enum.h>
-#include <TextEncoding.h>
-#include "CString.h"
 #include "WidgetExtension.h"
-#include <WidgetRegistryClient.h>
+#include <widgetregistryclient.h>
 
 // CONSTANTS
 using namespace WebCore;
@@ -804,7 +802,7 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
     if (url.Ptr() == NULL ) {                        
         return KErrArgument;
     }
-
+    _LIT8(KSwfExtn, ".swf");
     _LIT8(KJs, "javascript:");
     if ((url.Length() > KJs().Length() ) &&(url.Left(KJs().Length()).FindF(KJs) == 0)) {
         HBufC* pBuffer = HBufC::NewL(url.Length());
@@ -824,7 +822,7 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
     HBufC8* absoluteUrl = makeAbsoluteUrlL(*m_url, url); 
     CleanupStack::PushL(absoluteUrl);
 
-    if (loadmode == ELoadModePlugin ) {    
+    if( (loadmode == ELoadModePlugin ) || (url.FindF(KSwfExtn)!= KErrNotFound) ){    
         
         if (m_instance && m_pluginfuncs) {
         
@@ -907,11 +905,9 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
         int start_content = buffer.Find(KRequestEOH());    
         start_content =  (start_content != KErrNotFound) ? start_content+ KRequestEOH().Length() : 0;                
         
-        HBufC* body = HBufC::NewLC(buffer.Mid(start_content).Length()+1);                
-        body->Des().Copy(buffer.Mid(start_content));
-        TextEncoding *ecoder = new TextEncoding(core(mainFrame(m_frame))->loader()->encoding());
-        CString decoded_body = ecoder->encode(body->Des().PtrZ(),body->Length());
-        FormData* fd = new (ELeave) FormData(decoded_body.data(),decoded_body.length());                                               
+        HBufC8* body = HBufC8::NewLC(buffer.Mid(start_content).Length());                
+        body->Des().Copy(buffer.Mid(start_content));        
+        FormData* fd = new (ELeave) FormData(body->Ptr(),body->Length());                                          
         request.setHTTPBody(fd);                                              
         CleanupStack::PopAndDestroy(); // body
     }
@@ -1050,8 +1046,9 @@ void PluginSkin::setPluginWinClipedRect()
                            frameRectInViewCoord.Intersects(viewRect);
       
     if (m_pluginwin) {
-        m_pluginwin->makeVisible( isFrameVisible && !isPageViewMode && isPluginVisible);
-        if (!m_pluginwin->isPluginInFullscreen()) {
+        TBool visibility = isFrameVisible && !isPageViewMode && isPluginVisible;
+        m_pluginwin->makeVisible(visibility);
+        if (!m_pluginwin->isPluginInFullscreen() && visibility) {
             clipRect.Intersection(fullRect);
             m_pluginwin->SetRect(clipRect);
         }

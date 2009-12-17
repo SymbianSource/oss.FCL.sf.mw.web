@@ -29,7 +29,7 @@
 #include <MdaImageConverter.h>
 
 // Browser as a Plugin includes
-#include <BrCtlDialogsProvider.h>
+#include <brctldialogsprovider.h>
 
 // FORWARD DECLARATIONS
 class CCoeControl;

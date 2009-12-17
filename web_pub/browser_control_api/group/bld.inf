@@ -16,7 +16,7 @@
 */
 #ifndef __BROWSER_SDK
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 #endif
 
 PRJ_PLATFORMS
@@ -25,27 +25,27 @@ DEFAULT GCCE
 PRJ_EXPORTS
 #ifndef __BROWSER_SDK
 
-../inc/BrCtlDefs.h                MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlDefs.h)
-../inc/BrCtlDialogsProvider.h     MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlDialogsProvider.h)
+../inc/brctldefs.h                MW_LAYER_PUBLIC_EXPORT_PATH(brctldefs.h)
+../inc/brctldialogsprovider.h     MW_LAYER_PUBLIC_EXPORT_PATH(brctldialogsprovider.h)
 ../inc/brctlinterface.h           MW_LAYER_PUBLIC_EXPORT_PATH(brctlinterface.h)
-../inc/BrCtlLayoutObserver.h      MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlLayoutObserver.h)
-../inc/BrCtlLinkResolver.h        MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlLinkResolver.h)
-../inc/BrCtlSoftkeysObserver.h    MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlSoftkeysObserver.h)
-../inc/BrCtlSpecialLoadObserver.h MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlSpecialLoadObserver.h)
-../inc/BrCtlWindowObserver.h      MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlWindowObserver.h)
-../inc/BrCtlDownloadObserver.h    MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlDownloadObserver.h)
+../inc/brctllayoutobserver.h      MW_LAYER_PUBLIC_EXPORT_PATH(brctllayoutobserver.h)
+../inc/brctllinkresolver.h        MW_LAYER_PUBLIC_EXPORT_PATH(brctllinkresolver.h)
+../inc/brctlsoftkeysobserver.h    MW_LAYER_PUBLIC_EXPORT_PATH(brctlsoftkeysobserver.h)
+../inc/brctlspecialloadobserver.h MW_LAYER_PUBLIC_EXPORT_PATH(brctlspecialloadobserver.h)
+../inc/brctlwindowobserver.h      MW_LAYER_PUBLIC_EXPORT_PATH(brctlwindowobserver.h)
+../inc/brctldownloadobserver.h    MW_LAYER_PUBLIC_EXPORT_PATH(brctldownloadobserver.h)
 
 #else
 
-../inc/BrCtlDefs.h                /epoc32/include/BrCtlDefs.h
-../inc/BrCtlDialogsProvider.h     /epoc32/include/BrCtlDialogsProvider.h
+../inc/brctldefs.h                /epoc32/include/brctldefs.h
+../inc/brctldialogsprovider.h     /epoc32/include/brctldialogsprovider.h
 ../inc/brctlinterface.h           /epoc32/include/brctlinterface.h
-../inc/BrCtlLayoutObserver.h      /epoc32/include/BrCtlLayoutObserver.h
-../inc/BrCtlLinkResolver.h        /epoc32/include/BrCtlLinkResolver.h
-../inc/BrCtlSoftkeysObserver.h    /epoc32/include/BrCtlSoftkeysObserver.h
-../inc/BrCtlSpecialLoadObserver.h /epoc32/include/BrCtlSpecialLoadObserver.h
-../inc/BrCtlWindowObserver.h      /epoc32/include/BrCtlWindowObserver.h
-../inc/BrCtlDownloadObserver.h    /epoc32/include/BrCtlDownloadObserver.h
+../inc/brctllayoutobserver.h      /epoc32/include/brctllayoutobserver.h
+../inc/brctllinkresolver.h        /epoc32/include/brctllinkresolver.h
+../inc/brctlsoftkeysobserver.h    /epoc32/include/brctlsoftkeysobserver.h
+../inc/brctlspecialloadobserver.h /epoc32/include/brctlspecialloadobserver.h
+../inc/brctlwindowobserver.h      /epoc32/include/brctlwindowobserver.h
+../inc/brctldownloadobserver.h    /epoc32/include/brctldownloadobserver.h
                       
 #endif //#ifndef __BROWSER_SDK
 

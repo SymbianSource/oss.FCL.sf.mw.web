@@ -20,7 +20,7 @@
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
 #include "DownloadMgrHandler.h"
-#include "DownloadMgrClient.h"
+#include "downloadmgrclient.h"
 #include "DownloadMgrDefAttrib.h"
 
 // CONSTANTS

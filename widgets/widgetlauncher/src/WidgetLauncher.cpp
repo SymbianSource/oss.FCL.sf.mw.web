@@ -32,7 +32,7 @@
 #include <oommonitorsession.h>
 #include <e32property.h>
 #include <systemwarninglevels.hrh>
-#include "Browser_platform_variant.hrh"
+#include "browser_platform_variant.hrh"
 
 // CONSTANTS
 #define KUidWidgetOOMPlugin 0x10282855

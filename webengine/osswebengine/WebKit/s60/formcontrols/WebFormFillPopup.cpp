@@ -21,11 +21,13 @@
 #include "WebView.h"
 #include "WebFrame.h"
 #include "WebFrameView.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "PopupSelectListBox.h"
-#include "BrCtlDialogsProvider.h"
+#include "brctldialogsprovider.h"
 #include "WebFepTextEditor.h"
 #include "FormFillCallback.h"
+#include "Page.h"
+#include "WebChromeClient.h"
 
 #include <aknenv.h>
 #include <coemain.h>
@@ -242,6 +244,9 @@ TKeyResponse WebFormFillPopup::HandleKeyEventL(const TKeyEvent& aKeyEvent, TEven
 
     }
 
+    if (response == EKeyWasConsumed) {
+      m_parent->page()->chrome()->client()->setElementVisibilityChanged(false);
+    }
     return response;
 }
 
@@ -358,6 +363,7 @@ void WebFormFillPopup::HandlePointerEventL(const TPointerEvent& aPointerEvent)
     else {
         m_callback->cancelPopup();
     }
+    m_parent->page()->chrome()->client()->setElementVisibilityChanged(false);
 }
 
 //  End of File

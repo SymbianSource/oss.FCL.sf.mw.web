@@ -16,13 +16,13 @@
 */
 
 
-#include "FeedsServerMsg.h"
-#include "Transaction.h"
-#include "FeedsEntity.h"
-#include "FeedsInterface.h"
+#include "feedsservermsg.h"
+#include "transaction.h"
+#include "feedsentity.h"
+#include "feedsinterface.h"
 #include <S32Mem.h>
 #include <es_sock.h>
-#include "FeedsMap.h"
+#include "feedsmap.h"
 #include "Packed.h"
 #include "PackedFeed.h"
 #include "PackedFolder.h"

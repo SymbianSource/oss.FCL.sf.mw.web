@@ -18,7 +18,7 @@
 
 #include <charconv.h>
 
-#include "XmlEncoding.h"
+#include "xmlencoding.h"
 
 
 // -----------------------------------------------------------------------------

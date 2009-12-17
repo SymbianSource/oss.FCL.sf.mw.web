@@ -18,7 +18,7 @@
 
 
 // INCLUDE FILES
-#include <platform/mw/Browser_platform_variant.hrh>
+#include    <browser_platform_variant.hrh>
 #include    "HeaderField.h"
 #include    "HttpDownloadManagerServerEngine.h"
 #include    "HttpClientApp.h"
@@ -32,7 +32,7 @@
 #include    <Uri16.h>
 #include    <F32FILE.H>
 #include    <EscapeUtils.h>
-#include    <HttpFilterCommonStringsExt.h>
+#include    <httpfiltercommonstringsext.h>
 #include    <tinternetdate.h>
 #include    <SysUtil.h>
 

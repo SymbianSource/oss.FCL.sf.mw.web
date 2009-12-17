@@ -27,7 +27,7 @@
 #include "WebView.h"
 #include "BrCtl.h"
 #include "SettingsContainer.h"
-#include "BrCtlSpecialLoadObserver.h"
+#include "brctlspecialloadobserver.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
 #include "HttpDefs.h"

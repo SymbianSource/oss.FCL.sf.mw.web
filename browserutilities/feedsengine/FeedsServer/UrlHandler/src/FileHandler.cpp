@@ -21,7 +21,7 @@
 #include <f32file.h>
 
 #include "FileHandler.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "Logger.h"
 
 

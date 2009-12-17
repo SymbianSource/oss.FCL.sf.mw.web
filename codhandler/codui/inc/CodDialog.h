@@ -23,7 +23,7 @@
 
 #include <e32base.h>
 #include <centralrepository.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 
 
 // FORWARD DECLARATION

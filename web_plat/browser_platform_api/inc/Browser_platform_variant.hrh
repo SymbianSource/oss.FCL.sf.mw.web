@@ -189,16 +189,16 @@ Default is WML support enabled
 
 // Location, where the middleware layer localization .loc file should be exported
 #if __GNUC__ >= 3
-#define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(exported)
+#define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(oem/exported)
 #else
-#define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(##exported)
+#define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(oem/##exported)
 #endif
 
 // Location, where the middleware layer localization .loc file should be exported
 #if __GNUC__ >= 3
-#define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(exported)
+#define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(oem/exported)
 #else
-#define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(##exported)
+#define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(oem/##exported)
 #endif
 
 #if __GNUC__ >= 3
@@ -354,6 +354,8 @@ Default is WML support enabled
 *        S60 5.2
 * ===================
 */ 
+//Flag provieded to not fix the problem for Multiple heap created for in application startup
+#undef BRDO_STATIC_DATA_CLEANUP_SUPPORT_FF
 #elif defined(__PLATFORM_VERSION_52__)
 
 // Defines whether SAPI Security Manager Prompt Enhancement is available
@@ -392,6 +394,8 @@ Default is WML support enabled
 // Platform contains new Symbian Libxml implementation
 #define BRDO_SYMBIAN_LIBXML_FF
 
+// Static data initializtion on start up in E32Main() 
+#define BRDO_STATIC_DATA_CLEANUP_SUPPORT_FF
 #endif // PLATFORM VERSION ID's
 
 // Generic run-time definitions -- see WmlBrowserBuild.h for similar feature related definitions

@@ -45,7 +45,7 @@
 #include "RoapAppPanic.h"
 #include "RequestCompleteCallback.h"
 #include "RoapAppLogger.h"
-#include <HttpDownloadMgrCommon.h>
+#include <httpdownloadmgrcommon.h>
 
 #ifdef __SERIES60_HELP
 // Context-Sensitve Help File

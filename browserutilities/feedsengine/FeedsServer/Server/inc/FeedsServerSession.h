@@ -22,7 +22,7 @@
 // INCLUDES
 #include <e32base.h>
 
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "UpdateFeedTask.h"
 #include "UpdateAllFeedsTask.h"
 #include "ImportFeedsTask.h"

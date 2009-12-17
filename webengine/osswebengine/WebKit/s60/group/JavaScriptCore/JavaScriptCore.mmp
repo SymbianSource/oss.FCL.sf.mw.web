@@ -21,7 +21,7 @@ TARGETTYPE  dll
 UID 0x1000008d 0x10281B70
 
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 #ifdef __S60_32__
 LANG sc 

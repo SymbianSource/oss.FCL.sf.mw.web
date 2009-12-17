@@ -17,7 +17,7 @@
 
 
 
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 
 #include <e32base.h>
 #include <fepbase.h>

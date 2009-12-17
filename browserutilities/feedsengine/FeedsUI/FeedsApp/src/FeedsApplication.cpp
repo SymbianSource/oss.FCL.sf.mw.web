@@ -19,7 +19,7 @@
 #include "FeedsApplication.h"
 #include "FeedsDocument.h"
 #include "FeedsViews.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 
 
 // -----------------------------------------------------------------------------

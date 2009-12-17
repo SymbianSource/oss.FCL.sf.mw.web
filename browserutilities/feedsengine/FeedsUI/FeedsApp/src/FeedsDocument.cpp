@@ -23,7 +23,7 @@
 
 #include "FeedsAppUi.h"
 #include "FeedsDocument.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "Logger.h"
 
 

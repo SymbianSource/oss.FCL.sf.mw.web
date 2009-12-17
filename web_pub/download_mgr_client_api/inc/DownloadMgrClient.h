@@ -22,7 +22,7 @@
 //  INCLUDES
 #include <e32base.h>
 #include <f32file.h>
-#include <HttpDownloadMgrCommon.h>
+#include <httpdownloadmgrcommon.h>
 #include <http.h>
 
 // FORWARD DECLARATIONS

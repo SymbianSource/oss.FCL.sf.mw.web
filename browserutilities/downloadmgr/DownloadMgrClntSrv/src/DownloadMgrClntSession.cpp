@@ -19,7 +19,7 @@
 
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
-#include "DownloadMgrClient.h"
+#include "downloadmgrclient.h"
 #include "DownloadMgrServer.h"
 #include "DownloadMgrStart.h"
 #include "DownloadMgrDef.h"
@@ -29,8 +29,8 @@
 #include <EscapeUtils.h>
 #include <centralrepository.h>
 #include "DownloadMgrCRKeys.h"
-#include <BrowserUiSDKCRKeys.h>
-#include <CodDownload.h>
+#include <browseruisdkcrkeys.h>
+#include <coddownload.h>
 
 // CONSTANTS
 const TInt KHttpDownloadMgrObserverArrayGranularity = 4;

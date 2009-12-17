@@ -15,7 +15,7 @@
 *
 */
 
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 #include "config.h"
 #include "../../bidi.h"
 #include <AknUtils.h>
@@ -23,7 +23,7 @@
 #include <touchfeedback.h>
 #endif // BRDO_TOUCH_ENABLED_FF
 #include "brctl.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "WebPointerEventHandler.h"
 #include "WebView.h"
 #include "WebFrame.h"
@@ -44,6 +44,7 @@
 #include "EventHandler.h"
 #include "EventNames.h"
 #include "HitTestResult.h"
+#include "HitTestRequest.h"
 #include "MouseEvent.h"
 #include "WebPageFullScreenHandler.h"
 #include "PluginSkin.h"
@@ -56,6 +57,13 @@
 #include "WebTabbedNavigation.h"
 #include "SettingsContainer.h"
 #include "PluginHandler.h"
+#include "WebCoreGraphicsContext.h"
+#include "GraphicsContext.h"
+#include "RenderStyle.h"
+#include "RenderObject.h"
+#include "CSSStyleSelector.h"
+#include "CSSValueKeywords.h"
+#include "Settings.h"
 
 #include "WebKitLogger.h"
 using namespace WebCore;
@@ -137,8 +145,9 @@ void WebPointerEventHandler::ConstructL()
 void WebPointerEventHandler::HandleGestureL( const TGestureEvent& aEvent )
 {
     TGestureCode gtype = aEvent.Code(EAxisBoth);
-    TPoint gpos = aEvent.CurrentPos();
     
+    m_highlightPos = aEvent.CurrentPos();
+
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
     
     PluginSkin* plugin = m_webview->mainFrame()->focusedPlugin();
@@ -149,7 +158,7 @@ void WebPointerEventHandler::HandleGestureL( const TGestureEvent& aEvent )
     }
     updateCursor(aEvent.CurrentPos());
     if (IS_TABBED_NAVIGATION) {
-        m_webview->tabbedNavigation()->updateCursorPosition(m_highlightPos);
+        m_webview->tabbedNavigation()->updateCursorPosition(aEvent.CurrentPos());
     }
     switch (gtype) {
       // sent on touch down
@@ -260,7 +269,6 @@ void WebPointerEventHandler::handleTouchDownL(const TGestureEvent& aEvent)
     PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
     PluginSkin* pluginToActivate = pluginHandler->pluginToActivate();
     m_buttonDownEvent = m_currentEvent;
-    m_highlightPos = aEvent.CurrentPos();
     
     if ( !m_buttonDownTimer.isActive() && !m_webview->inPageViewMode()){
         m_buttonDownTimer.startOneShot(0.1f);        
@@ -293,7 +301,7 @@ void WebPointerEventHandler::handleTouchDownL(const TGestureEvent& aEvent)
      * timer callback first.  
      */    
     if ( m_buttonDownTimer.isActive()){
-    	m_waiter->Start();	
+        m_waiter->Start();	
     }
 }
 
@@ -484,12 +492,16 @@ void WebPointerEventHandler::doTapL()
            }
     }
 #endif // BRDO_TOUCH_ENABLED_FF
-    
+     
+    if (!IS_NAVIGATION_NONE) {
+         m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, coreFrame);
+     }
+     
      /*
       * We assume that if element visibility has been changed  
       * between "up" and "down" that means that some node event 
       * listener (onMouseOver etc) handling happened and we don't 
-      * want to send a click (mouse press = mouse release) event.
+      * want to send a click (mouse press + mouse release) event.
       * The exception is editable element, since we want VKB anyway
       */
      if (!IS_NAVIGATION_NONE &&
@@ -498,14 +510,18 @@ void WebPointerEventHandler::doTapL()
          m_webview->page()->chrome()->client()->elementVisibilityChangedByMouse()) {
          return;
      }
-
+     
      m_lastTapEvent.iPosition = m_buttonDownEvent.iPosition;
      m_lastTapEvent.iType = TPointerEvent::EButton1Up;
      m_lastTapEvent.iModifiers = 0;
 
     // don't pass the event if the text input is not in valid format
-    if (isHighlitableElement(elType) || m_webview->fepTextEditor()->validateTextFormat()) {
-        m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Up,  m_lastTapEvent.iPosition, coreFrame);
+    if (m_webview->fepTextEditor()->validateTextFormat()) {
+        if (!IS_NAVIGATION_NONE) {
+            // in case of navigation none button down was sent in buttonDownTimerCB()
+            m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
+        }
+        m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Up,  m_highlightPos, coreFrame);
     }
 
     // special handling for broken image (why is this here??)
@@ -584,7 +600,6 @@ void  WebPointerEventHandler::dehighlight()
 void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
 {
     m_buttonDownTimer.stop();
-
     
     Frame* coreFrame = core(m_webview->mainFrame());
     TPointerEvent event;
@@ -596,14 +611,12 @@ void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
     }
     m_isHighlighted = (m_highlightedNode != NULL) && (elType != TBrCtlDefs::EElementNone) ;
     
-    m_webview->page()->chrome()->client()->setElementVisibilityChanged(false);
-    
     /*
      * Tabbed navigation might already set the focused node.
      * If it's the same as m_highlightedNode FocuseController::setFocusedNode()
      * wouldn't do anything and setEditable won't be called.
      * So we are setting focused node to NULL here and let mouse event handler
-     * set it through ocuseController::setFocusedNode()
+     * set it through FocuseController::setFocusedNode()
      */
     if (IS_TABBED_NAVIGATION &&
         elType == TBrCtlDefs::EElementInputBox || 
@@ -611,10 +624,21 @@ void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
         coreFrame->document()->setFocusedNode(NULL);
     }
          
-    m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
-
-    m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, coreFrame);
-    m_waiter->AsyncStop();
+    if (!IS_NAVIGATION_NONE) {
+        m_webview->page()->chrome()->client()->setElementVisibilityChanged(false);
+        //to initiate hover 
+        if (m_isHighlighted) {
+            setFocusRing();
+        }
+        
+    }
+    else {
+        m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
+    }
+    
+    if (m_waiter->IsStarted()) {    
+        m_waiter->AsyncStop();
+    }
 }
 
 
@@ -634,4 +658,24 @@ void WebPointerEventHandler::updateCursor(const TPoint& pos)
             cursor->cursorUpdate(false); 
         }
     }
+}
+
+//-----------------------------------------------------------------------------
+// WebPointerEventHandler::setFocusRing
+//----------------------------------------------------------------------------
+void WebPointerEventHandler::setFocusRing()
+{
+    Element* e = static_cast<Element*>(m_highlightedNode);
+    RenderStyle* rs = e->renderStyle();
+    RenderStyle* style = new (e->document()->renderArena()) RenderStyle(*rs);
+    Color col(0xffaaaaff);
+
+    style->ref();   
+    style->setOutlineColor(col);
+    style->setOutlineStyle(DOTTED, true);
+    style->setOutlineWidth(4);
+    style->setOutlineOffset(2);
+    e->setRenderStyle(style);
+    style->deref(e->document()->renderArena());
+    e->setChanged();
 }

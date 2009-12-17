@@ -21,10 +21,10 @@
 #define CDOWNLOADMGRUIDOWNLOADSLIST_H
 
 //  INCLUDES
-#include <CDownloadMgrUiBase.h>
-#include <DownloadMgrClient.h>
-#include <HttpDownloadMgrCommon.h>
-#include <DownloadsListDlgObserver.h>
+#include <cdownloadmgruibase.h>
+#include <downloadmgrclient.h>
+#include <httpdownloadmgrcommon.h>
+#include <downloadslistdlgobserver.h>
 
 #include <AiwServiceHandler.h>
 #include <AiwCommon.hrh>
@@ -152,12 +152,6 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
         */
         inline TBool GetDownloadHide() { return iDownloadListHide; }
 
-        /**
-        * Sets the value of downloadlist hide
-        * @return void 
-        */
-        virtual void SetDownloadListHide( TBool aHide );
-
     public: // Functions from CDownloadMgrUiBase
 
         IMPORT_C virtual void GetIntAttributeL( const TUint aAttribute, TInt32& aValue );
@@ -249,6 +243,13 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
                                       RHttpDownload& aDownload);
                                       
         void LaunchFileManagerApplication();
+
+    public:
+        /**
+        * Sets the value of downloadlist hide
+        * @return void 
+        */
+        void SetDownloadListHide( TBool aHide );
 
     private:  // Data
         

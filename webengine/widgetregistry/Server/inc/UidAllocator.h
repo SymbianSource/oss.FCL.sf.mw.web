@@ -20,7 +20,7 @@
 #define UIDALLOCATOR_H
 
 // INCLUDE FILES
-#include "WidgetRegistryConstants.h"
+#include "widgetregistryconstants.h"
 
 /**
  * This class allows clients to allocate a UID from a given range.

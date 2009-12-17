@@ -28,9 +28,9 @@
 
 #include "WebFrame.h"
 #include "HttpDefs.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "StaticObjectsContainer.h"
-#include <PluginAdapterInterface.h>
+#include <pluginadapterinterface.h>
 #include "PluginWin.h"
 #include "PluginSkin.h"
 #include "PluginHandler.h"
@@ -272,12 +272,16 @@ TKeyResponse PluginWin::OfferKeyEventL( const TKeyEvent& aKeyEvent,
         ret = m_control->OfferKeyEventL( aKeyEvent, aType );
     }
     else if (!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event) {
+        WebCursor* c = StaticObjectsContainer::instance()->webCursor();
+        TPoint pt = (c->position());
+        pt = m_pluginskin->frame()->frameView()->viewCoordsInFrameCoords(pt);
+        pt -= m_pluginskin->rect().iTl;
         NPEvent event;
         NPEventKey eventKey;
         event.event = ENppEventKey;
         eventKey.keyEvent = &aKeyEvent;
         eventKey.type = aType;
-        eventKey.reserved = NULL;
+        eventKey.reserved = static_cast<void*>(&pt);
         event.param = &eventKey;
         ret = (TKeyResponse)m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), static_cast<void*>(&event));
     }

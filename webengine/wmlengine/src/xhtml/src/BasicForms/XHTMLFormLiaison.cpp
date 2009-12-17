@@ -23,7 +23,7 @@
 #include <commoncontentpolicy.h>
 
 #include "BrCtl.h"
-#include "BrCtlDialogsProvider.h"
+#include "brctldialogsprovider.h"
 
 #include "BrsrStatusCodes.h"
 #include "MVCShell.h"

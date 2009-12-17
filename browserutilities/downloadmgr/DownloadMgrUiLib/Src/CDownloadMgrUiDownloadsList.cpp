@@ -18,10 +18,10 @@
 
 
 // INCLUDE FILES
-#include <platform/mw/Browser_platform_variant.hrh>
-#include    "CDownloadMgrUiDownloadsList.h"
-#include    "CDownloadMgrUiLibRegistry.h"
-#include    "CDownloadMgrUiDownloadMenu.h"
+#include    <browser_platform_variant.hrh>
+#include    "cdownloadmgruidownloadslist.h"
+#include    "cdownloadmgruilibregistry.h"
+#include    "cdownloadmgruidownloadmenu.h"
 #include    "CDownloadsListArray.h"
 #include    "CDownloadsListDlg.h"
 #include    "AsyncEventHandlerArray.h"
@@ -49,7 +49,7 @@
 
 #include    <DocumentHandler.h>
 #include    "bautils.h"
-#include    <BrowserUiSDKCRKeys.h>
+#include    <browseruisdkcrkeys.h>
 #include    <aknnotewrappers.h> 
 #include    <StringLoader.h>
 #include    <apgtask.h>

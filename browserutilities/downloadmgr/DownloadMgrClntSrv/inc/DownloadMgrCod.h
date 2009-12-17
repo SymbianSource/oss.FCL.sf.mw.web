@@ -22,7 +22,7 @@
 #define __DOWNLOADMGR_CODOBSERVER_H__
 
 #include <e32base.h>
-#include <CodDownload.h>
+#include <coddownload.h>
 
 // FORWARD DECLARATIONS
 class RHttpDownloadMgr;

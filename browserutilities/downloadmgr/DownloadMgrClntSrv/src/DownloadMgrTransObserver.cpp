@@ -19,7 +19,7 @@
 
 // INCLUDE FILES
 #include "DownloadMgrTransObserver.h"
-#include "DownloadMgrClient.h"
+#include "downloadmgrclient.h"
 
 // CONSTANTS
 

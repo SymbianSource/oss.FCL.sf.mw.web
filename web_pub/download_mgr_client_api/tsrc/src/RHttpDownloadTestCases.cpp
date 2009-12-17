@@ -20,7 +20,7 @@
 
 // INCLUDE FILES
 #include <e32math.h>
-#include "DownloadMgrClientApiTest.h"
+#include "downloadmgrclientapitest.h"
 
 // EXTERNAL DATA STRUCTURES
 // None

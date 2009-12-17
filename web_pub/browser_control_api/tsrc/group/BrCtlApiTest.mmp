@@ -40,9 +40,9 @@ SYSTEMINCLUDE   .
 MW_LAYER_ECOM_SYSTEMINCLUDE
 
 SOURCEPATH      ../src
-SOURCE          BrCtlApiTest.cpp BrCtlApiTestBlocks.cpp
-SOURCE          BrCtlApiTestContainer.cpp BrCtlApiTestObserver.cpp 
-SOURCE          BrCtlApiTestStateChangeObserver.cpp BrCtlApiTestDialogsProvider.cpp
+SOURCE          brctlapitest.cpp brctlapitestblocks.cpp
+SOURCE          brctlapitestcontainer.cpp brbtlapitestobserver.cpp 
+SOURCE          brctlapiteststatechangeobserver.cpp brctlapitestdialogsprovider.cpp
 
 LIBRARY         euser.lib cone.lib eikcore.lib apparc.lib avkon.lib 
 LIBRARY         flogger.lib apmime.lib apgrfx.lib efsrv.lib eikcoctl.lib 

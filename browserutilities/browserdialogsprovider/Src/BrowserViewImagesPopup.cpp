@@ -19,7 +19,7 @@
 
 
 // USER INCLUDES
-#include "BrowserDialogsProvider.h"
+#include "browserdialogsprovider.h"
 #include "BrowserDialogsProvider.hrh"
 #include "BrowserViewImagesPopup.h"
 #include "PhotoOperationWait.h"

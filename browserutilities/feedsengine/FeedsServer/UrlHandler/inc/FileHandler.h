@@ -23,7 +23,7 @@
 // INCLUDES
 #include <e32base.h>
 
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "UrlHandler.h"
 
 // CONSTANTS

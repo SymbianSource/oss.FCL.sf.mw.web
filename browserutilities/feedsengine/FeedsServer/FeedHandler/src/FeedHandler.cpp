@@ -19,7 +19,7 @@
 
 #include "CleanupLibXml2.h"
 #include "FeedHandler.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "RssFeedParser.h"
 #include "AtomFeedParser.h"
 #include "XmlUtils.h"

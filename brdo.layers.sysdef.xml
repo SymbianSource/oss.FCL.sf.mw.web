@@ -48,7 +48,7 @@
       <module name="webengine">
         <unit unitID="cache" name="cache" bldFile="&layer_real_source_path;/webengine/osswebengine/cache/group" mrp=""/>
         <unit unitID="memorymanager" name="memorymanager" bldFile="&layer_real_source_path;/webengine/osswebengine/MemoryManager/group" mrp=""/>
-        <unit unitID="javascriptcore" name="javascriptcore" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/JavaScriptCore" mrp=""/>
+        <unit unitID="javascriptcore" name="javascriptcore" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/JavaScriptCore" mrp=""/>
         <unit unitID="npscript" name="npscript" bldFile="&layer_real_source_path;/webengine/osswebengine/npscript/group" mrp=""/>
         <unit unitID="webkitutils" name="webkitutils" bldFile="&layer_real_source_path;/webengine/webkitutils/group" mrp=""/>
         <unit unitID="pagescaler" name="pagescaler" bldFile="&layer_real_source_path;/webengine/pagescaler/group" mrp=""/>
@@ -56,23 +56,23 @@
         <unit unitID="widgetregistry" name="widgetregistry" bldFile="&layer_real_source_path;/webengine/widgetregistry/group" mrp=""/>
         <unit unitID="webkit_libxml2" name="webkit_libxml2" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/libxml2" mrp=""/>
         <component name="webcore">
-          <unit unitID="webcore_derivedsources" name="webcore_derivedsources" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/DerivedSources" mrp=""/>
-          <unit unitID="webcore_bindings" name="webcore_bindings" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/bindings" mrp=""/>
-          <unit unitID="webcore_webcorecss" name="webcore_webcorecss" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/webcorecss" mrp=""/>
-          <unit unitID="webcore_dom" name="webcore_dom" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/dom" mrp=""/>
-          <unit unitID="webcore_editing" name="webcore_editing" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/editing" mrp=""/>
-          <unit unitID="webcore_history" name="webcore_history" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/history" mrp=""/>
-          <unit unitID="webcore_html" name="webcore_html" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/html" mrp=""/>
-          <unit unitID="webcore_loader" name="webcore_loader" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/loader" mrp=""/>
-          <unit unitID="webcore_page" name="webcore_page" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/page" mrp=""/>
-          <unit unitID="webcore_rendering" name="webcore_rendering" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/rendering" mrp=""/>
-          <unit unitID="webcore_xml" name="webcore_xml" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/xml" mrp=""/>
-          <unit unitID="webcore_bridge" name="webcore_bridge" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/bridge" mrp=""/>
-          <unit unitID="webcore_platform" name="webcore_platform" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webcore/platform" mrp=""/>
+          <unit unitID="webcore_derivedsources" name="webcore_derivedsources" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/DerivedSources" mrp=""/>
+          <unit unitID="webcore_bindings" name="webcore_bindings" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/bindings" mrp=""/>
+          <unit unitID="webcore_webcorecss" name="webcore_webcorecss" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/webcorecss" mrp=""/>
+          <unit unitID="webcore_dom" name="webcore_dom" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/dom" mrp=""/>
+          <unit unitID="webcore_editing" name="webcore_editing" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/editing" mrp=""/>
+          <unit unitID="webcore_history" name="webcore_history" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/history" mrp=""/>
+          <unit unitID="webcore_html" name="webcore_html" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/html" mrp=""/>
+          <unit unitID="webcore_loader" name="webcore_loader" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/loader" mrp=""/>
+          <unit unitID="webcore_page" name="webcore_page" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/page" mrp=""/>
+          <unit unitID="webcore_rendering" name="webcore_rendering" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/rendering" mrp=""/>
+          <unit unitID="webcore_xml" name="webcore_xml" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/xml" mrp=""/>
+          <unit unitID="webcore_bridge" name="webcore_bridge" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/bridge" mrp=""/>
+          <unit unitID="webcore_platform" name="webcore_platform" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webcore/platform" mrp=""/>
         </component>
-        <unit unitID="webkit_plugins" name="webkit_plugins" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/plugins" mrp=""/>
-        <unit unitID="webkit_webkit" name="webkit_webkit" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/webkit" mrp=""/>
-        <unit unitID="webkit_browserengine" name="webkit_browserengine" bldFile="&layer_real_source_path;/webengine/osswebengine/WebKit/S60/group/browserengine" mrp=""/>
+        <unit unitID="webkit_plugins" name="webkit_plugins" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/plugins" mrp=""/>
+        <unit unitID="webkit_webkit" name="webkit_webkit" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/webkit" mrp=""/>
+        <unit unitID="webkit_browserengine" name="webkit_browserengine" bldFile="&layer_real_source_path;/webengine/osswebengine/webkit/s60/group/browserengine" mrp=""/>
         <component name="wmlengine">
         <unit unitID="wmlengine_adt" name="wmlengine_adt" bldFile="&layer_real_source_path;/webengine/wmlengine/group/adt" mrp=""/>
           <unit unitID="wmlengine_css" name="wmlengine_css" bldFile="&layer_real_source_path;/webengine/wmlengine/group/css" mrp=""/>

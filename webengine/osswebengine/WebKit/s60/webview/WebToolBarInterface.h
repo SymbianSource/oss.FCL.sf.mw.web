@@ -29,7 +29,7 @@
 #include <AknsConstants.h>
 #include <AknsItemID.h>
 #include <AknsConstants.h>
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "ToolBar.h"
 /*
 #include "Favicon.h"

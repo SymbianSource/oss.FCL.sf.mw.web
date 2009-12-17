@@ -20,8 +20,8 @@
 
 #include <e32base.h>
 #include "UrlConnection.h"
-#include "BrCtlDefs.h"
-#include "BrCtlLinkResolver.h"
+#include "brctldefs.h"
+#include "brctllinkresolver.h"
 
 namespace WebCore {
     class Frame;

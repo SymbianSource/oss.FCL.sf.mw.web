@@ -21,7 +21,13 @@
 #include <apgcli.h>
 #include <APGICNFL.h>
 #include <S32MEM.H>
-#include <WidgetRegistryConstants.h>
+#include <widgetregistryconstants.h>
+
+#ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
+#include <apgicnflpartner.h>
+//#include <apgicnflinternal.h>
+#endif
+
 
 // CONSTANTS
 _LIT(KMBMExt, ".mbm");

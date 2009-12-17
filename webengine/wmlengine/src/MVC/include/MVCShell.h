@@ -31,7 +31,7 @@
 #include <f32file.h>
 #include <ApEngineConsts.h>
 
-#include "BrCtlDialogsProvider.h"
+#include "brctldialogsprovider.h"
 
 #include "HEDDocumentListener.h"
 #include "httploader_mlinkresolvercallbacks.h"

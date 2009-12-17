@@ -91,7 +91,7 @@
 #include "nw_structure_scriptelementhandler.h"
 #include "XhtmlObjectElementHandlerOOCi.h"
 #include "XHTMLMessageListener.h"
-#include "BodyPart.h"
+#include "bodypart.h"
 #include "MVCShell.h"
 #include "BrCtl.h"
 

@@ -18,13 +18,13 @@
 
 
 // INCLUDE FILES
-#include <platform/mw/Browser_platform_variant.hrh>
+#include    <browser_platform_variant.hrh>
 #include    "UserInteractionsEventHandler.h"
 #include    "CUserInteractionsUtils.h"
 #include    "ProgressInfoCreator.h"
-#include    "CDownloadMgrUiLibRegistry.h"
-#include    "CDownloadMgrUiDownloadsList.h"
-#include    "CDownloadMgrUiUserInteractions.h"
+#include    "cdownloadmgruilibregistry.h"
+#include    "cdownloadmgruidownloadslist.h"
+#include    "cdownloadmgruiuserinteractions.h"
 #include    "UiLibLogger.h"
 #include    "DMgrUiLibPanic.h"
 #include    <bldvariant.hrh>
@@ -623,6 +623,7 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
                             {
                             CLOG_WRITE_FORMAT(" this deleted: %x", this);
                             CLOG_LEAVEFN("CUserInteractionsEventHandler::HandleInProgressStateL");
+                            CleanupStack::PopAndDestroy( contentType );
                             return;
                             }
                             

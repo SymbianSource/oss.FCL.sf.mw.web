@@ -18,7 +18,7 @@
 
 
 // INCLUDE FILES
-#include <platform/mw/Browser_platform_variant.hrh>
+#include    <browser_platform_variant.hrh>
 #include    "CDownloadsListArray.h"
 #include    "ProgressInfoCreator.h"
 #include    "DMgrUiLibPanic.h"
@@ -39,7 +39,7 @@
 #endif
 
 #include    "CDownloadUtils.h"
-#include    <HttpDownloadMgrCommon.h>
+#include    <httpdownloadmgrcommon.h>
 #include    "CUserInteractionsUtils.h"
 
 

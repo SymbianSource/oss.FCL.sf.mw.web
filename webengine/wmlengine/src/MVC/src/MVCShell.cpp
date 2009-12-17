@@ -90,7 +90,7 @@
 #include "urlloader_urlresponse.h"
 #include "CSSVariableStyleSheet.h"
 #include "TEncodingMapping.h"
-#include "BrCtlDialogsProvider.h"
+#include "brctldialogsprovider.h"
 #include "WmlInterface.h"
 
 

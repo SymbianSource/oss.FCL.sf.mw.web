@@ -37,7 +37,7 @@
 #include <AknSgcc.h>
 #include <akntitle.h>
 #include <centralrepository.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #ifdef RD_SCALABLE_UI_V2
 #include <LayoutMetaData.cdl.h> // For Layout_Meta_Data landscape/portrait status
 #include <akntoolbar.h>
@@ -322,13 +322,6 @@ void CWidgetUiWindowView::UpdateStatusPane( TBool aVisible )
 #endif
 
     TBool visible(iStatusPaneVisible);
-
-    // non-touch: always show status pane in landscape if softkeys are visible
-    if (!visible && Cba()->IsVisible() &&
-        AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom)
-        {
-        visible = ETrue;
-        }
 
     StatusPane()->MakeVisible(visible);
 

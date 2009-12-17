@@ -19,7 +19,7 @@
 
 // INCLUDE FILES
 #include    "AsyncEventHandlerBase.h"
-#include    "CDownloadMgrUiLibRegistry.h"
+#include    "cdownloadmgruilibregistry.h"
 #include    "AsyncEventHandlerArray.h"
 #include    "UiLibLogger.h"
 #include    "DMgrUiLibPanic.h"

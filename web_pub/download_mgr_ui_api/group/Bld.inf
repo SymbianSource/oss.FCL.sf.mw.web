@@ -15,7 +15,7 @@
 *
 */
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 
@@ -23,12 +23,12 @@ DEFAULT
 
 PRJ_EXPORTS
 
-../Inc/CDownloadMgrUiBase.h                 MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiBase.h)
-../Inc/CDownloadMgrUiUserInteractions.h     MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiUserInteractions.h)
-../Inc/CDownloadMgrUiDownloadsList.h        MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiDownloadsList.h)
-../Inc/DownloadsListDlgObserver.h           MW_LAYER_PUBLIC_EXPORT_PATH(DownloadsListDlgObserver.h)
-../Inc/CDownloadMgrUiDownloadMenu.h         MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiDownloadMenu.h)
-../Inc/CDownloadMgrUiLibRegistry.h          MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiLibRegistry.h)
+../Inc/cdownloadmgruibase.h                 MW_LAYER_PUBLIC_EXPORT_PATH(cdownloadmgruibase.h)
+../Inc/cdownloadmgruiuserinteractions.h     MW_LAYER_PUBLIC_EXPORT_PATH(cdownloadmgruiuserinteractions.h)
+../Inc/cdownloadmgruidownloadslist.h        MW_LAYER_PUBLIC_EXPORT_PATH(cdownloadmgruidownloadslist.h)
+../Inc/downloadslistdlgobserver.h           MW_LAYER_PUBLIC_EXPORT_PATH(downloadslistdlgobserver.h)
+../Inc/cdownloadmgruidownloadmenu.h         MW_LAYER_PUBLIC_EXPORT_PATH(cdownloadmgruidownloadmenu.h)
+../Inc/cdownloadmgruilibregistry.h          MW_LAYER_PUBLIC_EXPORT_PATH(cdownloadmgruilibregistry.h)
 
 PRJ_MMPFILES
 

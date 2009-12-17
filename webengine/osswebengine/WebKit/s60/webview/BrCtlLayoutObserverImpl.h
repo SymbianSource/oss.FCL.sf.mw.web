@@ -20,7 +20,7 @@
 #define BRCTLLAYOUTOBSERVERIMPL_H
 
 //  INCLUDES
-#include <BrCtlLayoutObserver.h>
+#include <brctllayoutobserver.h>
 
 /**
 *  This observer is notified of scrolling and tabbing events

@@ -19,11 +19,11 @@
 // INCLUDE Files
 
 // User includes
-#include "BrowserDialogsProvider.h"	// Class header
+#include "browserdialogsprovider.h"	// Class header
 #include "BrowserDialogsProvider.hrh"
 #include "BrowserAuthenticationDialog.h"
 #include "BrowserDialogsProviderConstants.h"
-#include "BrowserDialogsProviderObserver.h" //obs
+#include "browserdialogsproviderobserver.h" //obs
 
 // Browser as a Plugin - own classes
 #include "BrowserViewImagesPopup.h"		// For DialogDisplayPageImagesL
@@ -61,13 +61,14 @@
 #include <BrowserDialogsProvider.rsg>
 
 // Data Caging
-#include <data_caging_path_literals.hrh>    
+#include <data_caging_path_literals.hrh>
 
 // CONSTANTS
 const TInt KBrCtlObjectElementMaxLength = 50;
 const TInt KBrCtlMBFormat = 4;
 const TInt KBrCtlGBFormat = 10;
 const TInt KBrCtlMegabyte = 1000;	// although 1MB=1024 kB, treat as 1000kb for user simplicity
+const TInt KBrowserFileNotFound  = -26003; // Defined in ErrorDefs.h but not exported so define here
 
 // DLL resource file name with path
 _LIT( KBrowserDialogsProviderDirAndFile, "z:BrowserDialogsProvider.rsc" );// resource
@@ -165,8 +166,17 @@ EXPORT_C void CBrowserDialogsProvider::DialogNotifyErrorL( TInt aErrCode )
             }
         default:
             {
-            // Handle all others as system error dialog
-            CCoeEnv::Static()->HandleError( aErrCode );
+            // change error code to browser error code, when trying to open file
+            // that doesn't exist
+            if ( KErrNotFound == aErrCode )
+            	{
+            	iCoeEnv.HandleError( KBrowserFileNotFound );
+            	}
+            else
+            	{
+				// Handle all others as system error dialog
+            	iCoeEnv.HandleError( aErrCode );
+            	}
         	break;
             }
         }   // end of switch

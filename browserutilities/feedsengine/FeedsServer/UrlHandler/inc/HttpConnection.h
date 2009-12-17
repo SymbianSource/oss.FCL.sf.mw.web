@@ -25,7 +25,7 @@
 #include <http/RHTTPSession.h>
 #include <mconnectioncallback.h>
 
-#include "LeakTracker.h"
+#include "leaktracker.h"
 
 // CONSTANTS
 

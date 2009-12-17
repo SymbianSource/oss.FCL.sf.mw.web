@@ -19,10 +19,10 @@
 
 
 #include <platform_paths.hrh>
-#include <platform/mw/SchemeDefs.hrh>
+#include <platform/mw/schemedefs.hrh>
 #include <data_caging_paths.hrh>
 #include <bldvariant.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET        SchemeApp.exe
 EPOCSTACKSIZE 0x5000

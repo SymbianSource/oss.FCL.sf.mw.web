@@ -25,7 +25,7 @@ UID             0x100039CE 0x2000B4D8
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 // Capability assignment.
 CAPABILITY      CAP_APPLICATION AllFiles -Location

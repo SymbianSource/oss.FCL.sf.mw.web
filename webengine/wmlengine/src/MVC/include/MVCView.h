@@ -32,8 +32,8 @@
 #include <aknpictographinterface.h>
 #include <aknpictographdrawerinterface.h>
 
-#include <BrCtlDefs.h>
-#include <BrCtlDialogsProvider.h>
+#include <brctldefs.h>
+#include <brctldialogsprovider.h>
 #include "BrsrStatusCodes.h"
 #include "ImageUtils.h"
 #include "LMgrBoxTreeListener.h"

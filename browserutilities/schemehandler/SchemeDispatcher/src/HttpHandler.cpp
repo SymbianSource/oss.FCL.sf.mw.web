@@ -32,7 +32,7 @@
 #include <f32file.h>
 #include <APGTASK.H>
 #include <w32std.h>
-#include <BrowserOverriddenSettings.h>
+#include <browseroverriddensettings.h>
 
 _LIT( KBrowserPrefix, "4 " );
 LOCAL_C const TUid KUidBrowser = { 0x10008D39 };

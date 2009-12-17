@@ -23,7 +23,7 @@
 //  INCLUDES
 #include "urlloader_murlschemehandler.h"
 #include "BrsrStatusCodes.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 
 
 // CONSTANTS

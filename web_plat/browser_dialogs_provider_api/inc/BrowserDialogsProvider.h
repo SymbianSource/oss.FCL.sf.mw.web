@@ -20,7 +20,7 @@
 
 //  INCLUDES
 // System Includes
-#include <BrCtlDialogsProvider.h>
+#include <brctldialogsprovider.h>
 #include <eikenv.h>
 #include <coneresloader.h> 
 #include <e32std.h>

@@ -25,7 +25,7 @@
 // User includes
 
 // System includes
-#include <BrCtlDialogsProvider.h>
+#include <brctldialogsprovider.h>
 
 #include <aknpopup.h>
 #include <aknlists.h>

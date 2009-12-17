@@ -16,9 +16,9 @@
 */
 
 
-#include "FeedAttributes.h"
+#include "feedattributes.h"
 #include "FeedParserObserver.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "RssFeedParser.h"
 #include "XmlUtils.h"
 

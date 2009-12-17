@@ -73,12 +73,12 @@ class TBrCtlImageCarrier;
 * Usage:
 *
 * @code
-*  #include <BrCtlDialogsProvider.h>
+*  #include <brctldialogsprovider.h>
 *
 *
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
-* @file BrCtlDialogsProvider.h
+* @file brctldialogsprovider.h
 * @endcode     *
 */
 class MBrCtlDialogsProvider
@@ -270,10 +270,10 @@ class MBrCtlDialogsProvider
 * The TBrCtlSelectOptionData class represents a list of elements
 * to display in the list box. This class is used for the List Selection Dialog.
 * @code
-*  #include <BrCtlDialogsProvider.h>
+*  #include <brctldialogsprovider.h>
 * @lib BrowserEngine.lib
 * @since 2.8
-* @file BrCtlDialogsProvider.h
+* @file brctldialogsprovider.h
 * @endcode     *
 */
 class TBrCtlSelectOptionData
@@ -399,10 +399,10 @@ class TBrCtlSelectOptionData
 * The CBrCtlObjectInfo class used to represent the information about the
 * plugin object.
 * @code
-*  #include <BrCtlDialogsProvider.h>
+*  #include <brctldialogsprovider.h>
 * @lib BrowserEngine.lib
 * @since 3.0
-* @file BrCtlDialogsProvider.h
+* @file brctldialogsprovider.h
 * @endcode     *
 */
 class CBrCtlObjectInfo : public CBase
@@ -521,10 +521,10 @@ class CBrCtlObjectInfo : public CBase
 * TheTBrCtlImageCarrier class used to give the information about the
 * image.
 * @code
-*  #include <BrCtlDialogsProvider.h>
+*  #include <brctldialogsprovider.h>
 * @lib BrowserEngine.lib
 * @since 2.8
-* @file BrCtlDialogsProvider.h
+* @file brctldialogsprovider.h
 * @endcode     *
 */
 class TBrCtlImageCarrier

@@ -15,14 +15,14 @@
 *
 */
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../inc/CUserAgent.h             MW_LAYER_PLATFORM_EXPORT_PATH(CUserAgent.h)
-../inc/WebUtilsInternalCRKeys.h MW_LAYER_PLATFORM_EXPORT_PATH(WebUtilsInternalCRKeys.h)
-../inc/WebUtilsSDKCRKeys.h	    MW_LAYER_PLATFORM_EXPORT_PATH(WebUtilsSDKCRKeys.h)
+../inc/cuseragent.h             MW_LAYER_PLATFORM_EXPORT_PATH(cuseragent.h)
+../inc/webutilsinternalcrkeys.h MW_LAYER_PLATFORM_EXPORT_PATH(webutilsinternalcrkeys.h)
+../inc/webutilssdkcrkeys.h	    MW_LAYER_PLATFORM_EXPORT_PATH(webutilssdkcrkeys.h)
 
 PRJ_MMPFILES

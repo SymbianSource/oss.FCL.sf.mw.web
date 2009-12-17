@@ -27,7 +27,7 @@
 #include "HitTestResult.h"
 #include "HTMLNames.h"
 #include "FrameTree.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "WebCursor.h"
 #include "StaticObjectsContainer.h"
 #include "Page.h"
@@ -70,7 +70,7 @@ void WebTabbedNavigation::clear()
 
 void WebTabbedNavigation::initializeForPage()
 {
-    if (!m_initializedForPage) {
+    if (!m_initializedForPage && m_webView->IsVisible()) {
         if (navigate(0, 1)) {
             m_initializedForPage = true;
             m_firstNavigationOnPage = false;

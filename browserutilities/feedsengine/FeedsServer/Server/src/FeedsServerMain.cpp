@@ -19,7 +19,7 @@
 #include <e32std.h>
 
 #include "FeedsServer.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 
 // -----------------------------------------------------------------------------
 // E32Main

@@ -2,7 +2,7 @@
 * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
+* under the terms of "Eclipse Public License v1.0"
 * which accompanies this distribution, and is available
 * at the URL "http://www.eclipse.org/legal/epl-v10.html".
 *
@@ -76,6 +76,8 @@ void CWidgetMMCHandler::ConstructL()
         {
         iDriveFlags = 0;
         }
+    iDeltaDriveFlags = 0;
+    iApaAppListNotifier = CApaAppListNotifier::NewL(this,CActive::EPriorityStandard);
     }
 
 // ============================================================================
@@ -122,33 +124,9 @@ void CWidgetMMCHandler::RunL()
             LOG1( " iDriveFlags 0x%x", iDriveFlags );
             LOG1( "  driveFlags 0x%x", driveFlags );
             deltaDriveFlags = iDriveFlags ^ driveFlags;
+            iDeltaDriveFlags = deltaDriveFlags;
             LOG1( " deltaDriveFlags 0x%x", deltaDriveFlags );
             iDriveFlags = driveFlags;
-          }
-        if ( deltaDriveFlags )
-          {
-            LOG( " mmc start internalize" );
-
-            LOG( " delay for appArch to sync with card" );
-            // delay for appArch to sync with card (if don't wait then
-            // when query AppArch about installed widgets, it doesn't
-            // report any on card)
-            User::After( 8000000 ); // 8 sec in microseconds
-
-            TBool dirtyFlag = EFalse;
-            TRAPD( error,
-                   iRegistry->InternalizeL( dirtyFlag ) );
-            LOG1( " mmc end internalize, error %d", error );
-            if ( KErrNone == error )
-                {
-                LOG( " mmc notification internalize completed" );
-                // internalize consistency enforcement may have altered
-                // registry
-                if ( dirtyFlag )
-                    {
-                    TRAP_IGNORE( iRegistry->ExternalizeL(); );
-                    }
-                }
           }
       }
     LOG( "MMC notification done" );
@@ -231,4 +209,29 @@ TInt CWidgetMMCHandler::ScanDrives( TInt& aDriveFlags )
     LOG1( "ScanDrives done, error %d", error );
     LOG_CLOSE;
     return error;
+    }
+
+void CWidgetMMCHandler::HandleAppListEvent(TInt aEvent)
+    {
+    TBool dirtyFlag = EFalse;
+    TInt parseError = KErrNone;
+    
+    if ( iDeltaDriveFlags )
+        {
+        // Assume usual case and things are consistent
+        // and the registry entry file can be parsed and used.
+        TRAPD( error, iRegistry->InternalizeL( ETrue,
+                                    ETrue,
+                                    dirtyFlag,
+                                    parseError ) );
+        if ( KErrNone == error )
+            {
+            // internalize consistency enforcement may have altered registry
+            if ( dirtyFlag )
+                {
+                TRAP_IGNORE( iRegistry->ExternalizeL(); );
+                }
+            }
+        iDeltaDriveFlags = 0;
+        }
     }

@@ -23,12 +23,15 @@ TARGETTYPE      EXE
 UID             0x1000008d 0x10282F06
 
 EPOCSTACKSIZE   0x5000
+
+#ifndef WINS
 EPOCHEAPSIZE    0x5000 0x1000000
+#endif
 
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 VENDORID        VID_DEFAULT
 CAPABILITY      CAP_SERVER AllFiles
@@ -41,6 +44,7 @@ SOURCE WidgetRegistry.cpp
 SOURCE WidgetRegistrySession.cpp
 SOURCE WidgetRegistryServer.cpp
 SOURCE UidAllocator.cpp
+SOURCE WidgetMMCHandler.cpp
 
 USERINCLUDE       ../Server/inc
 USERINCLUDE       ../Common/inc

@@ -18,7 +18,7 @@
 
 
 // INCLUDE FILES
-#include    "CDownloadMgrUiBase.h"
+#include    "cdownloadmgruibase.h"
 #include    "UiLibLogger.h"
 #include    <e32std.h>
 #include    <e32def.h>

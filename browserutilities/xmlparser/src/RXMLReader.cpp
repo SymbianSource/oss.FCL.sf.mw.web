@@ -18,7 +18,7 @@
 
 
 // INCLUDE FILES
-#include "RXMLReader.h"
+#include "rxmlreader.h"
 #include "CXMLReader.h"
 
 

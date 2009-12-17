@@ -26,7 +26,7 @@
 #include <Uri16.h>
 #include <UriCommon.h>
 
-#include "MultipartParser.h"
+#include "multipartparser.h"
 #include "GZipBufMgr.h"
 #include "tinternetdate.h"
 

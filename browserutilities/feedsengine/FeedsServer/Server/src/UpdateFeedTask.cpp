@@ -16,10 +16,10 @@
 */
 
 
-#include "FeedAttributes.h"
+#include "feedattributes.h"
 #include "FeedHandler.h"
 #include "FeedsServer.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "Logger.h"
 #include "PackedFeed.h"
 #include "UpdateFeedTask.h"

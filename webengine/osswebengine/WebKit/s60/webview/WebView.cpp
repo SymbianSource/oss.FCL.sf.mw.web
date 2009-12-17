@@ -28,7 +28,7 @@
 * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 #include "config.h"
 #include "../../bidi.h"
 #include "brctl.h"
@@ -90,7 +90,7 @@
 using namespace HTMLNames;
 
 #include <AknUtils.h>
-#include <CUserAgent.h>
+#include <cuseragent.h>
 #include "WebPageZoomHandler.h"
 
 #include "PlatformFontCache.h"
@@ -200,6 +200,7 @@ m_brctl(brctl)
 , m_allowRepaints(true)
 , m_prevEditMode(false)
 , m_firedEvent(0)
+, m_waitTimer(0)
 {
 }
 
@@ -241,6 +242,8 @@ WebView::~WebView()
     delete m_pageScrollHandler;
     delete m_pluginplayer;
     delete m_fepTimer;
+    delete m_waitTimer;
+    delete m_waiter;
     delete m_popupDrawer;
     delete m_tabbedNavigation;
     delete m_userAgent;
@@ -359,6 +362,8 @@ void WebView::ConstructL( CCoeControl& parent )
     CCoeControl::SetFocus(ETrue);
 
     cache()->setCapacities(0, 0, defaultCacheCapacity);
+    
+    m_waiter = new(ELeave) CActiveSchedulerWait();
 }
 
 void WebView::initializePageScalerL()
@@ -515,6 +520,7 @@ void WebView::MakeViewVisible(TBool visible)
 
     if ( visible ) {
       clearOffScreenBitmap();
+      m_tabbedNavigation->initializeForPage();
       syncRepaint( mainFrame()->frameView()->visibleRect() );
     }
 
@@ -1465,6 +1471,18 @@ TKeyResponse WebView::OfferKeyEventL(const TKeyEvent& keyevent, TEventCode event
 
     if (m_popupDrawer)
         return m_popupDrawer->handleOfferKeyEventL(keyevent, eventcode );
+    
+    if (m_focusedElementType == TBrCtlDefs::EElementObjectBox 
+        || m_focusedElementType == TBrCtlDefs::EElementActivatedObjectBox) {
+        
+        Node* node = static_cast<Node*>(cursor->getElementUnderCursor());
+        MWebCoreObjectWidget* view = widget(node);
+        PluginSkin* plugin = static_cast<PluginSkin*>(view);
+        if (plugin && plugin->pluginWin() && !(plugin->pluginWin()->Windowed())) {
+            if (EKeyWasConsumed == plugin->pluginWin()->OfferKeyEventL(keyevent, eventcode))
+                return EKeyWasConsumed;
+        }
+    }    
 
     if ( m_webFormFillPopup && m_webFormFillPopup->IsVisible() && AknLayoutUtils::PenEnabled() ) {
 	    if (EKeyWasConsumed == m_webFormFillPopup->HandleKeyEventL(keyevent, eventcode)) {
@@ -1703,6 +1721,8 @@ CCoeControl& WebView::PageControlView()
 void WebView::setEditable(TBool editable)
 {
     Frame* frame = core(mainFrame());
+    
+    page()->chrome()->client()->setElementVisibilityChanged(false);
     if (!frame || m_isEditable == editable)
         return;
 
@@ -2012,10 +2032,6 @@ void WebView::HandlePointerBufferReadyL()
 
     TInt numPnts = Window().RetrievePointerMoveBuffer(ptr);
     int i = 0;
-    if (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone) {
-        if (numPnts > 20)
-            i = numPnts - 20;
-    }
     for (; i < numPnts; i++) {
         TPointerEvent pe;
         pe.iType = TPointerEvent::EDrag;
@@ -2885,5 +2901,28 @@ void WebView::windowObjectCleared() const
         that->m_widgetextension->windowObjectCleared();
     }
 }
+
+void WebView::wait(double t)
+{
+    if (!m_waitTimer) {
+        m_waitTimer = new WebCore::Timer<WebView>(this, &WebView::waitTimerCB);
+    }
+    
+    if (!m_waitTimer->isActive()) {
+        m_waitTimer->startOneShot(t);
+    }
+    
+    if (!m_waitTimer->isActive() && !m_waiter->IsStarted()) {
+        m_waiter->Start();  
+    }
+}
+
+void WebView::waitTimerCB(WebCore::Timer<WebView>* t)
+{
+    if (m_waiter->IsStarted()) {
+        m_waiter->AsyncStop();
+    }
+}
+
 
 // END OF FILE

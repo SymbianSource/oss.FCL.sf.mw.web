@@ -28,7 +28,7 @@
 #include "PackedFolder.h"
 #include "PackedAttributes.h"
 #include "FeedsDatabase.h"
-#include "FolderAttributes.h"
+#include "folderattributes.h"
 
 // CONSTANTS
 

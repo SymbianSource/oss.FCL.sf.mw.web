@@ -20,8 +20,12 @@
 #include "WidgetInstaller.h"
 #include <apgcli.h>
 #include <APGICNFL.h>
+#ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
+#include <apgicnflpartner.h>
+//#include <apgicnflinternal.h> // missing 
+#endif
 #include <S32MEM.H>
-#include <WidgetRegistryData.h>
+#include <widgetregistrydata.h>
 
 // CONSTANTS
 _LIT(KMBMExt, ".mbm");

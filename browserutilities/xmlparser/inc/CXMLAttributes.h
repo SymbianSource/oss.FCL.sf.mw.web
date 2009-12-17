@@ -23,7 +23,7 @@
 //  INCLUDES
 #include <e32std.h>
 #include <eikenv.h>  
-#include "MXMLAttributes.h"
+#include "mxmlattributes.h"
 
 
 // CLASS DECLARATION

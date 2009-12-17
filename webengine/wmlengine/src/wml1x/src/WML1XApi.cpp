@@ -67,7 +67,7 @@
 #include "nw_wml1x_wml1xapi.h"
 #include "nwx_http_defs.h"
 #include "BrsrStatusCodes.h"
-#include "BodyPart.h"
+#include "bodypart.h"
 #include "MVCShell.h"
 #include "BrCtl.h"
 #include "MemoryManager.h"

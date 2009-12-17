@@ -21,7 +21,7 @@
 #include <e32svr.h>
 #include <StifParser.h>
 #include <Stiftestinterface.h>
-#include "BrCtlApiTest.h"
+#include "brctlapitest.h"
 
 #define RETURN_FAILURE_ON_ERROR     \
     if ( err )                      \

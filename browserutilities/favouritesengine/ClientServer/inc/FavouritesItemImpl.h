@@ -25,9 +25,9 @@
 
 #include <e32base.h>
 #include <s32strm.h>
-#include <FavouritesItem.h>
-#include <FavouritesLimits.h>
-#include <FavouritesWapAp.h>
+#include <favouritesitem.h>
+#include <favouriteslimits.h>
+#include <favouriteswapap.h>
 
 // CLASS DECLARATION
 

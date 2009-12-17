@@ -26,7 +26,7 @@
 #include "PopupSelectListBox.h"
 #include "WebView.h"
 #include "WebFepTextEditor.h"
-#include "BrCtlDialogsProvider.h"
+#include "brctldialogsprovider.h"
 
 // CONSTANTS
 

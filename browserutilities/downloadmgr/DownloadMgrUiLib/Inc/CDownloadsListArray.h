@@ -23,7 +23,7 @@
 //  INCLUDES
 #include <e32base.h>
 #include <e32std.h>
-#include <DownloadMgrClient.h>
+#include <downloadmgrclient.h>
 #include <badesca.h>
 #include <bamdesca.h>
 #include <apgcli.h>

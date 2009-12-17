@@ -17,8 +17,8 @@
 */
 
 #include "PackedAttributes.h"
-#include "FeedAttributes.h"
-#include "FolderAttributes.h"
+#include "feedattributes.h"
+#include "folderattributes.h"
 #include "PackedFolder.h"
 #include "Logger.h"
 

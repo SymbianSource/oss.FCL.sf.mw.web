@@ -18,17 +18,17 @@
 
 
 // INCLUDE FILES
-#include <platform/mw/Browser_platform_variant.hrh>
+#include    <browser_platform_variant.hrh>
 #include    "CUserInteractionsUtils.h"
 #include    "MDownloadHandlerObserver.h"
-#include    "CDownloadMgrUiBase.h"
-#include    "CDownloadMgrUiLibRegistry.h"
-#include    "CDownloadMgrUiDownloadsList.h"
-#include    "CDownloadMgrUiUserInteractions.h"
+#include    "cdownloadmgruibase.h"
+#include    "cdownloadmgruilibregistry.h"
+#include    "cdownloadmgruidownloadslist.h"
+#include    "cdownloadmgruiuserinteractions.h"
 #include    "UiLibLogger.h"
 #include    "DMgrUiLibPanic.h"
 #include    <DownloadMgrUiLib.rsg>
-#include    <DownloadMgrClient.h>
+#include    <downloadmgrclient.h>
 #include    <AiwGenericParam.h>
 #include    <DocumentHandler.h>
 #include    <coemain.h>
@@ -42,8 +42,8 @@
 #include    <AknSoftNotificationParameters.h>
 #include    <AknSoftNotifier.h>
 #include    <AknNoteWrappers.h>
-#include    <BrowserDialogsProvider.h>
-#include    <HttpDownloadMgrCommon.h>
+#include    <browserdialogsprovider.h>
+#include    <httpdownloadmgrcommon.h>
 #include    <PathInfo.h>
 #include    <aknglobalnote.h>
 #include    <Oma2Agent.h>

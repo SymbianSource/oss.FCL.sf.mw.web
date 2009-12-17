@@ -20,7 +20,7 @@
 #define WRHARVESTERREGISTRYACCESS_H 
 
 // INCLUDES
-#include <WidgetRegistryClient.h>
+#include <widgetregistryclient.h>
 #include <badesca.h>
 
 // FORWARD DECLARATIONS

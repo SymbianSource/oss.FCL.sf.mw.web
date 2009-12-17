@@ -20,12 +20,12 @@
 #define WIDGETUIOBSERVER_H_
 
 //  INCLUDES
-#include <BrCtlLayoutObserver.h>
-#include <BrCtlSoftkeysObserver.h>
-#include <BrCtlSpecialLoadObserver.h>
-#include <BrCtlDownloadObserver.h>
-#include <BrCtlWindowObserver.h>
-#include <BrCtlInterface.h>
+#include <brctllayoutobserver.h>
+#include <brctlsoftkeysobserver.h>
+#include <brctlspecialloadobserver.h>
+#include <brctldownloadobserver.h>
+#include <brctlwindowobserver.h>
+#include <brctlinterface.h>
 #include <DocumentHandler.h>
 #include <flogger.h>
 

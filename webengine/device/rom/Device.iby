@@ -18,7 +18,7 @@
 
 #ifndef __DEVICE_IBY__
 #define __DEVICE_IBY__
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 
 // bitmaps

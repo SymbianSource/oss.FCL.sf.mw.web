@@ -25,23 +25,23 @@
 #include "WidgetInstallerInternalCRKeys.h"
 #include "SWInstWidgetUid.h"
 #include "widgetappdefs.rh"
-#include "Browser_platform_variant.hrh"
+#include "browser_platform_variant.hrh"
 #ifdef BRDO_WRT_HS_FF
 #include "cpspublisher.h"
 #endif
 
 #include <WidgetUi.rsg>
-#include <BrCtlInterface.h>
-#include <WidgetRegistryConstants.h>
+#include <brctlinterface.h>
+#include <widgetregistryconstants.h>
 #include <centralrepository.h>
 #include <StringLoader.h>
 #include <AknNoteDialog.h>
-#include <BrowserDialogsProvider.h>
+#include <browserdialogsprovider.h>
 #include <S32FILE.H>
 #include <aknnotewrappers.h>
 #include "cpglobals.h" // CPS string definitions.
 
-#include <InternetConnectionManager.h>
+#include <internetconnectionmanager.h>
 #include <ActiveApDb.h>
 #include <oommonitorsession.h>
 #include <aknglobalnote.h>
@@ -343,34 +343,40 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
             {
             iNetworkMode = EOnlineMode;
             CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
-#ifdef BRDO_WRT_HS_FF
-            if ( wdgt_window->NetworkModeWait()->IsStarted() )
+            if (wdgt_window)
                 {
-                wdgt_window->NetworkModeWait()->AsyncStop();
-                }
+#ifdef BRDO_WRT_HS_FF
+                if ( wdgt_window->NetworkModeWait()->IsStarted() )
+                    {
+                    wdgt_window->NetworkModeWait()->AsyncStop();
+                    }
 #endif
-            wdgt_window->DetermineNetworkState();
+                wdgt_window->DetermineNetworkState();
+                }
             }
             break;
        case WidgetOffline:
             {
             iNetworkMode = EOfflineMode;
             CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
+            if (wdgt_window)
+            	{
 #ifdef BRDO_WRT_HS_FF
-            if ( wdgt_window->NetworkModeWait()->IsStarted() )
-                {
-                wdgt_window->NetworkModeWait()->AsyncStop();
-                }
+                if ( wdgt_window->NetworkModeWait()->IsStarted() )
+                    {
+                    wdgt_window->NetworkModeWait()->AsyncStop();
+                    }
 #endif
-            // if no full view widgets open, then close the network connection
-            if ( ( !FullViewWidgetsOpen() ) && ( iConnection->Connected() ) )
-                {
-                wdgt_window->Engine()->HandleCommandL( 
-                        (TInt)TBrCtlDefs::ECommandIdBase +
-                        (TInt)TBrCtlDefs::ECommandDisconnect );
-                iConnection->StopConnectionL();
+                // if no full view widgets open, then close the network connection
+                if ( ( !FullViewWidgetsOpen() ) && ( iConnection->Connected() ) )
+                    {
+                    wdgt_window->Engine()->HandleCommandL( 
+                            (TInt)TBrCtlDefs::ECommandIdBase +
+                            (TInt)TBrCtlDefs::ECommandDisconnect );
+                    iConnection->StopConnectionL();
+                    }
+                wdgt_window->DetermineNetworkState();
                 }
-            wdgt_window->DetermineNetworkState();
             }
             break;
        case WidgetRestart:
@@ -997,6 +1003,9 @@ void CWidgetUiWindowManager::ResumeWidgetL( const TUid& aUid )
 #ifdef BRDO_WRT_HS_FF 
         wdgt_window->Engine()->MakeVisible( EFalse );
         wdgt_window->Engine()->SetRect( iCpsPublisher->BitmapSize());
+        //When HS comes to foreground show the latest updatd content on HS.
+        //Relayout can sometimes happen only when widget in FullView.
+        wdgt_window->PublishSnapShot();
 #endif
         }
     }
@@ -1397,6 +1406,11 @@ void CRequestRAM::RunL()
     else
         {
         NotifyCommandHandled();
+        TBool lastOne( iWidgetUiWindowManager->WindowListCount() == 0 );
+        if( lastOne )
+            {
+            iWidgetUiWindowManager->AppUi().Exit();
+            }
         iWidgetUiWindowManager->SendAppToBackground();  
         iWidgetUiWindowManager->WidgetUIClientSession().SetActive( iUid, EFalse );
         }        

@@ -30,7 +30,7 @@ NAME    AWBP  // AIW Browser Provider
 #include <avkon.loc>
 #include <avkonsct.loc>
 
-#include "AiwBrowserCommands.hrh"
+#include "aiwbrowsercommands.hrh"
 #include <AiwBrowserProvider.loc>
 //  RESOURCE DEFINITIONS 
 // -----------------------------------------------------------------------------

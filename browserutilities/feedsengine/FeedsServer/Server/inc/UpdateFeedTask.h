@@ -24,7 +24,7 @@
 #include <e32base.h>
 
 #include "FeedParserObserver.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "LoadObserver.h"
 #include "Task.h"
 

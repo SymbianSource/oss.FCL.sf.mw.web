@@ -25,7 +25,7 @@
 #include <es_enum.h>
 #include <in_sock.h>
 
-#include "ConnectionObservers.h"
+#include "connectionobservers.h"
 #include "ConnectionManagerLogger.h"
 
 

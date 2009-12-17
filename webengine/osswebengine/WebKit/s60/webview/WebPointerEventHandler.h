@@ -61,6 +61,7 @@ private:
     void handleMove(const RT_GestureHelper::TGestureEvent& aEvent);
     void doTapL();
     void updateCursor(const TPoint& pos);
+    void setFocusRing();
 private:
     WebPointerEventHandler(WebView* view);            
     WebView* m_webview;

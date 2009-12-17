@@ -18,7 +18,7 @@
 
 
 #include "PackedAttributes.h"
-#include "FeedAttributes.h"
+#include "feedattributes.h"
 #include "PackedFeed.h"
 #include "Logger.h"
 

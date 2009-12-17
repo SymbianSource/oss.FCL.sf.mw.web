@@ -27,7 +27,7 @@
 #include <ActiveApDb.h>
 #include <EscapeUtils.h>
 #include <Uri16.h>
-#include <BrCtlDefs.h>
+#include <brctldefs.h>
 #include "WidgetUiObserver.h"
 #include "WidgetUiWindow.h"
 #include "WidgetUiWindowView.h"

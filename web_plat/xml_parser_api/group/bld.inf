@@ -23,8 +23,8 @@ DEFAULT
 
 PRJ_EXPORTS
 
-../inc/MXMLContentHandler.h     MW_LAYER_PLATFORM_EXPORT_PATH(MXMLContentHandler.h)
-../inc/RXMLReader.h     MW_LAYER_PLATFORM_EXPORT_PATH(RXMLReader.h)
-../inc/MWBXMLContentHandler.h     MW_LAYER_PLATFORM_EXPORT_PATH(MWBXMLContentHandler.h)
-../inc/MXMLAttributes.h     MW_LAYER_PLATFORM_EXPORT_PATH(MXMLAttributes.h)
-../inc/XMLUtils.h     MW_LAYER_PLATFORM_EXPORT_PATH(XMLUtils.h)
+../inc/mxmlcontenthandler.h     MW_LAYER_PLATFORM_EXPORT_PATH(mxmlcontenthandler.h)
+../inc/rxmlreader.h     MW_LAYER_PLATFORM_EXPORT_PATH(rxmlreader.h)
+../inc/mwbxmlcontenthandler.h     MW_LAYER_PLATFORM_EXPORT_PATH(mwbxmlcontenthandler.h)
+../inc/mxmlattributes.h     MW_LAYER_PLATFORM_EXPORT_PATH(mxmlattributes.h)
+../inc/xmlutils.h     MW_LAYER_PLATFORM_EXPORT_PATH(xmlutils.h)

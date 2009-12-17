@@ -18,7 +18,7 @@
 
 #include "OpmlParser.h"
 #include "CleanupLibXml2.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "PackedFolder.h"
 #include "XmlUtils.h"
 

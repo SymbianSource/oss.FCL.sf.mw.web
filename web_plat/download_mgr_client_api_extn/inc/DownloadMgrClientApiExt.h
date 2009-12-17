@@ -21,7 +21,7 @@
 #define __RHTTPDOWNLOADMGRAPIEXT_H__
 
 
-#include "DownloadMgrClient.h"
+#include "downloadmgrclient.h"
 
 
 /**

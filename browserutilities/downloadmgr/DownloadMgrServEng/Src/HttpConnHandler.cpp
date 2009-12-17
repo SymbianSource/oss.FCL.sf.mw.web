@@ -28,12 +28,12 @@
 
 #include <in_sock.h>
 #include <CommDbConnPref.h>
-#include <HttpFilterAuthenticationInterface.h>
+#include <httpfilterauthenticationinterface.h>
 #include <uaproffilter_interface.h>
-#include <HttpFilterCommonStringsExt.h>
+#include <httpfiltercommonstringsext.h>
 #include <cdblen.h>
-//#include <DeflateFilterInterface.h>
-#include <CookieFilterInterface.h>
+//#include <deflatefilterinterface.h>
+#include <cookiefilterinterface.h>
 
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;

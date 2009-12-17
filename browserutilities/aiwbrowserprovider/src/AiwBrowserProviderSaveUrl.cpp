@@ -28,10 +28,10 @@
 #include <data_caging_path_literals.hrh>  
 #include <aknnotewrappers.h> 
 #include <AknNoteDialog.h>
-#include <FavouritesDb.h>
+#include <favouritesdb.h>
 #include <e32std.h>
 
-#include "AiwBrowserCommands.hrh"
+#include "aiwbrowsercommands.hrh"
 #include "logger.h"
 
 // LOCAL CONSTANTS AND MACROS

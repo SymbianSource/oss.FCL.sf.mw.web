@@ -22,7 +22,7 @@
 #include <libxml2_globals.h>
 
 #include "CleanupLibXml2.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "XmlEntity.h"
 
 

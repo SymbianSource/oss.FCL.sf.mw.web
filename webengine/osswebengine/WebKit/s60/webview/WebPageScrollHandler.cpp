@@ -17,7 +17,7 @@
 
 
 // INCLUDE FILES
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 #include <../bidi.h>
 #include "WebPageScrollHandler.h"
 #include "BrCtl.h"
@@ -372,12 +372,14 @@ void WebPageScrollHandler::scrollContent(TPoint& aScrollDelta)
             bool shouldScrollHorizontally = false;
             WebFrame* frame = kit(m_scrollableView.m_scrollingElement->document()->frame());
             RenderObject* render = m_scrollableView.m_scrollingElement->renderer();
-            __ASSERT_DEBUG(render->isScrollable(), User::Panic(_L(""), KErrGeneral));
-            if (aScrollDelta.iY)
-                shouldScrollVertically = !render->scroll(ScrollDown, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iY / 100);
-            if (aScrollDelta.iX)
-                shouldScrollHorizontally = !render->scroll(ScrollRight, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iX / 100);
-
+            if(render) //check if render exits before using it
+                {
+                __ASSERT_DEBUG(render->isScrollable(), User::Panic(_L(""), KErrGeneral));
+                if (aScrollDelta.iY)
+                  shouldScrollVertically = !render->scroll(ScrollDown, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iY / 100);
+                if (aScrollDelta.iX)
+                  shouldScrollHorizontally = !render->scroll(ScrollRight, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iX / 100);
+                }
             TPoint scrollPos = frame->frameView()->contentPos();
             TPoint newscrollDelta = frame->frameView()->toDocCoords(aScrollDelta);
             m_currentNormalizedPosition +=  newscrollDelta;     
@@ -559,25 +561,32 @@ bool WebPageScrollHandler::calculateScrollableElement(const TPoint& aNewPosition
     Element* currElement = NULL;
     if(!e) return NULL;
     RenderObject* render = e->renderer();
-    if (render && render->isScrollable()) {
+    if(render) {
         RenderLayer* layer = render->enclosingLayer();
         Element* parent = e;
-        currElement = e;
-        while (!currElement->isControl() && parent && parent->renderer() && parent->renderer()->enclosingLayer() == layer) {
-            currElement = parent;
-            Node* pn = parent;
-            do {
-                pn = pn->parent();
-            } while (pn && !pn->isElementNode());
-            parent = static_cast<Element*>(pn);
+
+        if (e->isControl()) {
+            if (render->isScrollable()) {
+            currElement = e;
+            }
+        }
+        else {
+            while (parent && parent->renderer()) {
+                if (parent->renderer()->isScrollable()) {
+                    currElement = parent;
+                    break;
+                    }
+                parent = static_cast<Element*>(parent->parent());
+                }
         }
         if (currElement) {
+            //check for current element which is scrollable
             currElement->ref();
-            m_scrollableView.m_scrollingElement = currElement; 
+            m_scrollableView.m_scrollingElement = currElement;
             m_scrollableView.m_frameView = NULL;
             return true;
+            }
         }
-    }
     return false;
 }
 

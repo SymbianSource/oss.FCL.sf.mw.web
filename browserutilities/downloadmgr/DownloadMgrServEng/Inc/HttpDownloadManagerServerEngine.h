@@ -24,7 +24,7 @@
 //  INCLUDES
 #include "HttpDownload.h"
 
-#include <HttpDownloadMgrCommon.h>
+#include <httpdownloadmgrcommon.h>
 #include <e32std.h>
 #include <f32file.h>
 

@@ -22,7 +22,7 @@
 #define WIDGETREGISTRYSESSION_H
 
 // INCLUDES
-#include "WidgetRegistryData.h"
+#include "widgetregistrydata.h"
 
 // FORWARD DECLARATIONS
 

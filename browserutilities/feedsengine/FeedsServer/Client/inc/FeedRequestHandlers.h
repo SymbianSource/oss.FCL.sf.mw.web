@@ -23,9 +23,9 @@
 #warning This header file has been deprecated. Will be removed in one of the next SDK releases.
 
 // INCLUDES
-#include <FeedsServerMsg.h>
+#include <feedsservermsg.h>
 
-#include "FeedsServerRequestHandler.h"
+#include "feedsserverrequesthandler.h"
 
 // CONSTANTS
 

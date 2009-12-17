@@ -17,7 +17,7 @@
 
 
 #include <aputils.h> 
-#include <InternetConnectionManager.h>
+#include <internetconnectionmanager.h>
 
 #include "ServerHttpConnection.h"
 #include "Logger.h"

@@ -69,6 +69,7 @@ private:
     MHttpCacheWriteSource* iSource;
     TInt iBodyPart;
     TBool iDone;
+    TPtrC8  iCurrentBuf; 
     };
 
 

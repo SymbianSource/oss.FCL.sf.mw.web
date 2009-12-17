@@ -23,7 +23,7 @@
 #include <e32std.h>
 #include <eikscrlb.h>
 #include "platform/Shared.h"
-#include "BrCtlDefs.h"
+#include "brctldefs.h"
 #include "PageScaler.h"
 #include "Timer.h"
 #include "MemoryManager.h"
@@ -472,6 +472,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool handleMSK(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
 	    void sendMouseEventToEngineIfNeeded(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
 	    void setFocusedNodeUnderCursor(WebCore::Frame* frame);
+	    void waitTimerCB(WebCore::Timer<WebView>* t);
 	    
     public:
         void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
@@ -493,6 +494,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void clearKeyEventFired() { m_firedEvent &= ~KKeyEventFired; }
         void clearEventFired() { m_firedEvent = 0; }
         
+        void wait(double t); 
     private:
         WebCore::Page*          m_page;
         WebFrameView*           m_frameView;
@@ -576,6 +578,9 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool                m_allowRepaints;
         bool                m_prevEditMode;
         int                 m_firedEvent;
+        
+        CActiveSchedulerWait*    m_waiter; 
+        WebCore::Timer<WebView>* m_waitTimer;
     };
 
 #endif

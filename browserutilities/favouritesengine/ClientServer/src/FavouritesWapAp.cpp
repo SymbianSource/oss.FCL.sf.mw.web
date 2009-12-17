@@ -20,7 +20,7 @@
 
 // INCLUDE FILES
 
-#include "FavouritesWapAp.h"
+#include "favouriteswapap.h"
 #include "FavouritesPanic.h"
 
 // CONSTANTS

@@ -18,8 +18,8 @@
 */
 
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
-#include    <platform/mw/SchemeDefs.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
+#include    <platform/mw/schemedefs.hrh>
 
 TARGET      SchemeDispatcher.dll
 TARGETTYPE  PLUGIN
@@ -71,7 +71,7 @@ LIBRARY     ServiceHandler.lib
 LIBRARY     BrowserLauncher.lib
 LIBRARY     avkon.lib
 LIBRARY Centralrepository.lib
-
+LIBRARY     charconv.lib
 // Define this macro if you wish to enable logging
 //#define __TEST_SCHEMEDISP_LOG_ENABLED
 
@@ -79,5 +79,6 @@ LIBRARY Centralrepository.lib
 	MACRO __SCHEMEDISP_LOG__
 	DEBUGLIBRARY     flogger.lib
 #endif	// __TEST_SCHEMEDISP_LOG_ENABLED
+
 
 

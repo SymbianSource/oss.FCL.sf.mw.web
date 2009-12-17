@@ -32,7 +32,7 @@
 #include <nwx_http_defs.h>
 #include "stringutils.h"
 #include "TEncodingMapping.h"
-#include "BodyPart.h"
+#include "bodypart.h"
 #include "MemoryManager.h"
 
 

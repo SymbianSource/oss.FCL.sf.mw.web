@@ -24,7 +24,7 @@
 #include <e32base.h>
 #include <xmlengdom.h>
 
-#include "LeakTracker.h"
+#include "leaktracker.h"
 
 // CONSTANTS
 

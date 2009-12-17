@@ -20,7 +20,7 @@
 #include <EscapeUtils.h>
 #include <apmrec.h>
 #include <apgcli.h>
-#include <imcvcodc.h>
+#include <tconvbase64.h>
 #include "ResourceHandle.h"
 #include "ResourceRequest.h"
 #include "DataConnection.h"
@@ -148,8 +148,7 @@ void DataConnection::parseUrlLC(HBufC8*& contentType, HBufC8*& encoding, HBufC8*
                 body = HBufC8::NewLC( 2 * data.Length() );
                 TPtr8 decodedBody( body->Des() );
                 // urlPtr8
-                TImCodecB64 codec;
-                codec.Initialise();
+                TBase64 codec; 
                 ok = codec.Decode( data, decodedBody );
             }
             if( !ok ) { // if not base64, simple copy

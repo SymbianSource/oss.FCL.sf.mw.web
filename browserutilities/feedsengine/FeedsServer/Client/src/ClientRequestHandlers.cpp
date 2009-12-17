@@ -16,7 +16,7 @@
 */
 
 
-#include <FeedsServerClient.h>
+#include <feedsserverclient.h>
 #include <S32Mem.h>
 
 #include "ClientRequestHandlers.h"

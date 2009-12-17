@@ -23,11 +23,11 @@
 
 #include <WidgetUi.rsg>
 
-#include <WidgetRegistryConstants.h>
+#include <widgetregistryconstants.h>
 
-#include <BrCtlInterface.h>
+#include <brctlinterface.h>
 #include <ApUtils.h>
-#include <InternetConnectionManager.h>
+#include <internetconnectionmanager.h>
 #include <ActiveApDb.h>
 #include <avkon.hrh>
 #include <aknsdrawutils.h>
@@ -37,7 +37,7 @@
 #include <AknMessageQueryDialog.h>
 #include <aknnotewrappers.h>
 #include <AknNoteDialog.h>
-#include <BrowserDialogsProvider.h>
+#include <browserdialogsprovider.h>
 
 // EXTERNAL DATA STRUCTURES
 

@@ -32,7 +32,7 @@ class CAiwGenericParamList;
 
 #include <e32std.h>
 #include <f32file.h>
-#include <CodDownload.h>
+#include <coddownload.h>
 #include <CodLoadObserver.h>
 #include <AknServerApp.h>
 

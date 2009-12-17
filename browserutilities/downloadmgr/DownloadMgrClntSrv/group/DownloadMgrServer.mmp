@@ -18,7 +18,7 @@
 
 #include <defaultcaps.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET			DownloadMgrServer.exe
 TARGETTYPE		exe
@@ -38,6 +38,6 @@ LIBRARY euser.lib
 
 LIBRARY DownloadMgr.lib                      
 
-CAPABILITY CAP_SERVER -SwEvent -Location -LocalServices -UserEnvironment -ReadUserData -WriteUserData NetworkControl
+CAPABILITY CAP_SERVER -SwEvent -Location -LocalServices -UserEnvironment -WriteUserData ReadUserData NetworkControl
 
 VENDORID VID_DEFAULT

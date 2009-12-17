@@ -20,7 +20,7 @@ TARGETTYPE      dll
 
 #include <platform_paths.hrh>
 #include <data_caging_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 UID 0x1000008D  0x2000B19E  
 

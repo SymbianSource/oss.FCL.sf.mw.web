@@ -16,12 +16,12 @@
 */
 
 // INCLUDE FILES
-#include "HttpCacheManager.h"
+#include "httpcachemanager.h"
 #include "HttpCacheHandler.h"
 #include "HttpCacheUtil.h"
 #include "HttpCacheFileWriteHandler.h"
 #include <CenRepNotifyHandler.h>
-#include <HttpCacheManagerInternalCRKeys.h>
+#include <httpcachemanagerinternalcrkeys.h>
 #include <CoreApplicationUIsSDKCRKeys.h>
 #include <centralrepository.h>
 #include <FeatMgr.h>

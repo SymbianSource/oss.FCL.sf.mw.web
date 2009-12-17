@@ -25,7 +25,7 @@
 #include <e32base.h>
 
 #include "FeedParser.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 
 // CONSTANTS
 

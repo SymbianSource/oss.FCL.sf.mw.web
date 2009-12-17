@@ -20,7 +20,7 @@
 // INCLUDE FILES
 #include    "CDownloadsListDlg.h"
 #include    "CDownloadUtils.h"
-#include    "DownloadsListDlgObserver.h"
+#include    "downloadslistdlgobserver.h"
 #include    "CDownloadsListArray.h"
 #include    "DownloadMgrUiLib.hrh"
 #include    "DMgrUiLibPanic.h"

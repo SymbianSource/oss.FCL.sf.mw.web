@@ -25,7 +25,7 @@ UID             0x1000008d 0x200100B8
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 
 // Capability assignment.

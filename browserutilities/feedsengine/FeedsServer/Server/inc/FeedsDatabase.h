@@ -24,7 +24,7 @@
 #include <e32base.h>
 #include <f32file.h>
 
-#include "LeakTracker.h"
+#include "leaktracker.h"
 
 // CONSTANTS
 const TInt KUnassignedId = -1;

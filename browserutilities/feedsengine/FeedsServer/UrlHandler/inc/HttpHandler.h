@@ -27,7 +27,7 @@
 #include <http/rhttptransaction.h>
 
 #include "HttpConnection.h"
-#include "LeakTracker.h"
+#include "leaktracker.h"
 #include "UrlHandler.h"
 
 // CONSTANTS

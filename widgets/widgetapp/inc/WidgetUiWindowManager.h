@@ -21,11 +21,11 @@
 
 // INCLUDES FILES
 
-#include <WidgetRegistryClient.h>
+#include <widgetregistryclient.h>
 #include <aknglobalconfirmationquery.h>
 #include <coecntrl.h>
 #include "WidgetUiObserver.h"
-#include "Browser_platform_variant.hrh"
+#include "browser_platform_variant.hrh"
 // CONSTANTS
 
 enum TNetworkMode
@@ -400,7 +400,18 @@ class CWidgetUiWindowManager : public CBase
         * @return TBool
         */  		
 		TBool AnyWidgetPublishing();
-        
+		
+        /**
+        * Returns a reference to the Appui of WidgetUi
+        * @return reference to CWidgetUiAppUi 
+        */
+        CWidgetUiAppUi& AppUi(){ return iAppUi; }
+
+        /**
+        * Returns the count of the windows in the widget
+        * @return count of the windows
+        */
+        TInt WindowListCount(){ return iWindowList.Count(); }
         
 #ifdef  OOM_WIDGET_CLOSEALL
         /**

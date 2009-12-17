@@ -20,7 +20,7 @@
 
 // INCLUDE FILES
 
-#include "FavouritesSession.h"
+#include "favouritessession.h"
 #include "FavouritesSrv.h"
 #include "FavouritesSrvSession.h"
 #include "FavouritesDef.h"

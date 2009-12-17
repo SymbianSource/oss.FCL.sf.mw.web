@@ -20,9 +20,9 @@
 
 // User includes
 #include "WidgetRegistry.h"
-#include "WidgetRegistryConstants.h"
+#include "widgetregistryconstants.h"
 #include "widgetregistryserver.h"
-#include "WidgetRegistryConstants.h"
+#include "widgetregistryconstants.h"
 #include "WidgetRegistrySession.h"
 
 

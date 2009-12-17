@@ -24,7 +24,7 @@
 
 // User includes
 #include "npupp.h"
-#include "BrowserPluginInterface.h"
+#include "browserplugininterface.h"
 
 typedef struct
     {

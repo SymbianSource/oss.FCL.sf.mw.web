@@ -20,7 +20,7 @@
 // INCLUDE FILES
 #include    "CDownloadUtils.h" 
 #include    "UiLibLogger.h"
-#include    <DownloadMgrClient.h>
+#include    <downloadmgrclient.h>
 #include    <DocumentHandler.h>
 #include    <Oma2Agent.h>
 #include    <DRMCommon.h>

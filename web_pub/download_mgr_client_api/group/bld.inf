@@ -15,13 +15,13 @@
 *
 */
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../inc/DownloadMgrClient.h      MW_LAYER_PUBLIC_EXPORT_PATH(DownloadMgrClient.h)
-../inc/HttpDownloadMgrCommon.h  MW_LAYER_PUBLIC_EXPORT_PATH(HttpDownloadMgrCommon.h)
+../inc/downloadmgrclient.h      MW_LAYER_PUBLIC_EXPORT_PATH(downloadmgrclient.h)
+../inc/httpdownloadmgrcommon.h  MW_LAYER_PUBLIC_EXPORT_PATH(httpdownloadmgrcommon.h)
 
 PRJ_MMPFILES

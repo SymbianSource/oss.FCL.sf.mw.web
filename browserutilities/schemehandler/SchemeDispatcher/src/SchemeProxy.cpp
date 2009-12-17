@@ -27,7 +27,7 @@
 #include "CtiHandler.h"
 #include "MmsHandler.h"
 #include <e32std.h>
-#include <SchemeDefs.hrh>
+#include <schemedefs.hrh>
 #include <ImplementationProxy.h>
 
 // Exported proxy for instantiation method resolution
