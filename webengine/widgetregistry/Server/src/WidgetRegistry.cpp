@@ -134,7 +134,7 @@ xmlNode* TraverseNextNode( xmlNode* n )
 // ============================================================================
 //
 
-static void NotifyWidgetAltered()
+void CWidgetRegistry::NotifyWidgetAltered()
     {
     const TUid KMyPropertyCat = { 0x10282E5A };
     enum TMyPropertyKeys { EMyPropertyAltered = 110 };

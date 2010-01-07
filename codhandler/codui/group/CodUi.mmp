@@ -41,7 +41,7 @@ SOURCE      CodViewerApp.cpp
 SOURCE      DdViewerApp.cpp
 SOURCE      CodDownloadImpl.cpp
 SOURCE      CodDialog.cpp
-SOURCE		CodConfirm.cpp 
+SOURCE		  CodConfirm.cpp 
 
 START RESOURCE ../data/CodUi.rss
 DEPENDS avkon.rsg
@@ -55,12 +55,9 @@ LANGUAGE_IDS
 END
 
 USERINCLUDE     ../inc
-
-
-SYSTEMINCLUDE   ../../CodEng/inc
+USERINCLUDE     ../../CodEng/inc
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_ECOM_SYSTEMINCLUDE
 
 LIBRARY         efsrv.lib
 LIBRARY         apparc.lib

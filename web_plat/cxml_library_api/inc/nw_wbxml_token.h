@@ -15,7 +15,6 @@
 *
 */
 
-
 /** ----------------------------------------------------------------------- **
     @package:     NW_WBXML
 
@@ -28,14 +27,13 @@
 #ifndef NW_PARSER_WBXML_TOKEN_H
 #define NW_PARSER_WBXML_TOKEN_H
 
-#include "cxml_proj.h"
-#include "nw_string_string.h"
+#include <cxml_proj.h>
+#include <nw_string_string.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
-
 
 /*
  * WBXML global tokens, section 7

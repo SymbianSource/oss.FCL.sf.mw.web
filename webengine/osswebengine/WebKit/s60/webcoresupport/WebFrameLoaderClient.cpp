@@ -44,7 +44,7 @@
 #include "WebPolicyManager.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
-#include "brctlwindowobserver.h"
+#include <brctlwindowobserver.h>
 #include "WmlDispatcher.h"
 #include "WebUtil.h"
 #include "errordefs.h"
@@ -931,9 +931,10 @@ void WebFrameLoaderClient::didChangeTitle(DocumentLoader*)
 void WebFrameLoaderClient::committedLoad(DocumentLoader* loader, const char* data, int length) 
 { 
     if (brctl(m_webFrame)->wmlMode()) {
-        TRAP_IGNORE(
-        m_WmlContentListener->ResponseL( data, length );
-        );
+    if(m_WmlContentListener)
+    	TRAP_IGNORE(
+         m_WmlContentListener->ResponseL( data, length );
+         );
         return;
     }
     m_webFrame->bridge()->receivedData(data, length, m_response.textEncodingName());
@@ -1142,9 +1143,9 @@ String WebFrameLoaderClient::generatedMIMETypeForURLScheme(const String& URLSche
 void WebFrameLoaderClient::frameLoadCompleted()
 {
     if (brctl(m_webFrame)->wmlMode()) {
+    if (m_WmlContentListener)
         TRAP_IGNORE(
-		if (m_WmlContentListener)
-        	m_WmlContentListener->CompleteL( 0, 0 );
+         m_WmlContentListener->CompleteL( 0, 0 );
         );
         return;
     }

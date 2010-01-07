@@ -17,7 +17,6 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "CodEngBase.h"
@@ -51,8 +50,8 @@
 #include <CodUi.rsg>
 #include <AknQueryDialog.h>
 #include <stringloader.h>
-#include  <bautils.h>
-#include    "FileExt.h"
+#include <bautils.h>
+#include "FileExt.h"
 
 #ifdef __SYNCML_DM_FOTA
 #include <fotaengine.h>

@@ -15,14 +15,10 @@
 *
 */
 
-
-
 #ifndef __RHTTPDOWNLOADMGRAPIEXT_H__
 #define __RHTTPDOWNLOADMGRAPIEXT_H__
 
-
-#include "downloadmgrclient.h"
-
+#include <downloadmgrclient.h>
 
 /**
  *  API Extensions for RHttpDownloadMgr

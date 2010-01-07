@@ -15,12 +15,11 @@
 *
 */
 
-
 #include "nw_browser_browsermimetablei.h"
 
 #include "nw_imagech_epoc32contenthandler.h"
 #include "nw_xhtml_epoc32contenthandler.h"
-#include <nw_wml_core.h>  /* needed for the wml content handler */
+#include "nw_wml_core.h"  /* needed for the wml content handler */
 #include "nw_wmlscriptch_wmlscriptcontenthandler.h"
 #include "nw_wml1x_epoc32contenthandler.h"
 #include "nwx_http_defs.h"

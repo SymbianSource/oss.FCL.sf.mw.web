@@ -19,13 +19,13 @@
 
 // INCLUDE FILES
 #include "CSSRuleList.h"
-#include <nwx_assert.h>
+#include "nwx_assert.h"
 #include "BrsrStatusCodes.h"
 #include "nwx_settings.h"
 
 #include "CSSParser.h"
 #include "nw_text_ucs2.h"
-#include <nwx_string.h>
+#include "nwx_string.h"
 #include "nw_hed_contenthandler.h"
 #include "CSSDeclListHandle.h"
 #include "TKeyArrayPtr.h"

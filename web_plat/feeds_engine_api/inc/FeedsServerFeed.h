@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef FEEDS_SERVER_FEED_H
 #define FEEDS_SERVER_FEED_H
 
@@ -25,15 +24,13 @@
 
 #include <FeedsServerRequestHandler.h>
 #include <FeedsServerMsg.h>
-#include "FeedsEntity.h"
-
-#include "LeakTracker.h"
-#include "Transaction.h"
+#include <feedsentity.h>
+#include <leaktracker.h>
+#include <transaction.h>
 
 // CONSTANTS
 
 // MACROS
-
 
 // FUNCTION PROTOTYPES
 

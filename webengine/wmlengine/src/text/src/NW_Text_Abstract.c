@@ -15,7 +15,6 @@
 *
 */
 
-
 #include "NW_Text_AbstractI.h"
 
 #include "nw_text_ucs2.h"
@@ -23,7 +22,7 @@
 #include "nw_text_latin1.h"
 #include "nw_text_ascii.h"
 #include "nwx_string.h"
-#include "nw_string_string.h"
+#include <nw_string_string.h>
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- *

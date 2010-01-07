@@ -15,8 +15,7 @@
 *
 */
 
-#include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include  "../webkitcommon.mmpi"
 
 TARGET          script.lib
 TARGETTYPE      lib
@@ -53,18 +52,3 @@ SOURCE	scr_val.c
 SOURCE	scr_valexpr.c
 SOURCE	scr_wta.c
 SOURCE	scr_crypto.c
-
-USERINCLUDE     ../../src/script/src
-USERINCLUDE     ../../src/urlloader/include
-USERINCLUDE     ../../src/utils/include
-USERINCLUDE     ../../src/wml/include
-SYSTEMINCLUDE   ../../src/script/include
-SYSTEMINCLUDE   ../../src/utils/src
-MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-SYSTEMINCLUDE   ../../src/utils/include
-
-
-
-
-

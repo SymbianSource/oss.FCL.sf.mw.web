@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef SCR_CORE_H
 #define SCR_CORE_H
 
@@ -25,8 +24,6 @@
 #include "nw_wae_reader.h"
 #include "nwx_http_header.h"
 #include "BrsrStatusCodes.h"
-
-
 
 typedef NW_Bool lib_function(void);
 

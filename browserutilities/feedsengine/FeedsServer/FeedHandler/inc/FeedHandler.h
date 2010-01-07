@@ -16,16 +16,14 @@
 *
 */
 
-
 #ifndef FEED_HANDLER_H
 #define FEED_HANDLER_H
-
 
 // INCLUDES
 #include <e32base.h>
 
 #include "FeedParser.h"
-#include "leaktracker.h"
+#include <leaktracker.h>
 
 // CONSTANTS
 

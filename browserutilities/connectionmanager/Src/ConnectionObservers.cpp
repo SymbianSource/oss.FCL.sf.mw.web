@@ -18,16 +18,13 @@
 *
 */
 
-
-
 #include <nifman.h>
 #include <nifvar.h>
 #include <es_enum.h>
 #include <in_sock.h>
 
-#include "connectionobservers.h"
+#include <connectionobservers.h>
 #include "ConnectionManagerLogger.h"
-
 
 //--------------------------------------------------------------------------
 //CConnectionStageNotifierWCB::NewL()

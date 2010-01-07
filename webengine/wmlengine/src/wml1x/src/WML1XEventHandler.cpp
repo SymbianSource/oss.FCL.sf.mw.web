@@ -15,8 +15,7 @@
 *
 */
 
-
-#include <nw_wml_core.h>
+#include "nw_wml_core.h"
 #include "nw_hed_documentrooti.h"
 #include "nw_wml1x_wml1xeventhandleri.h"
 #include "nw_lmgr_cssproperties.h"

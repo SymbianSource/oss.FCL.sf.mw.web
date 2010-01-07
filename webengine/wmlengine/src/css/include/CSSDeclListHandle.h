@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef TCSSDECLLISTHANDLE_H
 #define TCSSDECLLISTHANDLE_H
 
@@ -24,7 +23,7 @@
 #include "nw_lmgr_propertylist.h"
 #include "CSSParser.h"
 #include "CSSPropertyTable.h"
-#include "nw_dom_element.h"
+#include <nw_dom_element.h>
 #include "nw_css_processor.h"
 
 // MACROS

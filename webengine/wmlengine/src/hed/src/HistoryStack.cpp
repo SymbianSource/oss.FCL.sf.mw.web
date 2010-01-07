@@ -14,7 +14,7 @@
 * Description: 
 *
 */
-
+#include <brctldefs.h>
 
 #include "nw_hed_historystacki.h"
 
@@ -30,7 +30,6 @@
 #include "WmlControl.h"
 #include "HistoryController.h"
 #include "HistoryStack.h"
-#include "brctldefs.h"
 #include "HistoryEntry.h"
 #include "WmlInterface.h"
 

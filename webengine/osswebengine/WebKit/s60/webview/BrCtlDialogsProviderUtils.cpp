@@ -15,14 +15,11 @@
 *
 */
 
-
-
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>
 
-#include "brctldialogsprovider.h"
-
+#include <brctldialogsprovider.h>
 
 // ----------------------------------------------------------------------------
 // CBrCtlObjectInfo class

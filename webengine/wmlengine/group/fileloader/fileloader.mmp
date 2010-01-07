@@ -15,8 +15,7 @@
 *
 */
 
-#include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include  "../webkitcommon.mmpi"
 
 TARGET          fileloader.lib
 TARGETTYPE      lib
@@ -24,22 +23,7 @@ TARGETTYPE      lib
 CAPABILITY CAP_GENERAL_DLL
 VENDORID        VID_DEFAULT
 
-
 SOURCEPATH      ../../src/fileloader/src
 SOURCE		fileloader_cfileloader.cpp
 SOURCE		fileloader_cfilehandler.cpp
 SOURCE		fileloader_csaveddeckhandler.cpp
-
-USERINCLUDE     ../../src/urlloader/include
-USERINCLUDE     ../../src/fileloader/include
-USERINCLUDE     ../../src/utils/include
-
-
-MW_LAYER_SYSTEMINCLUDE
-SYSTEMINCLUDE   ../../src/utils/include
-MW_LAYER_LIBC_SYSTEMINCLUDE
-
-
-
-
-

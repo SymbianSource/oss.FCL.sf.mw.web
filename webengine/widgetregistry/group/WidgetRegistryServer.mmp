@@ -17,7 +17,6 @@
 *
 */
 
-
 TARGET          WidgetRegistry.exe
 TARGETTYPE      EXE
 UID             0x1000008d 0x10282F06
@@ -49,8 +48,9 @@ SOURCE WidgetMMCHandler.cpp
 USERINCLUDE       ../Server/inc
 USERINCLUDE       ../Common/inc
 USERINCLUDE       ../../../inc
+
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 LIBRARY         euser.lib
 LIBRARY         efsrv.lib

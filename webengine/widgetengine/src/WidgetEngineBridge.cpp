@@ -15,8 +15,6 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include "WidgetEngineBridge.h"
 #include "WidgetEventHandler.h"
@@ -25,7 +23,7 @@
 #include <eikmenub.h>
 #include <gdi.h>
 #include <bitdev.h>
-#include "brctlinterface.h"
+#include <brctlinterface.h>
 #include "WidgetEngineCallbacks.h"
 
 #include "WidgetClient.h"
@@ -172,7 +170,11 @@ void WidgetEngineBridge::SetParamL(TBrCtlDefs::TBrCtlWidgetParams aParam, const 
     switch( aParam ) {
         case TBrCtlDefs::EWidgetBasePath: {
             m_preferences->setBasePathL(aValue);
-            m_preferences->loadL();            
+           TRAPD(err, m_preferences->loadL());
+            if(err!=KErrNone)
+            	{
+                m_preferences->deleteAllPrefFiles();
+           	    }
             break;
         }
         case TBrCtlDefs::EWidgetBundleId: {
@@ -319,5 +321,6 @@ void WidgetEngineBridge::Unprotect(JSValue* obj)
 }
 
 //END OF FILE
+
 
 

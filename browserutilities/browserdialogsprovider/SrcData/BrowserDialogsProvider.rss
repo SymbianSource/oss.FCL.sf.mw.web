@@ -19,7 +19,7 @@
 
 //  INCLUDES
 #include "BrowserDialogsProvider.hrh"
-#include <BrowserDialogsProvider.loc>
+#include <browserdialogsprovider.loc>
 
 #include <avkon.rsg>
 #include <avkon.rh>	

@@ -21,8 +21,8 @@
 
 #include "nw_object_base.h"
 #include "nw_lmgr_propertylist.h"
-#include "nw_dom_element.h"
-#include "nw_wbxml_dictionary.h"
+#include <nw_dom_element.h>
+#include <nw_wbxml_dictionary.h>
 #include "nw_evt_event.h"
 #include "nw_lmgr_box.h"
 #include "nw_hed_documentnode.h"

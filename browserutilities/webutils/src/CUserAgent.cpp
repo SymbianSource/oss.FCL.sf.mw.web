@@ -15,7 +15,6 @@
 *
 */
 
-
 // INCLUDE FILES
 #include <e32std.h>
 #include <f32file.h>
@@ -23,11 +22,10 @@
 
 #include <browser_platform_variant.hrh>
 #include "webUtilsCommon.h"
-#include "cuseragent.h"
+#include <cuseragent.h>
 #include "WebUtilsLogger.h"
 
-#include "webutilsinternalcrkeys.h"
-
+#include <webutilsinternalcrkeys.h>
 
 #define KPlaceHolderMozillaVer		_L("Mozilla/5.0")
 #define KPlaceHolderComponent		_L("AppleWebKit/525 (KHTML, like Gecko) Version/3.0")

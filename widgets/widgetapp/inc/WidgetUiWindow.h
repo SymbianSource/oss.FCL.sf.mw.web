@@ -500,7 +500,20 @@ class CWidgetUiWindow :  public CBase,
          * @return CActiveSchedulerWait*
          */
         CActiveSchedulerWait* NetworkModeWait() { return iNetworkModeWait; }
-
+        
+        /**
+         * NeedToNotifyNetworkState
+         * Notifies to Widget about network state
+         * @since 7.1
+		 * @param aNetworkState the online/offline state needs to be notified to widget or not
+         * @return none
+         */
+        void NeedToNotifyNetworkState(TBool aNetworkState);
+        
+        TBool CanBeDeleted();
+        
+        static TInt DeleteItself(TAny* aPtr);
+        
         
     protected:
 
@@ -594,12 +607,18 @@ class CWidgetUiWindow :  public CBase,
         //Download transaction ID
         long                            iDlId;  
 		TInt                            iClickCount;
-        CFbsBitmap*                     iMiniviewBitmap ;
+        CFbsBitmap                      iMiniviewBitmap1;
+        CFbsBitmap                      iMiniviewBitmap2;
+        CFbsBitmap*                     iActiveMiniviewBitmap;
+        
         TTime                           iOOMWidgetStartTime; 
         TBool                           iWidgetLoadStarted; // Set to true when widget load starts
         CJpgSaver*                       iJpgSaver; 
         CActiveSchedulerWait*           iNetworkModeWait;
-                            
+        TBool                           iNeedToNotifyNetworkState;        
+        TBool                           iConnecting;                            
+        TBool                           iDeleteItself;
+        CAsyncCallBack*                 iAsyncCallBack;                                    
    };
 
 #endif  //

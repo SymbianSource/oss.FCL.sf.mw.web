@@ -24,9 +24,9 @@
 #include <e32hashtab.h>
 #include <apgcli.h>
 #include <browser_platform_variant.hrh>
-#include "widgetregistrydata.h"
-#include "widgetregistryconstants.h"
-#include "widgetpropertyvalue.h"
+#include <widgetregistrydata.h>
+#include <widgetregistryconstants.h>
+#include <widgetpropertyvalue.h>
 #include "WidgetRegistryLog.h"
 
 // CONSTANTS
@@ -214,6 +214,8 @@ public:
      * Returns security policyId.
      */
      TInt SecurityPolicyId() { return FetchSecurityPolicyIdL(); }
+     
+     static void NotifyWidgetAltered();
      
 private:
 

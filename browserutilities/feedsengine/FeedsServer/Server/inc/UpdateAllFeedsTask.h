@@ -15,18 +15,16 @@
 *
 */
 
-
 #ifndef UPDATE_ALL_FEEDS_TASK_H
 #define UPDATE_ALL_FEEDS_TASK_H
-
 
 // INCLUDES
 #include <e32base.h>
 
-#include "leaktracker.h"
+#include <leaktracker.h>
 #include "UpdateFeedTask.h"
 #include "Task.h"
-#include "f32file.h"
+#include <f32file.h>
 
 // CONSTANTS
 
@@ -42,7 +40,6 @@ class CUpdateFeedTask;
 class CCheckDiskSpace;
 
 // CLASS DECLARATION
-
 
 /**
 *  The UpdateAllFeedsTask's observer.

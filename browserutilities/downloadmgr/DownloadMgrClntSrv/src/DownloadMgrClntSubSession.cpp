@@ -19,7 +19,7 @@
 
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
-#include "downloadmgrclient.h"
+#include <downloadmgrclient.h>
 #include "DownloadMgrServer.h"
 #include "DownloadMgrHandler.h"
 #include "DownloadMgrStart.h"

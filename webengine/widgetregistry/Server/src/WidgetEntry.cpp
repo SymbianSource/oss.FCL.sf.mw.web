@@ -17,7 +17,7 @@
 */
 
 #include "WidgetEntry.h"
-#include "widgetregistryconstants.h"
+#include <widgetregistryconstants.h>
 #include <s32file.h>
 #include <f32file.h>
 #include <APGTASK.H>

@@ -15,15 +15,13 @@
 *
 */
 
-
 #include <e32base.h>
 #include <e32std.h>
 #include <f32file.h>
 
 #include "FileHandler.h"
-#include "leaktracker.h"
+#include <leaktracker.h>
 #include "Logger.h"
-
 
 // -----------------------------------------------------------------------------
 // CFileHandler::NewL

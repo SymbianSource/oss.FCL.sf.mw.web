@@ -15,18 +15,16 @@
 *
 */
 
-
-
 #include <charconv.h>
 #include <EscapeUtils.h>
 #include <utf.h>
 
 #include "CleanupLibXml2.h"  
-#include "leaktracker.h"
+#include <leaktracker.h>
 #include "Logger.h"
-#include "xmlencoding.h"
+#include <xmlencoding.h>
 #include "XmlEntity.h"
-#include "XmlUtils.h"
+#include <xmlutils.h>
 
 // Local data-types
 struct ErrorContext
@@ -37,7 +35,6 @@ struct ErrorContext
 
 // Static variables
 static CXmlEntity*  sXmlEntity = NULL;
-
 
 // -----------------------------------------------------------------------------
 // EntityResolverL

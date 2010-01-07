@@ -451,26 +451,6 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                 break;
 
             case EKeyF18:
-                if (magnify)
-                {
-                    switch (kevent->symbianEvent().iScanCode)
-                        {
-                        case EEikCmdEditCut:
-                            m_webView->fepTextEditor()->CcpuCutL();
-                            frame->editor()->deleteWithDirection(SelectionController::BACKWARD,
-                                                             CharacterGranularity, false, true);
-                            m_webView->fepTextEditor()->HandleUpdateCursor();
-                            break;
-                        case EEikCmdEditCopy:
-                            m_webView->fepTextEditor()->CcpuCopyL();
-                            break;
-                        case EEikCmdEditPaste:
-                            m_webView->fepTextEditor()->CcpuPasteL();
-                            break;
-                        default:
-                            break;
-                        }
-                }
                 break;
 
 // All of the diagonal KeyEvents are allowed to flow through the "default" case...
@@ -563,8 +543,12 @@ void WebEditorClient::textDidChangeInTextField(Element* inputElement)
 //-----------------------------------------------------------------------------
 bool WebEditorClient::doTextFieldCommandFromEvent(Element*, KeyboardEvent*)
 {
-    notImplemented();
-    return false;
+    /*
+     * Check here from WAP css property. Returning true will cause
+     * HTMLInputElement::defaultEventHandler(Event* evt) stop handling
+     * keyboard event end set it as default handled.
+     */
+    return !m_webView->fepTextEditor()->validateTextFormat();    
 }
 
 //-----------------------------------------------------------------------------
@@ -690,4 +674,13 @@ void WebEditorClient::handleDeleteText(Frame* frame)
         m_webView->fepTextEditor()->HandleMaskedDeleteText(frame);
     }
 }
+
+void WebEditorClient::preFocusChange(Node* oldNode, Node* newNode)
+    {      
+    TBool contentEditable = m_webView->page()->focusController()->focusedOrMainFrame()->selectionController()->isContentEditable();    
+    if ( oldNode && newNode && contentEditable ) {       
+        m_webView->fepTextEditor()->FocusChanging();
+       }
+    }
+
 

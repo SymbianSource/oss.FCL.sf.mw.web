@@ -2,7 +2,7 @@
 * Copyright (c) 2002 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
-* under the terms of "Eclipse Public License v1.0""
+* under the terms of the License "Eclipse Public License v1.0"
 * which accompanies this distribution, and is available
 * at the URL "http://www.eclipse.org/legal/epl-v10.html".
 *
@@ -20,26 +20,6 @@
 * RCS:          $Id$
 *
 */
-
-
-/* ****************************************************************
-**          Copyright 2000 - Nokia Corporation  All rights reserved.
-**          Nokia Americas
-**          6000 Connection Drive
-**          Irving, Texas 75039
-**
-**          Restricted Rights: Use, duplication, or disclosure by the
-**          U.S. Government is subject to restrictions as set forth in
-**          subparagraph (c)(1)(ii) of DFARS 252.227-7013, or in FAR
-**          52.227-19, or in FAR 52.227-14 Alt. III, as applicable.
-**
-**          This software is proprietary to and embodies the confidential
-**          technology of Nokia  Possession, use, or copying of this software 
-**          and media is authorized only pursuant to a valid written license
-**          from Nokia or an authorized sublicensor.
-**
-**          Nokia  - Wireless Software Solutions
-*****************************************************************/
 
 #include <stdio.h>
 #include <io.h>

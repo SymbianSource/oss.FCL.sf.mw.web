@@ -23,7 +23,7 @@
 #include <e32base.h>
 #include <e32std.h>
 
-#include <ConnectionObserver.h>
+#include <connectionobserver.h>
 
 // CONSTANTS
 

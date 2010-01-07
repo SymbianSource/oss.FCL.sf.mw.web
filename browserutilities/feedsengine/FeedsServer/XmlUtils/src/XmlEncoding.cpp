@@ -15,11 +15,9 @@
 *
 */
 
-
 #include <charconv.h>
 
-#include "xmlencoding.h"
-
+#include <xmlencoding.h>
 
 // -----------------------------------------------------------------------------
 // CXmlEncoding::NewL

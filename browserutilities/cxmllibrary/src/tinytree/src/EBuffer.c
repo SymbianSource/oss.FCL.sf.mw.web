@@ -16,7 +16,7 @@
 */
 
 #include "cxml_internal.h"
-#include "nw_tinytree_ebuffer.h"
+#include <nw_tinytree_ebuffer.h>
 
 /* ------------------------------------------------------------------------- *
    private methods

@@ -15,11 +15,9 @@
 *
 */
 
-
 #include "TestHarnessContainer.h"
 #include "TestHarnessView.h"
-#include "leaktracker.h"
-
+#include <leaktracker.h>
 
 // -----------------------------------------------------------------------------
 // CFeedContainer::NewL

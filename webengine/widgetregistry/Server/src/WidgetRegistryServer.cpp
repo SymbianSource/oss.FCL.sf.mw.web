@@ -15,11 +15,10 @@
 *
 */
 
-
 #include <e32base.h>
 #include <w32std.h>
 #include <apgcli.h>
-#include "widgetregistryconstants.h"
+#include <widgetregistryconstants.h>
 #include "widgetregistryserver.h"
 #include "widgetregistrysession.h"
 

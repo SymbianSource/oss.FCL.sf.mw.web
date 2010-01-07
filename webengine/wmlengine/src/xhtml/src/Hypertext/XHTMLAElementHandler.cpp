@@ -17,7 +17,6 @@
 
 
 #include "nw_hypertext_aelementhandleri.h"
-
 #include "nw_xhtml_xhtmlcontenthandler.h"
 #include "nw_hed_hedeventhandler.h"
 #include "nw_hed_documentroot.h"

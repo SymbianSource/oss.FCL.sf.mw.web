@@ -323,6 +323,13 @@ void CWidgetUiWindowView::UpdateStatusPane( TBool aVisible )
 
     TBool visible(iStatusPaneVisible);
 
+    // non-touch: always show status pane in landscape if softkeys are visible
+    if (!visible && Cba()->IsVisible() &&
+        AknLayoutUtils::CbaLocation() != AknLayoutUtils::EAknCbaLocationBottom)
+        {
+        visible = ETrue;
+        }
+
     StatusPane()->MakeVisible(visible);
 
     if (visible && StatusPane()->CurrentLayoutResId() != R_AVKON_STATUS_PANE_LAYOUT_USUAL_FLAT)

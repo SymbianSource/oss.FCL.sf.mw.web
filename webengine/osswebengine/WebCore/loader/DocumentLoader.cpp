@@ -711,6 +711,7 @@ bool DocumentLoader::isLoadingMultipartContent() const
 bool DocumentLoader::startLoadingMainResource(unsigned long identifier)
 {
     ASSERT(!m_mainResourceLoader);
+    MemoryManager::ResetOOMDialogDisplayed();
     m_mainResourceLoader = MainResourceLoader::create(m_frame);
     m_mainResourceLoader->setIdentifier(identifier);
 

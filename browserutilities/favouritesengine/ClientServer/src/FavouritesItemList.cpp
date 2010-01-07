@@ -17,12 +17,11 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include <s32strm.h>
-#include "favouritesitemlist.h"
-#include "favouritesitem.h"
+#include <favouritesitemlist.h>
+#include <favouritesitem.h>
 
 // CONSTANTS
 

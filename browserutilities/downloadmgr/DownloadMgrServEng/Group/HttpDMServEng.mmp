@@ -39,20 +39,10 @@ VENDORID    VID_DEFAULT
   
 SOURCEPATH ../src
 
+MW_LAYER_SYSTEMINCLUDE
+#if defined(__PLATFORM_VERSION_50_TUBE__) || defined( __PLATFORM_VERSION_50__)
 APP_LAYER_SYSTEMINCLUDE
-/* SF TODO: resolve APP LAYER DEPENDENCY: 
-	s60/app/devicecontrol/devctrl_dom/fota_engine_api/inc/FotaEngine.h
-	s60/app/devicecontrol/devctrl_dom/fota_engine_api/inc/fotaconst.h
-	s60/app/devicecontrol/devctrl_dom/fota_engine_api/inc/FotaEngStream.h
-
-	s60/app/gallery/gallery_dom/media_file_api/inc/CMGXFileManager.h
-	s60/app/gallery/gallery_dom/media_file_api/inc/MGXFileManagerFactory.h
-*/
-//MW_LAYER_SYSTEMINCLUDE
-
-MW_LAYER_ECOM_SYSTEMINCLUDE
-MW_LAYER_HTTP_SYSTEMINCLUDE
-
+#endif
 
 USERINCLUDE ../inc
 
@@ -64,9 +54,9 @@ SOURCE HttpConnHandler.cpp
 SOURCE HeaderField.cpp
 SOURCE HttpStorage.cpp
 SOURCE HttpDownloadMgrLogger.cpp
-SOURCE  FileExt.cpp
+SOURCE FileExt.cpp
 SOURCE DownloadDataServ.cpp
-SOURCE  BuffStorage.cpp
+SOURCE BuffStorage.cpp
 
 #ifdef __S60_32__
 LANG sc 

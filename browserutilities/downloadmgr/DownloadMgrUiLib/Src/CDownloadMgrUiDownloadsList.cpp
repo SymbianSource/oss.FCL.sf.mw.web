@@ -15,13 +15,11 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include    <browser_platform_variant.hrh>
-#include    "cdownloadmgruidownloadslist.h"
-#include    "cdownloadmgruilibregistry.h"
-#include    "cdownloadmgruidownloadmenu.h"
+#include    <cdownloadmgruidownloadslist.h>
+#include    <cdownloadmgruilibregistry.h>
+#include    <cdownloadmgruidownloadmenu.h>
 #include    "CDownloadsListArray.h"
 #include    "CDownloadsListDlg.h"
 #include    "AsyncEventHandlerArray.h"

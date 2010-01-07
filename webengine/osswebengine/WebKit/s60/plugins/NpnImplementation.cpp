@@ -494,7 +494,7 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
                 else {
                 cursorPos = static_cast<TPoint*>(aSetValue);
                 }
-                pluginWin->pluginDeactivate(*cursorPos);
+            pluginWin->pluginDeactivate(*cursorPos);
             }
         }
         break;

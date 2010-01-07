@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef NW_EVLOG_API_H
 #define NW_EVLOG_API_H
 

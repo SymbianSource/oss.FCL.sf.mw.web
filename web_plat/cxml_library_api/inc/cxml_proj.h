@@ -27,16 +27,14 @@
 #ifndef CXML_PROJ_H
 #define CXML_PROJ_H
 
-
-
 #ifndef NOKIA_MOBILE_BROWSER
 
-#include "cxml_nw2cxmlTypes.h"
+#include <cxml_nw2cxmlTypes.h>
 #endif
 
 #include <nwx_status.h>
 
-#include "cxml_type_def.h"
+#include <cxml_type_def.h>
 
 #ifdef __cplusplus
 extern "C"

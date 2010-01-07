@@ -15,9 +15,7 @@
 *
 */
 
-
-
-#include "leaktracker.h"
+#include <leaktracker.h>
 #include "Logger.h"
 
 // Globals

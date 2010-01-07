@@ -15,8 +15,7 @@
 *
 */
 
-#include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include  "../webkitcommon.mmpi"
 
 TARGET          text.lib
 TARGETTYPE      lib
@@ -39,16 +38,3 @@ SOURCE	UTF8.c
 SOURCE	FixedWidthIterator.c
 SOURCE	Text_Iterator.c
 SOURCE	VariableWidthIterator.c
-
-
-USERINCLUDE     .
-USERINCLUDE     ../../src/adt/include
-USERINCLUDE     ../../src/htmlp/include
-USERINCLUDE     ../../src/object/include
-USERINCLUDE     ../../src/text/include
-
-SYSTEMINCLUDE   ../../src/urlloader/include
-SYSTEMINCLUDE   ../../src/utils/include
-SYSTEMINCLUDE   ../../src/utils/src
-MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE

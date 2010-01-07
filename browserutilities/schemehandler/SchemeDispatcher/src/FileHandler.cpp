@@ -17,12 +17,11 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "FileHandler.h"
 #include "SchemeDispLogger.h"
-#include <ECom.h>		// For REComSession
+#include <ecom/ecom.h>		// For REComSession
 #include <eikenv.h>
 #include <apmstd.h>
 #include <apparc.h>

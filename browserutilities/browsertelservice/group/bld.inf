@@ -25,7 +25,7 @@ PRJ_EXPORTS
 ../inc/BrowserTelService.h    |../../../inc/BrowserTelService.h
 ../inc/BrowserTelServiceEtelWatcher.h    |../../../inc/BrowserTelServiceEtelWatcher.h
 ../rom/browsertelservice.iby CORE_MW_LAYER_IBY_EXPORT_PATH(browsertelservice.iby)
-../loc/BrowserTelService.loc  MW_LAYER_LOC_EXPORT_PATH(BrowserTelService.loc)
+../loc/browsertelservice.loc  MW_LAYER_LOC_EXPORT_PATH(browsertelservice.loc)
 
 PRJ_MMPFILES
 BrowserTelService.mmp

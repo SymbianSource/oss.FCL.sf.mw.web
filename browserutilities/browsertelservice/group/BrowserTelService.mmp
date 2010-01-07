@@ -45,7 +45,6 @@ SOURCE      BrowserTelService.cpp
 SOURCE      BrowserTelServiceEtelWatcher.cpp
 SOURCE      BrowserTelServiceDlgs.cpp
 
-
 USERINCLUDE    ../inc
 USERINCLUDE    ../../inc
 
@@ -69,10 +68,7 @@ APP_LAYER_SYSTEMINCLUDE
 	s60/app/messaging/msg_sdk/send_ui_api/inc/SendUiConsts.h
 	s60/app/messaging/msg_sdk/send_ui_api/inc/SenduiMtmUids.h
 */
-//MW_LAYER_SYSTEMINCLUDE
-
-
-SYSTEMINCLUDE	../../../inc
+// MW_LAYER_SYSTEMINCLUDE
 
 LIBRARY		euser.lib 
 LIBRARY		etel.lib 
@@ -91,10 +87,10 @@ LIBRARY		ESock.lib
 LIBRARY		ApEngine.lib
 LIBRARY		commdb.lib
 LIBRARY		efsrv.lib 
-LIBRARY     commonui.lib
-LIBRARY     featmgr.lib // feature mannger support
-LIBRARY     estor.lib  // RWriteStream, RFileBuf
-LIBRARY     Centralrepository.lib
+LIBRARY   	commonui.lib
+LIBRARY   	featmgr.lib // feature mannger support
+LIBRARY   	estor.lib  // RWriteStream, RFileBuf
+LIBRARY     	Centralrepository.lib
 
 #if defined(ARMCC)
     DEFFILE ../EABI/BROWSERTELSERVICEU_EKA2.def
@@ -107,4 +103,3 @@ LIBRARY     ServiceHandler.lib
 LIBRARY			aiwdialdata.lib
 
 DEBUGLIBRARY    flogger.lib
-

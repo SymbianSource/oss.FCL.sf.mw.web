@@ -15,8 +15,7 @@
 *
 */
 
-#include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include  "../webkitcommon.mmpi"
 
 TARGET          Msg.lib
 TARGETTYPE      lib
@@ -27,12 +26,3 @@ VENDORID        VID_DEFAULT
 
 SOURCE Message.cpp
 SOURCE MessageDispatcher.cpp
-
-USERINCLUDE     .
-USERINCLUDE     ../../src/Msg/include
-USERINCLUDE     ../../src/Object/include
-USERINCLUDE     ../../src/Hed/include
-
-SYSTEMINCLUDE   ../../src/utils/include
-MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE

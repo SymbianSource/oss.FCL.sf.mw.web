@@ -15,15 +15,11 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include <s32mem.h>
 #include "DownloadDataServ.h"
 
-
 // CONSTANTS
-
 
 // ---------------------------------------------------------
 // CMediaDataServ::NewL()

@@ -15,7 +15,6 @@
 *
 */
 #include "../common.mmpi"
-#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET          browserengine.dll
 TARGETTYPE      dll

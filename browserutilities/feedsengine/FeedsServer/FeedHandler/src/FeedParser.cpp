@@ -15,14 +15,12 @@
 *
 */
 
-
 #include <TInternetDate.h>
 
 #include "FeedParser.h"
 #include "FeedParserObserver.h"
-#include "leaktracker.h"
-#include "XmlUtils.h"
-
+#include <leaktracker.h>
+#include <xmlutils.h>
 
 _LIT8(KUrlStr, "url");
 

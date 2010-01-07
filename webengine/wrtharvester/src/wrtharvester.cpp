@@ -26,7 +26,7 @@
 #include <widgetregistryconstants.h>
 #include <wrtharvester.rsg>
 
-#include <implementationproxy.h>
+#include <ecom/implementationproxy.h>
 
 #include <LiwServiceHandler.h>
 #include <LiwVariant.h>
@@ -229,6 +229,10 @@ void CWrtHarvester::ConstructL()
     iWidgetUsbListener->Start();
     SetMSMode(0);
     
+    iCanAccessRegistry = ETrue;    
+	iReinstallingWidget = EFalse;
+	
+	    
     TFileName resourceFileName;  
     TParse parse;    
     Dll::FileName (resourceFileName);           
@@ -278,6 +282,13 @@ CWrtHarvester::~CWrtHarvester()
     delete iWidgetRegListener;
     delete iWidgetMMCListener;
     delete iWidgetUsbListener;
+    if(iAsyncCallBack)
+        {
+        iAsyncCallBack->Cancel();       
+        }
+    delete iAsyncCallBack;
+    iAsyncCallBack = NULL;
+    iUid.Close();
     iWidgetOperations.Close();
     iHSWidgets.ResetAndDestroy();
     iApaSession.Close();
@@ -385,6 +396,11 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
 //
 void CWrtHarvester::UpdatePublishersL() 
     {
+    if(iReinstallingWidget)
+        {        
+        iReinstallingWidget = EFalse;
+        return;
+        }
     iRegistryAccess.WidgetInfosL( iWidgetInfo );
     RemoveObsoletePublishersL();
     
@@ -795,12 +811,25 @@ void CWrtHarvester::QueueResumeL( TUid& aUid )
     RWidgetRegistryClientSession session;
     CleanupClosePushL( session );
     User::LeaveIfError( session.Connect() );
-    if ( session.IsBlanketPermGranted ( aUid ) == EBlanketUnknown && !iDialogShown )
+    TBool preInstalled = *(session.GetWidgetPropertyValueL( aUid, EPreInstalled ) );
+    
+    // Set blanket permission to true for pre-installed widgets
+    if ( preInstalled )
+        {
+        session.SetBlanketPermissionL( aUid, EBlanketTrue );
+        }
+    
+    if ( session.IsBlanketPermGranted ( aUid ) == EBlanketUnknown && !iDialogShown 
+         &&  iCanAccessRegistry  )
         {
         iDialogShown = ETrue;            
         AllowPlatformAccessL( aUid );
         }
-    else if(!iDialogShown)
+    else if(session.IsBlanketPermGranted ( aUid ) == EBlanketUnknown)
+        {
+        iUid.Append(aUid);
+        }
+    else
         {
         QueueOperationL( WidgetResume, aUid );
         }        
@@ -878,6 +907,33 @@ TBool CWrtHarvester::CheckNetworkAccessL( TUid& aUid )
     CleanupStack::PopAndDestroy( &session );
     
     return networkAccess;
+    }
+// ----------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------
+//
+TInt CWrtHarvester::DeleteCallback(TAny* aPtr)
+    {
+    CWrtHarvester* self = (CWrtHarvester*)aPtr;    
+    self->QueueResumeL(self->iUid[0]);
+    self->iUid.Remove(0);    
+    delete self->iAsyncCallBack;
+    self->iAsyncCallBack = NULL;
+    return 0;
+    }
+
+// ----------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------
+//
+void CWrtHarvester::DialogShown()
+    {
+    iDialogShown = EFalse;
+    if(iUid.Count())
+        {
+        iAsyncCallBack = new (ELeave) CAsyncCallBack(TCallBack(DeleteCallback,this),CActive::EPriorityUserInput);
+        iAsyncCallBack->CallBack(); 
+        }
     }
 
 // ----------------------------------------------------------------------------

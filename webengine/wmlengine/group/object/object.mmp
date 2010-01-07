@@ -15,8 +15,7 @@
 *
 */
 
-#include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include  "../webkitcommon.mmpi"
 
 TARGET          object.lib
 TARGETTYPE      lib
@@ -35,9 +34,3 @@ SOURCE	Interface.c
 SOURCE  Object.c
 SOURCE  Secondary.c
 SOURCE	Shared.c
-
-USERINCLUDE     .
-USERINCLUDE     ../../src/object/include
-SYSTEMINCLUDE   ../../src/utils/include
-MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE

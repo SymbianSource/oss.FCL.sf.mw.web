@@ -15,8 +15,6 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include <e32std.h>
 #include <e32base.h>
@@ -24,7 +22,6 @@
 #include "fileloader_CFileLoader.h"
 #include "urlloader_loaderutils.h"
 #include "fileloader_cfilehandler.h"
-
 
 // EXTERNAL DATA STRUCTURES
 

@@ -27,17 +27,14 @@ UID 0x1000008D  0x2000B19E
 VENDORID    VID_DEFAULT
 CAPABILITY  CAP_GENERAL_DLL
 
-
 #if defined(WINSCW)
 deffile BWINSCW/npscript.def
 #elif defined(ARMCC)
 deffile EABI/npscript.def
 #endif
 
-
 SOURCEPATH      ../npscript
 SOURCE          npscript.cpp
-
 
 MW_LAYER_SYSTEMINCLUDE 
 

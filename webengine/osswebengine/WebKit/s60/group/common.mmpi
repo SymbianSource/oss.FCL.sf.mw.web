@@ -20,6 +20,7 @@
 #include <platform/mw/browser_platform_variant.hrh>
 
 SYSTEMINCLUDE ../../../WebCore/platform/symbian/Libxml2
+
 MW_LAYER_SYSTEMINCLUDE
 
 USERINCLUDE ../../../WebCore 
@@ -75,11 +76,8 @@ SYSTEMINCLUDE ../../../WebCore/history
 SYSTEMINCLUDE ../../../WebCore/icu
 SYSTEMINCLUDE ../../../WebCore/bindings/js
 
-MW_LAYER_ECOM_SYSTEMINCLUDE
-MW_LAYER_HTTP_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-MW_LAYER_STDAPIS_SYSTEMINCLUDE
-
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
+OS_LAYER_LIBC_SYSTEMINCLUDE
 
 SYSTEMINCLUDE ../../../../PageScaler/inc
 SYSTEMINCLUDE ../../../../WidgetEngine/inc

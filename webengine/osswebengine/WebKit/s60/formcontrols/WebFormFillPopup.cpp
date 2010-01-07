@@ -17,13 +17,15 @@
 
 // INCLUDE FILES
 #include <../bidi.h>
+#include <brctldialogsprovider.h>
+
 #include "WebFormFillPopup.h"
 #include "WebView.h"
 #include "WebFrame.h"
 #include "WebFrameView.h"
-#include "brctldefs.h"
+#include <brctldefs.h>
 #include "PopupSelectListBox.h"
-#include "brctldialogsprovider.h"
+
 #include "WebFepTextEditor.h"
 #include "FormFillCallback.h"
 #include "Page.h"
@@ -36,7 +38,6 @@
 #include <AknUtils.h>
 
 #include "eikon.hrh"
-
 
 static const TInt KMaxNumToShow = 6; // max number of list items to show
 static const TInt KInitArraySize = 10; // initial array size

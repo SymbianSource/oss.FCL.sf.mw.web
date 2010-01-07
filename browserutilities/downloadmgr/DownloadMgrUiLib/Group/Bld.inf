@@ -25,7 +25,7 @@ DEFAULT
 PRJ_EXPORTS
 ../rom/DownloadMgrUiLib.iby			  CORE_MW_LAYER_IBY_EXPORT_PATH(DownloadMgrUiLib.iby)
 ../rom/DownloadMgrUiLibResources.iby  LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(DownloadMgrUiLibResources.iby)
-../loc/DownloadMgrUiLib.loc			  MW_LAYER_LOC_EXPORT_PATH(DownloadMgrUiLib.loc)
+../loc/downloadmgruilib.loc			  MW_LAYER_LOC_EXPORT_PATH(downloadmgruilib.loc)
 
 #ifdef __SERIES60_32__
 

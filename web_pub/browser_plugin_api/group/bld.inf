@@ -14,16 +14,14 @@
 * Description:  
 *
 */
-#ifndef __BROWSER_SDK
+
 #include <platform_paths.hrh>
 #include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
-#endif
 
 PRJ_PLATFORMS
-DEFAULT GCCE
+DEFAULT
 
 PRJ_EXPORTS
-
 ../inc/browserplugininterface.h      MW_LAYER_PUBLIC_EXPORT_PATH(browserplugininterface.h)
 ../inc/cecombrowserplugininterface.h MW_LAYER_PUBLIC_EXPORT_PATH(cecombrowserplugininterface.h)
 ../inc/npapi.h                       MW_LAYER_PUBLIC_EXPORT_PATH(npapi.h)

@@ -15,7 +15,6 @@
 *
 */
 
-
 #include <EscapeUtils.h>
 #include <http.h>
 #include <http/mhttpdatasupplier.h>
@@ -23,10 +22,10 @@
 
 #include "HttpConnection.h"
 #include "HttpHandler.h"
-#include "leaktracker.h"
+#include <leaktracker.h>
 #include "Logger.h"
 
-#include "cuseragent.h"
+#include <cuseragent.h>
 
 // -----------------------------------------------------------------------------
 // CHttpHandler::NewL

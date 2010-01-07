@@ -25,7 +25,7 @@ DEFAULT GCCE
 
 PRJ_EXPORTS
 // export localization files
-../loc/WidgetInstallerUI.loc  MW_LAYER_LOC_EXPORT_PATH(WidgetInstallerUI.loc)
+../loc/widgetinstallerui.loc  MW_LAYER_LOC_EXPORT_PATH(widgetinstallerui.loc)
 
 // If EKA2 Kernel Architecture is supported, assume S60 3rd Edition Platform
 

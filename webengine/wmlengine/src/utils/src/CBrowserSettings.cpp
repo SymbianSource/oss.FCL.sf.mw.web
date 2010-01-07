@@ -15,7 +15,6 @@
 *
 */
 
-
 #include <bldvariant.hrh>
 #include "CBrowserSettings.h"
 

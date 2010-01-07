@@ -38,8 +38,8 @@
 #include "nw_link_linkelementhandler.h"
 #include "nw_base_baseelementhandler.h"
 #include "nw_xhtml_textelementhandler.h"
-#include "nw_dom_element.h"
-#include "nw_dom_document.h"
+#include <nw_dom_element.h>
+#include <nw_dom_document.h>
 #include "nw_xhtml_attributepropertytable.h"
 #include "nw_css_defaultstylesheet.h"
 #include "nw_xhtml_xhtml_1_0_tokens.h"

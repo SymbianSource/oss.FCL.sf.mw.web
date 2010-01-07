@@ -15,11 +15,9 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include    "AsyncEventHandlerBase.h"
-#include    "cdownloadmgruilibregistry.h"
+#include    <cdownloadmgruilibregistry.h>
 #include    "AsyncEventHandlerArray.h"
 #include    "UiLibLogger.h"
 #include    "DMgrUiLibPanic.h"

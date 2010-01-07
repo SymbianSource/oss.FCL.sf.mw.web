@@ -21,7 +21,6 @@
 #include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
-
 DEFAULT
 
 PRJ_EXPORTS

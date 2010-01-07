@@ -15,9 +15,7 @@
 *
 */
 
-
 #include "nw_frame_frameelementhandleri.h"
-
 #include "nw_xhtml_xhtmlcontenthandler.h"
 #include "nw_hed_hedeventhandler.h"
 #include "nw_hed_documentroot.h"

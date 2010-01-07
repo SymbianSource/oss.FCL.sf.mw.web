@@ -25,7 +25,7 @@ NAME CODV
 #include <eikon.rh>
 #include <appinfo.rh>
 #include <avkon.rsg>
-#include <CodViewer.loc>
+#include <codviewer.loc>
 
 
 // RESOURCE DEFINITIONS 

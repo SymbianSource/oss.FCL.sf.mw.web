@@ -15,8 +15,6 @@
 *
 */
 
-
-
 #ifndef __WIDGETENGINEINTERFACE
 #define __WIDGETENGINEINTERFACE
 
@@ -24,7 +22,7 @@
 #include "config.h"
 #include <e32base.h>
 #include <eikenv.h>
-#include "brctldefs.h"
+#include <brctldefs.h>
 #include "WidgetEngineCallbacks.h"
 #include "WidgetJSObjectProtector.h"
 #include "wtf/HashSet.h"

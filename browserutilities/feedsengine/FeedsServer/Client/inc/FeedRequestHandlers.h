@@ -24,8 +24,7 @@
 
 // INCLUDES
 #include <feedsservermsg.h>
-
-#include "feedsserverrequesthandler.h"
+#include <feedsserverrequesthandler.h>
 
 // CONSTANTS
 

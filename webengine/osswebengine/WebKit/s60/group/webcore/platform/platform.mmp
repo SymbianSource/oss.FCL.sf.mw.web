@@ -14,10 +14,7 @@
 // * Description:  This is the project specification file for WebCore.
 // *
 
-#include <platform_paths.hrh>
-#include <data_caging_paths.hrh>
 #include "../../common.mmpi"
-#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET  WebCoreplatform.lib
 
@@ -50,7 +47,6 @@ START BITMAP webkit.mbm
 	SOURCEPATH .
 	SOURCE 1 	../../../data/SelectMultimask.bmp
 END
-
 
 //OPTION CW -prefix pragmas.pref
 

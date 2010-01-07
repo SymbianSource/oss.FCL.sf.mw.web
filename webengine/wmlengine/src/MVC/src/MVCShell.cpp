@@ -15,7 +15,6 @@
 *
 */
 
-
 // INCLUDE FILES
 #include <e32def.h> // resolve NULL redefinition warning.
 #include <e32base.h>
@@ -34,10 +33,11 @@
 #include <caf/caf.h>
 #include <caf/caftypes.h>
 #include <caf/supplieroutputfile.h> 
-#include "Oma2Agent.h"
+#include <Oma2Agent.h>
+#include <brctldefs.h>
+#include <brctldialogsprovider.h>
 
 #include "brctl.h"
-#include "brctldefs.h"
 
 #include "BrsrStatusCodes.h"
 #include "MVCShell.h"
@@ -61,13 +61,13 @@
 #include "nw_text_ucs2.h"
 //#include "nw_unknown_contenthandler.h"
 #include "nw_wae.h"
-#include "nw_wbxml_dictionary.h"
+#include <nw_wbxml_dictionary.h>
 #include "nw_wml_core.h"
 #include "nw_wmlscriptch_wmlscriptcontenthandler.h"
 #include "nw_wml1x_wml1xformliaison.h"
 #include "nw_wml1x_epoc32contenthandler.h"
 #include "nw_xhtml_epoc32contenthandler.h"
-#include <nwx_assert.h>
+#include "nwx_assert.h"
 #include "nwx_ctx.h"
 #include "nwx_datastruct.h"
 #include "nwx_defs_symbian.h"
@@ -90,9 +90,7 @@
 #include "urlloader_urlresponse.h"
 #include "CSSVariableStyleSheet.h"
 #include "TEncodingMapping.h"
-#include "brctldialogsprovider.h"
 #include "WmlInterface.h"
-
 
 // EXTERNAL DATA STRUCTURES
 #ifdef __cplusplus

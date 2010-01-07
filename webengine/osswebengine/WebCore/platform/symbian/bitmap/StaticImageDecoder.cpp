@@ -21,7 +21,7 @@
 #include <imageconversion.h>
 #include <eikenv.h>
 #include <fbs.h>
-#include <oom.h>
+#include "oom.h"
 
 // CONSTANTS
 // block all images that would take free ram below this amount when decoded

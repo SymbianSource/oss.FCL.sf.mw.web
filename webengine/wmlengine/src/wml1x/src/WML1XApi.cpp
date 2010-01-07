@@ -15,7 +15,6 @@
 *
 */
 
-
 /* Includes */
 #include "nwx_string.h"
 #include "nwx_url_utils.h"
@@ -67,10 +66,10 @@
 #include "nw_wml1x_wml1xapi.h"
 #include "nwx_http_defs.h"
 #include "BrsrStatusCodes.h"
-#include "bodypart.h"
+#include <bodypart.h>
 #include "MVCShell.h"
 #include "BrCtl.h"
-#include "MemoryManager.h"
+#include <MemoryManager.h>
 
 /*
 **-------------------------------------------------------------------------

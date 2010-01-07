@@ -15,7 +15,6 @@
 *
 */
 
-
 // INCLUDE FILES
 #include <e32std.h>
 #include <e32def.h>
@@ -48,7 +47,6 @@
 #include "XhtmlObjectElementHandler.h"
 #include "nwx_http_defs.h"
 #include "urlloader_urlresponse.h"
-
 
 // ============================ MEMBER FUNCTIONS ===============================
 

@@ -21,7 +21,6 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-
 ../inc/recenturlstore.h  MW_LAYER_PLATFORM_EXPORT_PATH(recenturlstore.h)
 
 PRJ_MMPFILES

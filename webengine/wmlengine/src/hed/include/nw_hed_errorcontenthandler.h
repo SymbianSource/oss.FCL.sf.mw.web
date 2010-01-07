@@ -15,21 +15,18 @@
 *
 */
 
-
 #ifndef NW_HED_ERRORCONTENTHANDLER_H
 #define NW_HED_ERRORCONTENTHANDLER_H
 
 #include "nw_hed_contenthandler.h"
 #include "nw_text_ucs2.h"
-#include <urlloader_urlresponse.h>
+#include "urlloader_urlresponse.h"
 #include "BrsrStatusCodes.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
   
-
-
 /* ------------------------------------------------------------------------- */
 typedef struct NW_HED_ErrorContentHandler_Class_s NW_HED_ErrorContentHandler_Class_t;
 typedef struct NW_HED_ErrorContentHandler_s NW_HED_ErrorContentHandler_t;

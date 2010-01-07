@@ -30,9 +30,8 @@ SOURCEPATH      ../src
 SOURCE          CodDownload.cpp
 
 USERINCLUDE     ../inc
-
-SYSTEMINCLUDE   ../../CodUi/inc
-SYSTEMINCLUDE   ../../CodEng/inc
+USERINCLUDE   ../../CodUi/inc
+USERINCLUDE   ../../CodEng/inc
 
 MW_LAYER_SYSTEMINCLUDE
 

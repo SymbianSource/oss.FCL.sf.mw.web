@@ -15,8 +15,7 @@
 *
 */
 
-#include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include  "../webkitcommon.mmpi"
 
 TARGET          htmlp.lib
 TARGETTYPE      lib
@@ -34,10 +33,3 @@ SOURCE	htmlp_wml_dict.cpp
 SOURCE	htmlp_lexer.c
 SOURCE	CHtmlpParser.cpp
 SOURCE	htmlp_to_wbxml.cpp
-
-USERINCLUDE     ../../src/htmlp/include
-
-MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-SYSTEMINCLUDE   ../../src/urlloader/include
-SYSTEMINCLUDE   ../../src/utils/include

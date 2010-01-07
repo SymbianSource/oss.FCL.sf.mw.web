@@ -15,8 +15,6 @@
 *
 */
 
-
-
 #ifndef VIEWASYNCINIT_H
 #define VIEWASYNCINIT_H
 

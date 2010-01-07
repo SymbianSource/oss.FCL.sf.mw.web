@@ -23,7 +23,7 @@
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-#include "brctldefs.h"
+#include <brctldefs.h>
 #include "BrCtl.h" 
 
 class CWmlContentInterface;

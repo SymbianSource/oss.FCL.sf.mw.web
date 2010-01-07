@@ -16,7 +16,6 @@
 *
 */
 
-
 #include "nw_wae_reader.h"
 
 #include "nwx_defs.h"

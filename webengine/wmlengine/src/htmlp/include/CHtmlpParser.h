@@ -15,8 +15,6 @@
 *
 */
 
-
-
 /** ----------------------------------------------------------------------- **
     @package:     NW_HTMLP
 
@@ -32,7 +30,7 @@
 #include "nw_htmlp_lexer.h"
 #include "BrsrStatusCodes.h"
 #include "nwx_buffer.h"
-#include "nw_encoder_wbxmlwriter.h"
+#include <nw_encoder_wbxmlwriter.h>
 
 #ifdef __cplusplus
 extern "C" {

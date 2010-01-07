@@ -2,7 +2,7 @@
 * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
-* under the terms of "Eclipse Public License v1.0"
+* under the terms of the License "Eclipse Public License v1.0"
 * which accompanies this distribution, and is available
 * at the URL "http://www.eclipse.org/legal/epl-v10.html".
 *
@@ -15,10 +15,10 @@
 *
 */
 
-#ifndef __BROWSER_SDK
+
 #include <platform_paths.hrh>
 #include <platform/mw/browser_platform_variant.hrh>
-#endif
+
 TARGET		MemManTest.exe
 TARGETTYPE  	exe
 UID         	0x01000007
@@ -32,29 +32,23 @@ MACRO KHTML_NO_EXCEPTIONS
 MACRO KHTML_NO_SCRIPTING
 
 EPOCHEAPSIZE 524288 8388608
-#ifndef __BROWSER_SDK
+
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-#else
-SYSTEMINCLUDE 	/epoc32/include /epoc32/include/libc
-#endif
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 USERINCLUDE 	../../WEBCORE/bridge ../../WEBCORE/kwq
 USERINCLUDE 	../Inc
 USERINCLUDE 	../tsrc
 
 SOURCEPATH	../tsrc
-SOURCE	        MemManUnit.cpp	
+SOURCE	    MemManUnit.cpp	
 SOURCE		MemManUTConsole.cpp
 SOURCE		MemManUTContainer.cpp
 
 
 LIBRARY		ResLoader.lib
-#if defined(__BROWSER_SDK)
-LIBRARY   MemMan_sdk.lib
-#else
-LIBRARY         memman.lib
-#endif
+LIBRARY     memman.lib
+
 LIBRARY		ESTLIB.lib 
 LIBRARY		euser.lib 
 LIBRARY		EFSRV.lib 
@@ -64,9 +58,9 @@ LIBRARY		charconv.lib
 LIBRARY		hal.lib
 STATICLIBRARY		kwq.lib KHTML.lib
 
-
 #ifdef __S60_32__
 LANG sc 
 #else
 LANGUAGE_IDS 
 #endif
+

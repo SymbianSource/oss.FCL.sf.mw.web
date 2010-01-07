@@ -18,12 +18,10 @@
 
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 #include <calslbs.h>            // for Latin.... font methods
-#include <nwx_string.h>
 
+#include "nwx_string.h"
 #include "nw_fbox_formbox.h"
 #include "nw_evt_ecmaevent.h"
-
-
 #include "nw_fbox_epoc32inputskini.h"
 #include "nw_wml1x_wml_1_3_tokens.h"
 #include "nw_fbox_inputbox.h"

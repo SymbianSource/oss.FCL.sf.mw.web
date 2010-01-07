@@ -15,7 +15,6 @@
 *
 */
 
-
 // INCLUDE FILES
 #include <e32def.h>  // To avoid NULL redefine warning (no #ifndef NULL)
 
@@ -36,7 +35,6 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #include "nwx_string.h"
 
 #include "nw_xhtml_xhtmlcontenthandleri.h"
@@ -52,13 +50,13 @@
 #include "nw_hed_inumbercollectori.h"
 #include "nw_lmgr_bidiflowbox.h"
 #include "nw_dom_domvisitor.h"
-#include "nw_tinydom.h"
-#include "nw_dom_element.h"
-#include "nw_dom_document.h"
+#include <nw_tinydom.h>
+#include <nw_dom_element.h>
+#include <nw_dom_document.h>
 #include "nw_adt_segmentedvector.h"
 #include "nw_adt_resizableobjectvector.h"
 #include "nw_adt_mapiterator.h"
-#include "nw_xmlp_xmlp2wbxml.h"
+#include <nw_xmlp_xmlp2wbxml.h>
 #include "nw_htmlp_to_wbxml.h"
 #include "nwx_url_utils.h"
 #include "nwx_string.h"
@@ -91,10 +89,9 @@
 #include "nw_structure_scriptelementhandler.h"
 #include "XhtmlObjectElementHandlerOOCi.h"
 #include "XHTMLMessageListener.h"
-#include "bodypart.h"
+#include <bodypart.h>
 #include "MVCShell.h"
 #include "BrCtl.h"
-
 
 #include <stddef.h>
 #include "CReferrerHelper.h"

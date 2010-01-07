@@ -17,9 +17,8 @@
 
 
 #include "nw_xhtml_variablesi.h"
-
 #include "nw_adt_segmentedvector.h"
-#include <nwx_string.h>
+#include "nwx_string.h"
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- *

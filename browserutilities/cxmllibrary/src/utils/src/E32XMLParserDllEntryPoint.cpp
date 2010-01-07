@@ -15,6 +15,4 @@
 *
 */
 #include <e32std.h>
-#include "nw_wbxml_dictionary.h"
-//#include "FeatMgr.h"
-
+#include <nw_wbxml_dictionary.h>

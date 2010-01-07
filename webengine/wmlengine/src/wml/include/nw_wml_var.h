@@ -35,7 +35,7 @@ extern "C" {
 
 #include "nwx_defs.h"
 #include "nwx_memseg.h"
-#include "nwx_status.h"
+#include <nwx_status.h>
 
 typedef struct _NW_Wml_Var_t NW_Wml_Var_t;
 struct _NW_Wml_Var_t {

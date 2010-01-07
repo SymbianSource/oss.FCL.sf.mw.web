@@ -21,7 +21,7 @@ PRJ_PLATFORMS
 DEFAULT 
 
 PRJ_EXPORTS
-../../loc/Webkit.loc                MW_LAYER_LOC_EXPORT_PATH(Webkit.loc)
+../../loc/webkit.loc                MW_LAYER_LOC_EXPORT_PATH(webkit.loc)
 ../../rom/webkit.iby                CORE_MW_LAYER_IBY_EXPORT_PATH(webkit.iby)
 ../../rom/webkitResources.iby       LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(webkitResources.iby)
 

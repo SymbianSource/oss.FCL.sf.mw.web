@@ -17,7 +17,6 @@
 *
 */
 
-
 #include <platform_paths.hrh>
 #include <platform/mw/schemedefs.hrh>
 #include <data_caging_paths.hrh>
@@ -43,7 +42,6 @@ SOURCE      SchemeAppUi.cpp
 SOURCE      SchemeDocument.cpp
 SOURCE	    SchemeDialog.cpp 
 
-
 START RESOURCE ../data/SchemeApp.rss
 DEPENDS avkon.rsg
 HEADER
@@ -58,7 +56,6 @@ END  // RESOURCE
 USERINCLUDE     ../inc
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_ECOM_SYSTEMINCLUDE
 
 LIBRARY     apparc.lib
 LIBRARY     avkon.lib

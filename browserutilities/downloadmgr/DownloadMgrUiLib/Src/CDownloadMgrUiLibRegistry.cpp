@@ -15,12 +15,10 @@
 *
 */
 
-
-
 // INCLUDE FILES
-#include    "cdownloadmgruilibregistry.h"
-#include    "cdownloadmgruidownloadslist.h"
-#include    "cdownloadmgruiuserinteractions.h"
+#include    <cdownloadmgruilibregistry.h>
+#include    <cdownloadmgruidownloadslist.h>
+#include    <cdownloadmgruiuserinteractions.h>
 #include    "DMgrUiLibPanic.h"
 #include    "UiLibLogger.h"
 

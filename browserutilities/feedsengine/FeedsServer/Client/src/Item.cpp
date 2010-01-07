@@ -15,16 +15,14 @@
 *
 */
 
-
-#include "feedattributes.h"
-#include "feedsserverfeed.h"
+#include <feedattributes.h>
+#include <feedsserverfeed.h>
 #include "Logger.h"
 
 // Constants
 _LIT(KNew, "new");
 _LIT(KRead, "read");
 _LIT(KUnread, "unread");
-
 
 // -----------------------------------------------------------------------------
 // CItem::NewL

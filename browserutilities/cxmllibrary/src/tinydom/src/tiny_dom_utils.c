@@ -15,11 +15,9 @@
 *
 */
 
-
 #include "cxml_internal.h"
-#include "nw_tinydom_utils.h"
-#include "nw_dom_document.h"
-
+#include <nw_tinydom_utils.h>
+#include <nw_dom_document.h>
 
 /****************************************************************************
  * Name:          NW_TinyDom_ParserInitialize

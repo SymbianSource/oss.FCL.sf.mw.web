@@ -15,7 +15,6 @@
 *
 */
 
-
 // INCLUDE FILES
 #include <e32def.h>           // First to avoid NULL redefine warning (no #ifndef NULL).
 #include <e32std.h>
@@ -26,10 +25,9 @@
 #include <Uri16.h>
 #include <UriCommon.h>
 
-#include "multipartparser.h"
+#include <multipartparser.h>
 #include "GZipBufMgr.h"
 #include "tinternetdate.h"
-
 
 // CONSTANTS
 const char Multipart_Mixed[] = {"multipart/mixed"};

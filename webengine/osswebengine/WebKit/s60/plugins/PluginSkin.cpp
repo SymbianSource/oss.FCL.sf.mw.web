@@ -33,7 +33,7 @@
 #include "BrCtl.h"
 #include "WebCoreGraphicsContext.h"
 #include "StaticObjectsContainer.h"
-#include "brctldefs.h"
+#include <brctldefs.h>
 #include "SettingsContainer.h"
 #include <Uri8.h>
 #include <StringLoader.h>

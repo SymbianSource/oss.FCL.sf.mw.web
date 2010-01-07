@@ -15,7 +15,6 @@
 *
 */
 
-
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
 #include <platform/mw/browser_platform_variant.hrh>
@@ -40,19 +39,15 @@ deffile EABI/FeedsServerClient.def
 SOURCEPATH        ../FeedsServer/Client/src
 SOURCE            FeedsServerClient.cpp
 SOURCE            ClientRequestHandlers.cpp
-
 SOURCE            FeedsServerFeed.cpp
 SOURCE            FeedRequestHandlers.cpp
 SOURCE            Feed.cpp
-
 SOURCE            FeedsServerFolderItem.cpp
 SOURCE            FolderItemRequestHandlers.cpp
 SOURCE            FolderItem.cpp
 SOURCE            Item.cpp
 SOURCE            Enclosure.cpp
-
 SOURCE            RequestHandler.cpp
-
 
 // Utils sources
 SOURCEPATH        ../FeedsServer/Common/src
@@ -61,13 +56,11 @@ SOURCE            Packed.cpp
 SOURCE            PackedFolder.cpp
 SOURCE            PackedFeed.cpp
 
-
 USERINCLUDE       ../FeedsServer/Client/inc
 USERINCLUDE       ../FeedsServer/Common/inc
 USERINCLUDE       ../../inc
 
 MW_LAYER_SYSTEMINCLUDE
-
 
 // Libraries
 LIBRARY           euser.lib

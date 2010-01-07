@@ -15,12 +15,12 @@
 *
 */
 
-#include    "WidgetUiApp.h"
-#include    "WidgetUiDocument.h"
-#include    "MemoryManager.h"
-#include    "widgetappdefs.rh"
-#include    <eikstart.h>
-#include <u32std.h>
+#include  "WidgetUiApp.h"
+#include  "WidgetUiDocument.h"
+#include  <MemoryManager.h>
+#include  "widgetappdefs.rh"
+#include  <eikstart.h>
+#include  <u32std.h>
 
 // EXTERNAL DATA STRUCTURES
 

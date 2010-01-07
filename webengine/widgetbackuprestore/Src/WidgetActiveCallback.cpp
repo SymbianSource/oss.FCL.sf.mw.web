@@ -17,7 +17,7 @@
 
 
 // INCLUDE FILES
-#include <abclient.h>
+#include <connect/abclient.h>
 #include <bautils.h>
 
 #include "WidgetActiveCallback.h"

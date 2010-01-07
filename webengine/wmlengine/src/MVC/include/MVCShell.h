@@ -15,14 +15,10 @@
 *
 */
 
-
 #ifndef __MVCSHELL_H
 #define __MVCSHELL_H
 
-
 #include <apmstd.h>
-#include "BrsrStatusCodes.h"
-#include "BrsrTypes.h"
 #include <badesca.h>
 #include <bldvariant.hrh>
 #include <charconv.h>
@@ -31,7 +27,9 @@
 #include <f32file.h>
 #include <ApEngineConsts.h>
 
-#include "brctldialogsprovider.h"
+#include <brctldialogsprovider.h>
+#include "BrsrStatusCodes.h"
+#include "BrsrTypes.h"
 
 #include "HEDDocumentListener.h"
 #include "httploader_mlinkresolvercallbacks.h"
@@ -42,7 +40,7 @@
 #include "nw_scrproxy.h"
 #include "nw_wae.h"
 #include "nwx_defs.h"
-#include "nwx_status.h"
+#include <nwx_status.h>
 #include "urlloader_urlresponse.h"
 #include "EmbeddedDocExitObserver.h"
 //R
@@ -50,11 +48,9 @@
 //#include "webkitview.h"
 #include "wmlcontrol.h"
 
-
 #ifdef __SERIES60_WIM
 #include "WimUi.h"
 #endif __SERIES60_WIM
-
 
 enum TUrlLoadState
   {

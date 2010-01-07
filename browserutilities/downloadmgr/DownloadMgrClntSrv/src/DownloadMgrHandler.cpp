@@ -16,15 +16,13 @@
 *
 */
 
-
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
 #include "DownloadMgrHandler.h"
-#include "downloadmgrclient.h"
+#include <downloadmgrclient.h>
 #include "DownloadMgrDefAttrib.h"
 
 // CONSTANTS
-
 
 // GLOBAL FUNCTIONS
 

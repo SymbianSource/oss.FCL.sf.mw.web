@@ -19,7 +19,7 @@
 #define __WEBUTIL_H__
 
 #include <e32std.h>
-#include "brctldefs.h"
+#include <brctldefs.h>
 
 class WebFrame;
 class WebView;

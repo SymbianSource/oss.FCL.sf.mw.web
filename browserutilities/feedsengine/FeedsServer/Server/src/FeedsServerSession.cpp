@@ -21,7 +21,7 @@
 
 #include "FeedsDatabase.h"
 #include "FeedsServer.h"
-#include "feedsservermsg.h"
+#include <feedsservermsg.h>
 #include "FeedsServerSession.h"
 #include "SessionHttpConnection.h"
 #include "Logger.h"

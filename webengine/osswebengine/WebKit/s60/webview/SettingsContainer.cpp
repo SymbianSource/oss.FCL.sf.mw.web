@@ -15,7 +15,6 @@
 *
 */
 
-
 #include <../bidi.h>
 #include "SettingsContainer.h"
 #include "WebView.h"
@@ -31,7 +30,7 @@
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
 #include "HistoryInterface.h"
-#include "brctldefs.h"
+#include <brctldefs.h>
 #include "WebDocumentLoader.h"
 #include "Frame.h"
 #include "FrameLoader.h"

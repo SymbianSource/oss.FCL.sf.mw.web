@@ -15,8 +15,6 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include "HttpClientApp.h"
 #include "HttpClientAppInstance.h"

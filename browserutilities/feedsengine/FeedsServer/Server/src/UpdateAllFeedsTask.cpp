@@ -15,17 +15,15 @@
 *
 */
 
-
-#include "folderattributes.h"
+#include <folderattributes.h>
 #include "FeedsDatabase.h"
 #include "FeedsServer.h"
-#include "leaktracker.h"
+#include <leaktracker.h>
 #include "Logger.h"
 #include "PackedFeed.h"
 #include "PackedFolder.h"
 #include "UpdateAllFeedsTask.h"
 #include <SysUtil.h>
-
 
 // -----------------------------------------------------------------------------
 // CUpdateAllFeedsTask::NewL

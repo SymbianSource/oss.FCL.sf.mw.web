@@ -15,10 +15,8 @@
 *
 */
 
-
 #ifndef TEST_HARNESS_H
 #define TEST_HARNESS_H
-
 
 // INCLUDES
 #include <e32base.h>

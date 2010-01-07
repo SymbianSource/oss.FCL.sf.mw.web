@@ -23,7 +23,6 @@
 //  INCLUDES
 #include <brctlinterface.h>
 
-#include "brctldefs.h"
 #include "HistoryInterface.h"
 
 #include "WmlInterface.h"
@@ -705,6 +704,7 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         CPeriodic* m_timer;
         bool m_wmlMode;
         bool m_suspendTimers;
+        bool m_pageLoadFinished;
         MWmlEngineInterface* m_wmlEngineInterface;
         RLibrary  m_Library;
         MWmlInterface* m_WmlInterface;

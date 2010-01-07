@@ -2,7 +2,7 @@
 * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
-* under the terms of "Eclipse Public License v1.0"
+* under the terms of the License "Eclipse Public License v1.0"
 * which accompanies this distribution, and is available
 * at the URL "http://www.eclipse.org/legal/epl-v10.html".
 *
@@ -25,16 +25,6 @@
 // CONSTANTS
 
 
-static TInt TimerCallBack( TAny* ptr )
-{    
-    CWrtUsbHandler* temp = static_cast<CWrtUsbHandler*>(ptr);
-    if(temp)
-        {
-        temp->DeleteTimer();
-        temp->DoScanAndUpdate();       
-        }
-    return 0;    
-}
 // ============================================================================
 // CWrtUsbHandler::NewL()
 // two-phase constructor
@@ -122,9 +112,7 @@ void CWrtUsbHandler::RunL()
     {
     if ( iStatus == KErrNone )
         {
-        //Call back Timer
-        iCallBackTimer = CPeriodic::NewL(CActive::EPriorityLow);
-        iCallBackTimer->Start(10000000,0,TCallBack(&TimerCallBack,this));         
+        DoScanAndUpdate();
         }
     }
 
@@ -144,9 +132,8 @@ void CWrtUsbHandler::DoScanAndUpdate()
         //Unpluging USB from Mass storage . . . 
         if(iHarvester->IsInMSMode() == 1)
             {                  
-            iHarvester->SetMSMode(0);
             iHarvester->ClearAllOperations();
-            TRAP(err, iHarvester->UpdateL() );            
+            iHarvester->SetRegistryAccess(EFalse);
             iFs.NotifyChange( ENotifyDisk, iStatus );
             SetActive();
             return;
@@ -173,9 +160,7 @@ void CWrtUsbHandler::DoScanAndUpdate()
            {           
            iHarvester->SetMSMode(1);            
            }
-       
-        TRAP( err, iHarvester->UpdateL() ); 
-        }
+        }    
     iFs.NotifyChange( ENotifyDisk, iStatus );
     SetActive();
     }
@@ -250,9 +235,4 @@ TInt CWrtUsbHandler::ScanDrives( TInt& aDriveFlags )
 
     return error;
     }
-void CWrtUsbHandler::DeleteTimer()
-    {
-    iCallBackTimer->Cancel();
-    delete iCallBackTimer;
-    iCallBackTimer = NULL; 
-    }
+

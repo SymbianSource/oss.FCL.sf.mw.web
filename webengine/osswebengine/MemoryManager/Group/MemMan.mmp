@@ -15,13 +15,11 @@
 *
 */
 
-#if defined(__BROWSER_SDK)
-TARGET          MemMan_sdk.dll
-#else
+
 #include <platform_paths.hrh>
 #include <platform/mw/browser_platform_variant.hrh>
+
 TARGET          MemMan.dll
-#endif
 
 TARGETTYPE      dll
 
@@ -39,14 +37,9 @@ MACRO __NEW_ALLOCATOR__
 CAPABILITY CAP_GENERAL_DLL
 VENDORID    VID_DEFAULT
 EPOCALLOWDLLDATA
-#ifndef __BROWSER_SDK
+
 MW_LAYER_SYSTEMINCLUDE
-//MW_LAYER_LIBC_SYSTEMINCLUDE
-#else
-SYSTEMINCLUDE   /Epoc32/include
-#endif
-SYSTEMINCLUDE   /epoc32/include/libc
-//#endif
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 USERINCLUDE     ../Inc
 
@@ -59,10 +52,13 @@ SOURCE FastAllocator.cpp
 SOURCE heap.cpp
 SOURCE SymbianDLAllocatorWrapper.cpp
 
-LIBRARY euser.lib
-DEBUGLIBRARY flogger.lib
-LIBRARY avkon.lib
-LIBRARY estlib.lib
-LIBRARY hal.lib
+LIBRARY   euser.lib
+LIBRARY   avkon.lib
+LIBRARY   estlib.lib
+LIBRARY   hal.lib
 
 LIBRARY   oommonitor.lib
+LIBRARY   aknnotify.lib
+LIBRARY   commonengine.lib
+
+DEBUGLIBRARY flogger.lib

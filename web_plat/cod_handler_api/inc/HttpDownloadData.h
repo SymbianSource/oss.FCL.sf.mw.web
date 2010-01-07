@@ -15,8 +15,6 @@
 *
 */
 
-
-
 #ifndef HTTPDOWNLOADDATA_H
 #define HTTPDOWNLOADDATA_H
 

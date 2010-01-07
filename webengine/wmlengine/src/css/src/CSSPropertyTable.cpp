@@ -22,7 +22,7 @@
 
 #include "nw_text_ascii.h"
 #include "nw_image_virtualimage.h"
-#include <nwx_string.h>
+#include "nwx_string.h"
 
 // EXTERNAL DATA STRUCTURES
 

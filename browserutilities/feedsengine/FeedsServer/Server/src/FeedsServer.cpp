@@ -15,18 +15,17 @@
 *
 */
 
-
 #include "FeedsDatabase.h"
 #include "FeedHandler.h"
 #include "FeedsServer.h"
-#include "feedsservermsg.h"
+#include <feedsservermsg.h>
 #include "FeedsServerSession.h"
 #include "OpmlParser.h"
 #include "OpmlWriter.h"
 #include "PackedFolder.h"
 #include "ServerHttpConnection.h"
 #include "Logger.h"
-#include "XmlUtils.h"
+#include <xmlutils.h>
 #include "BackRestoreHandler.h"
 #include "UpdateManager.h" 
 
@@ -37,7 +36,6 @@ _LIT(KFeedsServerPanic, "FeedsServer");
 _LIT(KDefaultFeed, "default_feeds.xml");
 
 _LIT(KDefaultOPMLFileParam, "");
-
 
 // -----------------------------------------------------------------------------
 // CFeedsServer::NewL

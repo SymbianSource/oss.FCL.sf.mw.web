@@ -15,16 +15,14 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include    <browser_platform_variant.hrh>
 #include    "UserInteractionsEventHandler.h"
 #include    "CUserInteractionsUtils.h"
 #include    "ProgressInfoCreator.h"
-#include    "cdownloadmgruilibregistry.h"
-#include    "cdownloadmgruidownloadslist.h"
-#include    "cdownloadmgruiuserinteractions.h"
+#include    <cdownloadmgruilibregistry.h>
+#include    <cdownloadmgruidownloadslist.h>
+#include    <cdownloadmgruiuserinteractions.h>
 #include    "UiLibLogger.h"
 #include    "DMgrUiLibPanic.h"
 #include    <bldvariant.hrh>
@@ -39,7 +37,6 @@
 #include    <etelpckt.h>
 #include    <AknNoteDialog.h>
 #include    <UriUtils.h>
-
 
 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MGXFileManagerFactory.h>

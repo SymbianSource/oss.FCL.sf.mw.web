@@ -16,13 +16,11 @@
 *
 */
 
-
 // INCLUDE FILES
 #include "DownloadMgrTransObserver.h"
-#include "downloadmgrclient.h"
+#include <downloadmgrclient.h>
 
 // CONSTANTS
-
 
 // GLOBAL FUNCTIONS
 

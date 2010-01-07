@@ -15,9 +15,8 @@
 *
 */
 
-
 #include "nwx_defs.h"
-#include "nw_encoder_wbxmlwriter.h"
+#include <nw_encoder_wbxmlwriter.h>
 #include "CHtmlpParser.h"
 #include "nw_htmlp_to_wbxml.h"
 #include "nw_htmlp_dict.h"
@@ -25,8 +24,8 @@
 #include "nwx_statuscodeconvert.h"
 #include "BrsrStatusCodes.h"
 #include "nw_wml1x_wml_1_3_tokens.h"
-#include "nw_wbxml_dictionary.h"
-#include "nw_encoder_stringtable.h"
+#include <nw_wbxml_dictionary.h>
+#include <nw_encoder_stringtable.h>
 #include "nwx_logger.h"
 #include "nwx_http_defs.h"
 

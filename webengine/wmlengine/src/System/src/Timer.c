@@ -15,7 +15,6 @@
 *
 */
 
-
 #include "nw_system_timeri.h"
 #include "nwx_time.h"
 #include "BrsrStatusCodes.h"

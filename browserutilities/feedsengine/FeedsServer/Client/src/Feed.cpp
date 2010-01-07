@@ -15,13 +15,12 @@
 *
 */
 
-
 //#ifdef _DEBUG
 #include <f32file.h>
 //#endif
 
-#include "feedattributes.h"
-#include "feedsserverfeed.h"
+#include <feedattributes.h>
+#include <feedsserverfeed.h>
 #include "Logger.h"
 
 // -----------------------------------------------------------------------------

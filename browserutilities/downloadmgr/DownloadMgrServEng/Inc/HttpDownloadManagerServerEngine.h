@@ -16,8 +16,6 @@
 *
 */
 
-
-
 #ifndef HTTPDOWNLOADMANAGER_H
 #define HTTPDOWNLOADMANAGER_H
 

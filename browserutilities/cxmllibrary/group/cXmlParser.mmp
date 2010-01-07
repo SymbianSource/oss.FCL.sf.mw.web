@@ -20,8 +20,6 @@
 TARGET          cXmlParser.dll
 TARGETTYPE      dll
 
-
-
 #if defined(ARMCC)
 UID	0x1000008D 	0x101F8710
 deffile EABI/cXmlParser.def
@@ -73,9 +71,6 @@ SOURCE  utils/src/cxml_str.c
 SOURCE  utils/src/E32XMLPARSERDLLEntryPoint.cpp
 SOURCE  utils/src/cxml_file_if.cpp
 
-
-
-
 #if defined(WINS)
   #ifndef WINSCW
     SOURCE  utils/src/cxml_assert.c
@@ -91,13 +86,10 @@ USERINCLUDE     ../src/tinydom/include
 USERINCLUDE     ../src/tinytree/include
 USERINCLUDE     ../src/utils/include
 
-
 // ===================================
 
-
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 // Symbian OS libraries
 //#if defined (WINS)

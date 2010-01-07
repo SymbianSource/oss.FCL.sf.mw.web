@@ -15,7 +15,6 @@
 *
 */
 
-
 #include "TEncodingMapping.h"
 #include "nwx_http_defs.h"
 #include "nwx_defs.h"

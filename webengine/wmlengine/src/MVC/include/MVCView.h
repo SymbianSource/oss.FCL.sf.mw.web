@@ -43,7 +43,7 @@
 #include "CBrowserSettings.h"
 
 #include "BrCtl.h"
-#include "MemoryManager.h"
+#include <MemoryManager.h>
 #include "pagescaler.h"
 
 

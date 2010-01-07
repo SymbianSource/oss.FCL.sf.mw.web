@@ -236,7 +236,15 @@ class CWidgetUiWindowManager : public CBase
         void HandleOOMEventL( TBool aForeground );
 
 // Utility stuff.
-
+        /**
+        * ExitNow
+        * Exits the AppUi
+        * @since 5.0
+        * @param none
+        * @return none
+        */        
+        void ExitNow();
+        
         /**
         * WindowList
         * Gets the list of running windows

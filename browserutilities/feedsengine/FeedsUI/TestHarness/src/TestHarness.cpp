@@ -15,8 +15,7 @@
 *
 */
 
-
-#include "leaktracker.h"
+#include <leaktracker.h>
 #include "Logger.h"
 #include "StatusPane.h"
 #include "TestHarness.h"

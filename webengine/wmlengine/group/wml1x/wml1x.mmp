@@ -15,15 +15,13 @@
 *
 */
 
-#include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include  "../webkitcommon.mmpi"
 
 TARGET          wml1x.lib
 TARGETTYPE      lib
 
 CAPABILITY CAP_GENERAL_DLL
 VENDORID        VID_DEFAULT
-
 
 MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER 1
@@ -44,36 +42,3 @@ SOURCE	WML1XFormLiaison.cpp
 SOURCE  Epoc32Wml1xActiveEvent.cpp
 SOURCE  WML1XEpoc32DefaultStyleSheet.cpp
 SOURCE  WML1XEpoc32ContentHandler.cpp
-
-#include  "../webkitcommon.mmpi"
-
-USERINCLUDE     .
-USERINCLUDE     ../../src/adt/include
-USERINCLUDE     ../../src/htmlp/include
-USERINCLUDE     ../../src/Evt/include
-USERINCLUDE     ../../src/fbox/include
-USERINCLUDE     ../../src/gdi/include
-USERINCLUDE     ../../src/hed/include
-USERINCLUDE     ../../src/image/include
-USERINCLUDE     ../../src/ImageCH/include
-USERINCLUDE     ../../src/lmgr/include
-USERINCLUDE     ../../src/markup/include
-USERINCLUDE     ../../src/object/include
-USERINCLUDE     ../../src/system/include
-USERINCLUDE     ../../src/text/include
-USERINCLUDE     ../../src/wml1x/include
-USERINCLUDE     ../../src/wmlscriptch/include
-USERINCLUDE     ../../src/wml/src
-USERINCLUDE     ../../src/wml/include
-USERINCLUDE     ../../src/MVC/include
-USERINCLUDE     ../../src/msg/include
-USERINCLUDE     ../../src/wmlcontrol/include
-USERINCLUDE   	../../src/utils/include
-
-SYSTEMINCLUDE   ../../src/utils/include
-SYSTEMINCLUDE   ../../src/urlloader/include
-SYSTEMINCLUDE   ../../src/wml/include
-SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
-MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-

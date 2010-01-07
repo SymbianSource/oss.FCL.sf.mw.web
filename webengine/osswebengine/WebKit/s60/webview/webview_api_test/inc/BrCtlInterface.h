@@ -15,8 +15,6 @@
 *
 */
 
-
-
 #ifndef BRCTLINTERFACE_H
 #define BRCTLINTERFACE_H
 

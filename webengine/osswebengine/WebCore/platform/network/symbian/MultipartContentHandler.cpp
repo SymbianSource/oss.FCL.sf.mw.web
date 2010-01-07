@@ -18,8 +18,8 @@
 // INCLUDE FILES
 #include "config.h"
 #include "MultipartContentHandler.h"
-#include "multipartparser.h"
-#include "bodypart.h"
+#include <multipartparser.h>
+#include <bodypart.h>
 #include "HttpSessionManager.h"
 #include "httpcachemanager.h"
 #include <http/rhttptransaction.h>

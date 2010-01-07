@@ -22,7 +22,7 @@ NAME    TMST // for Tempest
 #include <avkon.rsg>
 #include <avkon.rh>
 #include <CommonDialogs.rh>
-#include <Webkit.loc>
+#include <webkit.loc>
 
 RESOURCE RSS_SIGNATURE { }
   

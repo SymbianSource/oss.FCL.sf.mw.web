@@ -27,14 +27,13 @@
 #ifndef NW_DOM_ATTRIBUTE_H
 #define NW_DOM_ATTRIBUTE_H
 
-#include "cxml_proj.h"
-#include "nw_dom_node.h"
-#include "nw_tinytree.h"
+#include <cxml_proj.h>
+#include <nw_dom_node.h>
+#include <nw_tinytree.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
 
 /** ----------------------------------------------------------------------- **
     @struct:      NW_DOM_AttributeListIterator

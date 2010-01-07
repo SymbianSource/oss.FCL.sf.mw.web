@@ -17,7 +17,6 @@
 *
 */
 
-
 #ifndef COD_ERROR_H
 #define COD_ERROR_H
 

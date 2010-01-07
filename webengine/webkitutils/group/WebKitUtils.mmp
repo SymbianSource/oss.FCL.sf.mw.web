@@ -15,7 +15,6 @@
 *
 */
 
-
 TARGET          webkitutils.dll
 TARGETTYPE      dll
 UID 0x1000008D  0x2000B19D  
@@ -108,8 +107,8 @@ USERINCLUDE     ../HistoryProvider
 USERINCLUDE     ../SqliteSymbian
 
 MW_LAYER_SYSTEMINCLUDE
-SYSTEMINCLUDE   ../../../inc 
-MW_LAYER_LIBC_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
+// SYSTEMINCLUDE   ../../../inc 
 
 LIBRARY         estlib.lib 
 LIBRARY         euser.lib 
@@ -132,3 +131,4 @@ LIBRARY         efsrv.lib
 LIBRARY         eikcore.lib 
 LIBRARY         eikcoctl.lib 
 LIBRARY         MemMan.lib
+

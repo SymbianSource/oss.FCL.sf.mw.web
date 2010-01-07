@@ -20,14 +20,14 @@
 #define CCSSImageList_H
 
 //  INCLUDES
+#include <e32base.h>
 #include "BrsrStatusCodes.h"
 #include "nw_text_ucs2.h"
 #include "nw_image_abstractimage.h"
 #include "nw_image_virtualimage.h"
 #include "nw_image_epoc32simpleimage.h"
-#include <nwx_http_header.h>
+#include "nwx_http_header.h"
 #include "nw_css_processor.h"
-#include <e32base.h>
 
 // CONSTANTS
 

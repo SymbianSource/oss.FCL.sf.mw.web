@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 
-#include "MemoryManager.h"
+#include <MemoryManager.h>
 #include "MemoryPool.h"
 #include "FastAllocator.h"
 #include "MemoryLogger.h"
@@ -32,16 +32,6 @@ _LIT( KMemManPanicDes, "MemMan:0"  );
 //  initializing a global memory pool.
 static CMemoryPool *s_pool = 0;
 
-struct cleanupMemoryPool {
-    ~cleanupMemoryPool() {
-    	if(s_pool)
-    		{
-    		delete s_pool;
-    		s_pool = NULL;
-    		}
-    }
-};
-static cleanupMemoryPool deleteMemoryPool;
 
 //-----------------------------------------------------------------------------
 // Pool() - a utility function for accessing the right memory pool
@@ -109,6 +99,32 @@ EXPORT_C RAllocator* MemoryManager::SwitchToFastAllocator()
     s_pool->Create();
     RFastAllocator* allocator = new RFastAllocator((CFastMemoryPool*)s_pool);
     return User::SwitchAllocator( allocator );
+#endif
+    }
+
+//-----------------------------------------------------------------------------
+// MemoryManager::InitOOMHandler
+//-----------------------------------------------------------------------------
+EXPORT_C void MemoryManager::InitOOMDialog()
+    {
+#ifdef __NEW_ALLOCATOR__
+    if (s_pool)
+        {
+        ((CNewSymbianHeapPool *)s_pool)->InitOOMDialog();
+        }
+#endif
+    }
+
+//-----------------------------------------------------------------------------
+// MemoryManager::ResetOOMDialogDisplayed
+//-----------------------------------------------------------------------------
+EXPORT_C void MemoryManager::ResetOOMDialogDisplayed()
+    {
+#ifdef __NEW_ALLOCATOR__
+    if (s_pool)
+        {
+        ((CNewSymbianHeapPool *)s_pool)->ResetOOMDialogDisplayed();
+        }
 #endif
     }
 

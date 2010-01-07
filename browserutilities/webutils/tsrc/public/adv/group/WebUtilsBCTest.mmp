@@ -39,17 +39,9 @@ SOURCEPATH      ../src
 SOURCE          WebUtilsBCTest.cpp
 SOURCE          WebUtilsBCTestCases.cpp
 
-//RESOURCE        resource_file
-//RESOURCE        resource_file2
-
 USERINCLUDE     ../inc 
 
-#if defined(__S60_)
-    MW_LAYER_SYSTEMINCLUDE
-#else
-    MW_LAYER_SYSTEMINCLUDE 
-    SYSTEMINCLUDE   MW_LAYER_PUBLIC_EXPORT_PATH(internal)
-#endif
+MW_LAYER_SYSTEMINCLUDE
 
 LIBRARY         euser.lib
 LIBRARY         stiftestinterface.lib

@@ -44,7 +44,6 @@ USERINCLUDE		../SrcData
 
 MW_LAYER_SYSTEMINCLUDE
 
-
 SOURCE ../Src/BrowserDialogsProvider.cpp
 SOURCE ../Src/BrowserAuthenticationDialog.cpp
 SOURCE ../Src/BrowserScriptPromptDialog.cpp
@@ -57,7 +56,6 @@ SOURCE ../Src/BrowserSelectElementItemDrawer.cpp
 SOURCE ../Src/PhotoOperationWait.cpp
 SOURCE ../Src/BrowserDialogsProviderAsyncExit.cpp
 SOURCE ../Src/BrowserUploadProgressNote.cpp
-
 
 LIBRARY euser.lib apparc.lib cone.lib eikcore.lib egul.lib
 LIBRARY eikcoctl.lib avkon.lib eikdlg.lib bitgdi.lib

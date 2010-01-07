@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef NWX_MULTIPART_GENERATOR_H
 #define NWX_MULTIPART_GENERATOR_H
 

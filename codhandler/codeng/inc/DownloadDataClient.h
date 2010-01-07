@@ -17,14 +17,13 @@
 *
 */
 
-
 #ifndef DOWNLOAD_DATA_CLIENT_H
 #define DOWNLOAD_DATA_CLIENT_H
 
 // INCLUDES
 
 #include <e32base.h>
-#include "httpdownloaddata.h"
+#include <httpdownloaddata.h>
 
 // ================= CONSTANTS =======================
 

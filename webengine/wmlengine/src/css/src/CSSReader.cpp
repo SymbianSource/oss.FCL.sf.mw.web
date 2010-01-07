@@ -15,15 +15,13 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 #include "nwx_defs.h"
 
 #include "CSSReader.h"
 #include "nw_text_ucs2.h"
-#include <nwx_assert.h>
+#include "nwx_assert.h"
 #include "nwx_http_defs.h"
 #include "nwx_string.h"
 #include "BrsrStatusCodes.h"

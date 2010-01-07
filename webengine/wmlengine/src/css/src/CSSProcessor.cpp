@@ -16,9 +16,9 @@
 */
 
 #include <stddef.h>
-#include <nwx_assert.h>
-#include <nwx_string.h>
-#include <nwx_logger.h>
+#include "nwx_assert.h"
+#include "nwx_string.h"
+#include "nwx_logger.h"
 #include "BrsrStatusCodes.h"
 #include "CSSDeclListHandle.h"
 #include "CSSHandler.h"
@@ -46,7 +46,7 @@
 #include "nwx_settings.h"
 #include "nwx_http_defs.h"
 #include "GDIDeviceContext.h"
-#include "bodypart.h"
+#include <bodypart.h>
 #include "nw_xhtml_xhtmlcontenthandler.h"
 #include "MVCShell.h"
 //#include "BrCtl.h"

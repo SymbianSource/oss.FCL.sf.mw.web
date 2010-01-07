@@ -28,25 +28,21 @@
 #ifndef NW_TINY_DOM_H
 #define NW_TINY_DOM_H
 
-#include "cxml_proj.h"
-#include "nw_tinytree.h"
-#include "nw_wbxml_document.h"
-#include "nw_wbxml_parse.h"
-#include "nw_wbxml_opaque.h"
-#include "nw_encoder_wbxmlwriter.h"
+#include <cxml_proj.h>
+#include <nw_tinytree.h>
+#include <nw_wbxml_document.h>
+#include <nw_wbxml_parse.h>
+#include <nw_wbxml_opaque.h>
+#include <nw_encoder_wbxmlwriter.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
 
-
-
-
 enum NW_TinyDom_ExtensionType_e {
   NW_TINYDOM_EXTENSION_TYPE_NORMAL,
   NW_TINYDOM_EXTENSION_TYPE_EXT_T_INTEGER
 };
-
 
 /** ----------------------------------------------------------------------- **
     @struct:      NW_TinyDom_Extension

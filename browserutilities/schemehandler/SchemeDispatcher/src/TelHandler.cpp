@@ -17,12 +17,11 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "SchemeDispLogger.h"
 #include "TelHandler.h"
-#include <ECom.h>		// For REComSession
+#include <ecom/ecom.h>		// For REComSession
 #include <eikenv.h>
 #include <apparc.h>
 #include <apgcli.h>

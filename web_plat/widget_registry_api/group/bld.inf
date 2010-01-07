@@ -14,6 +14,7 @@
 * Description:  Build information for the Widget Registry API.
 *
 */
+
 #include <platform_paths.hrh>
 #include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
@@ -21,7 +22,6 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-
 ../inc/widgetregistryclient.h    MW_LAYER_PLATFORM_EXPORT_PATH(widgetregistryclient.h)
 ../inc/widgetpropertyvalue.h     MW_LAYER_PLATFORM_EXPORT_PATH(widgetpropertyvalue.h)
 ../inc/widgetregistryconstants.h MW_LAYER_PLATFORM_EXPORT_PATH(widgetregistryconstants.h)

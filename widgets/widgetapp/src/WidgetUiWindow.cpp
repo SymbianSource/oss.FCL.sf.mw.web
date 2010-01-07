@@ -21,7 +21,7 @@
 #include "WidgetUiWindowContainer.h"
 #include "WidgetUiWindowManager.h"
 #include "WidgetUiDialogsProviderProxy.h"
-#include "widgetregistryconstants.h"
+#include <widgetregistryconstants.h>
 #include "browser_platform_variant.hrh"
 #ifdef BRDO_WRT_HS_FF
 #include "cpspublisher.h"
@@ -41,7 +41,6 @@
 #include <ActiveApDb.h>
 #include <aknsdrawutils.h>
 #include "SWInstWidgetUid.h"
-
 
 // EXTERNAL DATA STRUCTURES
 
@@ -194,8 +193,10 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
 
     iDlId = 0;
 
+    iNeedToNotifyNetworkState = EFalse;
     // determine initial widget online/offline network state
     DetermineNetworkState();
+    iAsyncCallBack = new (ELeave) CAsyncCallBack(TCallBack(DeleteItself,this),CActive::EPriorityUserInput);
     }
 
 // -----------------------------------------------------------------------------
@@ -220,10 +221,20 @@ CWidgetUiWindow::~CWidgetUiWindow()
     delete iLeftSoftKeyLabel;
     delete iWidgetUiDialogsProviderProxy;
     delete iSchemeHandler;
-    delete iMiniviewBitmap;
+    
+    iActiveMiniviewBitmap = 0;
+    iMiniviewBitmap1.Reset();
+    iMiniviewBitmap2.Reset();
+    
 #ifdef BRDO_WRT_HS_FF
     delete iNetworkModeWait;
 #endif
+    if(iAsyncCallBack)
+        {
+        iAsyncCallBack->Cancel();
+        }
+    delete iAsyncCallBack;
+    iAsyncCallBack=NULL;    
     }
 
 // -----------------------------------------------------------------------------
@@ -613,6 +624,9 @@ void CWidgetUiWindow::SetWidgetLoaded( TBool aWidgetLoaded )
         {
         Engine()->MakeVisible( ETrue );
         }
+    PublishSnapShot();
+    if(iWidgetLoaded && iNeedToNotifyNetworkState)
+        DetermineNetworkState();
     }
 
 // -----------------------------------------------------------------------------
@@ -627,16 +641,18 @@ void CWidgetUiWindow::PublishSnapShot()
         {
 #ifdef BRDO_WRT_HS_FF
 
-        if ( !iMiniviewBitmap )
+        if ( iCpsPublisher)
             {
-            iMiniviewBitmap = new CFbsBitmap();
-            }
-
-        if ( iMiniviewBitmap && iCpsPublisher)
-            {
+            // Swap bitmaps
+            if(iActiveMiniviewBitmap == &iMiniviewBitmap1)
+            	iActiveMiniviewBitmap = &iMiniviewBitmap2;
+            else
+            	iActiveMiniviewBitmap = &iMiniviewBitmap1;
+            
+            // Take snapshot and publish	
             TRAP_IGNORE(
-               (iEngine->TakeSnapshotL( *iMiniviewBitmap ));
-                iCpsPublisher->PublishBitmapL( *iMiniviewBitmap, *iWidgetBundleId );
+               (iEngine->TakeSnapshotL( *iActiveMiniviewBitmap ));
+                iCpsPublisher->PublishBitmapL( *iActiveMiniviewBitmap, *iWidgetBundleId );
                 );
             }
 #endif
@@ -810,6 +826,13 @@ void CWidgetUiWindow::ConnectionManagement()
                     iWindowManager.GetConnection()->SetRequestedAP( iap );
                 );
             }
+
+        if ( EBrowserCenRepApSelModeAlwaysAsk == ask )
+            {
+              //Always ask case
+              TUint32 ap( 0 );
+              iWindowManager.GetConnection()->SetRequestedAP( ap );
+            }
         }
     }
 
@@ -825,11 +848,21 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
     if ( !iWindowManager.GetConnection()->Connected() )
         {
         // 2.2. make a connection
-        TInt connFailure = iWindowManager.GetConnection()->StartConnectionL( ETrue );
+        iConnecting=ETrue;
+        TInt connFailure = 0;
+        TRAPD(err, connFailure=iWindowManager.GetConnection()->StartConnectionL( ETrue ));
+        iConnecting=EFalse;
+        User::LeaveIfError(err);
+        if(iDeleteItself)
+            iAsyncCallBack->CallBack();
         if (KErrCancel == connFailure)
             {
 #ifdef BRDO_WRT_HS_FF
-            iCpsPublisher->NetworkConnectionCancelledL();
+            if(! (EMiniViewEnabled == WidgetMiniViewState() || 
+                  EMiniViewNotEnabled == WidgetMiniViewState()) )
+                {        
+                iCpsPublisher->NetworkConnectionCancelledL();
+                }
 #endif
             User::Leave( connFailure );
             }
@@ -1121,7 +1154,7 @@ void CWidgetUiWindow::DetermineNetworkState()
     {
     TNetworkState currNetState;
     RWidgetRegistryClientSession& widgetRegistry = iWindowManager.WidgetUIClientSession();
-    TInt inMiniView = widgetRegistry.IsWidgetInMiniView( iUid);
+    TInt inMiniView = !(WidgetMiniViewState()==EMiniViewEnabled || WidgetMiniViewState()==EMiniViewNotEnabled);//widgetRegistry.IsWidgetInMiniView( iUid);
     CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowNetworkAccess );
     TInt netAccessWdgtProp = *propValue;    // AllowNetworkAccess in the info.plist file
 
@@ -1183,4 +1216,38 @@ void CWidgetUiWindow::MakeSoftkeysVisible(TBool aVisible, TBool aTextBoxUpdate)
             }
         }
     }
+
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::NeedToNotifyNetworkState()
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiWindow::NeedToNotifyNetworkState(TBool aNetworkState)
+    {
+    iNeedToNotifyNetworkState = aNetworkState;
+    }
+
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::CanBeDeleted()
+// -----------------------------------------------------------------------------
+//
+TBool CWidgetUiWindow::CanBeDeleted()
+    {
+    iDeleteItself = iConnecting;
+    return !iConnecting;
+    }
+    
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::DeleteItself()
+// -----------------------------------------------------------------------------
+//
+TInt CWidgetUiWindow::DeleteItself(TAny* aPtr)
+    {
+    CWidgetUiWindow* self = (CWidgetUiWindow*)aPtr;
+    CWidgetUiWindowManager* p = &self->iWindowManager;
+    delete self;
+    if(p->WindowListCount() == 0)
+        p->ExitNow();
+    return 0;
+    }
+
 // End of file

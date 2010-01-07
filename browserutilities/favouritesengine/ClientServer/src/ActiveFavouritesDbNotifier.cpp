@@ -17,11 +17,10 @@
 *
 */
 
-
 // INCLUDE FILES
 
-#include "activefavouritesdbnotifier.h"
-#include "favouritesdbobserver.h"
+#include <activefavouritesdbnotifier.h>
+#include <favouritesdbobserver.h>
 
 // ================= MEMBER FUNCTIONS =======================
 

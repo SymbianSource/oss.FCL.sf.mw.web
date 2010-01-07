@@ -15,11 +15,10 @@
 *
 */
 
-
 #include <e32std.h>
 
 #include "FeedsServer.h"
-#include "leaktracker.h"
+#include <leaktracker.h>
 
 // -----------------------------------------------------------------------------
 // E32Main

@@ -15,12 +15,11 @@
 *
 */
 
-
 #ifndef _GESTURERECOGNISER_H_
 #define _GESTURERECOGNISER_H_
 
 #include <e32std.h>
-#include "rt_gestureobserver.h"
+#include <rt_gestureobserver.h>
 
 namespace RT_GestureHelper
 {

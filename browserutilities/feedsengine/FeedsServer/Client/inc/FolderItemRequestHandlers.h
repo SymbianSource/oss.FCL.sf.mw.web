@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef FOLDER_ITEM_REQUEST_HANDLER_H
 #define FOLDER_ITEM_REQUEST_HANDLER_H
 
@@ -25,8 +24,8 @@
 // INCLUDES
 #include <f32file.h>
 #include <feedsservermsg.h>
-#include "feedsentity.h"
-#include "feedsserverrequesthandler.h"
+#include <feedsentity.h>
+#include <feedsserverrequesthandler.h>
 
 // CONSTANTS
 

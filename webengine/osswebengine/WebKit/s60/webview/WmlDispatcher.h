@@ -21,7 +21,7 @@
 //  INCLUDES
 #include <e32base.h>
 #include <w32std.h>
-#include "brctldefs.h"
+#include <brctldefs.h>
 
 #include "BrCtl.h"
 #include "SelfDownloadContentHandler.h"

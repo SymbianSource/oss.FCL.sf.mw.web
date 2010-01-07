@@ -34,7 +34,7 @@
 #include <e32uid.h>
 #include <browserdialogsprovider.h>
 //tot:fixme
-//#include <oom.h>
+//#include "oom.h"
 
 #include "config.h"
 #include "BrCtl.h"
@@ -414,6 +414,7 @@ CBrCtl::CBrCtl(
    , m_commandIdBase(aCommandIdBase)
    , m_capabilities(aBrCtlCapabilities)
    , m_suspendTimers(false)
+   , m_pageLoadFinished(false)
    , m_wmlEngineInterface(NULL)
    , m_brCtlDownloadObserver(aBrCtlDownloadObserver)
    , m_windoCloseTimer(NULL)
@@ -495,6 +496,9 @@ void CBrCtl::ConstructL(
         }
     
     LoadResourceFileL();
+
+    MemoryManager::InitOOMDialog();
+    
     // Set the rect for BrowserControl (a CCoeControl).
     SetRect(aRect);
     CCoeEnv::Static()->DisableExitChecks(true);
@@ -583,6 +587,7 @@ void CBrCtl::HandleBrowserLoadEventL( TBrCtlDefs::TBrCtlLoadEvent aLoadEvent, TU
 
     switch (aLoadEvent) {
         case TBrCtlDefs::EEventNewContentStart:
+            m_pageLoadFinished = false;
             if (m_webView->pageScalerEnabled())
                 m_webView->pageScaler()->DocumentStarted();
             if (m_webView->formFillPopup() && m_webView->formFillPopup()->IsVisible()) 
@@ -590,9 +595,10 @@ void CBrCtl::HandleBrowserLoadEventL( TBrCtlDefs::TBrCtlLoadEvent aLoadEvent, TU
             break;
         case TBrCtlDefs::EEventContentFinished:
         case TBrCtlDefs::EEventUploadFinished:
+            m_pageLoadFinished = true;
             if (m_suspendTimers) {
                 m_suspendTimers = false;
-                HandleCommandL(TBrCtlDefs::ECommandAppBackground);
+                setDeferringTimers(true);
             }
 #ifndef BRDO_WML_DISABLED_FF
             if (m_wmlUnloadPending)
@@ -770,10 +776,20 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
         case TBrCtlDefs::ECommandAppBackground:
             {
 #ifndef PERF_REGRESSION_LOG
-                if (m_webView->isLoading())
-                    m_suspendTimers = true;
-                else if (!isDeferringTimers())
-                    setDeferringTimers(true);
+                if(m_webView->widgetExtension())
+                    {
+                    if(m_pageLoadFinished)
+                        setDeferringTimers(true);
+                    else 
+                        m_suspendTimers = true;
+                    }
+                else
+                    {
+                    if (m_webView->isLoading())
+                        m_suspendTimers = true;
+                    else if (!isDeferringTimers())
+                        setDeferringTimers(true);
+                    }
 #endif
 
                 //Disable the zooming bar when it goes to background

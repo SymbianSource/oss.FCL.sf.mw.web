@@ -28,7 +28,7 @@
 
 #include "WebFrame.h"
 #include "HttpDefs.h"
-#include "brctldefs.h"
+#include <brctldefs.h>
 #include "StaticObjectsContainer.h"
 #include <pluginadapterinterface.h>
 #include "PluginWin.h"

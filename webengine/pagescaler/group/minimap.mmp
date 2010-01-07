@@ -15,7 +15,6 @@
 *
 */
 
-
 #include <platform_paths.hrh>
 #include <platform/mw/browser_platform_variant.hrh>
 
@@ -40,9 +39,8 @@ SOURCE          DllEntryPoint.cpp
 USERINCLUDE     ../inc
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-SYSTEMINCLUDE 	../../osswebengine/memorymanager/inc
-
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
+// SYSTEMINCLUDE 	../../osswebengine/memorymanager/inc
 
 LIBRARY         euser.lib 
 LIBRARY         cone.lib
@@ -52,6 +50,4 @@ LIBRARY         gdi.lib
 LIBRARY         ws32.lib
 LIBRARY         BitmapTransforms.lib
 LIBRARY         MemMan.lib
-
-
 

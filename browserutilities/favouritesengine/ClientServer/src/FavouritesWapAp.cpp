@@ -17,10 +17,9 @@
 *
 */
 
-
 // INCLUDE FILES
 
-#include "favouriteswapap.h"
+#include <favouriteswapap.h>
 #include "FavouritesPanic.h"
 
 // CONSTANTS

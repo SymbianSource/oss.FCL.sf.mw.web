@@ -15,9 +15,9 @@
 *
 */
 
+#include <e32def.h>
 
 #include "nw_hed_loaderi.h"
-
 #include "nw_adt_resizablevector.h"
 #include "nw_text_ucs2.h"
 #include "nw_hed_urlrequest.h"
@@ -28,9 +28,6 @@
 #include "nwx_logger.h"
 #include "nwx_http_defs.h"
 #include "BrsrStatusCodes.h"
-
-#include <e32def.h>
-
 
 /* ------------------------------------------------------------------------- */
 

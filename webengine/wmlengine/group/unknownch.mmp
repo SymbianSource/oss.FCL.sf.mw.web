@@ -40,11 +40,9 @@ USERINCLUDE     ../src/lmgr/include
 USERINCLUDE     ../src/evt/include
 USERINCLUDE     ../src/object/include
 USERINCLUDE     ../src/markup/include
+USERINCLUDE     ../src/urlloader/include
+USERINCLUDE     ../src/utils/include
+USERINCLUDE     ../src/wml/include
+USERINCLUDE     ../src/wml/src
 
-SYSTEMINCLUDE   ../src/urlloader/include
-SYSTEMINCLUDE   ../src/utils/include
-SYSTEMINCLUDE   ../src/wml/include
-SYSTEMINCLUDE   ../src/wml/src
 MW_LAYER_SYSTEMINCLUDE
-
-

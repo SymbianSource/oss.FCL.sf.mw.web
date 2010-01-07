@@ -61,16 +61,10 @@ END // RESOURCE
 USERINCLUDE     ../Inc
 USERINCLUDE     ../../DownloadMgrClntSrv/inc
 
+MW_LAYER_SYSTEMINCLUDE
+#if defined(__PLATFORM_VERSION_50_TUBE__) || defined( __PLATFORM_VERSION_50__)
 APP_LAYER_SYSTEMINCLUDE
-/* SF TODO: resolve APP LAYER DEPENDENCY: 
-	s60/app/devicecontrol/devctrl_dom/fota_engine_api/inc/FotaEngine.h
-	s60/app/devicecontrol/devctrl_dom/fota_engine_api/inc/fotaconst.h
-	s60/app/devicecontrol/devctrl_dom/fota_engine_api/inc/FotaEngStream.h
-
-	s60/app/gallery/gallery_dom/media_file_api/inc/CMGXFileManager.h
-	s60/app/gallery/gallery_dom/media_file_api/inc/MGXFileManagerFactory.h
-*/
-//MW_LAYER_SYSTEMINCLUDE
+#endif
 
 SOURCEPATH      ../Src
 SOURCE          AsyncEventHandlerArray.cpp

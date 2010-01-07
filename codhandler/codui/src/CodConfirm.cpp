@@ -15,14 +15,13 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include <AknUtils.h>
 #include <AknDef.h>
 #include <StringLoader.h>
-#include <CodData.h>
-#include <CodDefs.h>
+#include "CodData.h"
+#include "CodDefs.h"
 #include <avkon.rsg>
 #include <CodUi.rsg>
 #include "CodConfirm.h"
@@ -30,16 +29,14 @@
 #include <Oma2Agent.h>
 #include <AknLayout.cdl.h>
 
-
 #include <eikmobs.h>
 #include <aknPopup.h>
 #include <aknlists.h>
-#include    <StringLoader.h>
+#include <StringLoader.h>
 
 _LIT( KListBoxSeparator, "\t" );
 
 // FORWARD DECLARATIONS
-
 
 // ================= TYPES =======================
 

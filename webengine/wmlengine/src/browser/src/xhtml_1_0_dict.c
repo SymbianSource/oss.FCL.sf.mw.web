@@ -35,8 +35,7 @@
  */
 #include "nwx_defs.h"
 #include "nw_xhtml_xhtml_1_0_tokens.h"
-#include "nw_wbxml_dictionary.h"
-
+#include <nw_wbxml_dictionary.h>
 
 static const NW_Ucs2 NW_XHTML_1_0_ElementTag_body[] = {'b','o','d','y','\0'};
 static const NW_Ucs2 NW_XHTML_1_0_ElementTag_head[] = {'h','e','a','d','\0'};

@@ -17,16 +17,15 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include <s32std.h>
 #include <apmrec.h>
 #include <apmstd.h>
 #include <f32file.h>
-#include <CodDefs.h>
+#include "CodDefs.h"
 #include <CharConv.h>
-#include <ImplementationProxy.h>
+#include <ecom/implementationproxy.h>
 #include "DdRecog.h"
 #include "DdRecogLogger.h"
 

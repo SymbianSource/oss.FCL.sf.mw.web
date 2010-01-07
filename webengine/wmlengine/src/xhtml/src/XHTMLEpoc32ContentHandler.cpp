@@ -15,7 +15,6 @@
 *
 */
 
-
 #include "BrsrStatusCodes.h"
 #include "nw_xhtml_epoc32contenthandleri.h"
 #include "nw_structure_structuremodule.h"

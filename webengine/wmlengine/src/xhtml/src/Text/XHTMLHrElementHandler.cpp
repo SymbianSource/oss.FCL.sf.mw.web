@@ -19,7 +19,7 @@
 #include "nw_text_hrelementhandleri.h"
 
 #include "nw_xhtml_xhtmlcontenthandler.h"
-#include "nw_dom_document.h"
+#include <nw_dom_document.h>
 #include "nw_lmgr_rulebox.h"
 #include "NW_Text_Abstract.h"
 #include "nw_dom_domvisitor.h"

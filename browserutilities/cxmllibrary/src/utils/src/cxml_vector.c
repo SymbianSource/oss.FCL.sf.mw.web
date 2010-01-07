@@ -15,8 +15,7 @@
 *
 */
 
-
-#include "nw_tinytree.h"
+#include <nw_tinytree.h>
 #include "cxml_internal.h"
 
 /* ------------------------------------------------------------------------- */

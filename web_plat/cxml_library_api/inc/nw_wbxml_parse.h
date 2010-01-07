@@ -28,14 +28,13 @@
 #ifndef NW_PARSER_WBXML_PARSE_H
 #define NW_PARSER_WBXML_PARSE_H
 
-#include "cxml_proj.h"
-#include "nw_wbxml_token.h"
-#include "nw_wbxml_event.h"
+#include <cxml_proj.h>
+#include <nw_wbxml_token.h>
+#include <nw_wbxml_event.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
 
 /** ----------------------------------------------------------------------- **
     @struct:      NW_WBXML_CP_Registry_Entry

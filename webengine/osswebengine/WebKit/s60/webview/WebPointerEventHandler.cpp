@@ -23,7 +23,7 @@
 #include <touchfeedback.h>
 #endif // BRDO_TOUCH_ENABLED_FF
 #include "brctl.h"
-#include "brctldefs.h"
+#include <brctldefs.h>
 #include "WebPointerEventHandler.h"
 #include "WebView.h"
 #include "WebFrame.h"
@@ -146,8 +146,6 @@ void WebPointerEventHandler::HandleGestureL( const TGestureEvent& aEvent )
 {
     TGestureCode gtype = aEvent.Code(EAxisBoth);
     
-    m_highlightPos = aEvent.CurrentPos();
-
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
     
     PluginSkin* plugin = m_webview->mainFrame()->focusedPlugin();
@@ -269,6 +267,7 @@ void WebPointerEventHandler::handleTouchDownL(const TGestureEvent& aEvent)
     PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
     PluginSkin* pluginToActivate = pluginHandler->pluginToActivate();
     m_buttonDownEvent = m_currentEvent;
+    m_highlightPos = aEvent.CurrentPos();    
     
     if ( !m_buttonDownTimer.isActive() && !m_webview->inPageViewMode()){
         m_buttonDownTimer.startOneShot(0.1f);        
@@ -424,7 +423,11 @@ TBrCtlDefs::TBrCtlElementType WebPointerEventHandler::highlitableElement()
     TPoint pt(wfrm->frameView()->viewCoordsInFrameCoords(pos));
     TPoint nodePoint;
     
-    Element* eventNode = frm->document()->elementFromPoint(pos.iX, pos.iY);
+    Element* eventNode = frm->document()->elementFromPoint(pt.iX, pt.iY);
+    
+    if (m_isHighlighted){
+               dehighlight();                
+           }
     
     m_highlightedNode = NULL;
 

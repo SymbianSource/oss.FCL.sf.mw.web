@@ -15,7 +15,6 @@
 *
 */
 
-
 #include "nw_lmgr_boxi.h" 
 #include "nw_lmgr_rootbox.h"
 #include "nw_lmgr_marqueebox.h"
@@ -45,8 +44,8 @@
 #include "BrsrStatusCodes.h"
 #include "LMgrAnonBlock.h"
 #include "nw_css_tokentoint.h"
-#include "bitdev.h"
-#include "aknutils.h"
+#include <bitdev.h>
+#include <aknutils.h>
 #include "LMgrObjectBoxOOC.h"
 
 /* ------------------------------------------------------------------------- *

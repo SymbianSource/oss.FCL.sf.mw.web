@@ -15,18 +15,13 @@
 *
 */
 
-
-
 // INCLUDE FILES
-#include "rxmlreader.h"
+#include <rxmlreader.h>
 #include "CXMLReader.h"
-
-
 
 // requirement for E32 DLLs
 
 // ============================ MEMBER FUNCTIONS ===============================
-
 
 // -----------------------------------------------------------------------------
 // RXMLReader::CreateL()
@@ -36,8 +31,6 @@ EXPORT_C void RXMLReader::CreateL()
 	{
 		iImplementation = CXMLReader::NewL();
 	}
-
-
 
 // -----------------------------------------------------------------------------
 // RXMLReader::Destroy()

@@ -15,16 +15,14 @@
 *
 */
 
-
-
 #ifndef URLLOADERI_H
 #define URLLOADERI_H
 
 //  INCLUDES
+#include <brctldefs.h>
 #include "urlloader_urlloaderint.h"
 #include "httploader_mlinkresolvercallbacks.h"
 #include "BrsrStatusCodes.h"
-#include "brctldefs.h"
 
 #ifdef __cplusplus
 extern "C" {

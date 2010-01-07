@@ -14,6 +14,7 @@
 * Description:  Build information for the Feeds Server Api
 *
 */
+
 #include <platform_paths.hrh>
 #include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
@@ -21,7 +22,6 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-
 ../inc/feedsserverclient.h          MW_LAYER_PLATFORM_EXPORT_PATH(feedsserverclient.h)
 ../inc/feedsserverfeed.h            MW_LAYER_PLATFORM_EXPORT_PATH(feedsserverfeed.h)
 ../inc/feedsserverfolderitem.h      MW_LAYER_PLATFORM_EXPORT_PATH(feedsserverfolderitem.h)

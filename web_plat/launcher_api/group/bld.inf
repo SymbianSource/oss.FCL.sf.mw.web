@@ -21,17 +21,14 @@
 #include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
-
 DEFAULT
 
 PRJ_EXPORTS
-
 ../inc/browserlauncher.h                MW_LAYER_PLATFORM_EXPORT_PATH(browserlauncher.h)
 ../inc/downloadedcontenthandler.h       MW_LAYER_PLATFORM_EXPORT_PATH(downloadedcontenthandler.h)
 ../inc/browseroverriddensettings.h      MW_LAYER_PLATFORM_EXPORT_PATH(browseroverriddensettings.h)
 ../inc/browseroverriddensettings.inl    MW_LAYER_PLATFORM_EXPORT_PATH(browseroverriddensettings.inl)
+
 PRJ_MMPFILES
 
 // End of file
-
-

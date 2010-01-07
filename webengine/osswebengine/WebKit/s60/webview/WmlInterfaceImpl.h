@@ -25,7 +25,7 @@
 #include <e32base.h>
 #include "WmlInterface.h"
 
-#include "brctldialogsprovider.h"
+#include <brctldialogsprovider.h>
 
 class CBrCtlObjectInfo;
 class CWmlContentInterface;

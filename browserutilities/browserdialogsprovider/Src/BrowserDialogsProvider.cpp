@@ -19,11 +19,11 @@
 // INCLUDE Files
 
 // User includes
-#include "browserdialogsprovider.h"	// Class header
+#include <browserdialogsprovider.h>	// Class header
 #include "BrowserDialogsProvider.hrh"
 #include "BrowserAuthenticationDialog.h"
 #include "BrowserDialogsProviderConstants.h"
-#include "browserdialogsproviderobserver.h" //obs
+#include <browserdialogsproviderobserver.h> //obs
 
 // Browser as a Plugin - own classes
 #include "BrowserViewImagesPopup.h"		// For DialogDisplayPageImagesL
@@ -438,17 +438,16 @@ EXPORT_C TBool CBrowserDialogsProvider::DialogSelectOptionL(
 								TBrCtlSelectOptionType aBrCtlSelectOptionType,
 								CArrayFix<TBrCtlSelectOptionData>& aOptions )
 	{
-    CBrowserSelectElementDlg* dlg = CBrowserSelectElementDlg::NewL(	aTitle, 
+     iSelectDlg = CBrowserSelectElementDlg::NewL(	aTitle, 
 												aBrCtlSelectOptionType, 
 												aOptions );
 
-	
-    iDialogs.Append( dlg );     // Store a pointer to the dialog for CancelAll()
 
-	TInt result = dlg->ExecuteLD();
 
-    RemoveDialogFromArray();
-    
+	TInt result = iSelectDlg->ExecuteLD();
+
+
+    iSelectDlg = 0;
     if ( iObserver )
         {
         iObserver->ReportDialogEventL( 
@@ -981,7 +980,11 @@ EXPORT_C void CBrowserDialogsProvider::DialogDisplayPageImagesL(
 //-----------------------------------------------------------------------------
 //
 EXPORT_C void CBrowserDialogsProvider::CancelAll()
-	{
+    {
+	 if(iSelectDlg  )
+        iSelectDlg->CancelPopup();
+		
+    iDialogs.Close();
     // Empty the array
     iDialogs.ResetAndDestroy();
 	}

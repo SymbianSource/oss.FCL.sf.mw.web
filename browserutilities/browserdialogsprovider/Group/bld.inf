@@ -26,7 +26,7 @@ DEFAULT
 
 PRJ_EXPORTS
 // export localised loc file
-../loc/BrowserDialogsProvider.loc			MW_LAYER_LOC_EXPORT_PATH(BrowserDialogsProvider.loc)
+../loc/browserdialogsprovider.loc			MW_LAYER_LOC_EXPORT_PATH(browserdialogsprovider.loc)
 ../rom/BrowserDialogsProvider.iby			CORE_MW_LAYER_IBY_EXPORT_PATH(BrowserDialogsProvider.iby)
 ../rom/BrowserDialogsProviderResources.iby	LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(BrowserDialogsProviderResources.iby)
 

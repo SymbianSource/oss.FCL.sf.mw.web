@@ -35,8 +35,7 @@
 #include "nwx_ctx.h"
 #include "nw_hed_documentroot.h"
 #include "BrsrStatusCodes.h"
-#include "MemoryManager.h"
-
+#include <MemoryManager.h>
 
 /*------------------------------------------------------------------------
  * StringCopy -- makes a copy of src string, puts its address in *dest,

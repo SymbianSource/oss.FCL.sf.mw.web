@@ -15,7 +15,6 @@
 *
 */
 
-
 // INCLUDE FILES
 #include "nw_image_imgelementhandleri.h"
 #include "nw_image_virtualimage.h"

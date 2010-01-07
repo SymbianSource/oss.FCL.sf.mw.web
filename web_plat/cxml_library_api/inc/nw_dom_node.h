@@ -15,7 +15,6 @@
 *
 */
 
-
 /** ----------------------------------------------------------------------- **
     @package:     NW_DOM
 
@@ -27,9 +26,9 @@
 #ifndef NW_DOM_NODE_H
 #define NW_DOM_NODE_H
 
-#include "nw_tinytree.h"
-#include "nw_tinydom.h"
-#include "nw_string_string.h"
+#include <nw_tinytree.h>
+#include <nw_tinydom.h>
+#include <nw_string_string.h>
 
 #ifdef __cplusplus
 extern "C" {

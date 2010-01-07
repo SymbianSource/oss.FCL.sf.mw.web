@@ -19,7 +19,11 @@
 #ifndef _RT_GESTUREHELPER_IBY_
 #define _RT_GESTUREHELPER_IBY_
 
+#ifdef __S60_32__
+#include <browser_platform_variant.hrh>
+#else
 #include <platform/mw/browser_platform_variant.hrh>
+#endif
 
 #ifdef BRDO_USE_GESTURE_HELPER
 

@@ -19,7 +19,7 @@
 #define GESTUREEVENT_H_
 
 #include <e32base.h>
-#include "rt_gestureobserver.h"
+#include <rt_gestureobserver.h>
 #include "pointarray.h"
 
 namespace RT_GestureHelper

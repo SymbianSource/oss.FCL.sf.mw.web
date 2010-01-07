@@ -14,17 +14,14 @@
 * Description:  
 *
 */
-#ifndef __BROWSER_SDK
+
 #include <platform_paths.hrh>
 #include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
-#endif
 
 PRJ_PLATFORMS
-DEFAULT GCCE
+DEFAULT
 
 PRJ_EXPORTS
-#ifndef __BROWSER_SDK
-
 ../inc/brctldefs.h                MW_LAYER_PUBLIC_EXPORT_PATH(brctldefs.h)
 ../inc/brctldialogsprovider.h     MW_LAYER_PUBLIC_EXPORT_PATH(brctldialogsprovider.h)
 ../inc/brctlinterface.h           MW_LAYER_PUBLIC_EXPORT_PATH(brctlinterface.h)
@@ -34,20 +31,6 @@ PRJ_EXPORTS
 ../inc/brctlspecialloadobserver.h MW_LAYER_PUBLIC_EXPORT_PATH(brctlspecialloadobserver.h)
 ../inc/brctlwindowobserver.h      MW_LAYER_PUBLIC_EXPORT_PATH(brctlwindowobserver.h)
 ../inc/brctldownloadobserver.h    MW_LAYER_PUBLIC_EXPORT_PATH(brctldownloadobserver.h)
-
-#else
-
-../inc/brctldefs.h                /epoc32/include/brctldefs.h
-../inc/brctldialogsprovider.h     /epoc32/include/brctldialogsprovider.h
-../inc/brctlinterface.h           /epoc32/include/brctlinterface.h
-../inc/brctllayoutobserver.h      /epoc32/include/brctllayoutobserver.h
-../inc/brctllinkresolver.h        /epoc32/include/brctllinkresolver.h
-../inc/brctlsoftkeysobserver.h    /epoc32/include/brctlsoftkeysobserver.h
-../inc/brctlspecialloadobserver.h /epoc32/include/brctlspecialloadobserver.h
-../inc/brctlwindowobserver.h      /epoc32/include/brctlwindowobserver.h
-../inc/brctldownloadobserver.h    /epoc32/include/brctldownloadobserver.h
-                      
-#endif //#ifndef __BROWSER_SDK
 
 PRJ_MMPFILES
 

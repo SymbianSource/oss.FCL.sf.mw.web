@@ -40,4 +40,6 @@ EXPORTS
 	_ZTV18CDefaultMemoryPool @ 39 NONAME ; #<VT>#
 	_ZN13MemoryManager17InitFastAllocatorEv @ 40 NONAME
 	_ZN13MemoryManager19CreateFastAllocatorEv @ 41 NONAME
+	_ZN13MemoryManager13InitOOMDialogEv @ 42 NONAME
+	_ZN13MemoryManager23ResetOOMDialogDisplayedEv @ 43 NONAME
 

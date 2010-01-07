@@ -36,10 +36,9 @@ VENDORID        VID_DEFAULT
 SOURCE          DdRecog.cpp
 
 USERINCLUDE     ../inc
+USERINCLUDE   ../../CodEng/inc
 
-SYSTEMINCLUDE   ../../CodEng/inc
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_ECOM_SYSTEMINCLUDE
 
 LIBRARY         euser.lib
 LIBRARY         efsrv.lib

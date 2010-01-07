@@ -20,7 +20,7 @@
 
 // INCLUDES
 #include "BrowserUploadProgressNote.h"
-#include "browserdialogsproviderobserver.h"
+#include <browserdialogsproviderobserver.h>
 
 #include <BrowserDialogsProvider.rsg>
 #include <StringLoader.h>

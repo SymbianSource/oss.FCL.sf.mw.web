@@ -21,7 +21,7 @@
 #ifndef __DOWNLOADMGR_RECEIVEHANDLER_H__
 #define __DOWNLOADMGR_RECEIVEHANDLER_H__
 
-#include "downloadmgrclient.h"
+#include <downloadmgrclient.h>
 #include <e32base.h>
 
 // FORWARD DECLARATIONS

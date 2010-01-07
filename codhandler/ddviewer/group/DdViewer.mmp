@@ -16,6 +16,7 @@
 *      
 *
 */
+
 #include <platform_paths.hrh>
 #include <data_caging_paths.hrh>
 #include <platform/mw/browser_platform_variant.hrh>
@@ -43,10 +44,10 @@ LANGUAGE_IDS
 #endif
 END
 
-SYSTEMINCLUDE   ../../CodEng/inc
-SYSTEMINCLUDE   ../../CodUi/inc
-MW_LAYER_SYSTEMINCLUDE
+USERINCLUDE   ../../CodEng/inc
+USERINCLUDE   ../../CodUi/inc
 
+MW_LAYER_SYSTEMINCLUDE
 
 LIBRARY         euser.lib
 LIBRARY         eikcore.lib

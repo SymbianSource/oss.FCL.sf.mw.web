@@ -15,7 +15,6 @@
 *
 */
 
-
 #include <platform_paths.hrh>
 #include <platform/mw/browser_platform_variant.hrh>
 
@@ -37,11 +36,10 @@ deffile Bwins/MULTIPARTPARSER.DEF
 deffile Bmarm/MULTIPARTPARSER.DEF
 #endif
 
-
 USERINCLUDE     ../inc
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 SOURCEPATH      ../src
 
@@ -55,12 +53,3 @@ LIBRARY  InetProtUtil.lib
 LIBRARY  estor.lib
 LIBRARY	 ezlib.lib
 LIBRARY	 imut.lib
-
-
-
-
-
-  
- 
-
-

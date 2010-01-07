@@ -15,16 +15,14 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include    <browser_platform_variant.hrh>
 #include    "CUserInteractionsUtils.h"
 #include    "MDownloadHandlerObserver.h"
-#include    "cdownloadmgruibase.h"
-#include    "cdownloadmgruilibregistry.h"
-#include    "cdownloadmgruidownloadslist.h"
-#include    "cdownloadmgruiuserinteractions.h"
+#include    <cdownloadmgruibase.h>
+#include    <cdownloadmgruilibregistry.h>
+#include    <cdownloadmgruidownloadslist.h>
+#include    <cdownloadmgruiuserinteractions.h>
 #include    "UiLibLogger.h"
 #include    "DMgrUiLibPanic.h"
 #include    <DownloadMgrUiLib.rsg>
@@ -51,7 +49,7 @@
 #include	<apmrec.h>
 #include	<apgcli.h>
 #include    <s32mem.h>
-#include    "bautils.h"
+#include    <bautils.h>
 #include	<etelmm.h>
 #include	<MmTsy_names.h>
 #include    <rconnmon.h>

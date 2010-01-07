@@ -15,10 +15,9 @@
 *
 */
 
-
 // INCLUDE FILES
 
-#include <CodDefs.h>
+#include "CodDefs.h"
 #include "DdViewerApp.h"
 #include "CodDocument.h"
 

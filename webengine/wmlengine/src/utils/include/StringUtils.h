@@ -15,8 +15,6 @@
 *
 */
 
-
-
 #ifndef STRINGUTIL_H
 #define STRINGUTIL_H
 
@@ -25,7 +23,6 @@
 
 #include "nwx_defs.h"
 #include <nw_string_string.h>
-
 
 // CLASS DECLARATION
 

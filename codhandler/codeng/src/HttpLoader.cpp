@@ -17,7 +17,6 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "HttpLoader.h"
@@ -38,17 +37,15 @@
 #include <deflatefilterinterface.h>
 #include <httperr.h>
 #include <bldvariant.hrh>
-#include <ECom.h>
+#include <ecom/ecom.h>
 #include <es_sock.h>
 #include <EscapeUtils.h>
 #include <http/rhttpheaders.h>
 #include <Oma2Agent.h>
 #include <httpdownloadmgrcommon.h>
-#include    "HeaderField.h"
-#include    "FileExt.h"
-#include    "CodData.h"
-
-
+#include "HeaderField.h"
+#include "FileExt.h"
+#include "CodData.h"
 
 _LIT8( KDRMOldContentType, "x-drm-old-content-type");           // old content type header to be added
 _LIT8( KAcceptRangeHeader, "bytes");           

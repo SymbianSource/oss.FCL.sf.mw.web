@@ -24,7 +24,7 @@
 #include "nw_hed_urlrequest.h"
 #include "nw_hed_urlresponse.h"
 #include "nw_text_ucs2.h"
-#include <urlloader_urlresponse.h>
+#include "urlloader_urlresponse.h"
 #include "BrsrStatusCodes.h"
 
 #ifdef __cplusplus

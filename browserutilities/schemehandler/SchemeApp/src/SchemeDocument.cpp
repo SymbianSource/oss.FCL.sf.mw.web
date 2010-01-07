@@ -17,12 +17,11 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "SchemeDocument.h"
 #include "SchemeAppUi.h"
-#include "schemehandler.h"
+#include <schemehandler.h>
 #include "SchemeAppLogger.h"
 
 // ================= MEMBER FUNCTIONS =======================

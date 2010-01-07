@@ -31,7 +31,7 @@ extern "C" {
 /*
 ** Includes
 */
-#include "cxml_type_def.h"
+#include <cxml_type_def.h>
 
 CXML_Ucs2 CXML_Str_ToLower(const CXML_Ucs2 ch);
 CXML_Ucs2 CXML_Str_ToUpper(const CXML_Ucs2 ch);

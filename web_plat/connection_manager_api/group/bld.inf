@@ -21,7 +21,6 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-
 ../inc/internetconnectionmanager.h     MW_LAYER_PLATFORM_EXPORT_PATH(internetconnectionmanager.h)
 ../inc/mconnection.h                   MW_LAYER_PLATFORM_EXPORT_PATH(mconnection.h)
 ../inc/connectionobservers.h           MW_LAYER_PLATFORM_EXPORT_PATH(connectionobservers.h)

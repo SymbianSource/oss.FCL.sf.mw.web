@@ -15,9 +15,7 @@
 *
 */
 
-#include <platform_paths.hrh>
-#include <data_caging_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include  "../webkitcommon.mmpi"
 
 TARGET          image.lib
 TARGETTYPE      lib
@@ -78,36 +76,4 @@ SOURCE	IMAGEFactory.cpp
 SOURCE  Epoc32SimpleImage.cpp
 SOURCE	IMAGEVirtualImage.cpp
 SOURCE  Epoc32ImageDecoder.cpp
-
 SOURCE  nw_image_iimageobserver.cpp
-
-#include  "../webkitcommon.mmpi"
-
-USERINCLUDE     .
-USERINCLUDE     ../../src/adt/include
-USERINCLUDE     ../../src/evt/include
-USERINCLUDE     ../../src/gdi/include
-USERINCLUDE     ../../src/hed/include
-USERINCLUDE     ../../src/htmlp/include
-USERINCLUDE     ../../src/markup/include
-USERINCLUDE     ../../src/image/include
-USERINCLUDE     ../../src/imagech/include
-USERINCLUDE     ../../src/lmgr/include
-USERINCLUDE     ../../src/fbox/include
-USERINCLUDE     ../../src/object/include
-USERINCLUDE     ../../src/system/include
-USERINCLUDE     ../../src/text/include
-USERINCLUDE     ../../src/wml/src
-USERINCLUDE     ../../src/wml/include
-USERINCLUDE     ../../src/mvc/include
-USERINCLUDE     ../../src/msg/include
-USERINCLUDE     ../../src/wmlcontrol/include
-
-
-MW_LAYER_SYSTEMINCLUDE
-SYSTEMINCLUDE   ../../src/browser/include
-SYSTEMINCLUDE   ../../src/urlloader/include
-SYSTEMINCLUDE   ../../src/utils/include
-SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
-MW_LAYER_LIBC_SYSTEMINCLUDE
-

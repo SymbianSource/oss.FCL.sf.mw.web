@@ -17,13 +17,12 @@
 *
 */
 
-
 #ifndef BASE_HANDLER_H
 #define BASE_HANDLER_H
 
 // INCLUDES
 
-#include "schemehandler.h"
+#include <schemehandler.h>
 #include <e32base.h>
 
 // FORWARD DECLARATION

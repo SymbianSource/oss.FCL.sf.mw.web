@@ -30,8 +30,8 @@
 #include <AknNoteDialog.h>
 #include <favouritesdb.h>
 #include <e32std.h>
+#include <aiwbrowsercommands.hrh>
 
-#include "aiwbrowsercommands.hrh"
 #include "logger.h"
 
 // LOCAL CONSTANTS AND MACROS

@@ -27,7 +27,7 @@
 #include <bamdesca.h>
 #include "CodDefs.h"
 #include <f32file.h>
-#include "httpdownloaddata.h"
+#include <httpdownloaddata.h>
 
 // ================= CONSTANTS =======================
 /// OMA 1 DD MIME type.

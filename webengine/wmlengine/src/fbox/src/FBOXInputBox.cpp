@@ -15,7 +15,6 @@
 *
 */
 
-
 #include "nw_fbox_inputboxi.h"
 
 #include "nw_fbox_inputskin.h"
@@ -31,7 +30,6 @@
 #include "wml_elm_attr.h"
 #include "nw_wml_core.h"
 #include "nw_wml1x_wml1xcontenthandler.h"
-
 
 /* ------------------------------------------------------------------------- *
    private data

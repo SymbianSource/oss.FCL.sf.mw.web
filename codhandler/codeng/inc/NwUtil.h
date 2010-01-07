@@ -17,7 +17,6 @@
 *
 */
 
-
 #ifndef NW_UTIL_H
 #define NW_UTIL_H
 

@@ -15,15 +15,13 @@
 *
 */
 
-
 #include "nw_structure_titleelementhandleri.h"
 #include "nw_xhtml_xhtmlcontenthandler.h"
 #include "nw_text_ucs2.h"
-#include "nw_dom_text.h"
-#include <nwx_string.h>
+#include <nw_dom_text.h>
+#include "nwx_string.h"
 #include "BrsrStatusCodes.h"
-#include "MemoryManager.h"
-
+#include <MemoryManager.h>
 
 /* ------------------------------------------------------------------------- *
    class definition

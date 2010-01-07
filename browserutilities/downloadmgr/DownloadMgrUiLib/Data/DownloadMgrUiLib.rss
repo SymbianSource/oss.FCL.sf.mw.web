@@ -21,7 +21,7 @@ NAME    DMUL
 
 //  INCLUDES
 #include "DownloadMgrUiLib.hrh"
-#include <DownloadMgrUiLib.loc>
+#include <downloadmgruilib.loc>
 #include <avkon.loc>
 #include <badef.rh>
 #include <uikon.rh>

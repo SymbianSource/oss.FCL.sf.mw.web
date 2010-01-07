@@ -15,19 +15,17 @@
 *
 */
 
-
 #ifndef _GESTURE_H_
 #define _GESTURE_H_
 
 #include <e32base.h>
 
-#include "rt_gestureobserver.h"
+#include <rt_gestureobserver.h>
 #include "gesturerecogniser.h"
 #include "pointarray.h"
 
 namespace RT_GestureHelper
 {
-
 
 enum TEventState
     {     

@@ -17,15 +17,13 @@
 */
 
 #include "PackedAttributes.h"
-#include "feedattributes.h"
-#include "folderattributes.h"
+#include <feedattributes.h>
+#include <folderattributes.h>
 #include "PackedFolder.h"
 #include "Logger.h"
 
-
 const TInt KTokenArrayIncrementSize = 100;
 const TInt KStringTableIncrementSize = 1024;
-
 
 // -----------------------------------------------------------------------------
 // CPackedFolder::NewL

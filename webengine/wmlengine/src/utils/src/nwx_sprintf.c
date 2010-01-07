@@ -33,7 +33,7 @@
 #include "nwx_url_utils.h"
 
 #include <stdarg.h>
-#include <float.h> /* FLT_DIG */
+#include "float.h" /* FLT_DIG */
 
 /*lint -save -e794, -e661 Conceivable use of null pointer, Possible access of out-of-bounds pointer*/
 

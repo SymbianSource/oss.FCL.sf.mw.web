@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef POPUPSELECTLISTBOX_H
 #define POPUPSELECTLISTBOX_H
 
@@ -24,9 +23,7 @@
 #include <eiktxlbx.h>
 #include <eikfrlb.h> //CFormattedCellListBox
 
-
 // CONSTANTS
-
 
 // FORWARD DECLARATIONS
 

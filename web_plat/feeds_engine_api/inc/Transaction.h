@@ -15,7 +15,6 @@
  *
 */
 
-
 #ifndef TRANSACTION_H
 #define TRANSACTION_H
 
@@ -24,10 +23,9 @@
 #include <e32std.h>
 
 #include <ApEngineconsts.h>
-#include "FeedsServerMsg.h"
-
-#include "FeedsEntity.h"
-#include "FeedsInterface.h"
+#include <feedsservermsg.h>
+#include <feedsentity.h>
+#include <feedsinterface.h>
 
 // CONSTANTS
 

@@ -50,10 +50,9 @@ SOURCE      CtiHandler.cpp
 SOURCE      MmsHandler.cpp
 
 USERINCLUDE     ../inc
-SYSTEMINCLUDE     ../../../../inc
+USERINCLUDE     ../../../../inc
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_ECOM_SYSTEMINCLUDE
 
 LIBRARY     euser.lib
 LIBRARY	    ECOM.LIB
@@ -79,6 +78,3 @@ LIBRARY     charconv.lib
 	MACRO __SCHEMEDISP_LOG__
 	DEBUGLIBRARY     flogger.lib
 #endif	// __TEST_SCHEMEDISP_LOG_ENABLED
-
-
-

@@ -15,14 +15,13 @@
 *
 */
 
+#include <e32std.h>
+#include <stdarg.h>
 
 #include "nw_hed_mimetablei.h"
 #include "nwx_http_defs.h"
 #include "nwx_string.h"
 #include "nw_imagech_epoc32contenthandler.h"
-#include <e32std.h>
-
-#include <stdarg.h>
 
 static
 NW_Bool NW_HED_MimeTable_IsImageContentType(NW_Http_ContentTypeString_t contentTypeString)

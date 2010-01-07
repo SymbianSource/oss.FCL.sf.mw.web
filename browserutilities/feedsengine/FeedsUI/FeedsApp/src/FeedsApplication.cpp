@@ -15,12 +15,10 @@
 *
 */
 
-
 #include "FeedsApplication.h"
 #include "FeedsDocument.h"
 #include "FeedsViews.h"
-#include "leaktracker.h"
-
+#include <leaktracker.h>
 
 // -----------------------------------------------------------------------------
 // CFeedsApplication::~CFeedsApplication

@@ -15,16 +15,14 @@
 *
 */
 
-
 #ifndef UPDATE_FEED_TASK_H
 #define UPDATE_FEED_TASK_H
-
 
 // INCLUDES
 #include <e32base.h>
 
 #include "FeedParserObserver.h"
-#include "leaktracker.h"
+#include <leaktracker.h>
 #include "LoadObserver.h"
 #include "Task.h"
 

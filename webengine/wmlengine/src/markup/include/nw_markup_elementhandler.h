@@ -22,7 +22,7 @@
 #include "nw_object_base.h"
 #include "nw_lmgr_containerbox.h"
 #include "nw_lmgr_activebox.h"
-#include "nw_dom_node.h"
+#include <nw_dom_node.h>
 #include "NW_Markup_EXPORT.h"
 #include "BrsrStatusCodes.h"
 

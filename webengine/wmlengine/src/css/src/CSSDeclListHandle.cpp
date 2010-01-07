@@ -21,14 +21,14 @@
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 
 #include <e32base.h>
-#include <nwx_assert.h>
+#include "nwx_assert.h"
 #include "CSSDeclListHandle.h"
 #include "nw_lmgr_simplepropertylist.h"
 #include "nw_text_ucs2.h"
 #include "nw_lmgr_rootbox.h"
 #include "CSSPropVal.h"
 #include "nwx_math.h"
-#include <nwx_string.h>
+#include "nwx_string.h"
 #include "CSSReader.h" 
 #include "BrsrStatusCodes.h"
  

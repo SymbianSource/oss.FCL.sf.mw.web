@@ -1,3 +1,19 @@
+/*
+* Copyright (c) 2009 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
 /* On Unix systems config.in is converted by configure into config.h. PCRE is
 written in Standard C, but there are a few non-standard things it can cope
 with, allowing it to run on SunOS4 and other "close to standard" systems.

@@ -19,7 +19,6 @@
 TARGET          WebKit.lib
 TARGETTYPE      lib
 
-
 VENDORID        VID_DEFAULT
 
 SOURCEPATH      ../../WebView

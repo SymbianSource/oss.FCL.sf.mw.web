@@ -287,10 +287,9 @@ class CWidgetUiObserver : public CBase,
         * Rcognize the mime type.
         * @since 3.1
         * @param aFileName
-        * @param aData
         * @return HBufC*
         */
-        HBufC* RecognizeLC( const TDesC& aFileName, const TDesC8& aData );
+        HBufC* RecognizeLC( const TDesC& aFileName );
 
         /**
         * TranslateURLToFilenameL

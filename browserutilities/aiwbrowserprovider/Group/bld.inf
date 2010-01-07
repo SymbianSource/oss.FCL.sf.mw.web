@@ -25,7 +25,7 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../loc/AiwBrowserProvider.loc  MW_LAYER_LOC_EXPORT_PATH(AiwBrowserProvider.loc)
+../loc/aiwbrowserprovider.loc  MW_LAYER_LOC_EXPORT_PATH(aiwbrowserprovider.loc)
 
 PRJ_MMPFILES
 AiwBrowserProvider.mmp

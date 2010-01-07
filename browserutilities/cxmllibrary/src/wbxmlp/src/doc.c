@@ -15,17 +15,15 @@
 *
 */
 
-
 /*****************************************************************
 **  File: wbxml_doc.c
 **  Description:
 *****************************************************************/
 
 #include "cxml_internal.h"
-#include "nw_wbxml_document.h"
-#include "nw_string_char.h"
-#include "nw_encoder_stringtable.h"
-
+#include <nw_wbxml_document.h>
+#include <nw_string_char.h>
+#include <nw_encoder_stringtable.h>
 
 EXPORT_C NW_Status_t
 NW_WBXML_Document_construct(NW_WBXML_Document_t * doc, NW_Uint32 default_public_id)

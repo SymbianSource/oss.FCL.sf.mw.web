@@ -15,8 +15,6 @@
 *
 */
 
-
-
 // INCLUDES
 #include <e32base.h>
 #include "BrsrStatusCodes.h"

@@ -16,15 +16,14 @@
 *
 */
 
-
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
 #include "DownloadMgrServer.h"
 #include "DownloadMgrDef.h"
 #include "DownloadMgrEventQueue.h"
 
-#include <HttpClientAppInstance.h>
-#include <HttpDownload.h>
+#include "HttpClientAppInstance.h"
+#include "HttpDownload.h"
 #include <e32svr.h>
 #include <basched.h>
 
@@ -174,6 +173,11 @@ void CDownloadMgrSession::DispatchMessageL( const RMessage2& aMessage )
     // check for session-relative requests
 	switch( aMessage.Function() )
 		{
+	    case EHttpDownMgrNumOfSubSessions:
+	         {
+	         GetNumberOfSubsession();
+	         return;
+	         }
         case EHttpDownloadMgrInitialize:
             {
             InitializeL();
@@ -309,6 +313,24 @@ void CDownloadMgrSession::SetCurrentMessage( const RMessage2& aMessage )
 const RMessage2& CDownloadMgrSession::CurrentMessage() const
     {
     return iCurrentMessage;
+    }
+
+// ---------------------------------------------------------
+// CDownloadMgrSession::GetNumberOfSubsession
+// ---------------------------------------------------------
+//
+void CDownloadMgrSession::GetNumberOfSubsession()
+    {    
+    TInt32 value(0);   
+    for( TInt i = 0; i < iObjectIx->Count(); i++ ){
+        CDownloadSubSession* downloadSess 
+                    = ( CDownloadSubSession* )(*iObjectIx)[i];
+         if( downloadSess != NULL ){
+         value++;  
+         }
+        }
+    TPckg<TInt32> pckg( value );
+    Write( 0, CurrentMessage(), pckg );    
     }
 
 // ---------------------------------------------------------

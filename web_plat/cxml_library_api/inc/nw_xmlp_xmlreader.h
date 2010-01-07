@@ -28,7 +28,7 @@
 #ifndef NW_XML_READER_H
 #define NW_XML_READER_H
 
-#include "cxml_proj.h"
+#include <cxml_proj.h>
 /** ----------------------------------------------------------------------- **
     @enum:        NW_XML_Endianness
 

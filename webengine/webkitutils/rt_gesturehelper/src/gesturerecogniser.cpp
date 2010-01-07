@@ -15,13 +15,12 @@
 *
 */
 
-
 #include "gesturerecogniser.h"
 
 #include <e32math.h>
 
 #include "gesturedefs.h"
-#include "rt_gestureobserver.h"
+#include <rt_gestureobserver.h>
 #include "pointarray.h"
 #include "utils.h"
 

@@ -15,8 +15,6 @@
 *
 */
 
-
-
 #ifndef __CXMLREADER_H
 #define __CXMLREADER_H
 
@@ -24,14 +22,13 @@
 #include <e32std.h>
 #include <F32File.h>
 #include <utf.h>
-#include "nw_cxml_parser.h"
+#include <nw_cxml_parser.h>
 
 #include "CXMLAttributes.h"
-#include "mxmlcontenthandler.h"
-#include "mwbxmlcontenthandler.h"
+#include <mxmlcontenthandler.h>
+#include <mwbxmlcontenthandler.h>
 #include "CXMLObserver.h"
-#include "xmlutils.h"
-
+#include <xmlutils.h>
 
 // CLASS DECLARATION
 

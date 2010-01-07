@@ -18,7 +18,7 @@
  
 // INCLUDE FILES
 #include <e32def.h>  // To avoid NULL redefine warning (no #ifndef NULL)
-#include <nwx_settings.h>
+#include "nwx_settings.h"
 
 #include "MVCScroll.h"
 

@@ -21,7 +21,7 @@
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 #include <f32file.h>
 #include "nw_css_defaultstylesheet.h"
-#include <nwx_assert.h>
+#include "nwx_assert.h"
 #include "nwx_settings.h"
 #include "nwx_ctx.h"
 #include "nwx_logger.h"

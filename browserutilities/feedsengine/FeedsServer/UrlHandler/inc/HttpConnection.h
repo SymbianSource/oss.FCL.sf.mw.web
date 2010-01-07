@@ -15,17 +15,15 @@
 *
 */
 
-
 #ifndef HTTP_CONNECTION_H
 #define HTTP_CONNECTION_H
-
 
 // INCLUDES
 #include <e32base.h>
 #include <http/RHTTPSession.h>
 #include <mconnectioncallback.h>
 
-#include "leaktracker.h"
+#include <leaktracker.h>
 
 // CONSTANTS
 

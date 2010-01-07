@@ -21,7 +21,6 @@
 TARGET          XMLInterface.dll
 TARGETTYPE      dll
 UID             0x1000008d 0x101F9750
-//TARGETPATH      ?target_path
 
 VENDORID VID_DEFAULT
 
@@ -40,22 +39,19 @@ SOURCE          RXMLReader.cpp
 SOURCE          wml_1_3_dict.c
 SOURCE          syncml_1_0_dict.c
 SOURCE          xhtml_1_0_dict.c
-SOURCE		sl_dict.c
+SOURCE		      sl_dict.c
 SOURCE          CXMLReader.cpp
 SOURCE          CXMLAttributes.cpp
 SOURCE          CXMLObserver.cpp
 
-// RESOURCE        resource_file
-// RESOURCE        resource_file2
-
 USERINCLUDE     ../INC
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 CAPABILITY 	CAP_GENERAL_DLL
 
-LIBRARY         efsrv.lib
+LIBRARY   efsrv.lib
 LIBRARY		euser.lib
 LIBRARY		bafl.lib
 LIBRARY		charconv.lib 
@@ -88,3 +84,4 @@ END
 */
 // DEFFILE ?filename
 // AIF ?filename
+

@@ -22,7 +22,7 @@
 #include "nwx_http_header.h"
 #include "nwx_buffer.h"
 
-#include "nw_dom_node.h"
+#include <nw_dom_node.h>
 
 #ifdef __cplusplus
 extern "C" {

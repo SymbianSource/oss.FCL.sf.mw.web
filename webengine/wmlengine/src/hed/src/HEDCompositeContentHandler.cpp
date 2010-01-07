@@ -15,7 +15,6 @@
 *
 */
 
-
 #include "nw_hed_compositecontenthandleri.h"
 #include "nw_hed_documentroot.h"
 #include "nw_system_optionlist.h"
@@ -29,12 +28,11 @@
 #include "nw_image_virtualimage.h"
 #include "BrsrStatusCodes.h"
 #include "nwx_settings.h"
-#include <nwx_http_defs.h>
+#include "nwx_http_defs.h"
 #include "stringutils.h"
 #include "TEncodingMapping.h"
-#include "bodypart.h"
-#include "MemoryManager.h"
-
+#include <bodypart.h>
+#include <MemoryManager.h>
 
 /* ------------------------------------------------------------------------- *
    static data

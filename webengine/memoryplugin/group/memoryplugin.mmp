@@ -29,15 +29,15 @@ VENDORID        VID_DEFAULT
 
 USERINCLUDE     .
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_ECOM_SYSTEMINCLUDE
 
 START RESOURCE	../data/10281f93.rss
-TARGET 					memoryplugin.rsc
+TARGET 			memoryplugin.rsc
 END
 
 SOURCEPATH    	../src
-SOURCE 					memoryplugin.cpp
+SOURCE 			memoryplugin.cpp
 
-LIBRARY 				ECOM.LIB
+LIBRARY 		ECOM.LIB
 LIBRARY         euser.lib
 LIBRARY         oommonitor.lib
+

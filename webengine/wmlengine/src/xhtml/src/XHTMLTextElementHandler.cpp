@@ -19,7 +19,7 @@
 #include "nw_xhtml_textelementhandleri.h"
 
 #include "nw_lmgr_textbox.h"
-#include "nw_dom_text.h"
+#include <nw_dom_text.h>
 #include "nw_xhtml_xhtmlcontenthandler.h"
 #include "nw_hed_documentroot.h"
 #include "nw_hed_hedeventhandler.h"

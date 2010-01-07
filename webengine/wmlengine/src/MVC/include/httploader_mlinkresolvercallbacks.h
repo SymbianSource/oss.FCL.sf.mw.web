@@ -15,18 +15,13 @@
 *
 */
 
-
-
 #ifndef MLINKRESOLVERCALLBACKS_H
 #define MLINKRESOLVERCALLBACKS_H
 
+#include <brctldefs.h>
 
 #include "BrsrStatusCodes.h"
-#include "brctldefs.h"
 #include "urlloader_urlresponse.h"
-
-
-
 
 //  INCLUDES
 

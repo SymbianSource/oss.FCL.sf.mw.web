@@ -37,11 +37,10 @@ USERINCLUDE ../../inc
 MW_LAYER_SYSTEMINCLUDE
 
 SYSTEMINCLUDE   . 
-MW_LAYER_ECOM_SYSTEMINCLUDE
 
 SOURCEPATH      ../src
 SOURCE          brctlapitest.cpp brctlapitestblocks.cpp
-SOURCE          brctlapitestcontainer.cpp brbtlapitestobserver.cpp 
+SOURCE          brctlapitestcontainer.cpp brctlapitestobserver.cpp 
 SOURCE          brctlapiteststatechangeobserver.cpp brctlapitestdialogsprovider.cpp
 
 LIBRARY         euser.lib cone.lib eikcore.lib apparc.lib avkon.lib 

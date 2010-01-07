@@ -28,7 +28,6 @@
 #include <FeatMgr.h>
 #include <f32file.h>
 #include <flogger.h>
-#include <nwx_defs_symbian.h>
 #include <stddef.h>
 
 #include <CenRepNotifyHandler.h>
@@ -37,6 +36,8 @@
 
 #include <stringloader.h>
 #include <webkit.rsg>
+
+#include <brctlinterface.h>
 
 #include "BoxFormatHandler.h"
 #include "BoxRender.h"
@@ -57,6 +58,7 @@
 #include "nw_adt_resizablevector.h"
 #include "nwx_cleanup_epoc32.h"
 #include "nwx_ctx.h"
+#include "nwx_defs_symbian.h"
 #include "nw_evt_accesskeyevent.h"
 #include "nw_evt_activateevent.h"
 #include "nw_evt_clearfieldevent.h"
@@ -116,8 +118,6 @@
 
 #include "TEncodingMapping.h"
 #include "urlloader_urlloaderint.h"
-#include <brctlinterface.h>
-#include "brctldialogsprovider.h"
 
 #include "HistoryController.h"
 #include "WmlInterface.h"

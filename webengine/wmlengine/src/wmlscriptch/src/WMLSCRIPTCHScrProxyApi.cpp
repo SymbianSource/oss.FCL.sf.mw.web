@@ -38,7 +38,7 @@
 #include "nwx_http_header.h"
 #include "nw_wmlscriptch_wmlscriptcontenthandler.h"
 #include "BrsrStatusCodes.h"
-#include "MemoryManager.h"
+#include <MemoryManager.h>
 
 /*
 **-------------------------------------------------------------------------

@@ -15,8 +15,7 @@
 *
 */
 
-#include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include  "../webkitcommon.mmpi"
 
 TARGET          evt.lib
 TARGETTYPE      lib
@@ -43,10 +42,3 @@ SOURCE TimerEvent.c
 SOURCE UnicodeKeyEvent.c
 SOURCE OpenViewerEvent.c
 
-USERINCLUDE     ../../src/evt/include
-USERINCLUDE     ../../src/object/include
-USERINCLUDE     ../../src/gdi/include
-USERINCLUDE   	../../src/utils/include
-
-MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE

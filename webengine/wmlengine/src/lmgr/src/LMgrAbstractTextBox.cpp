@@ -15,7 +15,6 @@
 *
 */
 
-
 #include "nw_lmgr_abstracttextboxi.h"
 #include "nw_lmgr_splittextbox.h"
 #include "nw_lmgr_rootbox.h"

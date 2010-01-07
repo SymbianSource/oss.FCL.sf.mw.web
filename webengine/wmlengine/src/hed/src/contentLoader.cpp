@@ -15,7 +15,6 @@
 *
 */
 
-
 // This module forwards content that is not handled by the browser to the OS
 // document handler.
 

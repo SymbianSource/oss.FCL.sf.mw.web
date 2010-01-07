@@ -15,11 +15,10 @@
 *
 */
 
-
 #include "nwx_string.h"
 #include "nwx_settings.h"
 #include "BrsrStatusCodes.h"
-#include "nw_dom_node.h"
+#include <nw_dom_node.h>
 #include "nw_css_tokentoint.h"
 #include "nw_lmgr_cssproperties.h"
 #include "nw_lmgr_propertylist.h"

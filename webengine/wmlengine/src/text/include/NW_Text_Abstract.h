@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef NW_Text_Abstract_h
 #define NW_Text_Abstract_h
 
@@ -23,8 +22,8 @@
 #include "nw_object_dynamic.h"
 #include "nw_text_types.h"
 #include "nw_text_iterator.h"
-#include "nw_string_char.h"
-#include "nw_string_string.h"
+#include <nw_string_char.h>
+#include <nw_string_string.h>
 #include "BrsrStatusCodes.h"
 
 #ifdef __cplusplus

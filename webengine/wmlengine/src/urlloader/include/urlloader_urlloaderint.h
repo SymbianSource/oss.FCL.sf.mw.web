@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef URLLOADERINT_H
 #define URLLOADERINT_H
 
@@ -24,7 +23,6 @@
 #include "urlloader_urlresponse.h"
 #include "BrsrStatusCodes.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -32,7 +30,6 @@ extern "C" {
 // CONSTANTS
     
 #define NW_NUM_INSTANCES 3
-
 
 // MACROS
     

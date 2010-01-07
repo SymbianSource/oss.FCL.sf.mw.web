@@ -27,7 +27,7 @@
 **-------------------------------------------------------------------------
 */
 
-#include "cxml_type_def.h"
+#include <cxml_type_def.h>
 int kimono_assert ()
 {
   #ifdef __WINS__

@@ -83,8 +83,7 @@ USERINCLUDE ../inc
 USERINCLUDE ../../WidgetInstaller/inc
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-MW_LAYER_ECOM_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 // LIB DEPENDENCIES
 
@@ -113,14 +112,18 @@ LIBRARY AknSkins.lib
 LIBRARY ImageConversion.lib
 LIBRARY ecom.lib  // for schemeHandler
 LIBRARY MemMan.lib
+
 #ifdef BRDO_WRT_HS_FF
 LIBRARY	liwservicehandler.lib
 #endif
+
 LIBRARY bitgdi.lib
 LIBRARY aknnotify.lib
+
 #ifdef RD_SCALABLE_UI_V2
 LIBRARY cdlengine.lib 
 #endif
+
 LIBRARY esock.lib
 
 DEBUGLIBRARY flogger.lib 

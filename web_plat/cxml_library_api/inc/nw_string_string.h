@@ -15,7 +15,6 @@
 *
 */
 
-
 /** ----------------------------------------------------------------------- **
     @package:     NW_String
 
@@ -28,14 +27,13 @@
 #ifndef NW_STRING_STRING_H
 #define NW_STRING_STRING_H
 
-#include "cxml_proj.h"
-#include "nw_string_char.h"
+#include <cxml_proj.h>
+#include <nw_string_char.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
-
 
 /** ----------------------------------------------------------------------- **
     @struct:      NW_String_String

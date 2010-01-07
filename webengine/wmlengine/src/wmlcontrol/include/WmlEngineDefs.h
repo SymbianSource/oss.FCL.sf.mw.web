@@ -19,13 +19,6 @@
 #define WMLENGINEDEFS_H
 
 //  INCLUDES
-//#include <e32base.h>
-//#include <w32std.h>
-//#include "brctldefs.h"
-
-//#include "BrCtl.h"
-//#include "WebKitLoader.h"
-
 
 // CONSTANTS
 
@@ -51,15 +44,14 @@ enum THistoryStackPosition
 enum TWMLOptions
 	{
      WML_OPTION_UNKNOWN = 1,
-	 WML_OPTION_ACCEPT  = 2,
+	   WML_OPTION_ACCEPT  = 2,
      WML_OPTION_PREV    = 3,
      WML_OPTION_HELP    = 4,
-	 WML_OPTION_RESET   = 5,
+	   WML_OPTION_RESET   = 5,
      WML_OPTION_OPTIONS = 6,
      WML_OPTION_DELETE  = 7
 	};
 };
-
 
 #endif      // WMLENGINEDEFS_H           
 // End of File

@@ -31,7 +31,7 @@
 #include <AknNoteDialog.h>
 #include <apgcli.h>
 #include <favouriteslimits.h>
-#include "aiwbrowsercommands.hrh"
+#include <aiwbrowsercommands.hrh>
 #include "logger.h"
 
 // LOCAL CONSTANTS AND MACROS

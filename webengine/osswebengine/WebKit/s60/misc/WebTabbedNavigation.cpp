@@ -27,7 +27,7 @@
 #include "HitTestResult.h"
 #include "HTMLNames.h"
 #include "FrameTree.h"
-#include "brctldefs.h"
+#include <brctldefs.h>
 #include "WebCursor.h"
 #include "StaticObjectsContainer.h"
 #include "Page.h"

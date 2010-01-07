@@ -17,7 +17,6 @@
 *
 */
 
-
 #include "FileHandler.h"
 #include "HttpHandler.h"
 #include "RtspHandler.h"
@@ -28,7 +27,7 @@
 #include "MmsHandler.h"
 #include <e32std.h>
 #include <schemedefs.hrh>
-#include <ImplementationProxy.h>
+#include <ecom/implementationproxy.h>
 
 // Exported proxy for instantiation method resolution
 // Define the interface UIDs

@@ -64,12 +64,11 @@ USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/loader
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/loader/icon
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/loader/wml
 
-//
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/Plugins
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/WebCoreSupport
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/FormControls
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/Misc
-USERINCLUDE ../../../../WebEngine/OssWebEngine/MemoryManager/Inc 
+// USERINCLUDE ../../../../WebEngine/OssWebEngine/MemoryManager/Inc 
 USERINCLUDE ../../../../WebEngine/OssWebEngine/DerivedSources/WebCore
 
 SYSTEMINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/Plugins

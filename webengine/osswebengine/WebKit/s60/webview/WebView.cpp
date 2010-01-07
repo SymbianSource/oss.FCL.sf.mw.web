@@ -490,6 +490,9 @@ void WebView::MakeViewVisible(TBool visible)
             //Reset the iFocusedElementType to be the same as before the second window is opened.
             cursor->setPosition(m_savedCursorPosition);
             cursor->updatePositionAndElemType(m_savedCursorPosition);
+            if ( m_widgetextension && m_focusedElementType == TBrCtlDefs::EElementSelectBox){
+                m_focusedElementType = TBrCtlDefs::EElementNone;
+            }
         } else
             m_savedCursorPosition = cursor->position();
         cursor->cursorUpdate(visible & !AknLayoutUtils::PenEnabled());
@@ -532,7 +535,7 @@ void WebView::doLayout()
 {
 
     int zoomLevel = m_currentZoomLevel;
-    if(!(   m_widgetextension && m_widgetextension->IsWidgetPublising())) {
+    if(m_widgetextension && !(m_widgetextension->IsWidgetPublising())) {
         zoomLevelChanged( KZoomLevelDefaultValue );
     }
     Frame* f = m_page->mainFrame();
@@ -2491,7 +2494,14 @@ void WebView::setZoomLevelAdaptively()
 
     setZoomLevel(zoomLevel);
     mainFrame()->notifyPluginsOfScrolling();
-}
+    
+    if (zoomLevel == KZoomLevelDefaultValue)
+        {
+        // for pages based on tables this is required
+        doLayout();
+        }
+    
+ }
 
 //-------------------------------------------------------------------------------
 // WebView::openPluginPlayerL

@@ -202,6 +202,9 @@ CWidgetUiWindowManager* CWidgetUiWindowManager::NewL( CWidgetUiAppUi& aAppUi )
 //
 CWidgetUiWindowManager::~CWidgetUiWindowManager()
     {
+    if( iDialogsProvider)
+        iDialogsProvider->CancelAll();
+    iActiveFsWindow = NULL;
     iWindowList.ResetAndDestroy();
     
     delete iNetworkListener;
@@ -351,7 +354,10 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
                     wdgt_window->NetworkModeWait()->AsyncStop();
                     }
 #endif
-                wdgt_window->DetermineNetworkState();
+                if(wdgt_window->IsWidgetLoaded())
+                    wdgt_window->DetermineNetworkState();
+                else
+                    wdgt_window->NeedToNotifyNetworkState(ETrue);
                 }
             }
             break;
@@ -370,21 +376,23 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
                 // if no full view widgets open, then close the network connection
                 if ( ( !FullViewWidgetsOpen() ) && ( iConnection->Connected() ) )
                     {
+                    TRAP_IGNORE( wdgt_window->Engine()->HandleCommandL( 
+                            (TInt)TBrCtlDefs::ECommandIdBase +
+                            (TInt)TBrCtlDefs::ECommandCancelFetch ) );
+                    
                     wdgt_window->Engine()->HandleCommandL( 
                             (TInt)TBrCtlDefs::ECommandIdBase +
                             (TInt)TBrCtlDefs::ECommandDisconnect );
+                    iConnection->CancelConnection();
                     iConnection->StopConnectionL();
                     }
-                wdgt_window->DetermineNetworkState();
+                if(wdgt_window->IsWidgetLoaded())
+                    wdgt_window->DetermineNetworkState();
+                else
+                    wdgt_window->NeedToNotifyNetworkState(ETrue);
                 }
             }
-            break;
-       case WidgetRestart:
-           {
-           OpenOrCreateWindowL( aUid, LaunchMiniview );
-           ResumeWidgetL( aUid );
-           }
-           break;
+            break; 
         }
     if(needToNotify)
     // Widget is up and running, notify that next one can be launched    
@@ -639,16 +647,21 @@ TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWind
             (TInt)TBrCtlDefs::ECommandCancelFetch ) );   
     if ( lastOne )
         {
-        TRAP_IGNORE( aWidgetWindow->Engine()->HandleCommandL( 
-                (TInt)TBrCtlDefs::ECommandIdBase +
-                (TInt)TBrCtlDefs::ECommandDisconnect ) );
-
-        delete aWidgetWindow;
-        return ETrue;
+        if(aWidgetWindow->CanBeDeleted())
+            {
+            TRAP_IGNORE( aWidgetWindow->Engine()->HandleCommandL( 
+                    (TInt)TBrCtlDefs::ECommandIdBase +
+                    (TInt)TBrCtlDefs::ECommandDisconnect ) );
+            iConnection->CancelConnection(); 
+            iConnection->StopConnectionL();
+            delete aWidgetWindow;
+            return ETrue;
+            }
         }
     else
         {
-        delete aWidgetWindow;
+        if(aWidgetWindow->CanBeDeleted())
+            delete aWidgetWindow;
         }
     return EFalse;
     }
@@ -748,6 +761,7 @@ void CWidgetUiWindowManager::SendWidgetToBackground( const TUid& aUid )
     if ( window == iActiveFsWindow )
         {
         //make the active window NULL and also CurrentWindow as False
+        iActiveFsWindow->SetCurrentWindow(EFalse);
         iActiveFsWindow->SetIsCurrentWindow(EFalse);
         iActiveFsWindow = NULL;        
         }        
@@ -862,6 +876,8 @@ void CWidgetUiWindowManager::HandleForegroundEvent( TBool aForeground )
         }
     else
         {
+        if(iDialogsProvider)
+            iDialogsProvider->CancelAll();
         HideWindow( iActiveFsWindow );
         }
     }
@@ -1308,7 +1324,16 @@ void CWidgetUiWindowManager::CloseAllWidgets()
    TInt nWidgetsCount = iWindowList.Count();  
        for ( TInt i = (nWidgetsCount-1); i >= 0; i-- )  
            {  
-           CWidgetUiWindow* window = iWindowList[i];    
+           CWidgetUiWindow* window = iWindowList[i];   
+           TRAP_IGNORE( window->Engine()->HandleCommandL( 
+                   (TInt)TBrCtlDefs::ECommandIdBase +
+                   (TInt)TBrCtlDefs::ECommandCancelFetch ) ); 
+           if(i == 0)
+               TRAP_IGNORE( window->Engine()->HandleCommandL( 
+                       (TInt)TBrCtlDefs::ECommandIdBase +
+                       (TInt)TBrCtlDefs::ECommandDisconnect ) );
+                       iConnection->CancelConnection();
+                       iConnection->StopConnectionL();
            delete window;  
            }  
    iWindowList.Reset();
@@ -1339,6 +1364,12 @@ TBool CWidgetUiWindowManager::AnyWidgetPublishing()
             return ETrue;
         }
     return EFalse;
+    }
+
+
+void CWidgetUiWindowManager::ExitNow()
+    {
+    iAppUi.Exit();
     }
 
 CRequestRAM::CRequestRAM(CWidgetUiWindowManager* aWidgetUiWindowManager, const TUid& aUid, TUint32 aOperation):
@@ -1380,6 +1411,7 @@ void CRequestRAM::RunL()
     if(iStatus >= 0)
         {        
         iWidgetUiWindowManager->OpenOrCreateWindowL( iUid, LaunchMiniview );
+        iWidgetUiWindowManager->GetWindow(iUid)->NeedToNotifyNetworkState(ETrue);
         iWidgetUiWindowManager->ResumeWidgetL( iUid );
         iWidgetUiWindowManager->GetWindow(iUid)->SetTime();
 #ifdef OOM_WIDGET_CLOSEALL        

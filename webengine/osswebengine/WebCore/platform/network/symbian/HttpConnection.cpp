@@ -32,7 +32,7 @@
 #include <httpfiltercommonstringsext.h>
 #include <brctldefs.h>
 #include "BrCtl.h"
-#include "brctlspecialloadobserver.h"
+#include <brctlspecialloadobserver.h>
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "DocumentLoader.h"

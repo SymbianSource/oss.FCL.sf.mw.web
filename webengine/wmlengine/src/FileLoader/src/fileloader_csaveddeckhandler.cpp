@@ -15,8 +15,6 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include <e32std.h>
 #include <e32base.h>
@@ -29,8 +27,6 @@
 #include "urlloader_loaderutils.h"
 #include "nwx_http_defs.h"
 #include "nwx_settings.h"
-
-
 
 // EXTERNAL DATA STRUCTURES
 

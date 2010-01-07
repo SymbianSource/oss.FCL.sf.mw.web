@@ -17,7 +17,6 @@
 *
 */
 
-
 // INCLUDE FILES
 #include <browser_platform_variant.hrh>
 #include "FileSaver.h"
@@ -46,7 +45,6 @@
 
 const TInt KDefaultStorageBufferSize = 128 * 1024;
 const TInt KDefaultStorageBufferSizePD = 16 * 1024;
-
 
 // ================= MEMBER FUNCTIONS =======================
 

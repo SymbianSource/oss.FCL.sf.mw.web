@@ -17,18 +17,16 @@
 *
 */
 
-
 #ifndef WIDGETENTRY_H
 #define WIDGETENTRY_H
 
 // INCLUDES
-#include "widgetpropertyvalue.h"
+#include <widgetpropertyvalue.h>
 #include "WidgetRegistryXml.h"
 
 // FORWARD DECLARATIONS
 class RFileWriteStream;
 class RFileReadStream;
-
 
 /**
 *

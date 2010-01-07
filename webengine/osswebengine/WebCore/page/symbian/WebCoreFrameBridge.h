@@ -20,7 +20,7 @@
 
 #include "Shared.h"
 #include <wtf/Vector.h>
-#include "brctldefs.h"
+#include <brctldefs.h>
 
 namespace WebCore {
     class Node;

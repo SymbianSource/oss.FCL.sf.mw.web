@@ -16,13 +16,12 @@
 *
 */
 
-
 #ifndef WIDGETPROPERTYVALUE_H
 #define WIDGETPROPERTYVALUE_H
 
 #include <e32base.h>
 #include <s32strm.h>
-#include "WidgetRegistryConstants.h"
+#include <widgetregistryconstants.h>
 
 // serialize length = header + value
 const TInt32 KWidgetPropertyValSerializeMaxLength = 32 + KWidgetRegistryVal;

@@ -15,10 +15,9 @@
 *
 */
 
-
 #include "nw_link_linkelementhandleri.h"
 #include "nw_xhtml_xhtmlcontenthandler.h"
-#include "nw_dom_document.h"
+#include <nw_dom_document.h>
 #include "nw_xhtml_xhtml_1_0_tokens.h"
 #include "nwx_string.h"
 #include "BrsrStatusCodes.h"

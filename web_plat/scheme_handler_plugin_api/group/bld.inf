@@ -17,7 +17,6 @@
 *
 */
 
-
 #include <platform_paths.hrh>
 #include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
@@ -34,5 +33,3 @@ PRJ_EXPORTS
 #endif
 
 PRJ_MMPFILES
-
-

@@ -15,9 +15,8 @@
 *
 */
 
-
 // class include
-#include "rt_gesturehelper.h"
+#include <rt_gesturehelper.h>
 
 // local includes
 #include "gesturehelperimpl.h"

@@ -138,6 +138,9 @@ PlatformFontCache::~PlatformFontCache()
 
 const AtomicString& PlatformFontCache::SystemFontFamily( const AtomicString& familyName )
 {
+#ifdef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
+    return familyName;
+#else
     // first check if we support this font
     for (TInt n=0; n<iTypefaceCount; ++n)
     {
@@ -148,6 +151,7 @@ const AtomicString& PlatformFontCache::SystemFontFamily( const AtomicString& fam
     }
 
     return DeviceDefaultFontFamilies();
+#endif
 }
 
 const AtomicString& PlatformFontCache::DeviceDefaultFontFamilies()

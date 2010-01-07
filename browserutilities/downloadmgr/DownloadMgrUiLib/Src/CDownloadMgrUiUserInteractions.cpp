@@ -15,13 +15,11 @@
 *
 */
 
-
-
 // INCLUDE FILES
-#include    "cdownloadmgruiuserinteractions.h"
+#include    <cdownloadmgruiuserinteractions.h>
 #include    "CUserInteractionsUtils.h"
-#include    "cdownloadmgruidownloadslist.h"
-#include    "cdownloadmgruilibregistry.h"
+#include    <cdownloadmgruidownloadslist.h>
+#include    <cdownloadmgruilibregistry.h>
 #include    "UserInteractionsEventHandler.h"
 #include    "AsyncEventHandlerArray.h"
 #include    "UiLibLogger.h"
@@ -457,15 +455,14 @@ TBool CDownloadMgrUiUserInteractions::OkToExitL()
         
         downloadCnt = iRegistryModel.DownloadCount();
 
-        TBool isProgressive (EFalse);
+       
         if ( resp == EAknSoftkeyYes || resp == EAknSoftkeyOk )
 		    {
             for ( TInt i = downloadCnt - 1; i >=0; --i )
 		        {
 	            RHttpDownload* dl = downloads.At(i); //current download
-                dl->GetBoolAttribute( EDlAttrProgressive, isProgressive );
                 dl->GetBoolAttribute( EDlAttrPausable , isPausable );
-                if (!( isProgressive || isPausable ) ) // delete only no-PDL downloads and Non pausable Downloads
+                if (!( isPausable ) ) // delete only Non pausable Downloads
     			    {
                     // Delete not attached downloads.
     	            dl->Delete(); // Return value ignored.

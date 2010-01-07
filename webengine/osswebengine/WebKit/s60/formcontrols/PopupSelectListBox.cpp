@@ -23,10 +23,11 @@
 #include <gulbordr.h>
 #include <eikfrlbd.h> //CFormattedCellListBoxData
 
+#include <brctldialogsprovider.h>
+
 #include "PopupSelectListBox.h"
 #include "WebView.h"
 #include "WebFepTextEditor.h"
-#include "brctldialogsprovider.h"
 
 // CONSTANTS
 

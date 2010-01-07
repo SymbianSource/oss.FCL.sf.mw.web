@@ -22,18 +22,17 @@
 #include "ToolBarButton.h"
 #include "ToolBar.h"
 #include "W32STD.H"
-#include "recenturlstore.h"
+#include <recenturlstore.h>
 #include <Uri16.h>
 #include <GULICON.H>
 #include <AknBidiTextUtils.h>
-#include "brctlinterface.h"
+#include <brctlinterface.h>
 #include <favouritesitem.h>
 #include <favouritesitemlist.h>
 #include <favouritessession.h>
 #include <favouritesdb.h>
 
 #include "eikon.hrh"
-
 
 // EXTERNAL DATA STRUCTURES
 

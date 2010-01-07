@@ -40,8 +40,8 @@
 #include "WebUtil.h"
 #include "WebFrame.h"
 #include "SettingsContainer.h"
-#include "brctlspecialloadobserver.h"
-#include "brctllinkresolver.h"
+#include <brctlspecialloadobserver.h>
+#include <brctllinkresolver.h>
 #include "WebDocumentLoader.h"
 #include "WebView.h"
 

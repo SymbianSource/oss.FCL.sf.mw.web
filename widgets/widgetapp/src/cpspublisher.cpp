@@ -72,6 +72,7 @@ _LIT8( KChangeInfo, "change_info" );
 _LIT( KWRTPublisher, "wrt_publisher");
 
 const TInt KSkinGfxInnerRectShrink = 5;
+const TUint KDisablePersist = 0x1000;
 
 static void DoResetAndDestroy( TAny* aPtr )
     {
@@ -455,7 +456,7 @@ void CCpsPublisher::AddImageHandleL( const TDesC& aBundleId, const TInt& aHandle
        
     inparam.AppendL( item );
     
-    iCpsInterface->ExecuteCmdL( KAdd , inparam, outparam);
+    iCpsInterface->ExecuteCmdL( KAdd , inparam, outparam, KDisablePersist);
     
  
     CleanupStack::PopAndDestroy(); // item

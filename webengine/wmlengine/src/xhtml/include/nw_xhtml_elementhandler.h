@@ -15,14 +15,13 @@
 *
 */
 
-
 #ifndef NW_XHTML_ELEMENTHANDLER_H
 #define NW_XHTML_ELEMENTHANDLER_H
 
 #include "nw_object_base.h"
 #include "nw_lmgr_containerbox.h"
 #include "nw_lmgr_activebox.h"
-#include "nw_dom_node.h"
+#include <nw_dom_node.h>
 #include "nw_lmgr_cssproperties.h"
 #include "nw_xhtml_xhtml_1_0_tokens.h"
 #include "BrsrStatusCodes.h"

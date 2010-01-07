@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef FEEDS_SERVER_FOLDER_ITEM_H
 #define FEEDS_SERVER_FOLDER_ITEM_H
 
@@ -24,10 +23,9 @@
 #include <e32std.h>
 
 #include <FeedsServerRequestHandler.h>
-#include "FeedsEntity.h"
-#include "LeakTracker.h"
-
-#include "Transaction.h"
+#include <feedsentity.h>
+#include <leaktracker.h>
+#include <transaction.h>
 
 // CONSTANTS
 
