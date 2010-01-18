@@ -98,10 +98,13 @@ TInt RunScriptCb( TAny* aPtr );
 // return an absolute url that results from refUrl being resolved against 
 // baseUrl.
 // ----------------------------------------------------------------------------
-HBufC8* makeAbsoluteUrlL(const TDesC8& baseUrl, const TDesC8& refUrl)
+HBufC8* makeAbsoluteUrlL(const TDesC8* baseUrl,const TDesC8* docUrl, const TDesC8& refUrl)
 {
     TUriParser8 baseUrlparser;
-    baseUrlparser.Parse(baseUrl); 
+    if(baseUrl == NULL)
+        baseUrlparser.Parse(*docUrl); 
+    else
+        baseUrlparser.Parse(*baseUrl);
     TUriParser8 refUrlparser;
     refUrlparser.Parse(refUrl); 
 
@@ -819,7 +822,9 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
      }
 
     // make sure it is an absolute URL
-    HBufC8* absoluteUrl = makeAbsoluteUrlL(*m_url, url); 
+    HBufC8* docUrl = HBufC8::NewLC(core(m_frame)->document()->baseURI().length());
+    docUrl->Des().Copy(core(m_frame)->document()->baseURI());
+    HBufC8* absoluteUrl = makeAbsoluteUrlL(m_url, docUrl, url); 
     CleanupStack::PushL(absoluteUrl);
 
     if( (loadmode == ELoadModePlugin ) || (url.FindF(KSwfExtn)!= KErrNotFound) ){    
@@ -847,7 +852,7 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
         CleanupStack::PopAndDestroy(windowType);
     }
 
-    CleanupStack::PopAndDestroy(absoluteUrl);
+    CleanupStack::PopAndDestroy(2);
 
     return KErrNone;
 }
@@ -855,7 +860,9 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
 int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfile, bool notify, void* notifydata,const TDesC* aWindowType)
 {
     // make sure it is an absolute URL
-    HBufC8* absoluteUrl = makeAbsoluteUrlL(*m_url, url);     
+    HBufC8* docUrl = HBufC8::NewLC(core(m_frame)->document()->baseURI().length());
+    docUrl->Des().Copy(core(m_frame)->document()->baseURI());
+    HBufC8* absoluteUrl = makeAbsoluteUrlL(m_url, docUrl, url);     
     CleanupStack::PushL(absoluteUrl);
     TPluginLoadMode loadmode = GetLoadMode(aWindowType);
  
@@ -938,7 +945,7 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
     }
     
 
-    CleanupStack::PopAndDestroy(absoluteUrl);
+    CleanupStack::PopAndDestroy(2);
 
     return KErrNone;
 }
@@ -1000,6 +1007,25 @@ void* PluginSkin::pluginScriptableObject()
     return (void *)0;
 }
 
+TBool validateDataScheme(const TPtrC8& url)
+{
+    // Check if body part of "data:" exists = data:[<mediatype>][;base64],<body>. RFC-2397 : http://www.faqs.org/rfcs/rfc2397
+    TPtrC8 urlPtr8 = url;
+    
+    if(url.Length() <= 0 )
+           return EFalse;
+    
+    TInt commaPos( urlPtr8.Locate( ',' ) );
+    if (commaPos == KErrNotFound )
+        return EFalse;
+    
+    TPtrC8 datapart (urlPtr8.Mid(commaPos + 1)); 
+    if (datapart.Length() <= 0)
+        return EFalse;
+
+    return ETrue;
+}
+
 TBool PluginSkin::isBrowserScheme(const TPtrC8& url)
 {
     TBool supported(EFalse);
@@ -1007,8 +1033,12 @@ TBool PluginSkin::isBrowserScheme(const TPtrC8& url)
     if( parser.Parse( url ) == KErrNone ) {
         TPtrC8 scheme = parser.Extract( EUriScheme );
         if (scheme.CompareF( _L8("http" ) ) == 0 || scheme.CompareF( _L8("https" ) ) == 0 
-            || scheme.Length() == 1 || scheme.CompareF( _L8("file") ) == 0 || scheme.CompareF( _L8("data") ) == 0) {
+            || scheme.Length() == 1 || scheme.CompareF( _L8("file") ) == 0) {
             supported = ETrue;
+        }
+        else if(scheme.CompareF( _L8("data") ) == 0) {
+            // if the scheme is "data", check its validity according to RFC-2397 : http://www.faqs.org/rfcs/rfc2397
+            supported = validateDataScheme(url);
         }
     }
     return supported;

@@ -151,6 +151,8 @@ void WebPointerEventHandler::HandleGestureL( const TGestureEvent& aEvent )
     PluginSkin* plugin = m_webview->mainFrame()->focusedPlugin();
     if (plugin && plugin->pluginWin()) {
       if (plugin->pluginWin()->HandleGesture(aEvent)) {
+         if(!plugin->isActive())
+            plugin->activate();
           return;
       }
     }

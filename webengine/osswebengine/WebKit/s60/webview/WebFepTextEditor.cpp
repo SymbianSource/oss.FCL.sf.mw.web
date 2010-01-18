@@ -75,7 +75,8 @@ GLDEF_C void Panic(TEikPanic aPanic)
 CWebFepTextEditor::CWebFepTextEditor(WebView* aView)
     : m_webView(aView),
       m_textFormatMask(NULL),
-      m_inlineEditText(NULL)
+      m_inlineEditText(NULL),
+      m_longKeyPress(EFalse)
 {
     // Set up the extended capabilities
     TRAP_IGNORE(
@@ -195,6 +196,8 @@ void CWebFepTextEditor::CancelEditingMode()
 
     delete m_inlineEditText;
     m_inlineEditText = NULL;
+    
+    m_longKeyPress = EFalse ;
 
     UpdateInputModeState(EAknEditorNullInputMode, EAknEditorAllInputModes,EAknEditorStandardNumberModeKeymap);
     UpdateFlagsState(EAknEditorFlagDefault);        
@@ -409,6 +412,9 @@ TInt CWebFepTextEditor::DocumentMaximumLengthForFep() const
 	if ( m_textFormatMask && m_textFormatMask->getMultitude() > 0 )
         length = m_textFormatMask->getMultitude();
 
+    if (IsLongKeyPress() && 
+        (KMaxTInt != length))
+        length += 1 ;
     // TextArea node has no member function maxLength(), so return KMaxTInt
     return length;
 }
@@ -585,6 +591,8 @@ void CWebFepTextEditor::DoCommitFepInlineEditL()
     //delete the m_inlineEditText since text is commited
     delete m_inlineEditText;
     m_inlineEditText = NULL;
+    
+    m_longKeyPress = EFalse;
 
     HandleUpdateCursor();
     UpdateEditingMode();
@@ -656,6 +664,7 @@ void CWebFepTextEditor::StartFepInlineEditL(
 {
     aSetToTrue=ETrue;
     SetCursorSelectionForFepL(aCursorSelection);
+    m_longKeyPress = ETrue ;
     StartFepInlineEditL(aInitialInlineText, aPositionOfInsertionPointInInlineText, aCursorVisibility, aCustomDraw, aInlineTextFormatRetriever, aPointerEventHandlerDuringInlineEdit);
 }
 
@@ -933,6 +942,10 @@ bool CWebFepTextEditor::validateTextFormat()
         if (!m_textFormatMask->checkText(input->value(), eb)) {
             style->setProperty(CSS_PROP_COLOR, "red", false, ec);
             return false;
+        }
+        else if ( m_textFormatMask->acceptAll() )
+        {
+            return true;
         }
         else
         {
@@ -1470,4 +1483,13 @@ void CWebFepTextEditor::FocusChanging()
     CancelEditingMode();    
     } 
 
+// -----------------------------------------------------------------------------
+// IsLongKeyPress
+//
+// Called to know the status of the key pressed 
+// -----------------------------------------------------------------------------
+TBool CWebFepTextEditor::IsLongKeyPress() const
+    {
+    return m_longKeyPress ;	
+    }
 

@@ -581,7 +581,17 @@ void CWidgetUiWindow::UpdateCba( )
             // reset the Right Softkey
             TRAP_IGNORE(iWidgetUiObserver->UpdateSoftkeyL(EKeyRight,KNullDesC,KDummyCommand,EChangeReasonLoad));
             }
-
+        if (iLeftSoftKeyLabel)
+            {
+            // restore the Left Softkey
+            TRAP_IGNORE(iWidgetUiObserver->UpdateSoftkeyL(EKeyLeft,*iLeftSoftKeyLabel,KDummyCommand,EChangeReasonLoad));
+            }
+        else
+            {
+            // reset the Left Softkey
+            TRAP_IGNORE(iWidgetUiObserver->UpdateSoftkeyL(EKeyLeft,KNullDesC,KDummyCommand,EChangeReasonLoad));
+            }
+        
         // restore state
         if ( !showSoftkeys )
             {

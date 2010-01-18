@@ -222,9 +222,9 @@ NONSHARABLE_CLASS( CMediaDataBase ) : public CBase
         
         /**
         * Get Destination Removable.
-        * @return iDesRemovable.
+        * @return iDesRemovableStatus.
         */
-        inline TBool DesRemovable() const { return iDesRemovable; }
+        inline TBool DesRemovable() const { return ( KDriveAttRemovable == iDesRemovableStatus ) ? ETrue : EFalse ; }
         
         /**
         * Get Last Error Id.
@@ -386,7 +386,7 @@ NONSHARABLE_CLASS( CMediaDataBase ) : public CBase
         * Set destination removable attribute.
         * @param aDesRemovable Whether removable media drive.
         */
-        virtual void SetDesRemovable( TBool aDesRemovable ) = 0;
+        virtual void SetDesRemovable( TInt32 aDesRemovable ) = 0;
         
         /**
         * Set last error id attribute.
@@ -428,7 +428,7 @@ NONSHARABLE_CLASS( CMediaDataBase ) : public CBase
         TBool iRedirected;			///< Is Redirected?
         HBufC* iDestFilename;		///< Media Destination Filename.
         TInt iDownloadedSize;       ///<The media track downloaded size.Should be equal to iSize when download completed successfully
-        TBool iDesRemovable;		///< Is file stored on removable media?
+        TInt32 iDesRemovableStatus; ///< Is file stored on removable media?
         TInt iLastErrorId;			///< THttpDownloadMgrError.
         TInt iGlobalErrorId;		///< Global Error Id.
         TBool iPausable;			///< Is Media-Download Pausable?

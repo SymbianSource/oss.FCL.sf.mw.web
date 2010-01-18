@@ -142,7 +142,10 @@ void SettingsContainer::updatePageSetting(TBrCtlDefs::TBrCtlSettings setting)
             break;
         case TBrCtlDefs::ESettingsCurrentZoomLevelIndex:
             m_webView->setZoomLevel(brctlSettings[setting]);
-            break;
+            break;            
+        case TBrCtlDefs::ESettingsAutoRefresh:
+            brctlSetting(TBrCtlDefs::ESettingsAutoRefresh);
+            break;        
     }
 }
 

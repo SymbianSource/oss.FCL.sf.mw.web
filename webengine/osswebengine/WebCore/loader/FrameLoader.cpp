@@ -226,6 +226,7 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_wasUnloadEventEmitted(false)
     , m_isComplete(false)
     , m_isLoadingMainResource(false)
+    , m_mayLoadIconLater(false)    
     , m_cancellingWithLoadInProgress(false)
     , m_needsClear(false)
     , m_receivedData(false)
@@ -1043,11 +1044,17 @@ void FrameLoader::endIfNotLoadingMainResource()
 
 void FrameLoader::iconLoadDecisionAvailable()
 {
-    if (!m_mayLoadIconLater)
-        return;
     LOG(IconDatabase, "FrameLoader %p was told a load decision is available for its icon", this);
-    startIconLoader();
-    m_mayLoadIconLater = false;
+    if (m_mayLoadIconLater) {
+        // Notfification came from iconDataBase to load the icon
+        startIconLoader();
+        m_mayLoadIconLater = false;
+    } else {
+        // Icon was specified in <link> tag with rel="icon" or rel="shortcut icon" property
+        if(m_iconLoader)
+            m_iconLoader->stopLoading(); // cancel previous loading state
+        startIconLoader();
+    }
 }
 
 void FrameLoader::startIconLoader()
@@ -1517,7 +1524,17 @@ bool FrameLoader::gotoAnchor(const String& name)
         rect = anchorNode->getRect();
     }
     if (renderer)
-        renderer->enclosingLayer()->scrollRectToVisible(rect, RenderLayer::gAlignToEdgeIfNeeded, RenderLayer::gAlignTopAlways);
+        {
+         if(!anchorNode)
+            {
+            renderer->enclosingLayer()->scrollRectToVisible(rect, RenderLayer::gAlignToEdgeIfNeeded, RenderLayer::gAlignToEdgeIfNeeded);
+            }
+         else
+             {
+             renderer->enclosingLayer()->scrollRectToVisible(rect, RenderLayer::gAlignToEdgeIfNeeded, RenderLayer::gAlignTopAlways);                         
+             }
+       
+        }
 
     return true;
 }

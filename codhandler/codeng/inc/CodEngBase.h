@@ -679,7 +679,7 @@ NONSHARABLE_CLASS( CCodEngBase ): public CActive, public MCodSaverFactory
         TBool iMmcOk;
 #endif
         /// Paths on removable media?
-        TBool iRemovableMedia;
+        TInt32 iRemovableMediaStatus;
         /// ROAP Data. Owned.
         CRoapData* iRoapData;
         /// Progress or NULL. Owned.

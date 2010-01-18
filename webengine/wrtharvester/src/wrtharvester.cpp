@@ -49,6 +49,11 @@
 // CONSTANTS
 _LIT( KResourceFileName, "\\resource\\wrtharvester.rsc" );
 _LIT( KResourceDir, "Z:wrtharvester.rsc" );
+_LIT( KUid, "uid");
+_LIT( K0x, "0x");
+_LIT( KOpenPar, "(");
+_LIT( KClosePar, ")");
+_LIT8( KWidgetIcon, "widget_icon");
 
 /**
 * Utility class to show the prompt for platform security access.
@@ -519,7 +524,17 @@ TInt CWrtHarvester::RegisterPublisherL( CWrtInfo& wrtInfo )
     __UHEAP_MARK;
     TInt id( KErrNotFound );
     if( iCPSInterface )
-        {   
+        {
+        TBuf<10> uid(wrtInfo.iUid.Name());  // [12345678]
+        uid.Delete(0,1);                    // 12345678]
+        uid.Delete( uid.Length()-1, 1);     // 12345678
+        TBuf<50> wrtuid;
+        wrtuid.Append(KUid);                // uid
+        wrtuid.Append(KOpenPar);            // uid(
+        wrtuid.Append(K0x);                 // uid(0x
+        wrtuid.Append(uid );			  // uid(0x12345678
+        wrtuid.Append(KClosePar);           // uid(0x12345678)
+   
         CLiwGenericParamList* inparam( CLiwGenericParamList::NewLC() );
         CLiwGenericParamList* outparam( CLiwGenericParamList::NewLC() );
 
@@ -533,21 +548,24 @@ TInt CWrtHarvester::RegisterPublisherL( CWrtInfo& wrtInfo )
         cpdatamap->InsertL( KPublisherId, TLiwVariant( KWRTPublisher ));
         cpdatamap->InsertL( KContentType, TLiwVariant( KTemplatedWidget ));
         cpdatamap->InsertL( KContentId, TLiwVariant( wrtInfo.iBundleId ));
-        // Widget info map
-    	CLiwDefaultMap* widgetInfo = CLiwDefaultMap::NewLC();
-		widgetInfo->InsertL( KTemplateType, TLiwVariant( KTemplateName ));
-		widgetInfo->InsertL( KWidgetName, TLiwVariant( wrtInfo.iDisplayName ));
-		datamap->InsertL( KWidgetInfo , TLiwVariant( widgetInfo ));
-		CleanupStack::PopAndDestroy( widgetInfo );
         
-		// Take dynamic menu items into use
-		if (networkAccess)
-		    {
-		    CLiwDefaultMap* mapMenu = CLiwDefaultMap::NewLC();
-		    mapMenu->InsertL( KItemOnlineOffline, TLiwVariant( KMyActionName ));
-		    datamap->InsertL( KMenuItems, TLiwVariant( mapMenu ));
-		    CleanupStack::PopAndDestroy(mapMenu);
-		    }
+        // Widget info map
+    	  CLiwDefaultMap* widgetInfo = CLiwDefaultMap::NewLC();
+		    widgetInfo->InsertL( KTemplateType, TLiwVariant( KTemplateName ));
+		    widgetInfo->InsertL( KWidgetName, TLiwVariant( wrtInfo.iDisplayName ));
+		    widgetInfo->InsertL( KWidgetIcon, TLiwVariant( wrtuid));  // uid(0x12345678) This is the expected format 
+
+		    datamap->InsertL( KWidgetInfo , TLiwVariant( widgetInfo ));
+		    CleanupStack::PopAndDestroy( widgetInfo );
+        
+		    // Take dynamic menu items into use
+		    if (networkAccess)
+		        {
+		        CLiwDefaultMap* mapMenu = CLiwDefaultMap::NewLC();
+		        mapMenu->InsertL( KItemOnlineOffline, TLiwVariant( KMyActionName ));
+		        datamap->InsertL( KMenuItems, TLiwVariant( mapMenu ));
+		        CleanupStack::PopAndDestroy(mapMenu);
+		        }
 
         cpdatamap->InsertL( KDataMap, TLiwVariant(datamap) );
         

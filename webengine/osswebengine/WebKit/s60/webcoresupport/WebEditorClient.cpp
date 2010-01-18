@@ -506,9 +506,11 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
 //-----------------------------------------------------------------------------
 // WebEditorClient::handleInputMethodKeypress
 //-----------------------------------------------------------------------------
-void WebEditorClient::handleInputMethodKeypress(KeyboardEvent*)
+void WebEditorClient::handleInputMethodKeypress(KeyboardEvent* event)
 {
-    notImplemented();
+    const PlatformKeyboardEvent* kevent = event->keyEvent();
+    if(kevent->isKeyDown())
+    handleKeypress(event);
 }
 
 //-----------------------------------------------------------------------------

@@ -1,20 +1,37 @@
 /*
-* Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+* ==============================================================================
+*    Copyright (c) 2006, Nokia Corporation
+*    All rights reserved.
 *
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
+*   Redistribution and use in source and binary forms, with or without
+*   modification, are permitted provided that the following conditions
+*   are met:
 *
-* Contributors:
+*      * Redistributions of source code must retain the above copyright
+*        notice, this list of conditions and the following disclaimer.
+*      * Redistributions in binary form must reproduce the above copyright
+*        notice, this list of conditions and the following disclaimer in
+*        the documentation and/or other materials provided with the
+*        distribution.
+*      * Neither the name of the Nokia Corporation nor the names of its
+*        contributors may be used to endorse or promote products derived
+*        from this software without specific prior written permission.
 *
-* Description: 
+*   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+*   "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+*   LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+*   A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+*   OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+*   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+*   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+*   DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+*   THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+*   (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+*   USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+*   DAMAGE.
 *
+* ==============================================================================
 */
-
 
 /*
  *  This class is wrapped by a proxy CAnimationDecoder
@@ -66,8 +83,8 @@ CAnimationDecoderWrapped::CAnimationDecoderWrapped( ImageObserver* aObs )
     , iObserver(aObs)
     , iLoopCount( -1 )
     , iCurLoopCount( -1 )
-    , iSyncBitmapHandle(-1)
-    , iSyncMaskHandle(-1)
+    , iSyncBitmapHandle(0)
+    , iSyncMaskHandle(0)
     , iDecodeInProgress(ETrue)
     , iIsInvalid(EFalse)
     , iCanBeDeleted(ETrue)
@@ -158,17 +175,25 @@ CMaskedBitmap* CAnimationDecoderWrapped::Destination()
         return iDestination; 
     }
         
-    if (iSyncBitmapHandle != -1 && iSyncMaskHandle != -1) {
+    if (iSyncBitmapHandle || iSyncMaskHandle) {       
         CFbsBitmap* bitmap = new CFbsBitmap();
-        bitmap->Duplicate(iSyncBitmapHandle);
-        CFbsBitmap* mask = new CFbsBitmap();
-        mask->Duplicate(iSyncMaskHandle);
+        TInt errBmp = bitmap->Duplicate(iSyncBitmapHandle);
+        
+        CFbsBitmap* mask = NULL;
+        TInt errMask = KErrNone;
+        if(iSyncMaskHandle) {
+            CFbsBitmap* mask = new CFbsBitmap();
+            errMask = mask->Duplicate(iSyncMaskHandle);
+        }
+        
+        if(errBmp==KErrNone && errMask==KErrNone) {
+            iDestination = new CMaskedBitmap(bitmap, mask);
+            iDestination->SetFrameIndex(0);
+            iDestination->SetFrameDelay(0);
+        }
 
-        iDestination = new CMaskedBitmap(bitmap, mask);
-        iDestination->SetFrameIndex(0);
-        iDestination->SetFrameDelay(0);
-        iSyncBitmapHandle = -1;
-        iSyncMaskHandle = -1;
+        iSyncBitmapHandle = 0;
+        iSyncMaskHandle = 0;
     }
     
     return iDestination;

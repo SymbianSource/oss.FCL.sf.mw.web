@@ -641,7 +641,7 @@ void CInternetConnectionManager::ShowErrorNoteL(
 EXPORT_C void CInternetConnectionManager::StopConnectionL()
 	{
     CLOG_ENTERFN( "StopConnectionL()" );
-
+    CancelConnection();
     StopConnectionObserving();
     iConnection.Close();
 //    iServ.Close();

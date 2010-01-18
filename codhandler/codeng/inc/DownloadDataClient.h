@@ -200,7 +200,7 @@ NONSHARABLE_CLASS( CMediaDataClient ) : public CMediaDataBase
         * Set destination removable attribute.
         * @param aDesRemovable Whether removable media drive.
         */
-        void SetDesRemovable( TBool aDesRemovable );
+        void SetDesRemovable( TInt32 aDesRemovable );
         
         /**
         * Set last error id attribute.

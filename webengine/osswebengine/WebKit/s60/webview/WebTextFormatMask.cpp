@@ -276,6 +276,11 @@ bool WebTextFormatMask::appendMask(MaskBase* m)
     return true;
 }
 
+bool WebTextFormatMask::acceptAll()
+    {
+    return m_acceptAll;
+    }
+
 MaskComposite::MaskComposite(TInputFormatMaskType t, int mul) 
             : MaskSingle(t), m_offset(0), m_length(mul)
 {

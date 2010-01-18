@@ -116,6 +116,7 @@ public:
     bool validateTextFormat();
 
     TBool IsDirectionRTL();
+    TBool IsLongKeyPress() const;
     
 #if defined(BRDO_BROWSER_50_FF)
     void SetAlignment(CAknExtendedInputCapabilities::TInputCapabilities aAlignment);
@@ -146,6 +147,7 @@ private:
     String m_inputTextColor;
     CAknExtendedInputCapabilities* m_ExtendedInputCapabilities;
     CAknCcpuSupport* m_CcpuSupport;
+    TBool m_longKeyPress;
     };
 
 #endif

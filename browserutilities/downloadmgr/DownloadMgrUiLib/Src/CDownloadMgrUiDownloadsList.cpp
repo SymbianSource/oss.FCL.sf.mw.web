@@ -1110,12 +1110,12 @@ TInt CDownloadMgrUiDownloadsList::AddDownloadToListModelL
             CLOG_WRITE_FORMAT(" EDlAttrPausable: %d",dlData->iPausable);
     
             // Is the download on an external/removable memory (like MMC)?
-            err = aDownload.GetBoolAttribute
-                ( EDlAttrDestRemovable, dlData->iIsOnExternalMemory );
+            err = aDownload.GetIntAttribute
+                ( EDlAttrDestRemovable, dlData->iExternalMemoryStatus );
             CLOG_WRITE_FORMAT(" EDlAttrDestRemovable err: %d",err);
             // 'err' is ignored.
-            CLOG_WRITE_FORMAT(" EDlAttrDestRemovable: %d",dlData->iIsOnExternalMemory);
-    
+            CLOG_WRITE_FORMAT(" EDlAttrDestRemovable: %d",dlData->iExternalMemoryStatus);
+
             // Currently active media object's index (in album)?
             err = aDownload.GetIntAttribute
                 ( EDlAttrActiveDownload, dlData->iActiveMoIndex );
@@ -1281,13 +1281,12 @@ void CDownloadMgrUiDownloadsList::UpdateProgressInfoL
             CLOG_WRITE(" Redirection");
             }
         else if ( aEvent.iProgressState == EHttpProgResponseHeaderReceived )
-        	{
-            // Is the download on an external/removable memory (like MMC)?
-            aDownload.GetBoolAttribute
-                ( EDlAttrDestRemovable, dlData.iIsOnExternalMemory );
-            // Return value is ignored.
-            CLOG_WRITE_FORMAT(" EDlAttrDestRemovable: %d",dlData.iIsOnExternalMemory);
-        	}
+                {
+                // Is the download on an external/removable memory (like MMC)?
+                // Return value is ignored.
+                aDownload.GetIntAttribute( EDlAttrDestRemovable, dlData.iExternalMemoryStatus );
+                CLOG_WRITE_FORMAT(" EDlAttrDestRemovable: %d",dlData.iExternalMemoryStatus);
+                }
         else if ( aEvent.iProgressState == EHttpProgDlNameChanged )
             {
             CLOG_WRITE(" EHttpProgDlNameChanged");

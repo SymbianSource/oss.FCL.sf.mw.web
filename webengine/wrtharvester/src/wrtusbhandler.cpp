@@ -1,22 +1,26 @@
-/*
-* Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
-*
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
-*
-* Contributors:
-*
-* Description:  Handle notifications of MMC events.
-*
-*
-*
-*/
+//
+// ============================================================================
+//  Name     : WidgetMMCHandler.cpp
+//  Part of  : SW Installer UIs / WidgetInstallerUI
+//
+//  Description: Handle notifications of MMC events.
+//
+//
+//  Version     : 3.1
+//
+//  Copyright © 2006 Nokia Corporation.
+//  This material, including documentation and any related
+//  computer programs, is protected by copyright controlled by
+//  Nokia Corporation. All rights are reserved. Copying,
+//  including reproducing, storing, adapting or translating, any
+//  or all of this material requires the prior written consent of
+//  Nokia Corporation. This material also contains confidential
+//  information which may not be disclosed to others without the
+//  prior written consent of Nokia Corporation.
+// ==============================================================================
+///
 
+// INCLUDE FILES
 #include "wrtusbhandler.h"
 #include "wrtharvester.h"
 #include "wrtusbhandler.h"
@@ -110,10 +114,15 @@ void CWrtUsbHandler::Start()
 // ============================================================================
 void CWrtUsbHandler::RunL()
     {
-    if ( iStatus == KErrNone )
-        {
-        DoScanAndUpdate();
-        }
+    TInt status = iStatus.Int();
+    
+    // Restart NotifyChange
+    Start();
+    
+    if ( status == KErrNone )
+      {
+      DoScanAndUpdate();
+      }
     }
 
 void CWrtUsbHandler::DoScanAndUpdate()
@@ -128,20 +137,11 @@ void CWrtUsbHandler::DoScanAndUpdate()
         }
     
     if ( deltaDriveFlags )
-        {           
-        //Unpluging USB from Mass storage . . . 
-        if(iHarvester->IsInMSMode() == 1)
-            {                  
-            iHarvester->ClearAllOperations();
-            iHarvester->SetRegistryAccess(EFalse);
-            iFs.NotifyChange( ENotifyDisk, iStatus );
-            SetActive();
-            return;
-            }
-
+        {
         TVolumeInfo volInfo;
         TInt temp = deltaDriveFlags;
         TBool massMemAltered = EFalse;        
+        TBool massMemAvailable = EFalse;
         for(TInt DriveNo = EDriveA+1 ; DriveNo<=EDriveY; DriveNo++ )
             {   
             temp =  temp >> 1;
@@ -152,17 +152,31 @@ void CWrtUsbHandler::DoScanAndUpdate()
                 if(!err && (status & DriveInfo::EDriveExternallyMountable) && (status & DriveInfo::EDriveInternal ))
                     {
                     //Internal Memory
-                    massMemAltered = ETrue;
+                    massMemAltered = ETrue;                  
+                    // Check is the internal memory available or not
+                    if(iDriveFlags & (1<<DriveNo))
+                      massMemAvailable = ETrue;
                     }                     
                 }            
             }
-       if( massMemAltered )
-           {           
-           iHarvester->SetMSMode(1);            
-           }
-        }    
-    iFs.NotifyChange( ENotifyDisk, iStatus );
-    SetActive();
+            if( massMemAltered )
+              {
+              if(!massMemAvailable)
+                {
+                // Mass storage is plugged
+                iHarvester->SetMSMode(1);
+                }
+              else
+                {
+                // Mass storage was unplugged
+                if(iHarvester->IsInMSMode() == 1)
+                  {            
+                  iHarvester->ClearAllOperations();
+                  iHarvester->SetRegistryAccess(EFalse);
+                  }
+                }
+              }
+        }
     }
 
 

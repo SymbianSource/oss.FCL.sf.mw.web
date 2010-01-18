@@ -696,19 +696,26 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
             }
         CleanupStack::PopAndDestroy( drivesDynList );
         CLOG_WRITE_2( "Saving content to %d Drive with %d B free space", driveSpaceMax, freeSpaceMax );
-        
-        TDriveInfo driveInfo;
-    
-    	if( !iDownload->ClientApp()->Engine()->Fs().Drive( driveInfo, driveSpaceMax) )
-        	{
-        	iRemovableDest = (driveInfo.iDriveAtt & KDriveAttRemovable);
-        	CLOG_WRITE_1( "Removable: [%d]", iRemovableDest );
-        	CLOG_WRITE_1( "driveInfo.iDriveAtt: [%d]", driveInfo.iDriveAtt );
-        	}
-    	else
-        	{
-        	CLOG_WRITE("DriveInfo failed");
-        	}
+        TUint aStatus ;
+
+        if( KErrNone == DriveInfo::GetDriveStatus( iDownload->ClientApp()->Engine()->Fs(), driveSpaceMax , aStatus ))
+            {
+            iRemovableStatus = (aStatus & DriveInfo::EDriveExternallyMountable) ? aStatus : 0 ;
+            if( iRemovableStatus )
+                {
+                iRemovableStatus = (aStatus & DriveInfo::EDriveRemovable) ? KDriveAttRemovable : KDriveAttInternal ;	
+                }
+            else
+                {
+                iRemovableStatus = KDriveAttLocal  ;
+                }
+            CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
+            CLOG_WRITE_1( "DriveInfo Status [%d]", aStatus );        	
+            }
+        else
+            {
+            CLOG_WRITE("DriveStatus failed");
+            }
         	
         return driveSpaceMax;
 #else
@@ -722,6 +729,7 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
         			       ( &fs, bytesToWrite ); )
         if(!mmcOk)
         	{
+            iRemovableStatus = TDownloadUiData::EDriveInternal ;
         	CLOG_WRITE( "no MMC present" );
         	return EDriveC;
         	}
@@ -732,7 +740,9 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
         fs.Volume(volInfoE,EDriveE);
         TInt64 freeC = volInfoC.iFree;//free memory available in that drive
         TInt64 freeE = volInfoE.iFree;
-        return  freeC>=freeE?EDriveC:EDriveE;//put the file in which ever drive has more memory
+        freeC>=freeE?EDriveC:EDriveE;//put the file in which ever drive has more memory
+        iRemovableStatus = (EDriveC == freeC) ? TDownloadUiData::EDriveInternal : ( TDownloadUiData::EDriveExternallyMountable | TDownloadUiData::EDriveRemovable ) ;
+        return freeC;
 #endif
         }
 
@@ -823,18 +833,45 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
 #endif
         }	
 
+#ifdef RD_MULTIPLE_DRIVE
+    TUint aStatus ;
+
+    if( KErrNone == DriveInfo::GetDriveStatus( iDownload->ClientApp()->Engine()->Fs(), drive , aStatus ))
+        {
+        iRemovableStatus = (aStatus & DriveInfo::EDriveExternallyMountable) ? aStatus : 0 ;
+        if( iRemovableStatus )
+            {
+            iRemovableStatus = (aStatus & DriveInfo::EDriveRemovable) ? KDriveAttRemovable : KDriveAttInternal ;				
+            }
+        else
+            {
+            iRemovableStatus = KDriveAttLocal ;
+            }
+        CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
+        CLOG_WRITE_1( "DriveInfo Status [%d]", aStatus );        	
+        }
+	else
+		{
+		CLOG_WRITE("DriveStatus failed");
+		}
+    
+#else
     TDriveInfo driveInfo;
     
     if( !iDownload->ClientApp()->Engine()->Fs().Drive( driveInfo, drive) )
         {
-        iRemovableDest = (driveInfo.iDriveAtt & KDriveAttRemovable);
-        CLOG_WRITE_1( "Removable: [%d]", iRemovableDest );
+        if (driveInfo.iDriveAtt & KDriveAttRemovable)
+            iRemovableStatus = ( TDownloadUiData::EDriveExternallyMountable | TDownloadUiData::EDriveRemovable ) ;
+        else
+            iRemovableStatus = TDownloadUiData::EDriveInternal ;
+        CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
         }
     else
-        {
+        {        
         CLOG_WRITE("DriveInfo failed");
         }
-
+#endif
+    
     if( err || !isSpace )
         {
         CLOG_WRITE8( "OOD1" );
@@ -1007,16 +1044,44 @@ void CHttpStorage::UpdateDestinationFilenameL( const TDesC16& aFilename, TBool a
     TInt drive;
     if( !iDownload->ClientApp()->Engine()->Fs().CharToDrive((*iDestFilename)[0], drive) )
         {
-        TDriveInfo driveInfo;
-        if( !iDownload->ClientApp()->Engine()->Fs().Drive( driveInfo, drive) )
+#ifdef RD_MULTIPLE_DRIVE
+        TUint aStatus ;
+
+        if( KErrNone == DriveInfo::GetDriveStatus( iDownload->ClientApp()->Engine()->Fs(), drive , aStatus ))
             {
-            iRemovableDest = (driveInfo.iDriveAtt & KDriveAttRemovable);
-            CLOG_WRITE_1( "Removable: [%d]", iRemovableDest );
+            iRemovableStatus = (aStatus & DriveInfo::EDriveExternallyMountable) ? aStatus : 0 ;
+            if( iRemovableStatus )
+                {
+                iRemovableStatus = (aStatus & DriveInfo::EDriveRemovable) ? KDriveAttRemovable : KDriveAttInternal ;				
+                }
+            else
+                {
+                iRemovableStatus = KDriveAttLocal ;
+                }
+            CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
+            CLOG_WRITE_1( "DriveInfo Status [%d]", aStatus );        	
             }
         else
             {
-            CLOG_WRITE("DriveInfo failed");
+            CLOG_WRITE("DriveStatus failed");
             }
+                
+#else        
+        TDriveInfo driveInfo;
+        
+        if( !iDownload->ClientApp()->Engine()->Fs().Drive( driveInfo, drive) )
+            {
+            if (driveInfo.iDriveAtt & KDriveAttRemovable)
+            	iRemovableStatus = ( TDownloadUiData::EDriveExternallyMountable | TDownloadUiData::EDriveRemovable ) ;
+            else
+                iRemovableStatus = TDownloadUiData::EDriveInternal ;
+            CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
+            }
+        else
+            {        
+            CLOG_WRITE("DriveInfo failed");
+            }        
+#endif
         }
     else
         {
@@ -1043,7 +1108,7 @@ void CHttpStorage::AppendStorageInfoL( TPtr8& aBuf ) const
     APPEND_BUF_INT( aBuf, iDownloadedSize);
     AppendBufL( aBuf, iDdFilename );    
     APPEND_BUF_INT( aBuf, iDownload->iMoLength );
-    APPEND_BUF_INT( aBuf, iRemovableDest );
+    APPEND_BUF_INT( aBuf, iRemovableStatus );
 
     }
 
@@ -1065,7 +1130,7 @@ void CHttpStorage::LoadStorageInfoL( RFile& aInFile )
     READ_INT_L( aInFile, iDownloadedSize );
     ReadHBufCL( aInFile, iDdFilename );
     READ_INT_L( aInFile, iDownload->iMoLength  );
-    READ_INT_L( aInFile, iRemovableDest  );
+    READ_INT_L( aInFile, iRemovableStatus  );
 
     }
 

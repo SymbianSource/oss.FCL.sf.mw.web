@@ -158,12 +158,17 @@ Default is WML support enabled
 // Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2   
 #define BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
 
+//To provide WidgetSIDChecker support 
+#define APP_SID_CHECK_SUPPORT_FF
+
 /*
 * ===================
 *        S60 3.23
 * ===================
 */ 
 #if defined(__PLATFORM_VERSION_32__)
+//To provide WidgetSIDChecker support 
+#undef APP_SID_CHECK_SUPPORT_FF 
 
 // Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2
 #undef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
@@ -229,6 +234,9 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_50_TUBE__)
 
+//To provide WidgetSIDChecker support 
+#undef APP_SID_CHECK_SUPPORT_FF 
+
 // Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2
 #undef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
 
@@ -278,6 +286,9 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_50__)
 
+//To provide WidgetSIDChecker support 
+#undef APP_SID_CHECK_SUPPORT_FF 
+
 // Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2
 #undef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
 
@@ -309,6 +320,9 @@ Default is WML support enabled
 * ===================
 */ 
 #elif defined(__PLATFORM_VERSION_51__)
+
+//To provide WidgetSIDChecker support 
+#undef APP_SID_CHECK_SUPPORT_FF 
 
 // Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2
 #undef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
@@ -359,6 +373,10 @@ Default is WML support enabled
 
 // Static data initializtion on start up in E32Main() 
 #define BRDO_STATIC_DATA_CLEANUP_SUPPORT_FF
+
+//To provide WidgetSIDChecker support 
+#define APP_SID_CHECK_SUPPORT_FF 
+
 #endif // PLATFORM VERSION ID's
 
 // Generic run-time definitions -- see WmlBrowserBuild.h for similar feature related definitions

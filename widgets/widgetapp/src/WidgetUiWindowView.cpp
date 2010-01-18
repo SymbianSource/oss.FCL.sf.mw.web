@@ -229,6 +229,18 @@ void CWidgetUiWindowView::DynInitMenuPaneL( TInt aResourceId,
     {
     if (!iWindowManager.ActiveWindow())
         return;
+    #ifdef RD_SCALABLE_UI_V2
+    if (PenEnabled()&&(Layout_Meta_Data::IsLandscapeOrientation())&& IsEditMode())
+    	{
+    	TInt newResId = Cba()->IsVisible() ?
+			  R_AVKON_WIDESCREEN_PANE_LAYOUT_USUAL_FLAT :
+			  R_AVKON_WIDESCREEN_PANE_LAYOUT_USUAL_FLAT_NO_SOFTKEYS;
+		
+			StatusPane()->SwitchLayoutL(newResId);
+			StatusPane()->ApplyCurrentSettingsL();
+			StatusPane()->MakeVisible(ETrue);         
+    	}
+    #endif	
     CBrCtlInterface* engine = iWindowManager.ActiveWindow()->Engine();
     if( engine && (aResourceId == R_WIDGETUI_MENU || aResourceId >= R_CASCADE_MENU_1) )
         {
@@ -306,7 +318,7 @@ void CWidgetUiWindowView::UpdateStatusPane( TBool aVisible )
             if (resId != newResId)
                 {
                 StatusPane()->SwitchLayoutL(newResId);
-                }
+                }            
             }
         else //Portrait
             {

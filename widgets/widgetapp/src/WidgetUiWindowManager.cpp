@@ -620,6 +620,7 @@ TBool CWidgetUiWindowManager::CloseWindow( CWidgetUiWindow* aWidgetWindow )
 TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWindow )
     {
     __ASSERT_DEBUG( aWidgetWindow, User::Invariant() );
+    TBool count(EFalse);
     if ( iDialogsProvider->IsDialogLaunched() )
         {
         return EFalse;
@@ -661,9 +662,27 @@ TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWind
     else
         {
         if(aWidgetWindow->CanBeDeleted())
+            {
+            for ( TInt i = 0; i < iWindowList.Count(); ++i )
+                {
+                CWidgetUiWindow* window( iWindowList[i] );
+                if(window->WidgetMiniViewState() == EMiniViewEnabled || window->WidgetMiniViewState() == EMiniViewNotEnabled)
+                    {
+                    count = ETrue;
+                    break;
+                    }
+                }         
+            if(!count && iNetworkMode == EOfflineMode){
+                aWidgetWindow->Engine()->HandleCommandL( 
+                (TInt)TBrCtlDefs::ECommandIdBase +
+                                (TInt)TBrCtlDefs::ECommandDisconnect );
+                iConnection->StopConnectionL();
+                }             
             delete aWidgetWindow;
+            }
+        return EFalse; 
         }
-    return EFalse;
+    
     }
 
 // =============================================================================

@@ -1099,7 +1099,13 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
             {
             aValue = iActivePlayedDownload;
             }
-            break;    
+            break;
+            
+        case EDlAttrDestRemovable:
+            {
+            aValue = iStorage->RemovableDest();
+            }
+            break;            
             
         default:
             {
@@ -1193,6 +1199,12 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
         case EDlAttrMethod:
             {
             aValue = mediaData->Method();
+            }
+            break;
+            
+        case EDlAttrDestRemovable:
+            {
+            aValue = mediaData->DesRemovable();
             }
             break;
 
@@ -1295,7 +1307,7 @@ EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
    
         case EDlAttrDestRemovable:
             {
-            aValue = iStorage->RemovableDest();
+            aValue = (KDriveAttRemovable == iStorage->RemovableDest()) ? ETrue : EFalse ;
             }
             break;
 
@@ -1368,7 +1380,7 @@ EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
    
         case EDlAttrDestRemovable:
             {
-            aValue = mediaData->DesRemovable();
+            aValue = (KDriveAttRemovable == mediaData->DesRemovable()) ? ETrue : EFalse ;
             }
             break;
 
@@ -2325,6 +2337,23 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
             }
             
             break;
+            
+        case EDlAttrDestRemovable:
+            {
+            if( iCodDownload )
+                {
+                iStorage->SetRemovableDest( aValue );
+
+                if (iCodDlData)                
+                    {
+                    // Update for Active media object.
+                    TInt active = iActiveDownload;
+                    CMediaDataBase* mediaData = (*iCodDlData)[active];
+                    mediaData->SetDesRemovable( aValue );
+                    }
+                }
+            }
+            break;
         default:
             {
 #ifdef __WINS__
@@ -2487,14 +2516,16 @@ EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
             {
             if( iCodDownload )
                 {
-                iStorage->SetRemovableDest( aValue );
+                TInt32 removableDestStatus = (aValue) ? KDriveAttRemovable : KDriveAttLocal ;
+                
+                iStorage->SetRemovableDest( removableDestStatus );
 
                 if (iCodDlData)                
                 	{
 	                // Update for Active media object.
 	                TInt active = iActiveDownload;
 	                CMediaDataBase* mediaData = (*iCodDlData)[active];
-	                mediaData->SetDesRemovable( aValue );
+	                mediaData->SetDesRemovable( removableDestStatus );
                 	}
                 }
             }

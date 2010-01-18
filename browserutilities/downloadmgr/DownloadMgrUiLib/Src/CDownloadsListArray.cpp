@@ -66,7 +66,7 @@ TDownloadUiData::TDownloadUiData()
     iDownloadedSize( KErrNotFound ),
     iIconIndex( KErrNotFound ),
     iPausable( EFalse ),
-    iIsOnExternalMemory( EFalse ),
+    iExternalMemoryStatus( KDriveAttLocal ),
     iProgressState( KErrNotFound ),
     iNumMediaObjects( KErrNotFound )
     {
@@ -465,11 +465,14 @@ TPtrC CDownloadsListArray::LBTextFromUiData( const TDownloadUiData& aDownloadUiD
             }
         newItemTextPtr.Append( KCharTab );
         //
-        if ( aDownloadUiData.iIsOnExternalMemory )
+        if ( KDriveAttLocal != aDownloadUiData.iExternalMemoryStatus )	
             {
             // Add an "External memory" icon.
             iTempBuf.Zero();
-            iTempBuf.Num( iExternalMemoryIconIndex );
+            if ( KDriveAttRemovable == aDownloadUiData.iExternalMemoryStatus )
+                iTempBuf.Num( iExternalMemoryIconIndex );
+            else
+                iTempBuf.Num( iInternalMassMemoryIconIndex );
             newItemTextPtr.Append( iTempBuf ); // iExternalMemoryIconIndex in literal form
             }
         }
@@ -568,10 +571,13 @@ TInt CDownloadsListArray::LBTextLength( const TDownloadUiData& aDownloadUiData )
     //
     ret += KCharTab().Length();
     //
-    if ( aDownloadUiData.iIsOnExternalMemory )
+    if ( KDriveAttLocal != aDownloadUiData.iExternalMemoryStatus )
         {
         iTempBuf.Zero();
-        iTempBuf.Num( iExternalMemoryIconIndex );
+        if ( KDriveAttRemovable == aDownloadUiData.iExternalMemoryStatus )
+            iTempBuf.Num( iExternalMemoryIconIndex );
+        else
+            iTempBuf.Num( iInternalMassMemoryIconIndex );
         ret += iTempBuf.Length();
         }
 
@@ -613,6 +619,19 @@ void CDownloadsListArray::AddDefaultIconsL()
     CLOG_WRITE_FORMAT(" iExternalMemoryIconIndex: %d",iExternalMemoryIconIndex);
 
     CleanupStack::Pop( gulIcon2 ); // gulIcon2
+    
+    // iInternalMassMemoryIconIndex
+    TAknsItemID id3 = KAknsIIDQgnPropMemcMsTab;
+    CGulIcon* gulIcon3 = AknsUtils::CreateGulIconL( skins, id3, 
+                                   *iMbmResourceFileName, 
+                                   EMbmDownloadmgruilibQgn_prop_memc_ms_tab, 
+                                   EMbmDownloadmgruilibQgn_prop_memc_ms_tab_mask );
+    CleanupStack::PushL( gulIcon3 );
+
+    iInternalMassMemoryIconIndex = AppendL( gulIcon3 );
+    CLOG_WRITE_FORMAT(" iExternalMemoryIconIndex: %d",iInternalMassMemoryIconIndex);
+
+    CleanupStack::Pop( gulIcon3 ); // gulIcon3    
     
     CLOG_LEAVEFN("CDownloadsListArray::AddDefaultIconsL");
     }
@@ -755,4 +774,5 @@ TBool  CDownloadsListArray::IsSupportedL(const TDownloadUiData& aDownloadUiData)
 
 
 // End of file.
+
 

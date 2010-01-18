@@ -482,7 +482,7 @@ EXPORT_C void CCodEngBase::Stop()
 //
 EXPORT_C TBool CCodEngBase::RemovableMedia() const
     {
-    return iRemovableMedia;
+    return ( KDriveAttRemovable == iRemovableMediaStatus ) ? ETrue : EFalse ;
     }
 
 // ---------------------------------------------------------
@@ -580,7 +580,7 @@ CCodEngBase::CCodEngBase( MCodLoadObserver* aObserver )
   iPhoneMemoryOk( EFalse ),
   iMmcOk( EFalse ),
 #endif
-  iRemovableMedia( EFalse ),
+  iRemovableMediaStatus( KDriveAttLocal ),
   iStatusCode( KHttp902UserCancelled ),
   iResult( KErrGeneral ),
   iContentTypeCheck ( EFalse ),
@@ -2008,16 +2008,39 @@ void CCodEngBase::SetPathsL()
     (*iData)[iData->ActiveDownload()]->iTempPath.Append(rootPath.Drive());
     (*iData)[iData->ActiveDownload()]->iTempPath.Append(tempBuf);
 
-    TDriveInfo info;
+
     TDriveUnit unit( rootPath.Drive() );
-    User::LeaveIfError( iFs.Drive( info, unit ) );
-    // Create the temp directory earlier in case it's not created yet
-    iFs.MkDirAll( (*iData)[iData->ActiveDownload()]->iTempPath ); 
+
+#ifdef RD_MULTIPLE_DRIVE    
+    TUint aStatus ;
+    
+    if( KErrNone == DriveInfo::GetDriveStatus( iFs, unit , aStatus ))
+            {
+            iRemovableMediaStatus = (aStatus & DriveInfo::EDriveExternallyMountable) ? aStatus : 0 ;
+            if( iRemovableMediaStatus )
+                {
+                iRemovableMediaStatus = (aStatus & DriveInfo::EDriveRemovable) ? KDriveAttRemovable : KDriveAttInternal ;				
+                }
+            else
+                {
+                iRemovableMediaStatus = KDriveAttLocal ;
+                }
+            }    	
+#else
+    TDriveInfo info;
+    User::LeaveIfError( iFs.Drive( info, unit ) );	
     if ( info.iDriveAtt & KDriveAttRemovable )
         {
-        iRemovableMedia = ETrue;
+        iRemovableMediaStatus = KDriveAttRemovable;
         }
-        
+    else
+        {
+        iRemovableMediaStatus = KDriveAttLocal;
+        }
+#endif
+    // Create the temp directory earlier in case it's not created yet
+    iFs.MkDirAll( (*iData)[iData->ActiveDownload()]->iTempPath );
+    
     CLOG(( ECodEng, 2, _L("<- CCodEngBase::SetPathsL root<%S> temp<%S>"), \
         &(*iData)[iData->ActiveDownload()]->iRootPath, &(*iData)[iData->ActiveDownload()]->iTempPath ));
     }
@@ -2038,7 +2061,8 @@ void CCodEngBase::ResetPaths()
 #endif
     //(*iData)[iData->ActiveDownload()]->iTempPath = KNullDesC;
     //(*iData)[iData->ActiveDownload()]->iRootPath = KNullDesC;
-    iRemovableMedia = EFalse;
+
+    iRemovableMediaStatus = KDriveAttLocal;
     }
 
 #ifdef RD_MULTIPLE_DRIVE

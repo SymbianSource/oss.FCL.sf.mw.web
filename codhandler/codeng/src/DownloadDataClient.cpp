@@ -105,7 +105,7 @@ TInt CMediaDataClient::Bytes() const
     bytes += sizeof(iRedirected);
     bytes += iDestFilename->Size();
     bytes += sizeof(iDownloadedSize);
-    bytes += sizeof(iDesRemovable);
+    bytes += sizeof(iDesRemovableStatus);
     bytes += sizeof(iLastErrorId);
     bytes += sizeof(iGlobalErrorId);
     bytes += sizeof(iPausable);
@@ -304,10 +304,10 @@ TBool CMediaDataClient::SetDownloadedSize( TInt aDownloadedSize )
 // CMediaDataClient::SetDesRemovable()
 // ---------------------------------------------------------
 //
-void CMediaDataClient::SetDesRemovable( TBool aDesRemovable )
-	{
-	iDesRemovable = aDesRemovable;
-	}
+void CMediaDataClient::SetDesRemovable( TInt32 aDesRemovable )
+    {
+    iDesRemovableStatus = aDesRemovable;
+    }
 
 // ---------------------------------------------------------
 // CMediaDataClient::SetLastErrorId()
@@ -499,7 +499,7 @@ void CMediaDataClient::ExternalizeL(RWriteStream& aStream) const
     aStream.WriteInt32L(iDownloadedSize);
     
     // iDesRemovable
-    aStream.WriteInt32L(iDesRemovable);
+    aStream.WriteInt32L(iDesRemovableStatus);
     
     // iLastErrorId
     aStream.WriteInt32L(iLastErrorId);

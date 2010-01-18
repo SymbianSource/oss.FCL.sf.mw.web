@@ -23,6 +23,9 @@
 #include "../widgetinstaller/group/bld.inf"
 #include "../widgetlauncher/group/bld.inf"
 #include "../widgetapp/group/bld.inf"
+#ifdef  APP_SID_CHECK_SUPPORT_FF
+#include "../widgetsidchecker/group/bld.inf"
+#endif
 #ifdef RD_WIDGET_PREINSTALLER
 #include "../widgetpreinstaller/group/bld.inf"
 #include "../widgetstartup/group/bld.inf"

@@ -34,6 +34,7 @@ CConnManActiveConnector::CConnManActiveConnector( RConnection& aConnection,
     : CActive( aPriority )
     , iConnection( aConnection )
 	{
+    iWait = EFalse;
 	CLOG_CREATE;
 	CActiveScheduler::Add( this );//inserting this into the queue
 	}
@@ -43,6 +44,7 @@ CConnManActiveConnector::CConnManActiveConnector( RConnection& aConnection,
 //--------------------------------------------------------------------------
 CConnManActiveConnector::~CConnManActiveConnector()
 	{
+    iWait = EFalse;
 	Cancel();//The standard way of destroying an Active object
 	CLOG_CLOSE;
 	}
@@ -101,8 +103,11 @@ void CConnManActiveConnector::StartConnection( TConnSnapPref* aSettings, TReques
 void CConnManActiveConnector::DoCancel()
 	{
 	CLOG_WRITE( "CConnManActiveConnector: DoCancel called");
-	iConnection.Close();
-	User::RequestComplete( iExternalRequestStatus, KErrCancel );//completing user req
+    if(iWait)
+        {
+        iConnection.Close();
+        User::RequestComplete( iExternalRequestStatus, KErrCancel );//completing user req
+        }
 	CLOG_WRITE( "CConnManActiveConnector: DoCancel returned");
 	}
 
@@ -111,6 +116,7 @@ void CConnManActiveConnector::DoCancel()
 //--------------------------------------------------------------------------
 void CConnManActiveConnector::RunL()
 	{
+    iWait = ETrue;
     CLOG_WRITE_1( "CConnManAct::RunL(): %d", iStatus.Int() );
 	User::RequestComplete( iExternalRequestStatus, iStatus.Int() );
 	}
@@ -194,9 +200,10 @@ void CActiveConnectorSyncWrapper::RunL()
 //--------------------------------------------------------------------------
 void CActiveConnectorSyncWrapper::DoCancel()
 	{
-    
-    iActiveConnector->Cancel();
-	
+    if(iActiveConnector->IsActive())
+        {
+        iActiveConnector->Cancel();
+        }
 	if(iWait.IsStarted())
 	  {
 	   iWait.AsyncStop();	

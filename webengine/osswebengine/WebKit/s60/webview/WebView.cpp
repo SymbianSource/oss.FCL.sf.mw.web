@@ -1083,6 +1083,7 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
     bool downEventConsumed = false;
     bool consumed = false;
     bool tabbedNavigation = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
+    bool navigationNone = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone);
     /*
      * For each platform keyDown event EventHandler::keEvent() generates 
      * keydown and keypress.
@@ -1091,8 +1092,11 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
      * and send it here.
      */
     if (eventcode == EEventKeyDown){
-        downEventConsumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame);
+        downEventConsumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame) || 
+                            ((m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox && // style of input box     
+                              page()->chrome()->client()->elementVisibilityChanged()));
     }
+     
     /*
      * downEventConsumed will be true if JavaScript consumes key event
      * If we are not in the widget mode we want to deactivate input box
@@ -1104,7 +1108,11 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
     if (!widgetDownEventConsumed && needDeactivateEditable(keyevent, eventcode, frame, downEventConsumed)) {
         deactivateEditable();
     }
-
+    if(!navigationNone)
+    if(frame->document()->focusedNode() != NULL && IS_DOWN_KEY(keyevent) && frame->document()->focusedNode()->changed())
+        {
+        deactivateEditable();
+        }
     if (tabbedNavigation) {
         consumed = downEventConsumed || handleTabbedNavigation(m_currentEventKey, m_currentEventCode);
     }
@@ -1376,7 +1384,7 @@ bool WebView::handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, 
        (keyevent.iScanCode == EStdKeyEnter) ) {
        // pass it to webcore
 
-        if (( m_focusedElementType == TBrCtlDefs::EElementInputBox ||
+        if (( m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox ||
             m_focusedElementType == TBrCtlDefs::EElementTextAreaBox) &&
             m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed ) {
             if (!m_prevEditMode) {
@@ -2557,6 +2565,7 @@ CWidgetExtension* WebView::createWidgetExtension(MWidgetCallback &aWidgetCallbac
 #if USE(LOW_BANDWIDTH_DISPLAY)
         m_page->mainFrame()->loader()->setUseLowBandwidthDisplay(false);
 #endif
+    StaticObjectsContainer::instance()->setIconDatabaseEnabled(false);
     }
 
     //Widgets dont need memory cache for dead objects. hence set it to 0

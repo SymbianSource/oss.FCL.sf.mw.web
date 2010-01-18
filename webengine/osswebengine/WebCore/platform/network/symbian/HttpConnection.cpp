@@ -916,7 +916,7 @@ int HttpConnection::handleAuthRequestL(
             break;
             }
         }
-
+    m_isDone = ETrue;
     TRAP( ret, SendAuthRequestL( usernameVal, realmVal, isProxy, stale, passwordVal ) );
     if (realmClose)
       {
@@ -1034,7 +1034,7 @@ void HttpConnection::AuthenticationResponse(
     HttpSessionManager* httpSessionMgr = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager();
     httpSessionMgr->removeAuthRequest(this);
     httpSessionMgr->addRequest(this, m_handle);
-
+    m_isDone = EFalse;
     switch (aError)
         {
         case KErrNone:
