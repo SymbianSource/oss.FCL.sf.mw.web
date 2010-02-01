@@ -149,6 +149,12 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
         * @return TBool 
         */
         inline TBool GetDownloadHide() { return iDownloadListHide; }
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
+        /**
+        * Adding Aiw Commands to the given MenuPane
+        */
+        void AIWPlugInMenusL(TInt aResourceId,CEikMenuPane* aMenuPane);
+#endif        
 
     public: // Functions from CDownloadMgrUiBase
 

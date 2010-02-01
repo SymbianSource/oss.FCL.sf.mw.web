@@ -729,7 +729,7 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
         			       ( &fs, bytesToWrite ); )
         if(!mmcOk)
         	{
-            iRemovableStatus = TDownloadUiData::EDriveInternal ;
+            iRemovableStatus = KDriveAttInternal ;
         	CLOG_WRITE( "no MMC present" );
         	return EDriveC;
         	}
@@ -740,8 +740,8 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
         fs.Volume(volInfoE,EDriveE);
         TInt64 freeC = volInfoC.iFree;//free memory available in that drive
         TInt64 freeE = volInfoE.iFree;
-        freeC>=freeE?EDriveC:EDriveE;//put the file in which ever drive has more memory
-        iRemovableStatus = (EDriveC == freeC) ? TDownloadUiData::EDriveInternal : ( TDownloadUiData::EDriveExternallyMountable | TDownloadUiData::EDriveRemovable ) ;
+        freeC = freeE?EDriveC:EDriveE;//put the file in which ever drive has more memory
+        iRemovableStatus = (EDriveC == freeC) ? KDriveAttInternal :  KDriveAttRemovable ;
         return freeC;
 #endif
         }
@@ -861,9 +861,9 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
     if( !iDownload->ClientApp()->Engine()->Fs().Drive( driveInfo, drive) )
         {
         if (driveInfo.iDriveAtt & KDriveAttRemovable)
-            iRemovableStatus = ( TDownloadUiData::EDriveExternallyMountable | TDownloadUiData::EDriveRemovable ) ;
+            iRemovableStatus =  KDriveAttRemovable ;
         else
-            iRemovableStatus = TDownloadUiData::EDriveInternal ;
+            iRemovableStatus = KDriveAttInternal ;
         CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
         }
     else
@@ -1072,9 +1072,9 @@ void CHttpStorage::UpdateDestinationFilenameL( const TDesC16& aFilename, TBool a
         if( !iDownload->ClientApp()->Engine()->Fs().Drive( driveInfo, drive) )
             {
             if (driveInfo.iDriveAtt & KDriveAttRemovable)
-            	iRemovableStatus = ( TDownloadUiData::EDriveExternallyMountable | TDownloadUiData::EDriveRemovable ) ;
+            	iRemovableStatus = KDriveAttRemovable ;
             else
-                iRemovableStatus = TDownloadUiData::EDriveInternal ;
+                iRemovableStatus = KDriveAttInternal ;
             CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
             }
         else

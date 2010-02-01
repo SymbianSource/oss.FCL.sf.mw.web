@@ -134,4 +134,9 @@ LIBRARY     oommonitor.lib
 #if defined( RD_PF_SEC_APPARC )
 LIBRARY         ServiceHandler.lib
 #endif 
+
+#ifdef BRDO_OCC_ENABLED_FF
+LIBRARY    extendedconnpref.lib
+LIBRARY    netmeta.lib
+#endif
 // End of File

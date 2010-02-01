@@ -154,12 +154,15 @@ void CWrtHarvesterPSNotifier::RunL()
             }        
         else if( iKey == EWidgetRegAltered && value == 1 )
             {
-            if(!iHarvester->CanAccessRegistry())
-                {                
-                iHarvester->SetMSMode(0);
-                iHarvester->SetRegistryAccess(ETrue);
+            if(iHarvester->IsInMSMode())
+                {
+                iHarvester->SetRegistryAccess(EFalse);
                 }
-             iHarvester->UpdateL();
+            else
+            	{
+            	iHarvester->SetRegistryAccess(ETrue);
+                } 	
+            iHarvester->UpdateL();
             }
         }
     }

@@ -97,4 +97,9 @@ LIBRARY     MGXMediaFileAPI.lib
 LIBRARY     DcfRep.lib
 LIBRARY     FeatMgr.lib
 
+#ifdef BRDO_OCC_ENABLED_FF
+LIBRARY    extendedconnpref.lib
+LIBRARY    netmeta.lib
+#endif
+
 // End of File

@@ -155,7 +155,7 @@ void CResourceHandleManager::receivedFinished(ResourceHandle* resource, TInt err
         return;
     }
     if (errorCode) {
-        client->didFail(resource, ResourceError(String(), errorCode, String(), String()));
+        client->didFail(resource, ResourceError(String(), errorCode, resource->request().url().url(), String()));
     } else {
         client->didFinishLoading(resource);
     }

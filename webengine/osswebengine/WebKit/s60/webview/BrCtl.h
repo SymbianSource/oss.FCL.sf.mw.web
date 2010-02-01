@@ -589,7 +589,6 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         /**
          * From CCoeControl
          */
-        void HandlePointerBufferReadyL();
         MBrCtlSpecialLoadObserver* brCtlSpecialLoadObserver() const { return m_brCtlSpecialLoadObserver; }
         MBrCtlDownloadObserver* brCtlDownloadObserver();
         MBrCtlLinkResolver* brCtlLinkResolver() const { return m_brCtlLinkResolver; }

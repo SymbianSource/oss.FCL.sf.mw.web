@@ -118,3 +118,7 @@ LIBRARY     CentralRepository.lib
 
 DEBUGLIBRARY    flogger.lib
 //LIBRARY    flogger.lib
+#ifdef BRDO_OCC_ENABLED_FF
+LIBRARY    extendedconnpref.lib
+LIBRARY    netmeta.lib
+#endif

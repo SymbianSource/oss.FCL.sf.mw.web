@@ -203,7 +203,7 @@ void PluginStream::writeStreamToFileL(const char* data, int length)
 
 }
 
-void PluginStream::destroyStream(int reason)
+void PluginStream::destroyStream(int reason, TDesC* failedUrl)
 {
     if (m_streamDestroyed) return;
         m_streamDestroyed = true;
@@ -235,8 +235,17 @@ void PluginStream::destroyStream(int reason)
     }
 
 
-    if ( m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->destroystream ) {            
-        m_pluginskin->getNPPluginFucs()->destroystream( m_pluginskin->getNPP(), m_stream,  npreason);
+    if ( m_pluginskin->getNPPluginFucs() ) {
+    
+        if (m_stream && m_pluginskin->getNPPluginFucs()->destroystream){
+            m_pluginskin->getNPPluginFucs()->destroystream( m_pluginskin->getNPP(), m_stream,  npreason);
+            if (m_loaderclient->notify() && m_pluginskin->getNPPluginFucs()->urlnotify)
+                m_pluginskin->getNPPluginFucs()->urlnotify( m_pluginskin->getNPP(), m_stream->url->Des(), npreason, m_notifydata);                
+        }
+        
+        if(!m_stream && m_loaderclient->notify() && failedUrl && m_pluginskin->getNPPluginFucs()->urlnotify){
+            m_pluginskin->getNPPluginFucs()->urlnotify( m_pluginskin->getNPP(), *failedUrl, npreason, m_notifydata);
+        }
     }
     
     if (reason == KErrNone) {

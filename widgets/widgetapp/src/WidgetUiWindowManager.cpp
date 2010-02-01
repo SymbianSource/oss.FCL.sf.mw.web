@@ -46,6 +46,10 @@
 #include <oommonitorsession.h>
 #include <aknglobalnote.h>
 
+#ifdef BRDO_OCC_ENABLED_FF
+#include <extendedconnpref.h>
+#endif
+
 // LOCAL FUNCTION PROTOTYPES
 TInt doDestructOOMNotifyTimer( TAny* ptr );
 TInt doNotifyHarvester( TAny* ptr );
@@ -169,7 +173,12 @@ void CWidgetUiWindowManager::ConstructL()
     iHandler = CDocumentHandler::NewL(CEikonEnv::Static()->Process());
 
     iDb = CActiveApDb::NewL( EDatabaseTypeIAP );
+    #ifdef BRDO_OCC_ENABLED_FF
+    iConnection = CInternetConnectionManager::NewL( iDb->Database(), ETrue );
+    #else
     iConnection = CInternetConnectionManager::NewL( iDb->Database(), EFalse );
+    #endif
+    
 #ifdef BRDO_WRT_HS_FF    
     iCpsPublisher = CCpsPublisher::NewL();
 #endif
@@ -248,7 +257,7 @@ TBool CWidgetUiWindowManager::DeactivateMiniViewL( const TUid& aUid )
     wdgt_window->SetWindowStateMiniViewL( EMiniViewEnabled );
 
     // TODO also other states are possible when we should react?
-
+    
     // Removing . Miniview, shall remove full view as well. For blanket permissions
     // will be revoked for miniview
 

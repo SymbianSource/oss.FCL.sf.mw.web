@@ -65,6 +65,12 @@ NONSHARABLE_CLASS( MDownloadsListDlgObserver )
         * setting the downloadlist hide to the observer.
         */
         virtual void SetDownloadListHide( TBool aHide ) = 0;
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
+        /**
+        * Adding Aiw Commands for the given MenuPane to the observer.
+        */
+        virtual void AIWPlugInMenusL(TInt aResourceId,CEikMenuPane* aMenuPane) = 0;
+#endif        
     };
 
 #endif /* DOWNLOADSLISTDLGOBSERVER_H */

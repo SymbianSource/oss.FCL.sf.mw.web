@@ -2467,9 +2467,3 @@ MBrCtlDownloadObserver* CBrCtl::brCtlDownloadObserver()
 
 
 
-void CBrCtl::HandlePointerBufferReadyL()
-{
-    m_webView->HandlePointerBufferReadyL();
-}
-
-

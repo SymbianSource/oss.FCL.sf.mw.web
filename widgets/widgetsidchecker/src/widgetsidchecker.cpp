@@ -18,7 +18,7 @@
 
 #include <e32std.h>
 #include <e32const.h>
-#include <implementationproxy.h>
+#include <ecom/implementationproxy.h>
 #include <f32file.h>
 #include <w32std.h>
 #include <apgtask.h>

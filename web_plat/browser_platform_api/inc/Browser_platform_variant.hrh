@@ -158,20 +158,37 @@ Default is WML support enabled
 // Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2   
 #define BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
 
+// Flag for Multi touch enable 
+#define BRDO_MULTITOUCH_ENABLED_FF
 //To provide WidgetSIDChecker support 
 #define APP_SID_CHECK_SUPPORT_FF
 
+// One Click Connectivity support flag
+#define BRDO_OCC_ENABLED_FF
+
+//Single click flag
+#define BRDO_SINGLE_CLICK_ENABLED_FF
 /*
 * ===================
 *        S60 3.23
 * ===================
 */ 
 #if defined(__PLATFORM_VERSION_32__)
+
+//OCC support
+#undef BRDO_OCC_ENABLED_FF
+
+//Single click support
+#undef BRDO_SINGLE_CLICK_ENABLED_FF
+
 //To provide WidgetSIDChecker support 
 #undef APP_SID_CHECK_SUPPORT_FF 
 
 // Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2
 #undef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
+
+// Flag for Multi touch enable 
+#undef BRDO_MULTITOUCH_ENABLED_FF
 
 // Defines touch screen capability
 #undef BRDO_TOUCH_ENABLED_FF
@@ -234,6 +251,13 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_50_TUBE__)
 
+//OCC support
+#undef BRDO_OCC_ENABLED_FF
+//Single click support
+#undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+// Flag for Multi touch enable 
+#undef BRDO_MULTITOUCH_ENABLED_FF
 //To provide WidgetSIDChecker support 
 #undef APP_SID_CHECK_SUPPORT_FF 
 
@@ -286,6 +310,14 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_50__)
 
+//OCC support
+#undef BRDO_OCC_ENABLED_FF
+//Single click support
+#undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+// Flag for Multi touch enable 
+#undef BRDO_MULTITOUCH_ENABLED_FF
+
 //To provide WidgetSIDChecker support 
 #undef APP_SID_CHECK_SUPPORT_FF 
 
@@ -321,6 +353,14 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_51__)
 
+//OCC support
+#undef BRDO_OCC_ENABLED_FF
+//Single click support
+#undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+// Flag for Multi touch enable 
+#undef BRDO_MULTITOUCH_ENABLED_FF
+
 //To provide WidgetSIDChecker support 
 #undef APP_SID_CHECK_SUPPORT_FF 
 
@@ -351,6 +391,12 @@ Default is WML support enabled
 
 // Defines whether SAPI Security Manager Prompt Enhancement is available
 #undef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
+
+//Defines One Click Connectivity support
+#define BRDO_OCC_ENABLED_FF
+
+//Single click support
+#define BRDO_SINGLE_CLICK_ENABLED_FF
 
 #define BRDO_BROWSER_50_FF
 #define BRDO_BROWSER_51_FF

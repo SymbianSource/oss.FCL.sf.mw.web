@@ -36,28 +36,28 @@
 using namespace WebCore;
 
     
-NetscapePlugInStreamLoaderClient* NetscapePlugInStreamLoaderClient::NewL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata)
+NetscapePlugInStreamLoaderClient* NetscapePlugInStreamLoaderClient::NewL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata, TBool notify/*=EFalse*/)
 {
     NetscapePlugInStreamLoaderClient* self = new (ELeave) NetscapePlugInStreamLoaderClient();    
     CleanupStack::PushL( self );
-    self->ConstructL( url, pluginskin, frame, notifydata );
+    self->ConstructL( url, pluginskin, frame, notifydata, notify );
     CleanupStack::Pop();    
     return self;    
 }
 
 
-NetscapePlugInStreamLoaderClient* NetscapePlugInStreamLoaderClient::NewL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata)
+NetscapePlugInStreamLoaderClient* NetscapePlugInStreamLoaderClient::NewL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata, TBool notify/*=EFalse*/)
 {
     NetscapePlugInStreamLoaderClient* self = new (ELeave) NetscapePlugInStreamLoaderClient();
     CleanupStack::PushL( self );
             
-    self->ConstructL( request, pluginskin, frame, notifydata );
+    self->ConstructL( request, pluginskin, frame, notifydata, notify );
     
     CleanupStack::Pop();    
     return self;    
 }
 
-void NetscapePlugInStreamLoaderClient::ConstructL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata)  
+void NetscapePlugInStreamLoaderClient::ConstructL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata, TBool notify/*=EFalse*/)  
 {            
     m_loader = 0; 
     m_request = 0;
@@ -65,6 +65,7 @@ void NetscapePlugInStreamLoaderClient::ConstructL(const String& url, PluginSkin*
     m_pluginskin = pluginskin;
     m_notifydata = notifydata;
     m_frame = frame;
+    m_notify = notify;
     m_pluginstream = new (ELeave) PluginStream(pluginskin, this, notifydata);
     m_request = new (ELeave) ResourceRequest(m_frame->loader()->completeURL(url));
     
@@ -80,7 +81,7 @@ void NetscapePlugInStreamLoaderClient::ConstructL(const String& url, PluginSkin*
         m_loader->setShouldBufferData(false);
 }
 
-void NetscapePlugInStreamLoaderClient::ConstructL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata)  
+void NetscapePlugInStreamLoaderClient::ConstructL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata, TBool notify/*=EFalse*/)  
 {            
     
     m_loader = 0; 
@@ -89,6 +90,7 @@ void NetscapePlugInStreamLoaderClient::ConstructL(const ResourceRequest& request
     m_pluginskin = pluginskin;
     m_notifydata = notifydata;
     m_frame = frame;
+    m_notify = notify;
     m_pluginstream = new (ELeave) PluginStream(pluginskin, this, notifydata);
     m_request = new (ELeave) ResourceRequest(request.url());
 
@@ -154,8 +156,6 @@ void NetscapePlugInStreamLoaderClient::stop()
 void NetscapePlugInStreamLoaderClient::cancelWithError(const ResourceError& error)
 {
     if (m_loader && !m_loader->isDone()){
-        if(m_pluginskin && m_pluginskin->getNPPluginFucs())
-            m_pluginskin->getNPPluginFucs()->urlnotify(m_pluginskin->m_instance, error.failingURL(), NPRES_NETWORK_ERR, m_notifydata);
         m_loader->cancel(error);
     }
 }
@@ -200,14 +200,22 @@ void NetscapePlugInStreamLoaderClient::didFinishLoading()
 void NetscapePlugInStreamLoaderClient::didFail(const ResourceError& error)
 {
     if (m_pluginstream) {
-        m_pluginstream->destroyStream(error.errorCode() ? error.errorCode() : KErrCancel);
+        int err = error.errorCode() ? error.errorCode() : KErrCancel;
+        HBufC* failedURL = HBufC::NewLC(error.failingURL().length());
+        failedURL->Des().Copy(error.failingURL());
+        m_pluginstream->destroyStream(err, failedURL);
+        CleanupStack::PopAndDestroy(failedURL);
     }
 }
 
 void NetscapePlugInStreamLoaderClient::didCancel(const ResourceError& error)
 {
     if (m_pluginstream) {
-        m_pluginstream->destroyStream(error.errorCode() ? error.errorCode() : KErrCancel);
+        int err = error.errorCode() ? error.errorCode() : KErrCancel;
+        HBufC* failedURL = HBufC::NewLC(error.failingURL().length());
+        failedURL->Des().Copy(error.failingURL());
+        m_pluginstream->destroyStream(err, failedURL);
+        CleanupStack::PopAndDestroy(failedURL);
     }
 }
 

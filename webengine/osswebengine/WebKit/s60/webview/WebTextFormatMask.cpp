@@ -192,9 +192,15 @@ bool WebTextFormatMask::checkText( const String& text, ErrorBlock& eb )
         m_currentMask = m_currentMask->nextMask();
     }
 
-    // did we use up all the masks?
-    if(m_currentMask && m_currentMask->multitude() != kInfinite)
-        return false;
+       // this check doesn't seem to be proper as the check is done for 
+       // the partial text.Because the checkText() is called for every character input by user,
+       // there are remaining masks after complete text length has been checked, 
+       // that is valid case and it should not return false. 
+       // If text length is bigger than mask length then that case is handled within for loop 
+       //before this condition check. So it is redundant in current implementation
+       // did we use up all the masks?
+       /* if(m_currentMask && m_currentMask->multitude() != kInfinite)
+        return false;*/
 
     return (eb.m_start == -1);
 }

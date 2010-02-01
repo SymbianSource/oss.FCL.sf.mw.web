@@ -28,7 +28,6 @@
 
 #include "WebKitLogger.h"
 
-using namespace RT_GestureHelper;
 // constants
 const int KRecordSize = 4;
 
@@ -38,7 +37,9 @@ const int KDecelCurveSize = 10;
 
 const int KScrollIntervalTimeout = 60000; // scroll timer interval in microseconds
 
-const float KDecceleration = -700.0;
+const float KDeccelerationLow = -350.0;
+const float KDeccelerationHigh = -600.0;
+const float KSpeedHigh = 2000.0;
 
 int decelTimerCB(TAny* ptr);
 
@@ -78,6 +79,7 @@ WebScrollingDeceleratorGH::WebScrollingDeceleratorGH(WebView& webView)
 void WebScrollingDeceleratorGH::ConstructL()
 {
     m_decelTimer = CPeriodic::NewL(CActive::EPriorityStandard);
+    m_deceleration = KDeccelerationHigh;
 }
 
 // -----------------------------------------------------------------------------
@@ -91,7 +93,7 @@ WebScrollingDeceleratorGH::~WebScrollingDeceleratorGH()
 
 int WebScrollingDeceleratorGH::getDecceleration()
 {
-   return  KDecceleration;  
+   return  m_deceleration;  
 }
 
 
@@ -114,8 +116,22 @@ void WebScrollingDeceleratorGH::startDecel(TRealPoint& speed, WebScrollbarDrawer
 {
     m_decelelatorSwitch = true;
     m_scrollbarDrawer = scrollbarDrawer;
-    m_initSpeed.iX = (-1) * speed.iX;
-    m_initSpeed.iY = (-1) * speed.iY;
+    float speedX = speed.iX;
+    float speedY = speed.iY;
+    float absSpeedX = abs(speedX);
+    float absSpeedY = abs(speedY);
+    
+    if (absSpeedX > KSpeedHigh) {
+        speedX = KSpeedHigh * speedX/absSpeedX ;
+        m_deceleration = KDeccelerationLow;
+    }
+    if (absSpeedY > KSpeedHigh) {
+        speedY = KSpeedHigh * speedY/absSpeedY;
+        m_deceleration = KDeccelerationLow;
+    }
+    
+    m_initSpeed.iX = (-1) * speedX;
+    m_initSpeed.iY = (-1) * speedY;
     
     m_numscrollsteps = 0;
     if (m_decelTimer->IsActive()) {
@@ -145,14 +161,16 @@ void WebScrollingDeceleratorGH::scroll()
     TReal32 accelX = 0.0;
     TReal32 accelY = 0.0;
     
+    TReal32 deceleration = getDecceleration();
+    
     if (m_initSpeed.iX) {
-        accelX = (m_initSpeed.iX > 0) ?  KDecceleration : (-1) * KDecceleration;
+        accelX = (m_initSpeed.iX > 0) ?  deceleration : (-1) * deceleration;
         vx = m_initSpeed.iX + accelX * t;
         dx = m_initSpeed.iX * t + 0.5 * accelX * (t * t);
     }
         
     if (m_initSpeed.iY) {
-        accelY = (m_initSpeed.iY > 0) ?  KDecceleration : (-1) * KDecceleration;
+        accelY = (m_initSpeed.iY > 0) ?  deceleration : (-1) * deceleration;
         vy = m_initSpeed.iY + accelY * t;
         dy = m_initSpeed.iY * t + 0.5 * accelY * (t * t);
     }

@@ -1999,7 +1999,27 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 	            
 	            if ( cancelled )
 	                {
-	                DeleteDownloadL( currDownload );
+                    DeleteDownloadL( currDownload );
+                    
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF     
+                    TInt currentItemIndex = aDialog.CurrentItemIndex();
+                    if (currentItemIndex != -1)
+                        {   
+                        TInt Inprogress = iListModel->DownloadsCount
+                                      ( MASKED_DL_STATE(EHttpDlCreated) |
+                                        MASKED_DL_STATE(EHttpDlPaused) |
+                                        MASKED_DL_STATE(EHttpDlInprogress) |
+                                        MASKED_DL_STATE(EHttpDlMultipleMOFailed));
+                        if ( Inprogress > 1 )
+                            {
+                            aDialog.ButtonGroupContainer()->MakeCommandVisible( EAknSoftkeyOptions, ETrue );
+                            } 
+                        else
+                            {
+                            aDialog.ButtonGroupContainer()->MakeCommandVisible( EAknSoftkeyOptions, EFalse );
+                            }
+                        }
+#endif                    
 	                }
 	            iIsCancelInProgress = EFalse;
             	}
@@ -2251,7 +2271,8 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
         CDocumentHandler* docHandler = CDocumentHandler::NewLC();
         canProgHandled = docHandler->CanHandleProgressivelyL( dataType, pdPlayerUid );
         CleanupStack::PopAndDestroy( docHandler ); // docHandler              
-                
+
+#ifndef BRDO_SINGLE_CLICK_ENABLED_FF        
         //delete open file manager when download is not complete
         if( !(isCompleted))
             {
@@ -2386,9 +2407,33 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
                 {
                 aMenuPane->DeleteMenuItem( EDownloadsListCmdFileManager );
                 }
-       	    }
+            }
+#else
+    // Count paused downloads. Note that Creates and Failed downloads 
+            // are also considered as Paused, and they can be resumed.
+            TInt pausedCount = iListModel->DownloadsCount
+                               ( MASKED_DL_STATE(EHttpDlCreated) |
+                                 MASKED_DL_STATE(EHttpDlPaused) |
+                                 MASKED_DL_STATE(EHttpDlMultipleMOFailed) );
+            CLOG_WRITE_FORMAT(" paused count: %d",pausedCount);
+            //
+            if ( !( 1 < pausedCount ) )
+                {
+                aMenuPane->DeleteMenuItem( EDownloadsListCmdResumeAll );
+                } 
+                
+            TInt downloadCount = iListModel->DownloadsCount
+                                 ( MASKED_DL_STATE(EHttpDlCreated) |
+                                   MASKED_DL_STATE(EHttpDlInprogress)|
+                                   MASKED_DL_STATE(EHttpDlPaused) );
+            CLOG_WRITE_FORMAT(" download count: %d",downloadCount);
+            
+            if ( !( 1 < downloadCount ) )
+                {
+                aMenuPane->DeleteMenuItem( EDownloadsListCmdCancelAll );
+                }              
+#endif          
         }
-        
     if ( wasCompleted && !isThemeType ) 
         {
         InitializeAIWPlugInMenusL( aResourceId, aMenuPane, currDownload );		
@@ -2396,6 +2441,17 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
     CLOG_LEAVEFN("CDownloadMgrUiDownloadsList::DynInitMenuPaneL");
     }
 
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
+void CDownloadMgrUiDownloadsList::AIWPlugInMenusL(TInt aResourceId,CEikMenuPane* aMenuPane)
+    {
+    if( !iAIWServiceHandler )
+        {
+        AttachAIWInterestL();
+        }
+    RHttpDownload& currDownload = iListModel->Download( 0 );
+    InitializeAIWPlugInMenusL( aResourceId, aMenuPane, currDownload );  
+    }
+#endif
 // -----------------------------------------------------------------------------
 // CDownloadMgrUiDownloadsList::OfferKeyEventL
 // -----------------------------------------------------------------------------

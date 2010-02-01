@@ -62,6 +62,7 @@ USERINCLUDE     ../Inc
 USERINCLUDE     ../../DownloadMgrClntSrv/inc
 
 MW_LAYER_SYSTEMINCLUDE
+
 #if defined(__PLATFORM_VERSION_50_TUBE__) || defined( __PLATFORM_VERSION_50__)
 APP_LAYER_SYSTEMINCLUDE
 #endif
@@ -81,6 +82,9 @@ SOURCE          CDownloadUtils.cpp
 SOURCE          DMgrUiLibPanic.cpp
 SOURCE          ProgressInfoCreator.cpp
 SOURCE          UserInteractionsEventHandler.cpp
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF 
+SOURCE          CDownloadsStylusPopupMenu.cpp
+#endif
 
 LIBRARY         AKNNOTIFY.lib
 LIBRARY         AknNotifyPlugin.lib

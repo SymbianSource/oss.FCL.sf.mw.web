@@ -79,6 +79,12 @@ LIBRARY     featmgr.lib
 LIBRARY     cmmanager.lib
 DEBUGLIBRARY    flogger.lib
 
+//Below libs are required for One-Click-Connectivity feature
+#ifdef BRDO_OCC_ENABLED_FF
+LIBRARY    extendedconnpref.lib
+LIBRARY    netmeta.lib
+#endif
+
 #if defined(ARMCC)
     DEFFILE ../EABI/CONNECTIONMANAGERU_EKA2.def
 #else

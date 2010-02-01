@@ -54,6 +54,14 @@ enum TDMULAIWMENUIDs
     EAIWPluginSubMenu 	=  0x7000
     };
 
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
+enum TAiwCommandId    // pls dont modify these values.
+    {
+    EAiwCmdRingtone = 0x6025,
+    EAiwCmdContact = 0x6026
+    };
+#endif
+
 #endif /* DOWNLOADMGRUILIB_HRH */
 
 // End of File

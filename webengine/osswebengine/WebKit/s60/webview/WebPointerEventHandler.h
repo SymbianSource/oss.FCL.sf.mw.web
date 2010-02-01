@@ -20,8 +20,9 @@
 
 #include <e32base.h>
 #include <w32std.h>
+#include <stmgestureinterface.h>
 #include "Timer.h"
-#include <rt_gesturehelper.h>
+
 
 namespace WebCore
 {
@@ -31,8 +32,9 @@ namespace WebCore
 
 class WebView;
 class CActiveSchedulerWait;
+class WebGestureInterface;
 
-class WebPointerEventHandler : public CBase, public RT_GestureHelper::MGestureObserver
+class WebPointerEventHandler : public CBase
 {
 public:
     static WebPointerEventHandler* NewL(WebView* view);     
@@ -42,9 +44,7 @@ public:
 public:
     void HandlePointerEventL(const TPointerEvent& aPointerEvent);
     void HandleHighlightChange(const TPoint &aPoint);
-
-    virtual void HandleGestureL( const RT_GestureHelper::TGestureEvent& aEvent );
-    
+    void HandleGestureEventL(const TStmGestureEvent& aGesture);
     
 private:    
     bool checkForEventListener(WebCore::Node* node);
@@ -54,14 +54,15 @@ private:
     bool isHighlitableElement(TBrCtlDefs::TBrCtlElementType& elType);
     TBrCtlDefs::TBrCtlElementType highlitableElement();
     void buttonDownTimerCB(WebCore::Timer<WebPointerEventHandler>* t);
-    void handleTouchDownL(const RT_GestureHelper::TGestureEvent& aEvent);
-    void handleTouchUp(const RT_GestureHelper::TGestureEvent& aEvent);
-    void handleTapL(const RT_GestureHelper::TGestureEvent& aEvent);
-    void handleDoubleTap(const RT_GestureHelper::TGestureEvent& aEvent);
-    void handleMove(const RT_GestureHelper::TGestureEvent& aEvent);
+    void handleTouchDownL(const TStmGestureEvent& aGesture);
+    void handleTouchUp(const TStmGestureEvent& aGesture);
+    void handleTapL(const TStmGestureEvent& aGesture);
+    void handleDoubleTap(const TStmGestureEvent& aGesture);
+    void handleMove(const TStmGestureEvent& aGesture);
     void doTapL();
     void updateCursor(const TPoint& pos);
     void setFocusRing();
+    void handlePinchZoomL(const TStmGestureEvent& aGesture);
 private:
     WebPointerEventHandler(WebView* view);            
     WebView* m_webview;
@@ -78,10 +79,10 @@ private:
     TPointerEvent m_currentEvent;
     WebCore::Timer<WebPointerEventHandler> m_buttonDownTimer; 
     
-    RT_GestureHelper::CGestureHelper* m_gestureHelper;
     TPointerEvent m_lastPointerEvent;
     bool   m_ignoreTap; 
     CActiveSchedulerWait*    m_waiter; 
+    WebGestureInterface*  m_gestureInterface; 
     
 };
 

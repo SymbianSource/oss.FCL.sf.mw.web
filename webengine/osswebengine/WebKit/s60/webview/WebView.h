@@ -27,6 +27,7 @@
 #include "PageScaler.h"
 #include "Timer.h"
 #include <MemoryManager.h>
+#include <stmgesturelistener.h>
 
 namespace WebCore
 {
@@ -66,6 +67,7 @@ class WebPointerEventHandler;
 class WebPageFullScreenHandler;
 class WebFrameView;
 class WebFrameBridge;
+class WebPagePinchZoomHandler;
 
 
 const TUint KMouseEventFired = 0x00000001;
@@ -294,13 +296,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void closeToolBarL();
 
         /**
-        * HandlePointerBufferReadyL
-        * From CCoeControl
-        *
-        */
-        void HandlePointerBufferReadyL();
-
-        /**
         * HandlePointerEventL
         * From CCoeControl
         *
@@ -349,6 +344,26 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         * Collects offscreen bitmap 
         */ 
         void  collectOffscreenbitmapL(CFbsBitmap& snapshot); 
+        
+        /**
+        * To get the pinch zoom handler
+        */
+        WebPagePinchZoomHandler* pinchZoomHandler() { return m_pinchZoomHandler; }
+        
+        /**
+        * To set the Bitmap zooming for Pinch
+        */
+        void setPinchBitmapZoomLevel(int zoomLevel);
+        
+        /**
+        * To set the Bitmap zooming In for Pinch
+        */
+        void setPinchBitmapZoomIn(int zoomLevel);
+        
+        /**
+        * To set the Bitmap zooming Out for Pinch
+        */
+        void setPinchBitmapZoomOut(int zoomLevel);
 
     public: // from MPageScalerCallback
         /**
@@ -581,6 +596,11 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         
         CActiveSchedulerWait*    m_waiter; 
         WebCore::Timer<WebView>* m_waitTimer;
+        
+		//Pinch Zoom Handler
+        WebPagePinchZoomHandler* m_pinchZoomHandler;
+        TBool                    m_isPinchZoom;
+        TRealPoint               m_pinchDocDelta;
     };
 
 #endif

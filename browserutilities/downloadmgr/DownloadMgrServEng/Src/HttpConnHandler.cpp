@@ -32,6 +32,10 @@
 #include <cdblen.h>
 //#include <deflatefilterinterface.h>
 #include <cookiefilterinterface.h>
+#include <platform/mw/browser_platform_variant.hrh>
+#ifdef BRDO_OCC_ENABLED_FF
+#include <extendedconnpref.h>
+#endif
 
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;
@@ -286,6 +290,9 @@ void CHttpConnHandler::ConstructL()
     iHttpSession.OpenL();
     CLOG_WRITE8( "Session open" );
     InitSessionL();
+
+	//Set it to zero
+	iIapId = 0;
     }
 
 // -----------------------------------------------------------------------------
@@ -378,7 +385,29 @@ void CHttpConnHandler::ConnectL()
                 iPref.SetDialogPreference( ECommDbDialogPrefPrompt );
                 }
 
+        #ifdef BRDO_OCC_ENABLED_FF
+           TExtendedConnPref extPref;
+           CLOG_WRITE( "Setting OCC parameters");
+           CLOG_WRITE_1( "Iap: %d", iIapId );
+           if (iIapId)
+           {
+              CLOG_WRITE( "Iap is found");
+              extPref.SetSnapPurpose(CMManager::ESnapPurposeUnknown);
+              extPref.SetIapId(iIapId);
+           }
+           else
+           {
+              CLOG_WRITE( "Using Internet Snap");
+              extPref.SetSnapPurpose(CMManager::ESnapPurposeInternet);
+           }
+
+           extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourConnSilent);
+           TConnPrefList prefList;
+           prefList.AppendL(&extPref);
+           iConnection.Start( prefList, iStatus );
+        #else
             iConnection.Start( iPref, iStatus );
+        #endif //BRDO_OCC_ENABLED_FF
 
             // RConnection will complete us.
             doComplete = EFalse;

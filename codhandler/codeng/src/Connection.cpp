@@ -28,6 +28,10 @@
 #include <CommDbConnPref.h>
 #include <cdblen.h>
 #include <es_enum.h>
+#include <platform/mw/browser_platform_variant.hrh>
+#ifdef BRDO_OCC_ENABLED_FF
+#include <extendedconnpref.h>
+#endif
 
 // ================= MEMBER FUNCTIONS =======================
 
@@ -94,7 +98,31 @@ void CConnection::ConnectL( TUint32 aIap, TRequestStatus* aStatus )
             // aIap == 0 -> user select.
             iConnPref.SetDialogPreference( ECommDbDialogPrefPrompt );
             }
-        iConn.Start( iConnPref, iStatus );
+        #ifdef BRDO_OCC_ENABLED_FF
+           TExtendedConnPref extPref;
+           CLOG(( EConn, 4, _L("CodHalder Setting OCC parameters") ));
+           
+           CLOG(( EConn, 4, _L("Iap: %d"), aIap ));
+           if (aIap)
+           {
+              CLOG(( EConn, 4, _L("Iap is found") ));
+              extPref.SetSnapPurpose(CMManager::ESnapPurposeUnknown);
+              extPref.SetIapId(aIap);
+           }
+           else
+           {
+              CLOG(( EConn, 4, _L("Using Internet Snap") ));
+              extPref.SetSnapPurpose(CMManager::ESnapPurposeInternet);
+		   }
+
+           extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourConnSilent);
+           TConnPrefList prefList;
+           prefList.AppendL(&extPref);
+           iConn.Start( prefList, iStatus );
+        #else
+            iConn.Start( iConnPref, iStatus );
+        #endif //BRDO_OCC_ENABLED_FF
+        
         iState = EConnecting;
         SetActive();
         CleanupStack::Pop( 2 ); // closing iConn and iSockServ

@@ -19,7 +19,7 @@
 #include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 #ifdef BRDO_USE_GESTURE_HELPER
-#include "../rt_gesturehelper/group/bld.inf"
+#include "../stmgesturefw/group/bld.inf"
 #endif 
 
 PRJ_PLATFORMS

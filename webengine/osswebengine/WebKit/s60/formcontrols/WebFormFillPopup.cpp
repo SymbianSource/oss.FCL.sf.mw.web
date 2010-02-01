@@ -16,6 +16,7 @@
 */
 
 // INCLUDE FILES
+#include <browser_platform_variant.hrh>
 #include <../bidi.h>
 #include <brctldialogsprovider.h>
 
@@ -271,8 +272,11 @@ void WebFormFillPopup::HandleListBoxEventL(CEikListBox* aListBox, TListBoxEvent 
 {
     if (aListBox != m_listBox)
         return;
-
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
+    if (aEventType == EEventItemDoubleClicked || aEventType == EEventEnterKeyPressed || aEventType == EEventItemSingleClicked || aEventType == EEventEmptyAreaClicked)
+#else        
     if (aEventType == EEventItemDoubleClicked || aEventType == EEventEnterKeyPressed)
+#endif        
     {
         // get the selected item from listbox
         m_listBox->View()->UpdateSelectionL(CListBoxView::ESingleSelection);
@@ -280,7 +284,8 @@ void WebFormFillPopup::HandleListBoxEventL(CEikListBox* aListBox, TListBoxEvent 
         if (m_listBox->IsFocused())
         {
             MakeVisible(EFalse);
-            m_callback->autoComplete(m_data[selected->At(0)]->Text());
+            if(selected != NULL && m_data[selected->At(0)] )
+               m_callback->autoComplete(m_data[selected->At(0)]->Text());
         }
     }
     else if (aEventType == EEventPenDownOnItem) {

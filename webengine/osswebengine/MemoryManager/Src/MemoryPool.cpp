@@ -633,7 +633,7 @@ CNewSymbianHeapPool::~CNewSymbianHeapPool()
 	}
 
 #ifdef __WINSCW__
-const TInt KMaxHeapSize = 0x2000000; // 32MB, on emulator
+const TInt KMaxHeapSize = 0x1000000; // 32MB, on emulator
 #else
 const TInt KMaxHeapSize = 0x4000000; // 64MB, on hardware
 #endif

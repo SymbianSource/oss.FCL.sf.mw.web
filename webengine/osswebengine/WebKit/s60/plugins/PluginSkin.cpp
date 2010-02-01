@@ -831,17 +831,9 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
         
         if (m_instance && m_pluginfuncs) {
         
-            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(url, this, core(m_frame), notifydata);
+            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(url, this, core(m_frame), notifydata, notify);
             if (pluginloader) {
-                pluginloader->start();                            
-
-                if ( notify ) {
-                    HBufC* url16 = HBufC::NewLC( url.Length() );
-                    url16->Des().Copy( url );
-                    m_pluginfuncs->urlnotify( m_instance, *url16, NPRES_DONE, notifydata );        
-                    CleanupStack::PopAndDestroy(url16);
-                }
-                
+                pluginloader->start();                                          
             }                
         }                 
     }
@@ -923,17 +915,9 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
     if (loadmode == ELoadModePlugin ) {    
                         
         if (m_instance && m_pluginfuncs) {
-            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(request, this, core(m_frame), notifydata);
+            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(request, this, core(m_frame), notifydata, notify);
             if (pluginloader) {
-                pluginloader->start();                            
-
-                if ( notify ) {
-                    HBufC* url16 = HBufC::NewLC( url.Length() );
-                    url16->Des().Copy( url );
-                    m_pluginfuncs->urlnotify( m_instance, *url16, NPRES_DONE, notifydata );        
-                    CleanupStack::PopAndDestroy(url16);
-                }
-                
+                pluginloader->start();                                           
             }                
         }                 
     }

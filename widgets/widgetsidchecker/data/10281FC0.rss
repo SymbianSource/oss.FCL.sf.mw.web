@@ -15,7 +15,7 @@
 *
 */
 
-#include "registryinfo.rh"
+#include <ecom/registryinfo.rh>
 
 RESOURCE REGISTRY_INFO r_registry
 	{

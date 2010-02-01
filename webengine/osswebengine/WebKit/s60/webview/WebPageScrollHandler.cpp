@@ -37,7 +37,6 @@
 
 #include "WebKitLogger.h"
 using namespace WebCore;
-using namespace RT_GestureHelper;
 // constants
 const int KPageOverviewScrollPeriodic = 20 * 1000; // Update frequently for faster, smoother scrolling
 const int KMicroInterval = 300000;
@@ -605,9 +604,9 @@ void WebPageScrollHandler::scrollPageOverviewGH()
 }
 
 
-void WebPageScrollHandler::handleScrollingGH(const TGestureEvent& aEvent)
+void WebPageScrollHandler::handleScrollingGH(const TStmGestureEvent& aGesture)
 {   
-    TPoint newPos = aEvent.CurrentPos();
+    TPoint newPos = aGesture.CurrentPos();
     m_currentPosition = newPos;
     if (m_webView->inPageViewMode()) {
         if (!m_pageOverviewScrollPeriodic->IsActive()){
@@ -623,9 +622,9 @@ void WebPageScrollHandler::handleScrollingGH(const TGestureEvent& aEvent)
 }
 
 
-void WebPageScrollHandler::handleTouchDownGH(const TGestureEvent& aEvent)
+void WebPageScrollHandler::handleTouchDownGH(const TStmGestureEvent& aGesture)
 {
-    TPoint newPos = aEvent.CurrentPos();
+    TPoint newPos = aGesture.CurrentPos();
     m_lastMoveEventTime = 0; 
     m_lastPosition = newPos;
     m_currentPosition = newPos;
@@ -640,10 +639,10 @@ void WebPageScrollHandler::handleTouchDownGH(const TGestureEvent& aEvent)
 }
 
 
-void WebPageScrollHandler::handleTouchUpGH(const TGestureEvent& aEvent)
+void WebPageScrollHandler::handleTouchUpGH(const TStmGestureEvent& aGesture)
 {
     bool decelDoesScrollbars = false;
-    TPoint newPos = aEvent.CurrentPos();
+    TPoint newPos = aGesture.CurrentPos();
 
     if (m_webView->inPageViewMode()) {
         if (m_pageOverviewScrollPeriodic->IsActive()){ 
@@ -657,7 +656,7 @@ void WebPageScrollHandler::handleTouchUpGH(const TGestureEvent& aEvent)
     else {
         m_scrollTimer->Cancel();
         m_lastPosition = TPoint(0, 0);
-        decelDoesScrollbars = startDeceleration(aEvent);
+        decelDoesScrollbars = startDeceleration(aGesture);
                     
         if (m_webView->viewIsScrolling()) {
             Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
@@ -675,10 +674,10 @@ void WebPageScrollHandler::handleTouchUpGH(const TGestureEvent& aEvent)
 }
 
 
-bool WebPageScrollHandler::startDeceleration(const TGestureEvent& aEvent)
+bool WebPageScrollHandler::startDeceleration(const TStmGestureEvent& aGesture)
 {
     bool started = false;
-    TRealPoint gstSpeed = aEvent.Speed();
+    TRealPoint gstSpeed = aGesture.Speed();
     if (Abs(gstSpeed.iX / gstSpeed.iY) <= KTanOfThresholdAngle) {
        gstSpeed.iX = 0;
     }
