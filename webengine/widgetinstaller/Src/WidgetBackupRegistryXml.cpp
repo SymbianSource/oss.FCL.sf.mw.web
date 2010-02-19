@@ -1,20 +1,24 @@
-/*
-* Copyright (c) 2008 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
-*
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
-*
-* Contributors:
-*
-* Description:  Processes registry persistent data in XML.
-*
-*/
+//
+// ==============================================================================
+//  Name        : WidgetBackupRegistryXml.cpp
+//  Part of     : WidgetRegistry
+//  Interface   :
+//  Description : Processes registry persistent data in XML.
+//  Version     : 5.0
+//
+//  Copyright © 2008 Nokia Corporation.
+//  This material, including documentation and any related
+//  computer programs, is protected by copyright controlled by
+//  Nokia Corporation. All rights are reserved. Copying,
+//  including reproducing, storing, adapting or translating, any
+//  or all of this material requires the prior written consent of
+//  Nokia Corporation. This material also contains confidential
+//  information which may not be disclosed to others without the
+//  prior written consent of Nokia Corporation.
+// ==============================================================================
+///
 
+// INCLUDE FILES
 
 #include <e32base.h>
 #include <f32file.h>

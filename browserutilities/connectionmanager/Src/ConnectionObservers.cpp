@@ -22,6 +22,7 @@
 #include <nifvar.h>
 #include <es_enum.h>
 #include <in_sock.h>
+#include <cdbcols.h>
 
 #include <connectionobservers.h>
 #include "ConnectionManagerLogger.h"
