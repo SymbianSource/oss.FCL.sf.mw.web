@@ -471,7 +471,7 @@ void CWidgetInstaller::FixWidgetPropsL()
                         }        
                     break;
                     
-                    case EWidgetPropTypeInt:
+                    case EWidgetPropTypeInt: {
                     TLex toInt( value->Des() );
                     TInt k;
                     if ( KErrNone != toInt.Val( k ) )
@@ -480,13 +480,15 @@ void CWidgetInstaller::FixWidgetPropsL()
                        }
                     if ( propId ==  EBlanketPermGranted )
                         backupBlanketPerm = k;        
-                    break;                    
+                    }
+                       break;                    
 					          
-					          case EWidgetPropTypeString:
+                    case EWidgetPropTypeString:{
                     *(backupPropertyValues[propId]) = *value; 
-                    break;
+                    }
+                       break;
                     
-                    case EWidgetPropTypeUid:
+                    case EWidgetPropTypeUid: 
                         {
                         TLex toUid( value->Des() );
                         TInt u;
