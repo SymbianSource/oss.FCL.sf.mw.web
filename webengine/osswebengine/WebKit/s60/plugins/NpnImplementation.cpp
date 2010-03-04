@@ -369,7 +369,7 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
         case NPNVisOfflineBool:     // Tells whether offline mode is enabled;
                                     // true=offline mode enabled, false=not enabled
             
-        case NPNNetworkAccess:
+    case NPNNetworkAccess: {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             TInt apId = -1;
             if (pluginWin) {
@@ -377,7 +377,7 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
             }
             *((TInt*) aRetValue) = apId;
             break;
-            
+    }
        case NPNVGenericParameter: {   
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             if (pluginWin) {
