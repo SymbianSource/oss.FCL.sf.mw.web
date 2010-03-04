@@ -61,7 +61,7 @@ namespace WebCore {
     public:
 #if PLATFORM(SYMBIAN)
         String text() const;
-#elif
+#else
         String text() const { return m_text; }
 #endif //PLATFORM(SYMBIAN)
         String unmodifiedText() const { return m_unmodifiedText; }
