@@ -200,7 +200,7 @@ class ObjectUtils
         *
         * @return void
         */
-        static void ObjectUtils::RemoveAttributeL( CDesCArray& aNameArray,
+        static void RemoveAttributeL( CDesCArray& aNameArray,
                  CDesCArray& aValueArray, const TDesC& aName );
 
         /**
@@ -210,7 +210,7 @@ class ObjectUtils
         *
         * @return the associated content type of NULL if no association exists.
         */
-        static TDesC* ObjectUtils::GetAssociatedContentType(const TDesC& aClassId);
+        static TDesC* GetAssociatedContentType(const TDesC& aClassId);
 
         /**
         * Returns the source param name associated with the given class-id.
@@ -219,7 +219,7 @@ class ObjectUtils
         *
         * @return the associated source param name of NULL if no association exists.
         */
-        static TDesC* ObjectUtils::GetAssociatedSourceParamName(const TDesC& aClassId);
+        static TDesC* GetAssociatedSourceParamName(const TDesC& aClassId);
 
         /**
         * General purpose panic function for Object related errors.
@@ -237,7 +237,7 @@ class ObjectUtils
         * @param aUrl The uri with file name and extension.
         * @return the content type of the uri
         */
-		static HBufC* ObjectUtils::GetContentTypeByUrl(const TDesC* aUri);
+		static HBufC* GetContentTypeByUrl(const TDesC* aUri);
 
     private:  // Private Methods
         /**
@@ -289,7 +289,7 @@ class ObjectUtils
         *                       (either KParamName or KContentType)
         * @return the value or NULL on out of memory.
         */
-        static TDesC* ObjectUtils::GetClassidAssociation(const TDesC& aClassId, 
+        static TDesC* GetClassidAssociation(const TDesC& aClassId, 
                 TInt aValueSelector);
     };
 

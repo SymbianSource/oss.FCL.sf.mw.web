@@ -306,7 +306,7 @@ class MemoryManager
         * @param
         * @return
         */        
-        IMPORT_C static void MemoryManager::CreateFastAllocator();
+        IMPORT_C static void CreateFastAllocator();
 
         /**
         * Initialize MemoryManager library. Special case if CreateFastAllocator is
@@ -316,7 +316,7 @@ class MemoryManager
         * @param
         * @return
         */
-        IMPORT_C static void MemoryManager::InitFastAllocator();
+        IMPORT_C static void InitFastAllocator();
 
         /**
         * initialize the OOM handler in the memorypool

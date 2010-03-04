@@ -149,7 +149,7 @@ public:
     /**
      * return serialized value of property aId for the widget aUid or leave
      */
-    CBufFlat* CWidgetRegistry::GetWidgetPropertyValueL(
+    CBufFlat* GetWidgetPropertyValueL(
         const TUid& aUid,
         TWidgetPropertyId aId,
         TInt aMaxLength );

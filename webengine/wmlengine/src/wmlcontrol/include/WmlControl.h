@@ -97,7 +97,7 @@ class CShell;
 		// Sets the WmlLink
         void SetWmlLink(TBool aLink) { iWmlLink = aLink; }
         // Returns to the Browser Control info about the wml page
-        HBufC* CWmlControl::PageInfoLC(TBrCtlDefs::TBrCtlPageInfo aBrCtlPageInfo);
+        HBufC* PageInfoLC(TBrCtlDefs::TBrCtlPageInfo aBrCtlPageInfo);
 
         /**
         * Update a Browser setting

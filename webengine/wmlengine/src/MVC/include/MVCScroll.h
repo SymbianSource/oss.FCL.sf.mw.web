@@ -135,7 +135,7 @@ public:
     /**
     * Method returns the first sibling box whose width and height are not zero
     */
-    NW_LMgr_Box_t* CMVCScroll::GetFirstSiblingBox (NW_LMgr_Box_t* box);  
+    NW_LMgr_Box_t* GetFirstSiblingBox (NW_LMgr_Box_t* box);  
 
 private: // Private methods and member variables
     /**

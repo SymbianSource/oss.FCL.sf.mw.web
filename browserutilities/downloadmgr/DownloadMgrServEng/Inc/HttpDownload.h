@@ -968,12 +968,12 @@ NONSHARABLE_CLASS( CHttpDownload ): public CActive
         * Notifies gallery about new file
         * @param aFileName file name
         */        
-        void CHttpDownload::NotifyMediaGalleryL( const TDesC& aFileName );
+        void NotifyMediaGalleryL( const TDesC& aFileName );
         
         /**
         * ConvertDownloadNameUniqueL
         */        
-        void CHttpDownload::ConvertDownloadNameUniqueL( HBufC*& filePath,
+        void ConvertDownloadNameUniqueL( HBufC*& filePath,
                                             			HBufC*& fileName,
                                             			HBufC*& fileExtn);
         

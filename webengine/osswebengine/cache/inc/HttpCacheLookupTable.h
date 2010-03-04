@@ -106,7 +106,7 @@ class CHttpCacheLookupTable : public CBase
         * @param
         * @return
         */
-        TInt CHttpCacheLookupTable::ListFiles( RPointerArray<TDesC>& aFilenameList );
+        TInt ListFiles( RPointerArray<TDesC>& aFilenameList );
 
         /**
         *
