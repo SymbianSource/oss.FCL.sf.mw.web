@@ -57,15 +57,15 @@ namespace std
     template<>
     struct numeric_limits<long long>
     {
-        static long long min()  { return -9223372036854775807; }
-        static long long max()  { return 9223372036854775807; }
+        static long long min()  { return -9223372036854775807LL; }
+        static long long max()  { return 9223372036854775807LL; }
         static const bool is_signed = true;
     };
 
     template<>
     struct numeric_limits<unsigned long long>
     {
-        static unsigned  long long max()  { return 18446744073709551615; }
+        static unsigned  long long max()  { return 18446744073709551615ULL; }
         static const bool is_signed = false;
     };
 }
