@@ -39,12 +39,12 @@ using namespace stmUiEventEngine ;
   not behave correctly.
 
  */
-/*! Add macro with token pasting to make creation of the state machine tables easier
+/*! Add macro without token pasting to make creation of the state machine tables easier
    and removing the necessity to write the classname twice.
    Maybe there would be some better way to do this using templates and typedefs?
  */
-#define CND(x) isF<CStateEngine,&CStateEngine::##x>
-#define ACT(x) aF<CStateEngine,&CStateEngine::##x>
+#define CND(x) isF<CStateEngine,&CStateEngine::x>
+#define ACT(x) aF<CStateEngine,&CStateEngine::x>
 
 /*********************************************************************************
  * empty statedef as a dummy entry
