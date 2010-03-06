@@ -155,9 +155,9 @@ void CStateMachine::ConstructL()
     for (int i = 0; i < KMaxNumberOfPointers; i++)
     {
         m_impl[i] = new(ELeave) CStateEngine(m_config, this, i) ;
-        m_holdTimer[i] = CCallbackTimer::NewL(*this, handleholdTimer, 0, i, ETrue);
-        m_touchTimer[i] = CCallbackTimer::NewL(*this, handletouchTimer, 0, i, ETrue);
-        m_suppressTimer[i] = CCallbackTimer::NewL(*this, handlesuppressTimer, 0, i, ETrue);
+        m_holdTimer[i] = CCallbackTimer::NewL(*this, &CStateMachine::handleholdTimer, 0, i, ETrue);
+        m_touchTimer[i] = CCallbackTimer::NewL(*this, &CStateMachine::handletouchTimer, 0, i, ETrue);
+        m_suppressTimer[i] = CCallbackTimer::NewL(*this, &CStateMachine::handlesuppressTimer, 0, i, ETrue);
     }
 
     m_coeEnv = CCoeEnv::Static();
