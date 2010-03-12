@@ -2536,8 +2536,24 @@ void CDownloadMgrUiDownloadsList::AttachAIWInterestL()
 // ----------------------------------------------------
 //
 void CDownloadMgrUiDownloadsList::HandleAIWCommandL(TInt aCommand, RHttpDownload& aDownload)
+    
     {
-    // The command is an AIW command
+    //Check if file exists
+    HBufC* fileName = HBufC::NewLC( KMaxPath );
+    TPtr fileNamePtr = fileName->Des();
+    User::LeaveIfError( aDownload.GetStringAttribute( EDlAttrDestFilename, fileNamePtr ) );
+	if(!iUiUtils->IsDuplicateL(fileNamePtr))
+	    {
+		HBufC* infoPrompt = StringLoader::LoadLC( R_DMUL_ERROR_FILE_NOT_FOUND);
+        CAknInformationNote* note = new(ELeave)  CAknInformationNote();
+        note->ExecuteLD(*infoPrompt);
+        CleanupStack::PopAndDestroy(infoPrompt);	
+        CleanupStack::PopAndDestroy(fileName);  
+        return;
+	    }			    	
+    CleanupStack::PopAndDestroy(fileName);			
+    
+    // The command is an AIW command    
     CAiwGenericParamList& params = iAIWServiceHandler->InParamListL();
     TInt aiwOptions( 0 );
 

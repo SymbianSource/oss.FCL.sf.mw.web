@@ -281,7 +281,7 @@ void CFileSaver::CheckResponseAttributesL( const CCodData& aData )
     else
         {
         // Other than DRM stuff arrived. Proper check for MIME type.
-        if( !(*aData[aData.ActiveDownload()]).HasType( iType.Des8() ) )
+        if( !(*aData[aData.ActiveDownload()]).HasType( iType.Des8() ) && ! iDocHandler.CanSaveL(iType) )
             {
             CLOG(( ECodEng, 4, _L("  mismatch") ));
             User::Leave( KErrCodAttributeMismatch );

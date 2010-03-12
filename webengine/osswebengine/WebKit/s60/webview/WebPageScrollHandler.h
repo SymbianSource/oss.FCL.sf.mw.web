@@ -175,6 +175,8 @@ class WebPageScrollHandler: public CBase
         * return
         */
         WebScrollbarDrawer*  scrollbarDrawer() {return m_scrollbarDrawer;}
+        
+        WebScrollingDeceleratorGH* ScrollingDeceleratorGH() {return m_decelGH;} 
 
         //callbacks
         static int pageOverviewScrollCallback( TAny* aPtr );
@@ -184,8 +186,6 @@ class WebPageScrollHandler: public CBase
         void handleTouchDownGH(const TStmGestureEvent& aGesture);
         void handleTouchUpGH(const TStmGestureEvent& aGesture);
         void updateScrollbars(const TPoint& scrollPos, TPoint& newscrollDelta);
-
-public:
 
      private:
         void calculateScrollDirection(int absX, int absY);
@@ -212,7 +212,7 @@ public:
         TTime m_lastMoveEventTime;
         TTime m_pageOverviewEventTime;
         WebScrollingDecelerator* m_decel;
-	WebScrollingDeceleratorGH* m_decelGH; 
+        WebScrollingDeceleratorGH* m_decelGH; 
         TPointerEvent m_lastDragEvent;
         CPeriodic* m_scrollTimer;
         ScrollableView m_scrollableView;

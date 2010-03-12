@@ -807,13 +807,6 @@ TBool PluginWin::HandleGesture(const TStmGestureEvent& aEvent)
             event.param = &ev;
             ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
                                                          static_cast<void*>(&event));
-            
-            if (eventForPlugin.Code(EAxisBoth) == EGestureTap) {
-                eventForPlugin.SetCode(EGestureReleased); 
-                ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
-                                                             static_cast<void*>(&event));
- 
-            }
         }
     }
     else if(!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event){
@@ -831,13 +824,6 @@ TBool PluginWin::HandleGesture(const TStmGestureEvent& aEvent)
            event.param = &ev;
            ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
                                                          static_cast<void*>(&event));
-           
-           if (eventForPlugin.Code(EAxisBoth) == EGestureTap) {
-               eventForPlugin.SetCode(EGestureReleased); 
-               ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
-                                                            static_cast<void*>(&event));
-
-           }
         }
     }    
     return ret;

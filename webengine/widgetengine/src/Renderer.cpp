@@ -223,25 +223,19 @@ void WidgetRenderer::destroyFadeMask()
 void WidgetRenderer::drawFadeMaskL()
 {
     if (m_fademask) {
-        
-        CFbsBitmapDevice* dev = CFbsBitmapDevice::NewL(m_fademask);
-        CleanupStack::PushL(dev);
-        
-        CFbsBitGc* gc;
-        User::LeaveIfError(dev->CreateContext(gc));
         m_fademask->LockHeap();
         
         TSize s = m_fademask->SizeInPixels();
         TUint8* data = (TUint8*)m_fademask->DataAddress();
-        TUint8* end = data + s.iWidth*s.iHeight;
-
-        while ( data<end ) {
-            *(data++) = (255*m_transitioncount/m_maxtransitions);
+        if (data)  {
+            TUint8* end = data + s.iWidth*s.iHeight;
+            while ( data<end ) {
+                *(data++) = (255*m_transitioncount/m_maxtransitions);
+            }
         }
         
         m_fademask->UnlockHeap();
-        delete gc;
-        CleanupStack::PopAndDestroy();
+
     }
     
 }

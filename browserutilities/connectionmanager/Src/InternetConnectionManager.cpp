@@ -29,7 +29,6 @@
 #include <AknNotifyStd.h>
 #include <AknGlobalNote.h>
 #include <e32std.h>
-#include <es_enum.h>
 #include <ApUtils.h>
 #include <ApDataHandler.h>
 #include <cdbstore.h>

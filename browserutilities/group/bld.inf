@@ -11,14 +11,14 @@
 *
 * Contributors:
 *
-* Description: 
+* Description:
 *
 */
 
 #include "../browserdialogsprovider/group/bld.inf"
 #include "../recenturlstore/group/bld.inf"
-#include "../xmlparser/group/bld.inf"
 #include "../cxmllibrary/group/bld.inf"
+#include "../xmlparser/group/bld.inf"
 #include "../downloadmgr/group/bld.inf"
 #include "../connectionmanager/group/bld.inf"
 #include "../browsertelservice/group/bld.inf"

@@ -358,6 +358,13 @@ NONSHARABLE_CLASS( CUserInteractionsUtils ) : public CDownloadUtils,
         * To Know if its a COD DL  
         */
         TBool IsCodDownload();
+        
+        /**
+        * Performs a simple check for existence of aFileName.
+        * @param aFileName The filename selected by user, including path
+        * @return TBool indicating if file exists
+        */
+        TBool IsDuplicateL( const TPtrC& aFileName );        
 
     protected: // Constructors
 
@@ -394,12 +401,6 @@ NONSHARABLE_CLASS( CUserInteractionsUtils ) : public CDownloadUtils,
         */
         TBool GenerateNewNameL( TPtr& aFileName, TInt& aCounter );
 
-        /**
-        * Performs a simple check for existence of aFileName.
-        * @param aFileName The filename selected by user, including path
-        * @return TBool indicating if file exists
-        */
-        TBool IsDuplicateL( const TPtrC& aFileName );
         
     private: // Data
 

@@ -98,12 +98,11 @@ void CachedImage::allReferencesRemoved()
 
 static Image* brokenImage()
 {
-    static OwnPtr<Image*> brokenImage;
+    static Image* brokenImage;
     if (!brokenImage) {
-        brokenImage.set(Image::loadPlatformResource("missingImage"));
+        brokenImage = Image::loadPlatformResource("missingImage");
     }
-    Image* ret = brokenImage.get();
-    return ret;
+    return brokenImage;
 }
 
 static Image* nullImage()

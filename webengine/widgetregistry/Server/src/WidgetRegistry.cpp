@@ -776,13 +776,13 @@ void CWidgetRegistry::InternalizeBinaryL( const TDesC& aFileName,
                 TRAP( error, InsertL( entry ) );
                 if ( KErrNone != error )
                     {
-                    CleanupStack::PopAndDestroy( entry );
+                     delete entry; 
                     }
                 else
                     {
                     __ASSERT_DEBUG( res == entry, User::Invariant() );
                     // Entry was inserted successfully.
-                    CleanupStack::Pop( entry );
+                    //CleanupStack::Pop( entry );
                     // add uid to AppArchList if not there,
                     // this can happend due to UID
                     // reallocation for UID collision resolution
@@ -802,14 +802,14 @@ void CWidgetRegistry::InternalizeBinaryL( const TDesC& aFileName,
                 {
                 // Pop and delete the un-needed entry so it is not left behind.
                 errorCount++; 
-                CleanupStack::PopAndDestroy( entry );                
                 }
             }
         else
             {
             // entry error
-            CleanupStack::PopAndDestroy( entry );
+            delete entry; 
             }
+        CleanupStack::Pop(); //entry
         } // for
 
     CleanupStack::PopAndDestroy( 2, &file ); // readStream, file

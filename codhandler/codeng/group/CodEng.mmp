@@ -121,4 +121,9 @@ DEBUGLIBRARY    flogger.lib
 #ifdef BRDO_OCC_ENABLED_FF
 LIBRARY    extendedconnpref.lib
 LIBRARY    netmeta.lib
+LIBRARY    centralrepository.lib
+LIBRARY    featmgr.lib
+LIBRARY    etel.lib
+LIBRARY    etelmm.lib
+LIBRARY    connmon.lib
 #endif

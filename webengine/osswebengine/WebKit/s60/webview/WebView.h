@@ -601,6 +601,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         WebPagePinchZoomHandler* m_pinchZoomHandler;
         TBool                    m_isPinchZoom;
         TRealPoint               m_pinchDocDelta;
+        int                      m_drawsMissed;
     };
 
 #endif

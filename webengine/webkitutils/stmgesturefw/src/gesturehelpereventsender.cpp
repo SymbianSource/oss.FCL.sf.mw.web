@@ -65,6 +65,12 @@ TInt CGestureEventSender::AddEvent(TStmGestureUid aUid, const MStmGesture* aGest
     }
         
     iEvents.Append(event);
+    
+    if (event.Code() == stmGesture::EGestureUidTap) {
+        event.SetCode(stmGesture::EGestureUidRelease);
+        iEvents.Append(event);
+    }
+
     if (iState != EBusy)
         {
         iState = EEventsReady;
@@ -101,7 +107,6 @@ void CGestureEventSender::RunL()
                 }
             iEvents.Reset();
             iState = ENoEvents;
-            Complete();
             break;
             }
         }

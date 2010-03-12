@@ -300,6 +300,13 @@ Default is WML support enabled
 #define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  /epoc32/include/connect
 #endif
 
+#ifndef MW_LAYER_ECOM_SYSTEMINCLUDE
+#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  /epoc32/include/ecom
+#endif
+#ifndef MW_LAYER_HTTP_SYSTEMINCLUDE
+#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  /epoc32/include/http
+#endif
+
 // Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
 //Flag need to be removed after this fix is supplied to Symbian 9.4
 #undef BRDO_HTTP_STACK_93

@@ -763,7 +763,6 @@ void CWebFepTextEditor::UpdateInputModeState(TUint inputMode, TUint permittedInp
     state->SetCurrentInputMode(inputMode);
     state->SetPermittedInputModes(permittedInputModes);
     state->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(numericKeyMap));
-    state->ReportAknEdStateEventL(MAknEdStateObserver::EAknSyncEdwinState);
     state->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateInputModeUpdate);
 }
 
@@ -950,7 +949,7 @@ bool CWebFepTextEditor::validateTextFormat()
         else
         {
             style->setProperty(CSS_PROP_COLOR, m_inputTextColor, false, ec);
-            CancelEditingMode();
+            UpdateEditingMode();
             return true;
         }
     }

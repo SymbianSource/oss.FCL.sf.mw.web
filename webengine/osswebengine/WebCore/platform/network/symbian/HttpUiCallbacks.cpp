@@ -181,7 +181,7 @@ int HttpUiCallbacks::aboutToLoadPageL(CBrCtl* brctl, int stateType)
             }
         case ESomeItemsNotSecure:
             {
-                resId = R_HTTPSEC_SOME_ITEMS_NOT_SECURE;
+                resId = 0;
                 event = TBrCtlDefs::EEventSomeItemsNotSecure;
                 break;
             }

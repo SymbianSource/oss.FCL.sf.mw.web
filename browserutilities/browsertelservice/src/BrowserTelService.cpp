@@ -35,7 +35,6 @@
 // 
 #include <txtrich.h>
 #include <badesca.h>
-#include <miutset.h>
 #include <s32strm.h>
 
 // For email API
@@ -81,6 +80,10 @@
 
 const TInt KParseArrayAllocation = 10;
 const TInt KTimerDelay = 2500000;
+
+//constants
+const TUid KUidMsgTypeSMTP			= {0x10001028};	// 268439592
+
 
 _LIT( KValidDTMFChars,"w/p*#0123456789ABCDabcd," );
 _LIT( KDTMFWaitChars, "/wp,*#" );

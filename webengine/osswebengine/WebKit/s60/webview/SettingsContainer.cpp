@@ -260,7 +260,10 @@ unsigned int SettingsContainer::brctlSetting(TBrCtlDefs::TBrCtlSettings setting)
             }
         case TBrCtlDefs::ESettingsNumOfDownloads :
             {
-            retVal = httpSessionMgr->httpDownload()->numOfDownloads();
+            if ( httpSessionMgr->httpDownload() )
+                {
+                retVal = httpSessionMgr->httpDownload()->numOfDownloads();
+                }
             break;
             }
         default:

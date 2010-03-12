@@ -48,7 +48,8 @@
 #include "CodData.h"
 
 _LIT8( KDRMOldContentType, "x-drm-old-content-type");           // old content type header to be added
-_LIT8( KAcceptRangeHeader, "bytes");           
+_LIT8( KAcceptRangeHeader, "bytes");
+_LIT8( KAcceptRangeHeaderNone, "none");
 
 // ================= CONSTANTS =======================
 
@@ -1066,16 +1067,15 @@ TBool CHttpLoader::AcceptRangesSupported()
     THTTPHdrVal value;
     
     TInt index = FindHeaderField(iResponseHeaders, range.DesC());
-    
     if( index  != KErrNotFound ) 
-        {
-        if( !(*iResponseHeaders)[index]->FieldRawData()->Compare( KAcceptRangeHeader() ) )
-            {
-            return ETrue;
-            }
-        }
-        
-    return EFalse;    
+             {
+             if( !(*iResponseHeaders)[index]->FieldRawData()->Compare( KAcceptRangeHeaderNone() ) )
+                 {
+                 return EFalse;
+                 }
+             }
+    return ETrue; 
+     
 	}
 
 // ---------------------------------------------------------

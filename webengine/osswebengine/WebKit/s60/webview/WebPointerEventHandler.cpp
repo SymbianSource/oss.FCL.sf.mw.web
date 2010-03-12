@@ -66,6 +66,7 @@
 #include "Settings.h"
 #include "WebGestureInterface.h"
 #include "WebPagePinchZoomHandler.h"
+#include "WebScrollingDeceleratorGH.h"
 
 #include "WebKitLogger.h"
 using namespace WebCore;
@@ -350,7 +351,15 @@ void WebPointerEventHandler::HandlePointerEventL(const TPointerEvent& aPointerEv
         m_webview->formFillPopup()->HandlePointerEventL(aPointerEvent);
         return;
     }
-
+    
+    //if scrolling is going on, it need to be stopped immediately when user touches down    
+    if (aPointerEvent.iType == TPointerEvent::EButton1Down && m_webview->viewIsScrolling()) {
+        WebScrollingDeceleratorGH* scrollDecelGH = m_webview->pageScrollHandler()->ScrollingDeceleratorGH();
+        if(scrollDecelGH) {
+            scrollDecelGH->cancelDecel();
+        }
+    }
+    
 #ifdef BRDO_USE_GESTURE_HELPER
       m_gestureInterface->HandlePointerEventL(aPointerEvent);
 #endif

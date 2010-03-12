@@ -1894,7 +1894,7 @@ CCodSaver* CCodEngBase::CreateSaverL( const TDesC8& aType )
         for ( TInt i = 0; i < (*iData)[iData->ActiveDownload()]->Types().MdcaCount(); i++ )
             {
             const TDataType& type( (*iData)[iData->ActiveDownload()]->Types().MdcaPoint( i ) );
-            if( ( aType.Find (type.Des8()) != KErrNotFound ) || 
+            if((aType.Find (type.Des8()) != KErrNotFound) || iDocHandler->CanOpenL(TDataType(aType)) || 
                             ( (type.Des8().Find(KOma1DrmMessageContentType)!= KErrNotFound) && (aType.Find(KOma1DcfContentType)!= KErrNotFound )  ))             
                 {
                 contentTypeMisMatch = EFalse;

@@ -468,7 +468,8 @@ HBufC* CWidgetUiObserver::RecognizeLC( const TDesC& aFileName )
 
     if ( ret == KErrNone &&
         ( dataType.iConfidence == CApaDataRecognizerType::ECertain ) ||
-        ( dataType.iConfidence == CApaDataRecognizerType::EProbable ) )
+        ( dataType.iConfidence == CApaDataRecognizerType::EProbable) ||
+        ( dataType.iConfidence == CApaDataRecognizerType::EPossible)  )
         {
         // If the file type was found, try to match it to a known file type
         contentTypeString->Des().Copy( mimeTypePtr );

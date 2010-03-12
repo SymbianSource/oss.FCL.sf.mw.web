@@ -131,6 +131,8 @@ const int KZoomBgRectColor = 209;
 const int KZoomDefaultLevel = 8; //100%
 const int defaultCacheCapacity = 256 * 1024;
 
+const int KMaxMissedDrawsAllowed = 5;//Max missed repaint allowed before paint happens
+
 // LOCAL FUNCTION PROTOTYPES
 TInt doRepaintCb( TAny* ptr );
 TInt doFepCb( TAny* ptr );
@@ -203,6 +205,7 @@ m_brctl(brctl)
 , m_waitTimer(0)
 , m_pinchZoomHandler(NULL)
 , m_isPinchZoom(false)
+, m_drawsMissed(0)
 {
 }
 
@@ -630,7 +633,8 @@ void WebView::syncRepaint()
         layoutPending = false;
     }
 
-    if ( !layoutPending || !isLoading()) {
+    if ( !layoutPending || (m_drawsMissed >= KMaxMissedDrawsAllowed  && !isLoading())) {
+        m_drawsMissed = 0;
         bool needsDraw = false;
         m_repaints.Tidy();
         for (int i=0; i<m_repaints.Count(); ++i) {
@@ -652,6 +656,9 @@ void WebView::syncRepaint()
 
         // dont do next async repaint until KRepaintDelay
         m_repaints.Clear();
+    }
+    else{
+        m_drawsMissed++;
     }
     m_repainttimer->Cancel();
     // tot:fixme TBool complete = iWebkitControl->IsProgressComplete(); && CImageRendererFactory::Instance()->DecodeCount()==0;
@@ -2996,6 +3003,11 @@ void WebView::setPinchBitmapZoomLevel(int zoomLevel)
     }
     m_currentZoomLevel = zoomLevel;
     DrawNow();
+    PluginSkin* pluginskin = mainFrame()->focusedPlugin();
+    if(pluginskin)
+     {
+        pluginskin->deActivate();
+    }
 }
 
 //-------------------------------------------------------------------------------

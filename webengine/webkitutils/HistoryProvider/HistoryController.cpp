@@ -169,7 +169,7 @@ void HistoryController::handleHistoryCommandL(int command)
     case TBrCtlDefs::ECommandBack:
         {
         if (m_historyViewEnabled && m_backListAllowed) {
-            showHistoryViewL(true);
+            showHistoryViewL(false);
         }
         else {
             loadHistoryUrl( EHistoryStackDirectionPrevious, TBrCtlDefs::ECacheModeHistory, -1);

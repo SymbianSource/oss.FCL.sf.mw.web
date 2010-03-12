@@ -41,6 +41,8 @@ SOURCEPATH ../src
 
 MW_LAYER_SYSTEMINCLUDE
 #if defined(__PLATFORM_VERSION_50_TUBE__) || defined( __PLATFORM_VERSION_50__)
+MW_LAYER_ECOM_SYSTEMINCLUDE
+MW_LAYER_HTTP_SYSTEMINCLUDE
 APP_LAYER_SYSTEMINCLUDE
 #endif
 
@@ -100,6 +102,11 @@ LIBRARY     FeatMgr.lib
 #ifdef BRDO_OCC_ENABLED_FF
 LIBRARY    extendedconnpref.lib
 LIBRARY    netmeta.lib
+LIBRARY    centralrepository.lib
+LIBRARY    featmgr.lib
+LIBRARY    etel.lib
+LIBRARY    etelmm.lib
+LIBRARY    connmon.lib
 #endif
 
 // End of File

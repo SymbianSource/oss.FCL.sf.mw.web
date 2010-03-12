@@ -872,6 +872,7 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
                   EMiniViewNotEnabled == WidgetMiniViewState()) )
                 {        
                 iCpsPublisher->NetworkConnectionCancelledL();
+                iNetworkModeWait->Start();
                 }
 #endif
             User::Leave( connFailure );

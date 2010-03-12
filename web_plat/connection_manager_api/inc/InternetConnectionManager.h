@@ -245,11 +245,6 @@ NONSHARABLE_CLASS(  CInternetConnectionManager ): public CBase,
         */
         IMPORT_C void ShowConnectionChangedDlg();
         
-        /**
-        * Cancels the connection.
-        * @return none.
-        */         
-         virtual void CancelConnection();
 	
 	public:
 
@@ -633,6 +628,13 @@ NONSHARABLE_CLASS(  CInternetConnectionManager ): public CBase,
         
         void InitializeL();
 
+    public:
+        /**
+        * Cancels the connection.
+        * @return none.
+        */         
+         virtual void CancelConnection();
+    
 	private:
 
     	CApAccessPointItem* iCurrentAP;

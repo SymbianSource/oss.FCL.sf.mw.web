@@ -21,6 +21,8 @@
 #include "config.h"
 #include "../../bidi.h"
 #include <coemain.h>
+#include "brctl.h"
+#include <brctldefs.h>
 #include "WebGestureInterface.h"
 #include "WebView.h"
 #include "WebPointerEventHandler.h"
@@ -107,7 +109,12 @@ void WebGestureInterface::ConstructL()
     gestureParams.SetEnabled(stmGesture::EGestureUidFlick, ETrue);
     gestureParams.SetEnabled(stmGesture::EGestureUidLongPress, ETrue);
 #ifdef BRDO_MULTITOUCH_ENABLED_FF
-    gestureParams.SetEnabled(stmGesture::EGestureUidPinch, ETrue);
+    if (m_webview->brCtl()->capabilities() & TBrCtlDefs::ECapabilityPinchZoom) {
+        gestureParams.SetEnabled(stmGesture::EGestureUidPinch, ETrue);
+    }
+    else {
+        gestureParams.SetEnabled(stmGesture::EGestureUidPinch, EFalse);
+    }
 #else
     gestureParams.SetEnabled(stmGesture::EGestureUidPinch, EFalse);
 #endif
@@ -163,5 +170,6 @@ void  WebGestureInterface::HandleGestureEventL(const TStmGestureEvent& aGesture)
 {
      m_webview->pointerEventHandler()->HandleGestureEventL(aGesture);
 }
+
 
 

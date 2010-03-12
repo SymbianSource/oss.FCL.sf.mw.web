@@ -768,8 +768,8 @@ void CWidgetUIOperationsWatcher::FinishInstallL()
         if ( iOverwriting )
             {
             TUid uid = TUid::Uid( *(iPropertyValues[EUid]) );
-            iRegistry.DeRegisterWidgetL( uid );
             iAppManager->DeregisterWidgetL( uid );
+            iRegistry.DeRegisterWidgetL( uid );
             }
 
         // TODO if registration steps fail does it leave inconsistent state???
@@ -1020,8 +1020,8 @@ void CWidgetUIOperationsWatcher::UninstallL(
             CleanupStack::PopAndDestroy(fileName);
             }
 
-        iRegistry.DeRegisterWidgetL( aUid );
         iAppManager->DeregisterWidgetL( aUid );
+        iRegistry.DeRegisterWidgetL( aUid );
         TInt err = KErrNone;
         TRAP(err, FinishUninstallL( KErrNone ));
         if(err == KErrNone)

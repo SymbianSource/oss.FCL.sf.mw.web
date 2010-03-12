@@ -558,7 +558,8 @@ class TBrCtlDefs
             ECapabilityFavicon          = 0x8000,
             ECapabilityToolBar          = 0x00010000,
             ECapabilityWebKitLite       = 0x00020000,
-            ECapabilityFitToScreen      = 0x00040000
+            ECapabilityFitToScreen      = 0x00040000,
+            ECapabilityPinchZoom        = 0x00080000
             };
 
         /**
