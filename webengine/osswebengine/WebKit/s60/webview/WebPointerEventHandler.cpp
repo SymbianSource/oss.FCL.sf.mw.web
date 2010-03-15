@@ -357,6 +357,7 @@ void WebPointerEventHandler::HandlePointerEventL(const TPointerEvent& aPointerEv
         WebScrollingDeceleratorGH* scrollDecelGH = m_webview->pageScrollHandler()->ScrollingDeceleratorGH();
         if(scrollDecelGH) {
             scrollDecelGH->cancelDecel();
+            m_webview->setViewIsScrolling(false);
         }
     }
     
@@ -415,8 +416,8 @@ TBrCtlDefs::TBrCtlElementType WebPointerEventHandler::highlitableElement()
     Element* eventNode = frm->document()->elementFromPoint(pt.iX, pt.iY);
 
     if (m_isHighlighted){
-               dehighlight();
-           }
+        dehighlight(pos);
+    }
 
     m_highlightedNode = NULL;
 
@@ -537,15 +538,14 @@ void WebPointerEventHandler::doTapL()
 //-----------------------------------------------------------------------------
 // WebPointerEventHandler::deHighlight
 //-----------------------------------------------------------------------------
-void  WebPointerEventHandler::dehighlight()
+void  WebPointerEventHandler::dehighlight(const TPoint &aPoint)
 {
-    // send dehighlight event to engine by passing -1, -1
-    // sending any other pointer value may result in highligh of other links
+    // m_highlightPos should be (-1, -1). 
     m_highlightPos = TPoint(-1, -1);
     m_isHighlighted = EFalse;
 
     Frame* frm = m_webview->page()->focusController()->focusedOrMainFrame();
-    m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, frm);
+    m_webview->sendMouseEventToEngine(TPointerEvent::EMove, aPoint, frm);
 
 
     m_highlightedNode = NULL;
@@ -598,6 +598,10 @@ void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
     Frame* coreFrame = core(m_webview->mainFrame());
     TPointerEvent event;
 
+    if (!IS_NAVIGATION_NONE) {
+        m_webview->page()->chrome()->client()->setElementVisibilityChanged(false);
+    }
+    
     TBrCtlDefs::TBrCtlElementType elType = highlitableElement();
 
     if (!isHighlitableElement(elType)) {
@@ -619,7 +623,6 @@ void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
     }
 
     if (!IS_NAVIGATION_NONE) {
-        m_webview->page()->chrome()->client()->setElementVisibilityChanged(false);
         //to initiate hover
         if (m_isHighlighted) {
             setFocusRing();

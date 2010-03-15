@@ -18,9 +18,11 @@
 
 #ifndef _STMGESTUREFW_IBY_
 #define _STMGESTUREFW_IBY_
-
-#include <platform/mw/Browser_platform_variant.hrh>
-
+#ifdef __S60_32__
+#include <browser_platform_variant.hrh>
+#else
+#include <platform/mw/browser_platform_variant.hrh>
+#endif
 #ifdef BRDO_USE_GESTURE_HELPER
 
 #include <data_caging_paths_for_iby.hrh>

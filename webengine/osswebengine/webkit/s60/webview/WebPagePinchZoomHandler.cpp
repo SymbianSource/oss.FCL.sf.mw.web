@@ -20,7 +20,7 @@
 #include <../bidi.h>
 #include "WebPagePinchZoomHandler.h"
 #include "WebView.h"
-
+#include "PluginSkin.h"
 
 const int KBitmapUpdateTimeout  = 100*1000;
 const int KPinchExitWaitTimeout = 300*1000;
@@ -209,6 +209,13 @@ void WebPagePinchZoomHandler::updateBitmap(void)
 {
     m_bitmapUpdateTimer->Cancel();
     m_webView->restoreZoomLevel(m_webView->scalingFactor());
+    //update the plugin rect after pinch zoom exit
+    PluginSkin* pluginskin = m_webView->mainFrame()->focusedPlugin();
+    if(pluginskin)
+     {
+        pluginskin->setPluginWinClipedRect(); 
+     }
+
 }
 
 // -----------------------------------------------------------------------------

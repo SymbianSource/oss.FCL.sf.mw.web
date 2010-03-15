@@ -133,7 +133,7 @@ void CWidgetUIOperationsWatcher::ConstructL()
         CWidgetPropertyValue* value = CWidgetPropertyValue::NewL();
         User::LeaveIfError( iPropertyValues.Insert( value, i ) );
         }
-    *(iPropertyValues[EWidgetPropertyListVersion]) = WIDGETPROPERTYLISTVERSION;
+    *(iPropertyValues[EWidgetPropertyListVersion]) = KWidgetPropertyListVersion71;
 
     iTaskManager = CTaskManager::NewL();
     }

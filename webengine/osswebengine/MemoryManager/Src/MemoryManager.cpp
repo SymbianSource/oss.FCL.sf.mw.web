@@ -109,9 +109,7 @@ EXPORT_C void MemoryManager::InitOOMDialog()
     {
 #ifdef __NEW_ALLOCATOR__
     if (s_pool)
-        {
-        ((CNewSymbianHeapPool *)s_pool)->InitOOMDialog();
-        }
+        s_pool->InitOOMDialog();
 #endif
     }
 
@@ -122,9 +120,7 @@ EXPORT_C void MemoryManager::ResetOOMDialogDisplayed()
     {
 #ifdef __NEW_ALLOCATOR__
     if (s_pool)
-        {
-        ((CNewSymbianHeapPool *)s_pool)->ResetOOMDialogDisplayed();
-        }
+        s_pool->ResetOOMDialog();
 #endif
     }
 

@@ -34,5 +34,6 @@ public:
     TInt AllocateL( const RUidArray& aUsedUids, TInt aDriveLetter );
 
     static TBool IsWidget( TUid aUid );
+    static TBool IsCWRTWidget( TUid aUid );
     };
 #endif

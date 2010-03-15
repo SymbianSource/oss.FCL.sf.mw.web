@@ -431,8 +431,9 @@ class PluginSkin : public CBase,
         RArray<NPN_GenericElement>*  genericElementArray(){
             return iGenericElementArray;
         }
-  private:  // private member data
         void setPluginWinClipedRect();
+  private:  // private member data
+        
         TRect frameVisibleRect() const;
         void Close();
         

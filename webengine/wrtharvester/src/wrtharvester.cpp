@@ -25,7 +25,7 @@
 #include "wrtharvesterconst.h"
 #include <widgetregistryconstants.h>
 #include <wrtharvester.rsg>
-
+#include <startupdomainpskeys.h>
 #include <ecom/implementationproxy.h>
 
 #include <LiwServiceHandler.h>
@@ -225,8 +225,11 @@ CWrtHarvester::CWrtHarvester( MLiwInterface* aCPSInterface ):
 void CWrtHarvester::ConstructL()
     {
     User::LeaveIfError( iApaSession.Connect() );
+    	
+    iSystemShutdown = EFalse;
     iWidgetUIListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetUIState );
     iWidgetRegListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetRegAltered );
+    iWidgetSystemShutdownListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetSystemShutdown );
     
     User::LeaveIfError( iFs.Connect() );
     iWidgetUsbListener = CWrtUsbHandler::NewL( this, iFs );
@@ -287,6 +290,7 @@ CWrtHarvester::~CWrtHarvester()
     delete iWidgetRegListener;
     delete iWidgetMMCListener;
     delete iWidgetUsbListener;
+    delete iWidgetSystemShutdownListener;
     if(iAsyncCallBack)
         {
         iAsyncCallBack->Cancel();       
@@ -316,14 +320,28 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
     {
     
     //Do not send the Operations to the Widgets when in Mass storage mode.. . .  
-    if( IsInMSMode() == 1 )
-        {
-         if(aTrigger == KDeActive)
-         RemovePublisherAndObserverL(aContentId);
-         return;              
-        }
-   
     TUid uid( WidgetUid( aContentId ) );
+    
+    
+    if(iSystemShutdown && aTrigger == KDeActive )
+    	{
+    	return ;
+    	}
+    if( IsInMSMode() == 1 && aTrigger == KDeActive)
+      {
+      RemovePublisherAndObserverL(aContentId);
+      
+      if(!iSystemShutdown)
+          {
+          RWidgetRegistryClientSession session;
+          CleanupClosePushL( session );
+          User::LeaveIfError( session.Connect() );
+          session.SetBlanketPermissionL( uid, EBlanketUnknown );
+          CleanupStack::PopAndDestroy( &session );
+          }
+      return; 
+      }
+             
     TWidgetOperations operation( Uninitialized );
     if( aTrigger == KActive )
         {
@@ -357,8 +375,20 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
             break;
             }
           }
-        delete temp;        
-        }
+        delete temp;
+        
+        // Removing . Miniview, shall remove full view as well. For blanket permissions
+        // will be revoked for miniview
+         
+      	if(!iSystemShutdown)
+      	    {        
+            RWidgetRegistryClientSession session;
+            CleanupClosePushL( session );
+            User::LeaveIfError( session.Connect() );
+            session.SetBlanketPermissionL( uid, EBlanketUnknown );
+            CleanupStack::PopAndDestroy( &session );
+            }
+      }
     else if( aTrigger == KSuspend )
         {
         operation = WidgetSuspend;
@@ -502,8 +532,38 @@ void CWrtHarvester::RegisteredPublishersL( RPointerArray<HBufC>& publishers )
             if( publisherMap && publisherMap->FindL( KContentId , variant ))
                 {
                  HBufC* bundleId = variant.AsDes().AllocLC();
-                 publishers.AppendL( bundleId );
-                 CleanupStack::Pop( bundleId );
+                 variant.Reset();
+                 TBool isNokiaWidget = EFalse;
+                 if ( publisherMap->FindL( KDataMap, variant) )
+                     {
+                     CLiwDefaultMap* dataMap = CLiwDefaultMap::NewLC();
+                     variant.Get( *dataMap );
+                     variant.Reset();
+                     if ( dataMap->FindL( KWidgetInfo, variant ) )
+                         {
+                         CLiwDefaultMap* widgetInfoMap = CLiwDefaultMap::NewLC();
+                         variant.Get( *widgetInfoMap );
+                         if ( widgetInfoMap->FindL( KWidgetType, variant ) )
+                             {
+                             if ( KS60Widget == variant.AsTInt32())
+                                 {
+                                 isNokiaWidget = ETrue;
+                                 }
+                             }
+                         CleanupStack::PopAndDestroy( widgetInfoMap );
+                         }
+                     CleanupStack::PopAndDestroy( dataMap );
+                     }
+                 
+                 if (isNokiaWidget )
+                     {
+                     publishers.AppendL( bundleId );
+                     CleanupStack::Pop( bundleId );
+                     }
+                 else
+                     {
+                     CleanupStack::PopAndDestroy( bundleId );
+                     }
                  }
              CleanupStack::PopAndDestroy( publisherMap );     
              }
@@ -554,6 +614,7 @@ TInt CWrtHarvester::RegisterPublisherL( CWrtInfo& wrtInfo )
 		    widgetInfo->InsertL( KTemplateType, TLiwVariant( KTemplateName ));
 		    widgetInfo->InsertL( KWidgetName, TLiwVariant( wrtInfo.iDisplayName ));
 		    widgetInfo->InsertL( KWidgetIcon, TLiwVariant( wrtuid));  // uid(0x12345678) This is the expected format 
+            widgetInfo->InsertL( KWidgetType, TLiwVariant( TInt32 (wrtInfo.iType ) ));
 
 		    datamap->InsertL( KWidgetInfo , TLiwVariant( widgetInfo ));
 		    CleanupStack::PopAndDestroy( widgetInfo );

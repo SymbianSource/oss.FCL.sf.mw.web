@@ -103,6 +103,8 @@ void WebPageZoomHandler::showZoomSliderL()
     if ( AknLayoutUtils::PenEnabled() )
         {
         if (m_zoomSlider) {
+            if( m_zoomSlider->IsVisible())
+                m_zoomSlider->CloseVolumePopup();
             delete m_zoomSlider;
             m_zoomSlider = NULL;
             }

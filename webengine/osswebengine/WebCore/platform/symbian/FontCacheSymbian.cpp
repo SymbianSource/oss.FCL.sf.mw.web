@@ -1,4 +1,4 @@
-/*
+    /*
 * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
@@ -214,7 +214,12 @@ TFontSpec PlatformFontCache::fontSpecInTwips(const FontDescription& fontDescript
     // convert to platform-supported font family
     TPtrC fPtr( SystemFontFamily( fontDescription.family().family() ) );
     
-
+    //Locate the left most font if the fptr string contains more than one font family names comma seperated
+    TInt comma = fPtr.Locate(TChar(','));
+    if (comma != KErrNotFound) {
+        fPtr.Set(fPtr.Left(comma));
+    }
+     
     TFontSpec fontSpec(fPtr, twipSize);
     fontSpec.iFontStyle.SetStrokeWeight(fontDescription.bold() ? EStrokeWeightBold : EStrokeWeightNormal);
     fontSpec.iFontStyle.SetPosture(fontDescription.italic() ? EPostureItalic : EPostureUpright);

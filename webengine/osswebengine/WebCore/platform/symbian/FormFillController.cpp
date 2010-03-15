@@ -36,6 +36,9 @@
 #include "FormFillPopup.h"
 #include "PlatformFontCache.h"
 #include "StaticObjectsContainer.h"
+#include "FontDescription.h" 
+
+#define KMaxZoomFactorForPopup 125 
 namespace WebCore {
 
 static const double kSearchStartTimeout = 0.5f;
@@ -80,8 +83,13 @@ void FormFillController::updatePopupView()
             // system font to be used by popup
 
             float newFont = 12.0f * zoomFactor /100.0f;
-            FontPlatformData* font = FontCache::getDeviceDefaultFont(newFont);
+            FontDescription fd;
+            fd.setComputedSize(newFont);
+            //If zoom factor is greater than 120 and less than or equals 200, then make it 125 by default. This
+            //will make it selectable not too big.
+            FontPlatformData* font = new FontPlatformData(cache->zoomedFont(fd, (zoomFactor > 120)? KMaxZoomFactorForPopup : zoomFactor));;
             m_popup = m_callback->createFormFillPopup(font->Font());
+            delete font; 
         }
         if (!m_popup) {
             return;

@@ -808,6 +808,7 @@ void CWidgetUiWindow::ConnectionManagement()
         TInt ask( 1 );
         TInt wmlId( KWmlNoDefaultAccessPoint );
         TInt snapId( KWmlNoDefaultSnapId );
+#ifndef BRDO_OCC_ENABLED_FF
         CRepository* rep( NULL );
         TRAPD( cenrepError, rep = CRepository::NewL( KCRUidBrowser ) );
         if ( KErrNone == cenrepError )
@@ -817,6 +818,7 @@ void CWidgetUiWindow::ConnectionManagement()
             (void)rep->Get( KBrowserNGDefaultSnapId, snapId );
             }
         delete rep;
+#endif
         if ( ask == EBrowserCenRepApSelModeDestination &&
            ( snapId != KWmlNoDefaultSnapId) )
             {
@@ -1001,8 +1003,11 @@ TBool CWidgetUiWindow::HandleDownloadL(RArray<TUint>* aTypeArray, CDesCArrayFlat
                             aDesArray,
                             paramFound );
 
-    TLex lex(dlId);
-    User::LeaveIfError(lex.Val(iDlId));
+    if ( paramFound )
+        {
+        TLex lex(dlId);
+        User::LeaveIfError(lex.Val(iDlId));
+        }
 
     TDataType dataType( *contentType8 );
     CAiwGenericParamList* genericParamList =

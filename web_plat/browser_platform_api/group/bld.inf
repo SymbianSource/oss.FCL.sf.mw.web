@@ -28,12 +28,12 @@ PRJ_EXPORTS
 ../inc/browser_platform_variant.hrh  BRDO_ADDED_EXPORT_LOCATION(browser_platform_variant.hrh)
 #endif
 
-#ifdef __PLATFORM_VERSION_50_TUBE__
+#ifdef __PLATFORM_VERSION_S60_50__
 ../inc/browser_platform_variant.hrh  /epoc32/include/oem/browser_platform_variant.hrh
 ../inc/browser_platform_variant.hrh  /epoc32/include/oem/platform/mw/browser_platform_variant.hrh
 #endif
 
-#ifdef __PLATFORM_VERSION_50__
+#ifdef __PLATFORM_VERSION_5250__
 ../inc/browser_platform_variant.hrh  /epoc32/include/oem/browser_platform_variant.hrh
 #endif
 

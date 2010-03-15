@@ -49,7 +49,7 @@ public:
 private:    
     bool checkForEventListener(WebCore::Node* node);
     bool canDehighlight(const TPoint &aPoint);
-    void dehighlight();
+    void dehighlight(const TPoint &aPoint = TPoint(-1,-1));
 
     bool isHighlitableElement(TBrCtlDefs::TBrCtlElementType& elType);
     TBrCtlDefs::TBrCtlElementType highlitableElement();

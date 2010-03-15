@@ -118,7 +118,7 @@ void CResourceHandleManager::receivedData(ResourceHandle* resource, const TDesC8
 
     // check if we have enough memory to handle this request
     if (resource->request().mainLoad()) {        
-        OOM_PRE_CHECK(contentLength<<4, contentLength, "CResourceHandleManager::receiveData()")
+        OOM_PRE_CHECK(contentLength<<2, contentLength, "CResourceHandleManager::receiveData()")
         client->didReceiveData(resource, (const char*)data.Ptr(), data.Length(), data.Length());
         OOM_POST_CHECK_FAILED(client->didFail(resource, ResourceError(String(), KErrNoMemory, String(), String()));)
     }

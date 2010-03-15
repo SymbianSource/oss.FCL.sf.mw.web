@@ -367,6 +367,7 @@ private:
     TBuf<KWidgetRegistryMaxPathName> iWidgetInstallPath;
     TBuf<KWidgetRegistryMaxPathName> iRegistryBinaryFileName;
     TBuf<KWidgetRegistryMaxPathName> iRegistryXmlFileName;
+    TBuf<KWidgetRegistryMaxPathName> iRegistryCWRTXmlFileName;
     TBuf<KWidgetRegistryMaxPathName> iRegistryXmlTempFileName;
     TBuf<KWidgetRegistryMaxPathName> iLprojName;
 

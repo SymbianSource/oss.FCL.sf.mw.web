@@ -181,9 +181,9 @@ void CWidgetUiWindowManager::ConstructL()
     
 #ifdef BRDO_WRT_HS_FF    
     iCpsPublisher = CCpsPublisher::NewL();
-#endif
-    
+    iCenrepNotifyHandler = CCenrepNotifyHandler::NewL( *this );
     iNetworkListener = CWidgetUiNetworkListener::NewL( *this );
+#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -211,12 +211,18 @@ CWidgetUiWindowManager* CWidgetUiWindowManager::NewL( CWidgetUiAppUi& aAppUi )
 //
 CWidgetUiWindowManager::~CWidgetUiWindowManager()
     {
+#ifdef BRDO_WRT_HS_FF 
+    iCenrepNotifyHandler->DoCancel();
+    delete iCenrepNotifyHandler;
+#endif
     if( iDialogsProvider)
         iDialogsProvider->CancelAll();
     iActiveFsWindow = NULL;
     iWindowList.ResetAndDestroy();
-    
+  
+#ifdef BRDO_WRT_HS_FF   
     delete iNetworkListener;
+#endif
 
     // TODO Why there is a "Disconnect" method in the first place...
     // RHandleBase::Close() should be enough?
@@ -261,7 +267,7 @@ TBool CWidgetUiWindowManager::DeactivateMiniViewL( const TUid& aUid )
     // Removing . Miniview, shall remove full view as well. For blanket permissions
     // will be revoked for miniview
 
-    iClientSession.SetBlanketPermissionL( aUid, EBlanketUnknown );
+ 
     iClientSession.SetMiniViewL( aUid, EFalse );
     return CloseWindow( wdgt_window );
     }
@@ -1421,7 +1427,7 @@ void CRequestRAM::ConstructL()
     {
     User::LeaveIfError(iOomSession.Connect());
     CActiveScheduler::Add( this );
-#ifdef FF_OOM_MONITOR2_COMPONENT
+#ifdef BRDO_OOM_MONITOR2_COMPONENT_FF
     iOomSession.RequestOptionalRam(KMemoryToCreateWidgetWindow, KMemoryToCreateWidgetWindow, KUidWidgetOOMPlugin, iStatus);
     SetActive();
 #else
@@ -1487,5 +1493,119 @@ void CRequestRAM::DoCancel()
     {
     iOomSession.CancelRequestFreeMemory();
     }    
+void CWidgetUiWindowManager::CenrepChanged(TInt aHSModeOnline)
+    {
+    for ( TInt i = 0; i < iWindowList.Count(); i++ )
+        {
+        CWidgetUiWindow* window = iWindowList[i];
+        if( window &&  window->WidgetMiniViewState() == EPublishSuspend )
+            {
+            if ( window->NetworkModeWait()->IsStarted() )
+                {
+                window->NetworkModeWait()->AsyncStop();
+                }
+		        if(aHSModeOnline)
+		            {
+		  	        iNetworkMode = EOnlineMode;
+		            }
+		        else
+		  	        {
+		  	        iNetworkMode = EOfflineMode;	
+		  	        if ( ( !FullViewWidgetsOpen() ) && ( iConnection->Connected() ) )
+                    {
+                    TRAP_IGNORE( window->Engine()->HandleCommandL( 
+                                (TInt)TBrCtlDefs::ECommandIdBase +
+                                (TInt)TBrCtlDefs::ECommandCancelFetch ) );
+                    
+                         window->Engine()->HandleCommandL( 
+                                (TInt)TBrCtlDefs::ECommandIdBase +
+                                (TInt)TBrCtlDefs::ECommandDisconnect );
+                    iConnection->CancelConnection();
+                    iConnection->StopConnectionL();
+                    }
+		  	        }
+		  	    if(window->IsWidgetLoaded())
+                window->DetermineNetworkState();
+            else
+                window->NeedToNotifyNetworkState(ETrue);
+        
+            }
+        }
+  }        
 
+
+//cenrep notification handling
+
+CCenrepNotifyHandler * CCenrepNotifyHandler::NewL(
+    MCenrepWatcher& aObserver)
+    {
+    CCenrepNotifyHandler* o =  CCenrepNotifyHandler::NewLC(aObserver);
+    CleanupStack:: Pop(o);
+    return o;
+    }
+CCenrepNotifyHandler*  CCenrepNotifyHandler::NewLC(
+    MCenrepWatcher& aObserver) 
+    {
+    CCenrepNotifyHandler* self( new( ELeave ) CCenrepNotifyHandler( aObserver) );
+    CleanupStack:: PushL(self);
+    self->ConstructL();
+    return self;
+    }    
+void CCenrepNotifyHandler::ConstructL()
+    {
+    iUid = TUid::Uid( KCRUidActiveIdleLV ); 
+    iKey = KAIWebStatus;
+    iRepository = CRepository::NewL( iUid );
+    CActiveScheduler::Add(this);
+    StartObservingL();
+    }
+         
+CCenrepNotifyHandler::CCenrepNotifyHandler(MCenrepWatcher& aObserver) : iObserver(aObserver), CActive (EPriorityLow)
+   {
+         
+   }
+     
+CCenrepNotifyHandler::~CCenrepNotifyHandler()
+    {
+    Cancel(); //first cancel because iRepository is used there
+    delete iRepository;
+    iRepository=NULL;
+    }
+    
+void CCenrepNotifyHandler::StartObservingL()
+    {
+    if( IsActive() )
+        {
+        return; //do nothing if allready observing
+        }
+    User::LeaveIfError(
+                   iRepository->NotifyRequest( iKey, iStatus ) );
+    SetActive();
+    }
+    
+void CCenrepNotifyHandler::StopObserving()
+    {
+    Cancel();
+    }
+    
+void CCenrepNotifyHandler::DoCancel()
+    {
+    iRepository->NotifyCancel(iKey);
+    }
+
+void CCenrepNotifyHandler::RunL()
+    {
+    TInt value = 0;
+    TInt error = iRepository->Get( iKey, value);
+    if( error == KErrNone )
+        {
+        iObserver.CenrepChanged(value);
+        }
+    // Re-subscribe
+   error = iRepository->NotifyRequest( iKey, iStatus );
+   if( error == KErrNone )
+       {
+       SetActive();
+       }
+    }
 // End of file

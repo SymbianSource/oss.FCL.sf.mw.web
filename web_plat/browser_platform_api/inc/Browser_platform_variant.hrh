@@ -34,7 +34,7 @@
 */
 /*
 * ===================
-*        S60 3.23 Gadget, etc..
+*        S60 3.23 etc..
 * ===================
 */ 
 #if defined(__S60_32__)
@@ -44,22 +44,22 @@
 
 /*
 * ===================
-*        S60 5.0 Tube, Alvin, Ivalo, Saga, etc.
+*        S60 5.0 PF_52_50, etc.
 *        5.0/5250 platforms
 * ===================
 */ 
 #elif defined(__S60_50__)
 // manually edit the following lines to enable definition for
 // whichever platform is in use
-// un-comment following line for 5.0/5250 platforms running on products similar on Tube and Alvin
-// #define __PLATFORM_VERSION_50_TUBE__
+// un-comment following line for 5.0/5250 platforms running on products similar on S60_50
+// #define __PLATFORM_VERSION_S60_50__
 
-// un-comment following line for 5.0/5250 platforms for Ivalo and Saga
-// #define __PLATFORM_VERSION_50__
+// un-comment following line for 5.0/5250
+// #define __PLATFORM_VERSION_5250__
 
 /*
 * ===================
-*        S60 5.1 Corolla, etc.
+*        S60 5.1 S60_51, etc.
 * ===================
 */ 
 // #elif defined(__S60_51__)
@@ -68,13 +68,13 @@
 
 /*
 * ===================
-*        S60 5.2 Vasco, etc.
+*        S60 5.2 TB_92, etc.
 * ===================
 */ 
 // #elif defined(__S60_52__)
 
 // un-comment following line for 5.2/TB9.2 platforms
-#define __PLATFORM_VERSION_52__
+#define __PLATFORM_VERSION_52_TB92__
 //
 #endif
 
@@ -132,6 +132,9 @@ Default is WML support enabled
 
 // Defines WRT widgets feature to publish on homescreen
 #define BRDO_WRT_HS_FF
+
+// Defines flag for OOM Monitor-2
+#define BRDO_OOM_MONITOR2_COMPONENT_FF
 
 // Gallery App is not present
 #undef BRDO_APP_GALLERY_SUPPORTED_FF
@@ -205,6 +208,9 @@ Default is WML support enabled
 // Defines WRT widgets feature to publish on homescreen
 #undef BRDO_WRT_HS_FF
 
+// Defines flag for OOM Monitor-2
+#undef BRDO_OOM_MONITOR2_COMPONENT_FF
+
 // Gallery App is present
 #define BRDO_APP_GALLERY_SUPPORTED_FF
 
@@ -246,10 +252,10 @@ Default is WML support enabled
 
 /*
 * ===================
-*        S60 5.0 PF5250 / Tube / Alvin
+*        S60 5.0 S60_50
 * ===================
 */ 
-#elif defined(__PLATFORM_VERSION_50_TUBE__)
+#elif defined(__PLATFORM_VERSION_S60_50__)
 
 //OCC support
 #undef BRDO_OCC_ENABLED_FF
@@ -271,6 +277,9 @@ Default is WML support enabled
 
 // Defines WRT widgets feature to publish on homescreen
 #undef BRDO_WRT_HS_FF
+
+// Defines flag for OOM Monitor-2
+#undef BRDO_OOM_MONITOR2_COMPONENT_FF
 
 // Gallery App is present
 #define BRDO_APP_GALLERY_SUPPORTED_FF
@@ -312,10 +321,10 @@ Default is WML support enabled
 #undef BRDO_HTTP_STACK_93
 /*
 * ===================
-*        S60 5.0 PF5250+ / Ivalo / Saga
+*        S60 5.0 PF5250+
 * ===================
 */ 
-#elif defined(__PLATFORM_VERSION_50__)
+#elif defined(__PLATFORM_VERSION_5250__)
 
 //OCC support
 #undef BRDO_OCC_ENABLED_FF
@@ -394,7 +403,7 @@ Default is WML support enabled
 */ 
 //Flag provieded to not fix the problem for Multiple heap created for in application startup
 #undef BRDO_STATIC_DATA_CLEANUP_SUPPORT_FF
-#elif defined(__PLATFORM_VERSION_52__)
+#elif defined(__PLATFORM_VERSION_52_TB92__)
 
 // Defines whether SAPI Security Manager Prompt Enhancement is available
 #undef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF

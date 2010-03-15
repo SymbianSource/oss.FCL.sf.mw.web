@@ -223,6 +223,20 @@ void CMemoryPool::NotifyAndStop()
   }
 
 //-----------------------------------------------------------------------------
+// CMemoryPool::InitOOMDialog()
+//-----------------------------------------------------------------------------
+void CMemoryPool::InitOOMDialog()
+    {
+    }
+
+//-----------------------------------------------------------------------------
+// CMemoryPool::ResetOOMDialog()
+//-----------------------------------------------------------------------------
+void CMemoryPool::ResetOOMDialog()
+    {
+    }
+
+//-----------------------------------------------------------------------------
 // CPlainAllocator::DoAlloc
 //-----------------------------------------------------------------------------
 TUint CFastMemoryPool::FreeMemory(TFreeMem& aFree )
@@ -719,7 +733,7 @@ void CNewSymbianHeapPool::ShowOOMDialog()
         }
     }
 
-void CNewSymbianHeapPool::ResetOOMDialogDisplayed()
+void CNewSymbianHeapPool::ResetOOMDialog()
     {
     iOOMDisplayed = EFalse;
     }

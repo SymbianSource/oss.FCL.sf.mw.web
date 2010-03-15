@@ -20,6 +20,7 @@
 #include "wrtharvester.h"
 #include <UikonInternalPSKeys.h>//For MMC Observing
 #include <usbmsshared.h>//For USB monitor
+#include <startupdomainpskeys.h> // For shutdown observer
 
 // ============================ MEMBER FUNCTIONS =============================
 
@@ -90,6 +91,10 @@ void CWrtHarvesterPSNotifier::ConstructL()
         {
         User::LeaveIfError( iProperty.Attach( KUsbMsDriveState_Category,EUsbMsDriveState_DriveStatus ));
         }    	
+    else if( iKey == EWidgetSystemShutdown )
+        {
+        User::LeaveIfError( iProperty.Attach( KPSUidStartup,KPSGlobalSystemState  ));
+        }    	
     else
     	{
     	User::LeaveIfError( iProperty.Attach( KPropertyCat, iKey));
@@ -131,7 +136,10 @@ void CWrtHarvesterPSNotifier::RunL()
     TUsbMsDrivesStatus allDrivesStatus;
     if( iKey != EWidgetMMCAltered && iKey != EWidgetMassStorageMode )
     	{
-    	iProperty.Get( KPropertyCat, iKey, value );	
+    		if (iKey == EWidgetSystemShutdown)
+    	        GetValue( value);
+    	    else
+    	        iProperty.Get( KPropertyCat, iKey, value );	
     	}    
     else
         {        
@@ -163,6 +171,10 @@ void CWrtHarvesterPSNotifier::RunL()
             	iHarvester->SetRegistryAccess(ETrue);
                 } 	
             iHarvester->UpdateL();
+            }
+		else if( iKey == EWidgetSystemShutdown && value == ESwStateShuttingDown  )
+            {
+             iHarvester->SetSystemShutdown(ETrue);
             }
         }
     }

@@ -61,12 +61,40 @@ class CCpsPublisher;
 #endif
 // CLASS DECLARATION
 
+class CRepository; 
+
+class MCenrepWatcher
+       {
+       public:
+               virtual void CenrepChanged(TInt aHSModeOnline) = 0;
+        };
+class CCenrepNotifyHandler : public CActive
+       {
+       public:
+                static CCenrepNotifyHandler* NewL( MCenrepWatcher& aObserver);
+                static CCenrepNotifyHandler* NewLC( MCenrepWatcher& aObserver);
+                void StartObservingL();
+                void StopObserving();
+                virtual ~CCenrepNotifyHandler();
+                void RunL();
+                void RunErrorL(TInt aError);
+                void DoCancel();
+       protected:
+                CCenrepNotifyHandler(MCenrepWatcher& aObserver);
+                void ConstructL();
+       private:
+              CRepository* iRepository;
+              TUint32 iKey;
+              TUid iUid;
+              MCenrepWatcher& iObserver; //class using the observer
+        };
 /**
 *  CWidgetUiWindowManager
 *  @lib WidgetUi.app
 *  @since 3.1
 */
-class CWidgetUiWindowManager : public CBase
+class CWidgetUiWindowManager : public CBase,
+	                             public MCenrepWatcher
     {
     public:  // constructors / destructor
 
@@ -87,6 +115,14 @@ class CWidgetUiWindowManager : public CBase
         * @return none
         */
         virtual ~CWidgetUiWindowManager();
+    public:  //MCenrepWatcher
+    	  
+    	/**
+        * CenrepChanged
+        * @since 7.x
+        * @param aHSModeOnline HS web status online/offline.
+        */
+        void CenrepChanged(TInt aHSModeOnline);
 
     public:  
 
@@ -597,6 +633,7 @@ class CWidgetUiWindowManager : public CBase
         
 #ifdef BRDO_WRT_HS_FF       
         CCpsPublisher*                      iCpsPublisher;      // Owned, interface to publish bitmap to CPS
+        CCenrepNotifyHandler*               iCenrepNotifyHandler;  
 #endif
         // TODO should this be created only when needed?
         CActiveApDb*                        iDb;                // owned, responsible for deleting        
@@ -604,7 +641,7 @@ class CWidgetUiWindowManager : public CBase
         CPeriodic*                          iNotifyHarvester;//Notify harvester to send next event
 #ifdef  OOM_WIDGET_CLOSEALL
         TTime                               iTimeLastWidgetOpen;
-#endif         
+#endif  
     };
 
 #endif  // WIDGETUIWINDOWMANAGER_H_

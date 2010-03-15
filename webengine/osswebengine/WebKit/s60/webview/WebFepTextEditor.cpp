@@ -1149,6 +1149,8 @@ TBool CWebFepTextEditor::CcpuCanCopy() const
 void CWebFepTextEditor::CcpuCopyL()
 {
     PlaceDataOnClipboardL();
+    if (m_CcpuSupport)
+       m_CcpuSupport->HandleSelectionChangeL();
 }
 
 // -----------------------------------------------------------------------------

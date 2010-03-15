@@ -31,7 +31,7 @@
 #include <APGTASK.H>
 #include <oommonitorsession.h>
 #include <e32property.h>
-#ifndef FF_OOM_MONITOR2_COMPONENT 
+#ifndef BRDO_OOM_MONITOR2_COMPONENT_FF 
 #include <systemwarninglevels.hrh>
 #endif
 #include "browser_platform_variant.hrh"
@@ -211,7 +211,7 @@ void LaunchWidgetL( const TUid& aUid, TUint32 aOperation )
             TInt bytesAvailaible(0);
             if (aOperation != WidgetSelect && aOperation != LaunchFullscreen )
                 {
-#ifdef FF_OOM_MONITOR2_COMPONENT
+#ifdef BRDO_OOM_MONITOR2_COMPONENT_FF
                 err = monitorSession.RequestOptionalRam(KMemoryToLaunchWidgetUi, KMemoryToLaunchWidgetUi,KUidWidgetOOMPlugin, bytesAvailaible);
 #else
                    TMemoryInfoV1Buf info;

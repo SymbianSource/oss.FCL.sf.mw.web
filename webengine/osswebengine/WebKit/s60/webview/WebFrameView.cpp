@@ -32,6 +32,7 @@
 #include "SettingsContainer.h"
 #include "StaticObjectsContainer.h"
 #include "WebTabbedNavigation.h"
+#include "WebPagePinchZoomHandler.h"
 
 using namespace WebCore;
 
@@ -120,30 +121,33 @@ void WebFrameView::draw(WebCoreGraphicsContext& gc, const TRect& r)
             frameClip.Move(-cpos);
             gc.setClippingRect( frameClip );
         }
-        // draw frame border
-        CFbsBitGc& realgc = gc.gc();
-        if (m_hasBorder && !m_frame->isFrameSet()) {
-            // already moved the origin
-            TRect borderRect(TPoint(-1,-1),toViewCoords(m_frameRect).Size());
-            borderRect.iBr += TPoint(2,2);
-            realgc.SetPenColor(TRgb(0x55,0x55,0x55));
-            realgc.SetPenStyle(CGraphicsContext::ESolidPen);
-            realgc.SetBrushStyle(CGraphicsContext::ENullBrush);
-            realgc.SetPenSize(TSize(1,1));
-            realgc.DrawRect(borderRect);
-            // double border in bottom/right
-            borderRect.iBr += TPoint(1,1);
-            realgc.DrawRect(borderRect);
+        
+        if (!m_topView->pinchZoomHandler()->isPinchActive()) {
+        
+            // draw frame border
+            CFbsBitGc& realgc = gc.gc();
+            if (m_hasBorder && !m_frame->isFrameSet()) {
+                // already moved the origin
+                TRect borderRect(TPoint(-1,-1),toViewCoords(m_frameRect).Size());
+                borderRect.iBr += TPoint(2,2);
+                realgc.SetPenColor(TRgb(0x55,0x55,0x55));
+                realgc.SetPenStyle(CGraphicsContext::ESolidPen);
+                realgc.SetBrushStyle(CGraphicsContext::ENullBrush);
+                realgc.SetPenSize(TSize(1,1));
+                realgc.DrawRect(borderRect);
+                // double border in bottom/right
+                borderRect.iBr += TPoint(1,1);
+                realgc.DrawRect(borderRect);
+            }
+
+            // draw scrollbars
+            rect.Move( -m_contentPos );
+            WebCore::GraphicsContext ctx(&gc);
+            if (m_vScrollbar->isEnabled())
+                m_vScrollbar->paint(&ctx, rect);
+            if (m_hScrollbar->isEnabled())
+                m_hScrollbar->paint(&ctx, rect);
         }
-
-        // draw scrollbars
-        rect.Move( -m_contentPos );
-        WebCore::GraphicsContext ctx(&gc);
-        if (m_vScrollbar->isEnabled())
-            m_vScrollbar->paint(&ctx, rect);
-        if (m_hScrollbar->isEnabled())
-            m_hScrollbar->paint(&ctx, rect);
-
         gc.cancelClipping();
         gc.restore(saved);
     }

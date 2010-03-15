@@ -106,6 +106,7 @@ void CConnectionStageNotifierWCB::RunL()
 	{
 	CLOG_ENTERFN("CConnectionStageNotifierWCB::RunL()");
     CLOG_WRITE_1( "CConnectionStageNotifierWCB Stage: %d", iProgressBuf().iStage );
+    CLOG_WRITE_1( "CConnectionStageNotifierWCB Stage Error id: %d", iProgressBuf().iError );
 
     if( !iMultiObserver )
         {

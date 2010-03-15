@@ -699,6 +699,9 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
             {
                 if (m_webView->pageView()) {
                     m_webView->closePageView();
+                    PluginSkin* plugin = m_webView->mainFrame()->focusedPlugin();
+					if(plugin)
+						plugin->setPluginWinClipedRect();
                 } else {
                     if (m_historyHandler->historyController()->historyView()) {
                         // this is a weird way of managing history view. needs fixing
@@ -2024,7 +2027,12 @@ EXPORT_C TBrCtlImageCarrier* CBrCtl::FocusedImageLC()
 
 EXPORT_C TBool CBrCtl::OkToExit()
 {
-    return WebCore::StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->httpDownload()->okToExit();
+    HttpDownload* httpDownload = WebCore::StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->httpDownload();
+    if ( httpDownload )
+        {
+        return httpDownload->okToExit();
+        }
+    return ETrue;
 }
 
 EXPORT_C CGulIcon* CBrCtl::GetBitmapData(const TDesC& aUrl, TBrCtlDefs::TBrCtlBitmapInfo aBitmapInfo)
@@ -2464,6 +2472,7 @@ MBrCtlDownloadObserver* CBrCtl::brCtlDownloadObserver()
     }
     return m_brCtlDownloadObserver;
 }
+
 
 
 

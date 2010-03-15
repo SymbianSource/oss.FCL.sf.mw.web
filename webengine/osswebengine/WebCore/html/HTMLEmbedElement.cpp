@@ -278,5 +278,10 @@ bool HTMLEmbedElement::isFocusable() const
         return false;
     return static_cast<RenderPartObject*>(renderer())->isFocusable();
 }
+
+bool HTMLEmbedElement::canStartSelection() const
+{
+return false;
+}
 #endif
 }

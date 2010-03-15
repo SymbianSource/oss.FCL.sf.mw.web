@@ -125,6 +125,8 @@ class CWrtHarvester: public CContentHarvesterPlugin
         void DialogShown();
 
         static TInt DeleteCallback(TAny* aPtr);		
+        
+        TBool SetSystemShutdown(TBool aState){ iSystemShutdown = aState; }
 		
 	private:
         
@@ -279,6 +281,12 @@ class CWrtHarvester: public CContentHarvesterPlugin
          * own
          */        
         CWrtUsbHandler* iWidgetUsbListener;
+                
+        /**
+         * Publish & Subscribe listener
+         * own
+         */        
+        CWrtHarvesterPSNotifier* iWidgetSystemShutdownListener;
         
 		/**
     	* 
@@ -355,6 +363,11 @@ class CWrtHarvester: public CContentHarvesterPlugin
          * 
          */
 		 CAsyncCallBack*  iAsyncCallBack;
+		
+		/**
+         * 
+         */
+		 TBool  iSystemShutdown;
     };
 
 #endif // C_WRTCONTENTHARVESTER_H 

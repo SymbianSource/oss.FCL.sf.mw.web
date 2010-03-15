@@ -1761,8 +1761,11 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
                     isProgressively = EFalse;                       
                     }
                 // First close the downloads list.
-                CancelDisplayingDownloadsList();
-                iUiUtils->LaunchPdAppL(currDownload, isProgressively);
+                if ( state != EHttpProgMovingContentFile )
+                    {
+                     CancelDisplayingDownloadsList();
+                     iUiUtils->LaunchPdAppL(currDownload, isProgressively);
+                    }
                 }
             else 
                 {

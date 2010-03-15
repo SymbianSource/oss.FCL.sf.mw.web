@@ -412,7 +412,7 @@ void CWidgetUiWindowView::StateChanged(
 //
 TBool CWidgetUiWindowView::IsOptionsMenuActivated()
  	{
- 	return iIsOptionsMenuActivated;
+ 	return AppUi()->IsDisplayingMenuOrDialog();
  	}
 
 

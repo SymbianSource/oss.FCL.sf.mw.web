@@ -126,7 +126,7 @@ void CWidgetInstaller::ConstructL()
         CWidgetPropertyValue* value = CWidgetPropertyValue::NewL();
         User::LeaveIfError( iPropertyValues.Insert( value, i ) );
         }
-    *(iPropertyValues[EWidgetPropertyListVersion]) = WIDGETPROPERTYLISTVERSION;
+    *(iPropertyValues[EWidgetPropertyListVersion]) = KWidgetPropertyListVersion71;
 
 #ifdef _DEBUG
     _LIT(KDir, "WidgetBUR");
@@ -1170,7 +1170,7 @@ CWidgetInstaller::WidgetPropertiesFromInstalledWidgetL(
         CWidgetPropertyValue* value = CWidgetPropertyValue::NewL();
         User::LeaveIfError( propertyValues->Insert( value, i ) );
         }
-    *(*propertyValues)[EWidgetPropertyListVersion] = WIDGETPROPERTYLISTVERSION;
+    *(*propertyValues)[EWidgetPropertyListVersion] =  KWidgetPropertyListVersion71;
     // UID
     *(*propertyValues)[EUid] = aUid.iUid;
     // size

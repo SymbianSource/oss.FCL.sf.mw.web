@@ -71,6 +71,7 @@ void ResourceHandle::fireBlockedFailure(Timer<ResourceHandle>* timer)
 
 ResourceHandleClient* ResourceHandle::client() const
 {
+    if(d && d->m_client)
     return d->m_client;
 }
 

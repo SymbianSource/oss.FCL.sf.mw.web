@@ -63,6 +63,8 @@ _LIT( KWidgetEntryStoreBinaryFile,
       "a:\\private\\10282f06\\WidgetEntryStore.dat" );
 _LIT( KWidgetEntryStoreXmlFile,
       "a:\\private\\10282f06\\WidgetEntryStore.xml" );
+_LIT( KCWRTWidgetEntryStoreXmlFile,
+      "c:\\private\\10282f06\\CWRTWidgetEntryStore.xml" );
 _LIT( KWidgetEntryStoreXmlTempFile,
       "a:\\private\\10282f06\\WidgetEntryStoreTemp.xml" );
 _LIT( KWidgetDirFile, "widget_lproj.xml" );
@@ -169,6 +171,7 @@ CWidgetRegistry::CWidgetRegistry( RFs& aFs ):
     iWidgetInstallPath( KWidgetInstallPath ),
     iRegistryBinaryFileName( KWidgetEntryStoreBinaryFile ),
     iRegistryXmlFileName( KWidgetEntryStoreXmlFile ),
+    iRegistryCWRTXmlFileName( KCWRTWidgetEntryStoreXmlFile ),
     iRegistryXmlTempFileName( KWidgetEntryStoreXmlTempFile ),
     iPolicyId( 0 )
     {
@@ -336,7 +339,7 @@ TInt CWidgetRegistry::FetchSecurityPolicyIdL()
             }
         }
 #else
-	iPolicyId = KErrNotSupported;
+  iPolicyId = KErrNotSupported;
 #endif    
     return iPolicyId;
     }
@@ -581,11 +584,15 @@ void CWidgetRegistry::InternalizeL( TBool doConsistency, // in param
         // UIDs already known to app arch be reserved.
         for ( TInt i = 0; i < appArchList.Count(); i++ )
             {
-            if ( KErrNone != iUsedUids.Append( (appArchList)[i] ) )
+            // Do not maintain the list of used CWRT widget UIDs
+            if ( !TUidAllocator::IsCWRTWidget((appArchList)[i]) )
                 {
-                // no recovery possible
-                doConsistency = EFalse;
-                break;
+                  if ( KErrNone != iUsedUids.Append( (appArchList)[i] ) )
+                      {
+                      // no recovery possible
+                      doConsistency = EFalse;
+                      break;
+                      }
                 }
             }
         }
@@ -598,6 +605,23 @@ void CWidgetRegistry::InternalizeL( TBool doConsistency, // in param
         // on error use english
         iLprojName = _L("en");
         }
+        
+    // Internalize the CWRT widgets, without consistency checking
+    // No multi-drive support for CWRT
+    TDriveUnit driveUnit(EDriveC);
+    CDir* installedListForDrive = NULL;
+    RArray<TInt> installedListForDriveFlags;
+    TRAP_IGNORE(  // consistency checking doesn't apply to CWRT
+          InternalizeXmlL( iRegistryCWRTXmlFileName,
+                           driveUnit,
+                           EFalse,
+                           appArchList,
+                           appArchListFlags,
+                           installedListForDrive,
+                           installedListForDriveFlags,
+                           dirtyFlag ) );
+    delete installedListForDrive;
+    installedListForDriveFlags.Close();
 
     // List all drives in the system
     TDriveList driveList;
@@ -707,10 +731,14 @@ void CWidgetRegistry::InternalizeL( TBool doConsistency, // in param
         delete installedListForDrive;
         installedListForDriveFlags.Close();
         } // for
+
+    // appArchList will not contain CWRT widgets, so 
+    // consistency checking will not apply to them
     if ( doConsistency )
         {
         AppArchListConsistency( appArchList, appArchListFlags );
-        }    
+        }
+
     CleanupStack::PopAndDestroy( 2, &appArchList );//appArchListFlags, appArchList
 
     aDirtyFlag = dirtyFlag;
@@ -977,10 +1005,20 @@ void CWidgetRegistry::ExternalizeL()
     // and value as an array of entry indices for that drive
     RPtrHashMap< TInt, CArrayFixFlat<TInt> > driveEntryHashMap;
     CleanupClosePushL( driveEntryHashMap );
+    CArrayFixFlat<TInt>* cwrtWidgetArray = new (ELeave) CArrayFixFlat<TInt>(1);
+    CleanupStack::PushL( cwrtWidgetArray );
 
     for (TInt i = 0 ;i < iEntries.Count(); i++)
         {
         CWidgetEntry* entry = iEntries[i];
+        
+        // Bypass if the widget is a CWRT widget, they're externalized
+        // independently
+        if (TUidAllocator::IsCWRTWidget(TUid::Uid((*entry)[EUid]))) {
+          cwrtWidgetArray->AppendL(i);
+          continue;
+        }
+        
         const TDesC& driveName = (*entry)[EDriveName];
         TDriveUnit driveUnit( driveName );
         CArrayFixFlat<TInt>* array =
@@ -1070,11 +1108,35 @@ void CWidgetRegistry::ExternalizeL()
                 }
             }
         }
+    
+    TDriveUnit driveUnit( EDriveC );    
+    iRegistryXmlTempFileName[0] = driveUnit.Name()[0];
+    
+    iFs.CreatePrivatePath( driveUnit );
+    
+    // a transactional file update to protect against
+    // disk full, etc: overwrite temp then rename temp to original
+    
+    TRAPD( error,
+           ExternalizeXmlL( iRegistryXmlTempFileName, cwrtWidgetArray ) );
+    if ( KErrNone == error )
+        {
+        // last steps in transactional update
+        BaflUtils::DeleteFile( iFs, iRegistryCWRTXmlFileName );
+        BaflUtils::RenameFile( iFs, 
+                               iRegistryXmlTempFileName,
+                               iRegistryCWRTXmlFileName );
+        }
+     else  // handle leave by deleting temp file
+         {
+         BaflUtils::DeleteFile( iFs, iRegistryXmlTempFileName );
+         }
 
     for ( TInt i = 0; i < driveEntryHashMap.Count(); i++ )
         {
         CleanupStack::Pop();
         }
+    CleanupStack::PopAndDestroy( cwrtWidgetArray );
     CleanupStack::Pop( &driveEntryHashMap );
     driveEntryHashMap.ResetAndDestroy();
     driveEntryHashMap.Close();
@@ -1828,7 +1890,8 @@ TInt CWidgetRegistry::AppArchWidgetUids( RArray< TUid >& aUids )
         error = iAppArch.GetNextApp( info );
         if ( KErrNone == error )
             {
-            if ( TUidAllocator::IsWidget( info.iUid ) )
+            if ( TUidAllocator::IsWidget( info.iUid ) &&
+                 !TUidAllocator::IsCWRTWidget( info.iUid ) )
                 {
                 LOG2( " widget uid 0x%x (%d)",
                           (TUint)(info.iUid.iUid), info.iUid.iUid );
@@ -1857,10 +1920,10 @@ TInt CWidgetRegistry::AppArchWidgetUids( RArray< TUid >& aUids )
         {
         aUids.Reset();
         }
-	else 
-		{
-		error = KErrNone;
-		}
+  else 
+    {
+    error = KErrNone;
+    }
     LOG_CODE( if ( aUids.Count() ) )
     LOG1( "AppArchWidgetUids done widget count %d",
               aUids.Count() );
@@ -2297,4 +2360,6 @@ void CWidgetRegistry::AppArchListConsistency( const RArray<TUid>& aAppArchList,
         }
     LOG( "AppArchListConsistency done" );
     }
+
+
 // End of File

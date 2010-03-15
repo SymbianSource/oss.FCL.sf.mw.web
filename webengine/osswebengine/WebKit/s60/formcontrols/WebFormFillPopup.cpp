@@ -195,7 +195,9 @@ TKeyResponse WebFormFillPopup::OfferKeyEventL(const TKeyEvent& aKeyEvent, TEvent
             break;
 
     }
-
+    if (response == EKeyWasConsumed) {
+          m_parent->page()->chrome()->client()->setElementVisibilityChanged(false);
+        }
     return response;
 }
 

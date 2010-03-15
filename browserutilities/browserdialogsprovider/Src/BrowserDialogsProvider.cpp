@@ -69,6 +69,8 @@ const TInt KBrCtlMBFormat = 4;
 const TInt KBrCtlGBFormat = 10;
 const TInt KBrCtlMegabyte = 1000;	// although 1MB=1024 kB, treat as 1000kb for user simplicity
 const TInt KBrowserFileNotFound  = -26003; // Defined in ErrorDefs.h but not exported so define here
+//There is an empty note popup is displayed because of this undefined error code that has been thrown by http layer
+const TInt KHttpErrIgnore  = -26173;
 
 // DLL resource file name with path
 _LIT( KBrowserDialogsProviderDirAndFile, "z:BrowserDialogsProvider.rsc" );// resource
@@ -148,6 +150,8 @@ CBrowserDialogsProvider::~CBrowserDialogsProvider()
 //-----------------------------------------------------------------------------
 EXPORT_C void CBrowserDialogsProvider::DialogNotifyErrorL( TInt aErrCode )
 	{
+    if( aErrCode == KHttpErrIgnore )
+       return;
     TInt httpErr = KBrCtlHttpErrorsOffset - aErrCode;
 	CTextResolver* textresolver = CTextResolver::NewLC(); 
 	TPtrC msg;

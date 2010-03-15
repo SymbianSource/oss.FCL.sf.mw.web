@@ -799,6 +799,7 @@ void WebCursor::updatePositionAndElemType(const TPoint& pt)
         m_view->setFocusedElementType(elType);
     }
     else {
+      if(m_view)
         m_view->setFocusedElementType(TBrCtlDefs::EElementNone);
     }
 }

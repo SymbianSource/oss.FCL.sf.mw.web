@@ -1859,6 +1859,9 @@ TSize WebView::maxBidiSize() const
 
 void WebView::clearOffScreenBitmap()
 {
+    if( !IsVisible() )
+      return;
+    
     m_webcorecontext->gc().Reset();
     m_webcorecontext->gc().Clear();
 }

@@ -253,6 +253,10 @@ class CMemoryPool
 
     virtual void RestoreRescueBuffer() = 0;
     
+    virtual void InitOOMDialog();
+    
+    virtual void ResetOOMDialog();
+    
   protected:
     CMemoryPool() : iNotifier( 0 )   {}
   
@@ -358,7 +362,7 @@ NONSHARABLE_CLASS(CNewSymbianHeapPool) : public CMemoryPool
         TUint FreeMemory( TFreeMem& aFree );
         void RestoreRescueBuffer();
         void InitOOMDialog();
-        void ResetOOMDialogDisplayed();
+        void ResetOOMDialog();
 #ifdef OOM_LOGGING         
         void DumpHeapLogs();
 #endif        

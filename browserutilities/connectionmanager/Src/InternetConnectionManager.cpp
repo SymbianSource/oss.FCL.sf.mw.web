@@ -23,7 +23,7 @@
 
 	//System Includes
 #include <bldvariant.hrh>
-
+#include <browser_platform_variant.hrh>
 #include <ApAccessPointItem.h>
 #include <VpnAPEngine.h>
 #include <AknNotifyStd.h>
@@ -207,6 +207,8 @@ TInt CInternetConnectionManager::ConnectWithoutCheckL( TUint32 aIAPId )
             User::LeaveIfError( iConnection.GetDesSetting( query, val ) );
 
             iConnName = val.AllocL();
+            CLOG_WRITE_1( "Iap id used : %d", iapId );
+            CLOG_WRITE_1( "Conn name   : %S", iConnName);
             }
         else if( !iRequestedAPIds.iFirstPreference )
             {
@@ -582,7 +584,11 @@ TBool CInternetConnectionManager::CheckNetworkL( TBool& aGPRSAvailable )
 TApBearerType CInternetConnectionManager::BearerTypeL( TUint32 aIAPId )
 	{
 	TApBearerType apbearerType = EApBearerTypeAllBearers;
-    if( iSilentMode || !iRequestedAPIds.iFirstPreference )
+#ifdef BRDO_OCC_ENABLED_FF
+	if( !iRequestedAPIds.iFirstPreference )
+#else
+	if( iSilentMode || !iRequestedAPIds.iFirstPreference )
+#endif
         // Temp fix for CDMA 
         {
         return EApBearerTypeAllBearers;
@@ -643,7 +649,12 @@ EXPORT_C void CInternetConnectionManager::StopConnectionL()
     CLOG_ENTERFN( "StopConnectionL()" );
 
     StopConnectionObserving();
-    iConnection.Close();
+    if( iConnected )
+        {
+        CLOG_WRITE( "StopConnectionL() Stop the Connection" );
+        iConnection.Stop(RConnection::EStopAuthoritative);
+        }
+    
 //    iServ.Close();
     iConnected = EFalse;
     iEasyWlan = EFalse;

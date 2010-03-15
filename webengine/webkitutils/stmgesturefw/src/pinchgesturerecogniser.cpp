@@ -59,7 +59,7 @@ TGestureRecognitionState CPinchGestureRecogniser::recognise(int numOfActiveStrea
     // Look at the events to see if it looks like pinch in single touch
     // WARNING: this code is a hack : in single touch capacitive touch device (like Alvin with 52.50) it works so-and-so,
     // because the pointer events were reported from the corners of the rectangle formed by two fingers pressing.
-    // In resistive touch device like Tube or Ivalo the reported points are somewhere int he middle between the fingers
+    // In resistive touch device like S60_50 or PF_52_50 the reported points are somewhere int he middle between the fingers
     // and jumping a lot, so it is very difficult to get it right.
     if (numOfActiveStreams == 1)
     {

@@ -413,7 +413,14 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                 break;
 
             case EKeyUpArrow:
-                frame->editor()->execCommand("MoveUp");
+                if (select) { //If shift is pressed then highlight the selection
+                    if(kevent->isKeyDown())
+                        break;
+                    frame->editor()->execCommand("MoveUpAndModifySelection");//from createCommandMap()
+                }
+                else {
+                    frame->editor()->execCommand("MoveUp");
+                }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
                 if (frame->selectionController()->start() != startPos &&
                     frame->selectionController()->end() != endPos) {
@@ -425,7 +432,14 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                 break;
 
             case EKeyDownArrow:
-                frame->editor()->execCommand("MoveDown");
+                if (select) {//If shift is pressed then highlight the selection
+                    if(kevent->isKeyDown())
+                        break;
+                    frame->editor()->execCommand("MoveDownAndModifySelection");//from createCommandMap()
+                }
+                else {
+                    frame->editor()->execCommand("MoveDown");
+                }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
                 if (frame->selectionController()->start() != startPos &&
                     frame->selectionController()->end() != endPos) {

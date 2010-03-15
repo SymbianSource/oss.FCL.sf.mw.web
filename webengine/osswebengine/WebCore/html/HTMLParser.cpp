@@ -841,6 +841,7 @@ PassRefPtr<Node> HTMLParser::getNode(Token* t)
         gFunctionMap.set(trTag.localName().impl(), &HTMLParser::nestedCreateErrorCheck);
         gFunctionMap.set(ttTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
         gFunctionMap.set(uTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
+        gFunctionMap.set(ulTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
     }
 
     bool proceed = true;
@@ -858,9 +859,10 @@ bool HTMLParser::allowNestedRedundantTag(const AtomicString& tagName)
     // about 1500 tags, all from a bunch of <b>s.  We will only allow at most 20
     // nested tags of the same type before just ignoring them all together.
     unsigned i = 0;
-    for (HTMLStackElem* curr = blockStack;
-         i < cMaxRedundantTagDepth && curr && curr->tagName == tagName;
-         curr = curr->next, i++);
+    for (HTMLStackElem* curr = blockStack; i < cMaxRedundantTagDepth && curr; curr = curr->next) {
+        if (curr->tagName == tagName)
+            i++;
+    }
     return i != cMaxRedundantTagDepth;
 }
 

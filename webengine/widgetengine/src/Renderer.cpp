@@ -34,8 +34,8 @@
 // CONSTANTS
 const TUint8 KMaxTransitionCount = 30;
 const TInt KMediumResolutionDpi = 200;
-//NOTE: 5 transitions is plenty for Tube, but mileage may vary 
-//      on future high-res devices. 
+//NOTE: 5 transitions is plenty for S60_50, but mileage may vary
+//      on future high-res devices.
 const TUint8 KMinTransitionCount = 5;
 // LOCAL FUNCTION PROTOTYPES
 

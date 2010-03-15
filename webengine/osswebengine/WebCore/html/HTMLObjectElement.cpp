@@ -535,6 +535,11 @@ bool HTMLObjectElement::isFocusable() const
         return false;
     return static_cast<RenderPartObject*>(renderer())->isFocusable();
 }
+
+bool HTMLObjectElement::canStartSelection() const
+{
+return false;
+}
 #endif
 
 }
