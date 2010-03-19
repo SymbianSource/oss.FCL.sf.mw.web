@@ -1,25 +1,28 @@
 /*
-* Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+* ==============================================================================
+*  Name        : FavouritesEngineTest.cpp
+*  Part of     : ?Subsystem_name / FavouritesEngineTest
 *
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
+*  Description : FavouritesBCTest class member functions
+*  Version:   0.5
 *
-* Contributors:
+*  Copyright (C) 2006 Nokia Corporation.
+*  This material, including documentation and any related 
+*  computer programs, is protected by copyright controlled by 
+*  Nokia Corporation. All rights are reserved. Copying, 
+*  including reproducing, storing,  adapting or translating, any 
+*  or all of this material requires the prior written consent of 
+*  Nokia Corporation. This material also contains confidential 
+*  information which may not be disclosed to others without the 
+*  prior written consent of Nokia Corporation.
 *
-* Description:  FavouritesBCTest class member functions
-*
+* ============================================================================
 */
-
 
 
 // INCLUDE FILES
 #include <Stiftestinterface.h>
-#include "favouritesenginetest.h"
+#include "FavouritesEngineTest.h"
 
 // EXTERNAL DATA STRUCTURES
 

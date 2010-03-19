@@ -16,13 +16,14 @@
 *
 */
 
+
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
 #include "DownloadMgrServer.h"
 #include "DownloadMgrDef.h"
 
-#include "HttpClientAppInstance.h"
-#include "HttpDownload.h"
+#include <HttpClientAppInstance.h>
+#include <HttpDownload.h>
 #include <e32svr.h>
 #include <basched.h>
 //#include <e32uid.h>
@@ -83,9 +84,9 @@ const TInt  KDMgrServerPolicyRanges[KDMgrServerPolicyRangeCount] =
     EHttpDownloadCloseCompleted,				  // =41
     EHttpDownloadDataAttribute,                   // =42
     EHttpDownloadTrackAttribute,				  // =43
-    EHttpDownMgrNumOfSubSessions,         //44
+ 
 	*/
-    45  // EHttpDownloadMgrNotSupported           // =45
+    44  // EHttpDownloadMgrNotSupported           // =44
 	};
 
 enum TDownloadMgrSecurityPolicy

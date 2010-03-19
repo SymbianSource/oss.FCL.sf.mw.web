@@ -21,8 +21,9 @@
 #define BRCTL_H
 
 //  INCLUDES
-#include <brctlinterface.h>
+#include <BrCtlInterface.h>
 
+#include "BrCtlDefs.h"
 #include "HistoryInterface.h"
 
 #include "WmlInterface.h"
@@ -589,6 +590,7 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         /**
          * From CCoeControl
          */
+        void HandlePointerBufferReadyL();
         MBrCtlSpecialLoadObserver* brCtlSpecialLoadObserver() const { return m_brCtlSpecialLoadObserver; }
         MBrCtlDownloadObserver* brCtlDownloadObserver();
         MBrCtlLinkResolver* brCtlLinkResolver() const { return m_brCtlLinkResolver; }
@@ -703,7 +705,6 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         CPeriodic* m_timer;
         bool m_wmlMode;
         bool m_suspendTimers;
-        bool m_pageLoadFinished;
         MWmlEngineInterface* m_wmlEngineInterface;
         RLibrary  m_Library;
         MWmlInterface* m_WmlInterface;

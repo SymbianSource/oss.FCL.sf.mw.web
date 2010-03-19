@@ -28,7 +28,7 @@
 #include <SWInstDefs.h>
 #include <SWInstTaskManager.h>
 #include <SWInstLogTaskParam.h>
-#include <widgetregistryclient.h>
+#include <WidgetRegistryClient.h>
 #include <apgcli.h> // RApaLsSession
 #include "cuicanceltimer.h"
 #include "WidgetUIHandler.h"

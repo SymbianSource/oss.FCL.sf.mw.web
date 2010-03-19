@@ -14,14 +14,15 @@
 * Description:  
 *
 */
-
 #include "../common.mmpi"
 
 TARGET          plugins.lib
 TARGETTYPE      lib
 
+
 VENDORID        VID_DEFAULT
 
+MW_LAYER_SYSTEMINCLUDE
 SYSTEMINCLUDE	../../../../../../inc
 SYSTEMINCLUDE	../../../../WebCore/html
 SYSTEMINCLUDE	../../../../WebCore/dom

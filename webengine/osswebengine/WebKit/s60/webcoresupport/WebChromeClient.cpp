@@ -35,7 +35,7 @@
 
 
 #include <centralrepository.h>
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 
 const TInt KMaxJavaLogMsgLen = 500;
 const TInt KMaxJavaLogMsgPaddingLen = 0x200; // for paddings in JS log message such as: log type and labels.
@@ -362,9 +362,3 @@ void WebChromeClient::setElementVisibilityChanged(bool visibility) {
     m_visibilityByMouse = m_visibility && m_webView->isMouseEventFired();
     m_visibilityByKey = m_visibility && m_webView->isKeyEventFired();
 }
-
-
-void WebChromeClient::wait(double t) 
-{ 
-    m_webView->wait(t); 
-} 

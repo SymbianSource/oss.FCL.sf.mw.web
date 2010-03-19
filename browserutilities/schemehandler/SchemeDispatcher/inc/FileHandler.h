@@ -28,7 +28,7 @@
 #include <documentHandler.h>
 #include <eikdoc.h>
 #include <apparc.h>
-#include <browserlauncher.h>
+#include <BrowserLauncher.h>
 
 // FORWARD DECLARATION
 

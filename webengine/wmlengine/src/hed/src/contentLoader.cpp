@@ -15,6 +15,7 @@
 *
 */
 
+
 // This module forwards content that is not handled by the browser to the OS
 // document handler.
 
@@ -27,7 +28,7 @@
 #include "ContentLoader.h"
 #include "MVCShell.h"
 #include "BrsrStatusCodes.h"
-#include <brctlspecialloadobserver.h>
+#include <BrCtlSpecialLoadObserver.h>
 #include "StringUtils.h"
 
 // CONSTANTS

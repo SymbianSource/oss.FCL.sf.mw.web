@@ -28,8 +28,8 @@
 #ifndef NW_PARSER_WBXML_DICTIONARY_H
 #define NW_PARSER_WBXML_DICTIONARY_H
 
-#include <cxml_proj.h>
-#include <nw_string_string.h>
+#include "cxml_proj.h"
+#include "nw_string_string.h"
 
 #ifdef __cplusplus
 extern "C"

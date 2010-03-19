@@ -17,7 +17,7 @@
 
 
 // INCLUDE FILES
-#include <browser_platform_variant.hrh>
+#include <Browser_platform_variant.hrh>
 #include <../bidi.h>
 #include "WebPageScrollHandler.h"
 #include "BrCtl.h"
@@ -37,6 +37,7 @@
 
 #include "WebKitLogger.h"
 using namespace WebCore;
+using namespace RT_GestureHelper;
 // constants
 const int KPageOverviewScrollPeriodic = 20 * 1000; // Update frequently for faster, smoother scrolling
 const int KMicroInterval = 300000;
@@ -371,14 +372,12 @@ void WebPageScrollHandler::scrollContent(TPoint& aScrollDelta)
             bool shouldScrollHorizontally = false;
             WebFrame* frame = kit(m_scrollableView.m_scrollingElement->document()->frame());
             RenderObject* render = m_scrollableView.m_scrollingElement->renderer();
-            if(render) //check if render exits before using it
-                {
-                __ASSERT_DEBUG(render->isScrollable(), User::Panic(_L(""), KErrGeneral));
-                if (aScrollDelta.iY)
-                  shouldScrollVertically = !render->scroll(ScrollDown, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iY / 100);
-                if (aScrollDelta.iX)
-                  shouldScrollHorizontally = !render->scroll(ScrollRight, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iX / 100);
-                }
+            __ASSERT_DEBUG(render->isScrollable(), User::Panic(_L(""), KErrGeneral));
+            if (aScrollDelta.iY)
+                shouldScrollVertically = !render->scroll(ScrollDown, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iY / 100);
+            if (aScrollDelta.iX)
+                shouldScrollHorizontally = !render->scroll(ScrollRight, ScrollByPixel, frame->frameView()->toDocCoords(aScrollDelta).iX / 100);
+
             TPoint scrollPos = frame->frameView()->contentPos();
             TPoint newscrollDelta = frame->frameView()->toDocCoords(aScrollDelta);
             m_currentNormalizedPosition +=  newscrollDelta;     
@@ -560,32 +559,25 @@ bool WebPageScrollHandler::calculateScrollableElement(const TPoint& aNewPosition
     Element* currElement = NULL;
     if(!e) return NULL;
     RenderObject* render = e->renderer();
-    if(render) {
+    if (render && render->isScrollable()) {
         RenderLayer* layer = render->enclosingLayer();
         Element* parent = e;
-
-        if (e->isControl()) {
-            if (render->isScrollable()) {
-            currElement = e;
-            }
-        }
-        else {
-            while (parent && parent->renderer()) {
-                if (parent->renderer()->isScrollable()) {
-                    currElement = parent;
-                    break;
-                    }
-                parent = static_cast<Element*>(parent->parent());
-                }
+        currElement = e;
+        while (!currElement->isControl() && parent && parent->renderer() && parent->renderer()->enclosingLayer() == layer) {
+            currElement = parent;
+            Node* pn = parent;
+            do {
+                pn = pn->parent();
+            } while (pn && !pn->isElementNode());
+            parent = static_cast<Element*>(pn);
         }
         if (currElement) {
-            //check for current element which is scrollable
             currElement->ref();
-            m_scrollableView.m_scrollingElement = currElement;
+            m_scrollableView.m_scrollingElement = currElement; 
             m_scrollableView.m_frameView = NULL;
             return true;
-            }
         }
+    }
     return false;
 }
 
@@ -604,9 +596,9 @@ void WebPageScrollHandler::scrollPageOverviewGH()
 }
 
 
-void WebPageScrollHandler::handleScrollingGH(const TStmGestureEvent& aGesture)
+void WebPageScrollHandler::handleScrollingGH(const TGestureEvent& aEvent)
 {   
-    TPoint newPos = aGesture.CurrentPos();
+    TPoint newPos = aEvent.CurrentPos();
     m_currentPosition = newPos;
     if (m_webView->inPageViewMode()) {
         if (!m_pageOverviewScrollPeriodic->IsActive()){
@@ -622,9 +614,9 @@ void WebPageScrollHandler::handleScrollingGH(const TStmGestureEvent& aGesture)
 }
 
 
-void WebPageScrollHandler::handleTouchDownGH(const TStmGestureEvent& aGesture)
+void WebPageScrollHandler::handleTouchDownGH(const TGestureEvent& aEvent)
 {
-    TPoint newPos = aGesture.CurrentPos();
+    TPoint newPos = aEvent.CurrentPos();
     m_lastMoveEventTime = 0; 
     m_lastPosition = newPos;
     m_currentPosition = newPos;
@@ -639,10 +631,10 @@ void WebPageScrollHandler::handleTouchDownGH(const TStmGestureEvent& aGesture)
 }
 
 
-void WebPageScrollHandler::handleTouchUpGH(const TStmGestureEvent& aGesture)
+void WebPageScrollHandler::handleTouchUpGH(const TGestureEvent& aEvent)
 {
     bool decelDoesScrollbars = false;
-    TPoint newPos = aGesture.CurrentPos();
+    TPoint newPos = aEvent.CurrentPos();
 
     if (m_webView->inPageViewMode()) {
         if (m_pageOverviewScrollPeriodic->IsActive()){ 
@@ -656,7 +648,7 @@ void WebPageScrollHandler::handleTouchUpGH(const TStmGestureEvent& aGesture)
     else {
         m_scrollTimer->Cancel();
         m_lastPosition = TPoint(0, 0);
-        decelDoesScrollbars = startDeceleration(aGesture);
+        decelDoesScrollbars = startDeceleration(aEvent);
                     
         if (m_webView->viewIsScrolling()) {
             Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
@@ -674,10 +666,10 @@ void WebPageScrollHandler::handleTouchUpGH(const TStmGestureEvent& aGesture)
 }
 
 
-bool WebPageScrollHandler::startDeceleration(const TStmGestureEvent& aGesture)
+bool WebPageScrollHandler::startDeceleration(const TGestureEvent& aEvent)
 {
     bool started = false;
-    TRealPoint gstSpeed = aGesture.Speed();
+    TRealPoint gstSpeed = aEvent.Speed();
     if (Abs(gstSpeed.iX / gstSpeed.iY) <= KTanOfThresholdAngle) {
        gstSpeed.iX = 0;
     }

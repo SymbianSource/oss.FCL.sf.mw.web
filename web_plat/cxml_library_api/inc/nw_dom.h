@@ -19,8 +19,8 @@
 #ifndef NW_DOM_H
 #define NW_DOM_H
 
-#include <cxml_proj.h>
-#include <nw_wbxml_parse.h>
+#include "cxml_proj.h"
+#include "nw_wbxml_parse.h"
 
 #ifdef __cplusplus
 extern "C" {

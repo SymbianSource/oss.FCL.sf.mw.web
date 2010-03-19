@@ -82,9 +82,7 @@ int ResolvedConnection::submit()
 
 void ResolvedConnection::cancel()
 {
-	  if(m_frame) {
-        control(m_frame)->brCtlLinkResolver()->CancelAll();
-    }
+    control(m_frame)->brCtlLinkResolver()->CancelAll();
 }
 
 void ResolvedConnection::download(ResourceHandle* handle,

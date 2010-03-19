@@ -25,7 +25,7 @@
 
 #include <e32base.h>
 #include <s32buf.h>
-#include <favouriteshandle.h>
+#include <FavouritesHandle.h>
 
 // CONSTANTS
 

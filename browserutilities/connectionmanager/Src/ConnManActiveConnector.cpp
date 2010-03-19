@@ -19,16 +19,12 @@
 */
 
 
-#include <browser_platform_variant.hrh>
+
 #include "ConnManActiveConnector.h"
 #include "ConnectionManagerLogger.h"
 
 #include <nifvar.h>
 #include <CommDbConnPref.h>
-
-#ifdef BRDO_OCC_ENABLED_FF
-#include <extendedconnpref.h>
-#endif
 
 //--------------------------------------------------------------------------
 //CConnManActiveConnector::CConnManActiveConnector()
@@ -38,7 +34,6 @@ CConnManActiveConnector::CConnManActiveConnector( RConnection& aConnection,
     : CActive( aPriority )
     , iConnection( aConnection )
 	{
-    
 	CLOG_CREATE;
 	CActiveScheduler::Add( this );//inserting this into the queue
 	}
@@ -48,7 +43,6 @@ CConnManActiveConnector::CConnManActiveConnector( RConnection& aConnection,
 //--------------------------------------------------------------------------
 CConnManActiveConnector::~CConnManActiveConnector()
 	{
-    
 	Cancel();//The standard way of destroying an Active object
 	CLOG_CLOSE;
 	}
@@ -57,55 +51,18 @@ CConnManActiveConnector::~CConnManActiveConnector()
 //CConnManActiveConnector::StartConnection()
 //--------------------------------------------------------------------------
 void CConnManActiveConnector::StartConnection( TCommDbConnPref* aSettings, TRequestStatus& aStatus)
-{
-    CLOG_WRITE( "CConnManActiveConnector:StartConnection AlwaysAsk/Ap is called");
-    iExternalRequestStatus = &aStatus;
-
-#ifdef BRDO_OCC_ENABLED_FF
-
-    TExtendedConnPref extPref;
-    CLOG_WRITE( "CConnManActiveConnector:StartConnection Setting OCC parameters");
-
-#ifdef __WINS__ //This is only for emulator testing purpose
-
-    //For emulator
-    CLOG_WRITE( "CConnManActiveConnector:StartConnection Emulator OCC settings " );
-    extPref.SetSnapPurpose(CMManager::ESnapPurposeUnknown);
-    extPref.SetConnSelectionDialog(ETrue);
-    extPref.SetForcedRoaming(EFalse);
-
-#else
-
-    //For hardware
-    TUint32 bookmarkIap = aSettings->IapId();
-    CLOG_WRITE_1( "CConnManActiveConnector:StartConnection Active Bookmark Iap: %d", bookmarkIap );
-    if (bookmarkIap)
-    {
-       CLOG_WRITE( "CConnManActiveConnector:StartConnection Iap is found for this bookmark");
-       extPref.SetSnapPurpose(CMManager::ESnapPurposeUnknown);
-       extPref.SetIapId(bookmarkIap);
-    }
-    else
-    {
-       CLOG_WRITE( "CConnManActiveConnector:StartConnection Using Internet Snap");
-       extPref.SetSnapPurpose(CMManager::ESnapPurposeInternet);
-    }
-
-#endif //__WINS__   
-
-    extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourDefault);
-    TConnPrefList prefList;
-    TRAP_IGNORE(prefList.AppendL(&extPref));
-#endif //BRDO_OCC_ENABLED_FF
-
+	{
+	CLOG_WRITE( "CConnManActiveConnector:StartConnection is called");
+	iExternalRequestStatus = &aStatus;
+	
     if( aSettings )
-    {
-      #ifdef BRDO_OCC_ENABLED_FF
-        iConnection.Start( prefList, iStatus );
-      #else
-        iConnection.Start( *aSettings, iStatus );
-      #endif
-    }
+        {
+#ifdef __WINS__
+     //  aSettings->SetDialogPreference( ECommDbDialogPrefPrompt );
+#endif
+
+	    iConnection.Start( *aSettings, iStatus );
+        }
     else
         {
         iConnection.Start( iStatus );
@@ -120,45 +77,14 @@ void CConnManActiveConnector::StartConnection( TCommDbConnPref* aSettings, TRequ
 //CConnManActiveConnector::StartConnection()
 //--------------------------------------------------------------------------
 void CConnManActiveConnector::StartConnection( TConnSnapPref* aSettings, TRequestStatus& aStatus)
-{
-    CLOG_WRITE( "CConnManActiveConnector:StartConnection SNAP is called");
-    iExternalRequestStatus = &aStatus;
-
-#ifdef BRDO_OCC_ENABLED_FF
-
-    CLOG_WRITE( "CConnManActiveConnector:StartConnection Setting OCC parameters");
-    TExtendedConnPref extPref;
-
-#ifdef __WINS__ 
-
-    //For emulator
-    CLOG_WRITE( "CConnManActiveConnector:StartConnection Emulator OCC settings " );
-    extPref.SetSnapPurpose(CMManager::ESnapPurposeUnknown);
-    extPref.SetConnSelectionDialog(ETrue);
-    extPref.SetForcedRoaming(EFalse);
-
-#else
-    
-    //For hardware
-    CLOG_WRITE( "CConnManActiveConnector:StartConnection Using Internet Snap");
-    extPref.SetSnapPurpose(CMManager::ESnapPurposeInternet);
-
-#endif //__WINS__
-
-    extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourDefault);
-    TConnPrefList prefList;
-    TRAP_IGNORE(prefList.AppendL(&extPref));
-
-#endif
-
+	{
+	CLOG_WRITE( "CConnManActiveConnector:StartConnection is called");
+	iExternalRequestStatus = &aStatus;
+	
     if( aSettings )
-    {
-      #ifdef BRDO_OCC_ENABLED_FF
-        iConnection.Start( prefList, iStatus );
-      #else
-        iConnection.Start( *aSettings, iStatus );
-      #endif
-    }
+        {
+	    iConnection.Start( *aSettings, iStatus );
+        }
     else
         {
         iConnection.Start( iStatus );
@@ -175,10 +101,8 @@ void CConnManActiveConnector::StartConnection( TConnSnapPref* aSettings, TReques
 void CConnManActiveConnector::DoCancel()
 	{
 	CLOG_WRITE( "CConnManActiveConnector: DoCancel called");
-    
 	iConnection.Close();
 	User::RequestComplete( iExternalRequestStatus, KErrCancel );//completing user req
-    
 	CLOG_WRITE( "CConnManActiveConnector: DoCancel returned");
 	}
 
@@ -187,7 +111,6 @@ void CConnManActiveConnector::DoCancel()
 //--------------------------------------------------------------------------
 void CConnManActiveConnector::RunL()
 	{
-    
     CLOG_WRITE_1( "CConnManAct::RunL(): %d", iStatus.Int() );
 	User::RequestComplete( iExternalRequestStatus, iStatus.Int() );
 	}
@@ -273,10 +196,11 @@ void CActiveConnectorSyncWrapper::DoCancel()
 	{
     
     iActiveConnector->Cancel();
-   	if(iWait.IsStarted())
-	{
-	  iWait.AsyncStop();	
-	}
+	
+	if(iWait.IsStarted())
+	  {
+	   iWait.AsyncStop();	
+	  }
 	
 	}
 

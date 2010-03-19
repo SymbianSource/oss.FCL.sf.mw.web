@@ -16,7 +16,7 @@
 */
 
 
-#include <connect/abclient.h>
+#include <abclient.h>
 #include <e32property.h>
 #include "widgetbackuprestore.h"
 #include "WidgetActiveCallback.h"

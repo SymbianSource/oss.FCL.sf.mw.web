@@ -31,10 +31,8 @@
 #include <APGTASK.H>
 #include <oommonitorsession.h>
 #include <e32property.h>
-#ifndef FF_OOM_MONITOR2_COMPONENT 
 #include <systemwarninglevels.hrh>
-#endif
-#include "browser_platform_variant.hrh"
+#include "Browser_platform_variant.hrh"
 
 // CONSTANTS
 #define KUidWidgetOOMPlugin 0x10282855

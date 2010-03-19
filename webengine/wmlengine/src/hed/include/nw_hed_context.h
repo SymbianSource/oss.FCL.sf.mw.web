@@ -15,12 +15,13 @@
 *
 */
 
+
 #ifndef NW_HED_CONTEXT_H
 #define NW_HED_CONTEXT_H
 
 #include "nw_object_dynamic.h"
 #include "nw_adt_dynamicvector.h"
-#include <nw_string_string.h>
+#include "nw_string_string.h"
 #include "NW_HED_EXPORT.h"
 #include "BrsrStatusCodes.h"
 

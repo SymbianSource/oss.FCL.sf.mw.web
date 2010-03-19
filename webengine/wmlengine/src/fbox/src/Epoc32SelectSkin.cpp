@@ -15,6 +15,7 @@
 *
 */
 
+
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 #include "nw_fbox_epoc32selectskini.h"
 #include "nw_image_cannedimages.h"
@@ -29,7 +30,7 @@
 #include "KimonoLocalizationStrings.h"
 #include "nwx_logger.h"
 #include "nw_lmgr_statictablecellbox.h"
-#include "nw_browser_browserimages.h"
+#include <nw_browser_browserimages.h>
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- *

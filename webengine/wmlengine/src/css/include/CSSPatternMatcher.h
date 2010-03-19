@@ -22,8 +22,8 @@
 //  INCLUDES
 #include "CSSParser.h"
 #include "CSSSelector.h"
-#include <nw_dom_element.h>
-#include <nw_wbxml_dictionary.h>
+#include "nw_dom_element.h"
+#include "nw_wbxml_dictionary.h"
 #include "nw_evt_event.h"
 #include "nw_hed_documentnode.h"
 #include "nw_hed_domhelper.h"

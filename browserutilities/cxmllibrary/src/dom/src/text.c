@@ -15,10 +15,11 @@
 *
 */
 
+
 #include "cxml_internal.h"
-#include <nw_tinytree.h>
-#include <nw_dom_text.h>
-#include <nw_dom_document.h>
+#include "nw_tinytree.h"
+#include "nw_dom_text.h"
+#include "nw_dom_document.h"
 
 /*
  * Returns

@@ -15,11 +15,13 @@
 *
 */
 
-#include <feedattributes.h>
+
+#include "FeedAttributes.h"
 #include "FeedParserObserver.h"
-#include <leaktracker.h>
+#include "LeakTracker.h"
 #include "AtomFeedParser.h"
-#include <xmlutils.h>
+#include "XmlUtils.h"
+
 
 // Element and attribute names used by this parser.
 _LIT8(KHead, "feed");

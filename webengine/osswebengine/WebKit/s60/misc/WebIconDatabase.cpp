@@ -68,24 +68,16 @@ CGulIcon* WebIconDatabase::iconForPageURL(const TDesC8& url)
             return NULL;
         CGulIcon* icon = NULL;
         CFbsBitmap* bitmap = new CFbsBitmap();
-        CFbsBitmap* mask = new CFbsBitmap();;
-        int errMask = KErrNone;
-        int errBmp = KErrNone;
+        CFbsBitmap* mask = new CFbsBitmap();
+
         if (bitmap && mask) {
-            errBmp = BitmapUtil::CopyBitmap(maskedBitmap->Bitmap(), *bitmap);                                    
-            if(maskedBitmap->HasMask()) {
-                errMask = BitmapUtil::CopyBitmap(maskedBitmap->Mask(), *mask);
-            }else {
-                delete mask;
-                mask = NULL;
-            }
-                
-            if (errBmp == KErrNone && errMask == KErrNone) {
+            int err( BitmapUtil::CopyBitmap(maskedBitmap->Bitmap(), *bitmap));
+            int errMask( BitmapUtil::CopyBitmap(maskedBitmap->Mask(), *mask));
+            if (err == KErrNone && errMask == KErrNone) {
                 TRAP_IGNORE(icon = CGulIcon::NewL());
                 if (icon) {
                     icon->SetBitmap( bitmap );
-                    if(mask)
-                        icon->SetMask( mask );
+                    icon->SetMask( mask );
                 }
             }
         }
@@ -104,7 +96,4 @@ void WebIconDatabase::releaseIconForURL(const TDesC8& url)
     iconDatabase()->releaseIconForPageURL(String(url));
 }
 
-void WebIconDatabase::setEnabled(bool enabled)
-{
-    iconDatabase()->setEnabled(enabled);
-}
+

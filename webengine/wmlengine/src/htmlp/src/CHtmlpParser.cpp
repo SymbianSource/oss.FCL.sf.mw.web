@@ -15,6 +15,7 @@
 *
 */
 
+
 /*
 
   HTML Parser
@@ -24,14 +25,14 @@
 
 #include "nwx_defs.h"
 #include "CHtmlpParser.h"
-#include <nw_string_char.h>
+#include "nw_string_char.h"
 #include "BrsrStatusCodes.h"
 #include "nwx_string.h"
 #include "nw_htmlp_to_wbxml.h"
 #include "nw_htmlp_html_dict.h"
 #include "nw_htmlp_wml_dict.h"
-#include <nw_wbxml_dictionary.h>
-#include <nw_encoder_stringtable.h>
+#include "nw_wbxml_dictionary.h"
+#include "nw_encoder_stringtable.h"
 
 /* "<?" len 2 */
 #define NW_HTMLP_String_PiFormStartLength 2

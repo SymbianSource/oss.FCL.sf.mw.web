@@ -24,7 +24,7 @@ UID               0x1000008d 0x10283097
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 CAPABILITY        CAP_CLIENT_DLL
 VENDORID          VID_DEFAULT

@@ -29,10 +29,10 @@
 #include "ResourceLoaderDelegate.h"
 #include "HttpCacheSupply.h"
 #include "HttpPostDataSupplier.h"
-#include <httpfiltercommonstringsext.h>
-#include <brctldefs.h>
+#include <HttpFilterCommonStringsExt.h>
+#include <BrCtlDefs.h>
 #include "BrCtl.h"
-#include <brctlspecialloadobserver.h>
+#include "BrCtlSpecialLoadObserver.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "DocumentLoader.h"
@@ -648,10 +648,7 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                     return;
                     }
                 int statusCode = m_transaction->Response().StatusCode();
-                if ((statusCode == 404) && (aEvent.iStatus == THTTPEvent::EFailed) && (m_accumulatedSize != 0)) {
-                    complete(KErrNone);
-                }	
-                else if ( statusCode != 200) {
+                if ( statusCode != 200) {
                     complete(-25000 - m_transaction->Response().StatusCode());
                 }
                 else if (statusCode == 200 && aEvent.iStatus == THTTPEvent::EFailed) {
@@ -916,7 +913,7 @@ int HttpConnection::handleAuthRequestL(
             break;
             }
         }
-    m_isDone = ETrue;
+
     TRAP( ret, SendAuthRequestL( usernameVal, realmVal, isProxy, stale, passwordVal ) );
     if (realmClose)
       {
@@ -1034,7 +1031,7 @@ void HttpConnection::AuthenticationResponse(
     HttpSessionManager* httpSessionMgr = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager();
     httpSessionMgr->removeAuthRequest(this);
     httpSessionMgr->addRequest(this, m_handle);
-    m_isDone = EFalse;
+
     switch (aError)
         {
         case KErrNone:

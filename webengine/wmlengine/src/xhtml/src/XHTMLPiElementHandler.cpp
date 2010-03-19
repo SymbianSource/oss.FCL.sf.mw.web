@@ -15,15 +15,16 @@
 *
 */
 
+
 #include "nw_xhtml_pielementhandleri.h"
 #include "nw_xhtml_xhtmlcontenthandler.h"
-#include <nw_dom_document.h>
+#include "nw_dom_document.h"
 #include "nw_htmlp_to_wbxml.h"
 #include "nw_xhtml_xhtml_1_0_tokens.h"
 #include "nwx_string.h"
 #include "nw_link_linkelementhandler.h"
 #include <nwx_status.h>
-#include "nwx_settings.h"
+#include <nwx_settings.h>
 #include "nwx_statuscodeconvert.h"
 #include "BrsrStatusCodes.h"
 #include "nwx_http_defs.h"

@@ -19,8 +19,8 @@
 // INCLUDE FILES
 #include "BrCtl.h"
 #include "SelfDownloadContentHandler.h"
-#include <brctlspecialloadobserver.h>
-#include <brctldefs.h>
+#include <BrCtlSpecialLoadObserver.h>
+#include <BrCtlDefs.h>
 #include <apmstd.h>
 #include <eikenv.h>
 #include "ResourceRequest.h"
@@ -29,7 +29,7 @@
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
 #include "HttpSessionManager.h"
-#include "httpfiltercommonstringsext.h"
+#include "HttpFilterCommonStringsExt.h"
 #include <Uri8.h>
 #include <http/rhttptransaction.h>
 #include <http/mhttpdatasupplier.h>

@@ -1,20 +1,22 @@
-/*
-* Copyright (c) 2008, 2009 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
-*
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
-*
-* Contributors:
-*
-* Description: 
-*
-*/
-
+//
+//==============================================================================
+// Name        : WidgetUiNetworkListener.h
+// Part of     : WidgetUI
+// Interface   :
+// Description :
+// Version      : %version: 9 %
+//
+// Copyright  2008, 2009 Nokia Corporation.
+// This material, including documentation and any related
+// computer programs, is protected by copyright controlled by
+// Nokia Corporation. All rights are reserved. Copying,
+// including reproducing, storing, adapting or translating, any
+// or all of this material requires the prior written consent of
+// Nokia Corporation. This material also contains confidential
+// information which may not be disclosed to others without the
+// prior written consent of Nokia Corporation.
+//==============================================================================
+//
 
 #ifndef WIDGETUINETWORKLISTENER_H_
 #define WIDGETUINETWORKLISTENER_H_
@@ -42,12 +44,12 @@ class CWidgetUiNetworkListener : public CActive
     public: //Methods
 
             // Constructors and destructor
- 
+
             /**
             * Static constructor
             */
             static CWidgetUiNetworkListener* NewL(CWidgetUiWindowManager& aWindowManager);
-            
+
             /**
             * Destructor
             */
@@ -84,15 +86,15 @@ class CWidgetUiNetworkListener : public CActive
             * Closes connection
             */
             void Close();
-            
+
             /**
             * Check for existing active connections
             * @return: ETrue if there is an active network connection, else EFalse
             */
             TBool CheckActiveNetworkConnection();
-   
+
     private: // Data
-        
+
             // reference to WidgetUiWindowManager object
             CWidgetUiWindowManager& iWindowManager;
 

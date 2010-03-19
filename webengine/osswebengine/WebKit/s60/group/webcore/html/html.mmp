@@ -14,6 +14,9 @@
 // * Description:  This is the project specification file for WebCore.
 // *
 
+#include <platform_paths.hrh>
+#include <data_caging_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 #include "../../common.mmpi"
 
 TARGET  WebCorehtml.lib

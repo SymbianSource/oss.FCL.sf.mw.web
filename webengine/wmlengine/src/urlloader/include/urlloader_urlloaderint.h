@@ -15,6 +15,7 @@
 *
 */
 
+
 #ifndef URLLOADERINT_H
 #define URLLOADERINT_H
 
@@ -22,6 +23,7 @@
 #include "nwx_ctx.h" // this file includes nwx_defs.h, which includes nwx_status.h
 #include "urlloader_urlresponse.h"
 #include "BrsrStatusCodes.h"
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -31,13 +33,14 @@ extern "C" {
     
 #define NW_NUM_INSTANCES 3
 
+
 // MACROS
     
 // DATA TYPES
     
 // The "TEnterStatus", relates to what security state the page is going to.
 // This "page loading" status, is passed in HandleBrowserLoadEventL() using the
-// TBrCtlLoadEvent enum. (see brctldefs.h)  
+// TBrCtlLoadEvent enum. (see BrCtlDefs.h)  
 // These constants must stay in sync with viewshellobserver.h
 //R
 

@@ -27,7 +27,9 @@
 #include "nwx_osu_epoc32.h"
 #include "nwx_logger.h"
 #include "nwx_string.h"
-#include <kernel/localise.h>
+//#include <ls_std.h>
+//#include <kernel/ls_std.h>
+
 #include "BrsrStatusCodes.h"
 
 /*

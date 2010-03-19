@@ -29,7 +29,6 @@
 #include <libc/stdlib.h>
 #include <libxml2_parser.h>
 #include <libxml2_tree.h>
-#include "WidgetMMCHandler.h"
 #include <xmlengxestd.h>
 #include "UidAllocator.h"
 #if defined( BRDO_WRT_SECURITY_MGR_FF )
@@ -134,7 +133,7 @@ xmlNode* TraverseNextNode( xmlNode* n )
 // ============================================================================
 //
 
-void CWidgetRegistry::NotifyWidgetAltered()
+static void NotifyWidgetAltered()
     {
     const TUid KMyPropertyCat = { 0x10282E5A };
     enum TMyPropertyKeys { EMyPropertyAltered = 110 };
@@ -184,14 +183,13 @@ CWidgetRegistry::CWidgetRegistry( RFs& aFs ):
 CWidgetRegistry::~CWidgetRegistry()
     {
     iEntries.ResetAndDestroy();
-    iOldEntries.ResetAndDestroy();
     iUsedUids.Close();
     // iFs not owned
     iAppArch.Close();
     delete iInstaller;
     iLangDirList.ResetAndDestroy();
-    delete iMMCHandler;
     delete iXmlProcessor;
+	delete iApaAppListNotifier;
     iFs.Close();
     LOG_DESTRUCT;
     }
@@ -252,8 +250,7 @@ void CWidgetRegistry::ConstructL()
     LOG1( "ConstructL internalize done, registry count %d",
               iEntries.Count() );
     LOG_CLOSE;
-    iMMCHandler = CWidgetMMCHandler::NewL( *this, iFs );
-    iMMCHandler->Start();
+    iApaAppListNotifier = CApaAppListNotifier::NewL(this,CActive::EPriorityStandard);
     }
 
 // ============================================================================
@@ -377,29 +374,6 @@ TInt CWidgetRegistry::GetWidgetEntry(
     for(TInt i = 0;i < iEntries.Count();i++)
         {
         CWidgetEntry* entry = iEntries[i];
-        if ( TUid::Uid( (*entry)[EUid] ) == aUid )
-            {
-            aEntry = entry;
-            return i;
-            }
-        }
-    return -1;
-    }
-
-// ============================================================================
-// CWidgetRegistry::GetWidgetOldEntry()
-// Get the widget entry from iOldEntrys array
-//
-// @since 3.1
-// ============================================================================
-//
-TInt CWidgetRegistry::GetWidgetOldEntry(
-    const TUid& aUid,
-    CWidgetEntry*& aEntry) const
-    {
-    for(TInt i = 0;i < iOldEntries.Count();i++)
-        {
-        CWidgetEntry* entry = iOldEntries[i];
         if ( TUid::Uid( (*entry)[EUid] ) == aUid )
             {
             aEntry = entry;
@@ -553,15 +527,9 @@ void CWidgetRegistry::InternalizeL( TBool doConsistency, // in param
     // internal dirty flag, will be copied to arg dirty flag at
     // end if no leave occurs
     TBool dirtyFlag = EFalse;
-    
-    // Copy the entries so we are able to use them later
-    // iOldEntries owns the data and is responcible to ResetAndDestroy()
-    for ( TInt i = 0; i < iEntries.Count(); i++ )
-        {
-        iOldEntries.Append( iEntries[i] );
-        }
-    // Only reset here as the iOldEntries owns the data
-    iEntries.Reset();
+
+    // empty the registry
+    iEntries.ResetAndDestroy();
     iUsedUids.Reset();
 
     CleanupClosePushL( appArchList );
@@ -714,8 +682,6 @@ void CWidgetRegistry::InternalizeL( TBool doConsistency, // in param
     CleanupStack::PopAndDestroy( 2, &appArchList );//appArchListFlags, appArchList
 
     aDirtyFlag = dirtyFlag;
-    // Reset and Destroy entries in iOldEntries array
-    iOldEntries.ResetAndDestroy();
     LOG1( "Internalize done, dirty flag %d", (TInt)dirtyFlag );
     LOG_CLOSE;
     }
@@ -746,15 +712,15 @@ void CWidgetRegistry::InternalizeBinaryL( const TDesC& aFileName,
     readStream.Attach( file );
 
     TInt error = KErrNone;
-    TInt entryCount = 0,errorCount =0;
+    TInt entryCount = 0;
     TRAP( error, entryCount = readStream.ReadInt32L() );
     // TODO should limit entryCount to something like 1024
     // for each entry in the registry file
     for ( TInt i = 0 ; i < entryCount; i++ )
         {
         CWidgetEntry* entry = CWidgetEntry::NewL();
-        // push as delete entry so if we leave it will be handled
-        CleanupDeletePushL( entry );
+        CleanupStack::PushL( entry );
+
         // extract one entry
         TRAP( error,
               entry->InternalizeBinaryL( readStream ) );
@@ -798,12 +764,6 @@ void CWidgetRegistry::InternalizeBinaryL( const TDesC& aFileName,
                               uidInt, uidInt );
                     }
                 }
-            else
-                {
-                // Pop and delete the un-needed entry so it is not left behind.
-                errorCount++; 
-                CleanupStack::PopAndDestroy( entry );                
-                }
             }
         else
             {
@@ -813,10 +773,6 @@ void CWidgetRegistry::InternalizeBinaryL( const TDesC& aFileName,
         } // for
 
     CleanupStack::PopAndDestroy( 2, &file ); // readStream, file
-    if ( errorCount != 0 )
-        {
-        User::Leave(KErrGeneral);
-        }
     }
 
 // ============================================================================
@@ -911,16 +867,7 @@ void CWidgetRegistry::InternalizeXmlL( const TDesC& aFileName,
                                                   aDirtyFlag );
                         }
                     if ( NULL != entry )
-                        { 
-                        CWidgetEntry* entry1 = NULL;
-                        TInt uid = (*entry)[EUid];
-                        TInt pos  = GetWidgetOldEntry( TUid::Uid( uid ), entry1 );
-                        if ( pos != -1 )
-                            {
-                            entry->SetActive((iOldEntries[pos]->ActiveL()));
-                            entry->SetFullView((iOldEntries[pos]->GetFullViewState()));
-                            entry->SetMiniView((iOldEntries[pos]->GetMiniViewState()));
-                            }
+                        {
                         TRAP( error, InsertL( entry ) );
                         if ( KErrNone != error )
                             {
@@ -2296,5 +2243,25 @@ void CWidgetRegistry::AppArchListConsistency( const RArray<TUid>& aAppArchList,
             }
         }
     LOG( "AppArchListConsistency done" );
+    }
+
+void CWidgetRegistry::HandleAppListEvent(TInt aEvent)
+    {
+    TBool dirtyFlag = EFalse;
+    TInt parseError = KErrNone;
+    // Assume usual case and things are consistent
+    // and the registry entry file can be parsed and used.
+    TRAPD( error, InternalizeL( EFalse,
+                                EFalse,
+                                dirtyFlag,
+                                parseError ) );
+    if ( KErrNone == error )
+        {
+        // internalize consistency enforcement may have altered registry
+        if ( dirtyFlag )
+            {
+            TRAP_IGNORE( ExternalizeL(); );
+            }
+        }
     }
 // End of File

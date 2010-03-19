@@ -20,7 +20,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <brctlinterface.h>
+#include "BrCtlInterface.h"
 #include "WidgetCallbacks.h"
 #include "WidgetEngineCallbacks.h"
 

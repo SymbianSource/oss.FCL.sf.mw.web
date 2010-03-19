@@ -15,7 +15,7 @@
 *
 */
 
-#include <ecom/registryinfo.rh>
+#include <RegistryInfo.rh>
 #include <oommonitorplugin.hrh>
 
 RESOURCE REGISTRY_INFO theInfo

@@ -15,15 +15,20 @@
 *
 */
 
+
+
 #ifndef MULTIPARTPARSER_H
 #define MULTIPARTPARSER_H
 
 //  INCLUDES
-#include <bodypart.h>
+#include "BodyPart.h"
+
 
 //  CONSTANTS
 
+
 // DATA TYPES
+
 
 // FORWARD DECLARATIONS
 class CBodyPart;

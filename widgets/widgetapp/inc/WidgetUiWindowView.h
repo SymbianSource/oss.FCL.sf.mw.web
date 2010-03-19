@@ -21,7 +21,7 @@
 
 //  INCLUDES
 #include <aknview.h>
-#include <brctlinterface.h>
+#include <BrCtlInterface.h>
 
 // CONSTANTS
 

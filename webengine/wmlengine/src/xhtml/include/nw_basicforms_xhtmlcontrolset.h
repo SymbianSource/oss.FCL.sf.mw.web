@@ -20,7 +20,7 @@
 #define NW_XHTML_XHTMLCONTROLSET_H
 
 #include "nw_object_dynamic.h"
-#include <nw_dom_node.h>
+#include "nw_dom_node.h"
 #include "nw_adt_dynamicvector.h"
 #include "BrsrStatusCodes.h"
 

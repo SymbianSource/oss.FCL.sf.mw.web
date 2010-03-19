@@ -15,6 +15,7 @@
 *
 */
 
+
 #include <../bidi.h>
 #include "SettingsContainer.h"
 #include "WebView.h"
@@ -30,7 +31,7 @@
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
 #include "HistoryInterface.h"
-#include <brctldefs.h>
+#include "brctldefs.h"
 #include "WebDocumentLoader.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -142,10 +143,7 @@ void SettingsContainer::updatePageSetting(TBrCtlDefs::TBrCtlSettings setting)
             break;
         case TBrCtlDefs::ESettingsCurrentZoomLevelIndex:
             m_webView->setZoomLevel(brctlSettings[setting]);
-            break;            
-        case TBrCtlDefs::ESettingsAutoRefresh:
-            brctlSetting(TBrCtlDefs::ESettingsAutoRefresh);
-            break;        
+            break;
     }
 }
 

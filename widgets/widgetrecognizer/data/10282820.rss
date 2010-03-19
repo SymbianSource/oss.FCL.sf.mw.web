@@ -16,7 +16,7 @@
 */
 
 
-#include <ecom/registryinfo.rh>
+#include <RegistryInfo.rh>
 RESOURCE REGISTRY_INFO r_registry
 {
 	dll_uid = 0x10282820; 	// Should match the name of this file

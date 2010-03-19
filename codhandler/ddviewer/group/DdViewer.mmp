@@ -16,10 +16,9 @@
 *      
 *
 */
-
 #include <platform_paths.hrh>
 #include <data_caging_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 #include "../../CodEng/inc/CodDefs.h"
 
 TARGET          DdViewer.exe
@@ -44,10 +43,10 @@ LANGUAGE_IDS
 #endif
 END
 
-USERINCLUDE   ../../CodEng/inc
-USERINCLUDE   ../../CodUi/inc
-
+SYSTEMINCLUDE   ../../CodEng/inc
+SYSTEMINCLUDE   ../../CodUi/inc
 MW_LAYER_SYSTEMINCLUDE
+
 
 LIBRARY         euser.lib
 LIBRARY         eikcore.lib

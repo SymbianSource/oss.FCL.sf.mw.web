@@ -46,21 +46,13 @@ enum TDownloadsListCommands
     };
 
 
-#define KUiLibMaxDefAttrLength 32 // See KMaxDefAttrLength in httpdownloadmgrcommon.h!
+#define KUiLibMaxDefAttrLength 32 // See KMaxDefAttrLength in HttpDownloadMgrCommon.h!
 
 enum TDMULAIWMENUIDs
     {
     EAIWPluginMenu  	=  0x6025,
     EAIWPluginSubMenu 	=  0x7000
     };
-
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-enum TAiwCommandId    // pls dont modify these values.
-    {
-    EAiwCmdRingtone = 0x6025,
-    EAiwCmdContact = 0x6026
-    };
-#endif
 
 #endif /* DOWNLOADMGRUILIB_HRH */
 

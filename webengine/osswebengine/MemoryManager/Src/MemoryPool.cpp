@@ -28,10 +28,6 @@
 #include "SymbianDlHeap.h"
 #include <OOMMonitorSession.h>
 #include <hal.h>
-#include <avkon.hrh>
-#include <avkon.rsg>
-#include <StringLoader.h>
-#include <WebKit.rsg>
 
 // CONSTANTS
 
@@ -465,10 +461,7 @@ TUint CNewSymbianHeapPool::FreeMemory(TFreeMem& /*aFree*/ )
 //-----------------------------------------------------------------------------
 TAny* CNewSymbianHeapPool::DoAlloc( TUint aSize )
     {
-    TAny *p = iAlloc->Alloc( aSize );
-    if (!p)
-        ShowOOMDialog();
-    return p;
+    return iAlloc->Alloc( aSize );
     }
 
 //-----------------------------------------------------------------------------
@@ -484,7 +477,6 @@ TAny* CNewSymbianHeapPool::ReAllocate( TAny* aPtr, TUint aSize )
     // check memory manager status
     if( !p || iMemStatus & ERescueOOM )
         {
-        ShowOOMDialog();
         if( !iIsCollecting )
             {
             CollectMemory();
@@ -559,8 +551,7 @@ TBool CNewSymbianHeapPool::PreCheck(TUint aTotalSize, TUint aMaxBufSize,
 	if(req > 0)
 		return ETrue;
 	
-    // We haven't got the required amount free yet, pop an OOM dialog and then try the browser heap.
-    ShowOOMDialog();
+	// We haven't got the required amount free yet, try the browser heap.
 	CollectMemory(aTotalSize);
 	// ask the system how much is free now...
 	HAL::Get(HALData::EMemoryRAMFree, systemFreeMemory);
@@ -619,9 +610,6 @@ void CNewSymbianHeapPool::RestoreRescueBuffer()
 
 CNewSymbianHeapPool::CNewSymbianHeapPool() : CMemoryPool()
 	{
-    isInitted = EFalse;
-    iOOMErrorDialog = 0;
-    iOOMMessage = 0;
 	}
 
 CNewSymbianHeapPool::~CNewSymbianHeapPool()
@@ -633,7 +621,7 @@ CNewSymbianHeapPool::~CNewSymbianHeapPool()
 	}
 
 #ifdef __WINSCW__
-const TInt KMaxHeapSize = 0x1000000; // 32MB, on emulator
+const TInt KMaxHeapSize = 0x2000000; // 32MB, on emulator
 #else
 const TInt KMaxHeapSize = 0x4000000; // 64MB, on hardware
 #endif
@@ -674,55 +662,6 @@ TBool CNewSymbianHeapPool::Create()
 	
 	return CMemoryPool::Create();
 	}
-
-/*
- * Initialize the OOM dialog and localized message resource
- * This should be called as soon in the startup process as possible
- * (unfortunately it can't be called until resources are already loaded)
- * Note: apps are responsible for showing their own oom dialog; there
- * is no system one AFAIK; at least we can re-use the oom localized
- * resource message from elsewhere
- */
-void CNewSymbianHeapPool::InitOOMDialog()
-    {
-    if (!isInitted)
-        {
-        isInitted = ETrue;
-        iOOMErrorDialog = CAknGlobalNote::NewL();
-        iOOMErrorDialog->SetSoftkeys(R_AVKON_SOFTKEYS_OK_EMPTY);
-        iOOMMessage = StringLoader::LoadL(R_QTN_BROWSER_DIALOG_OOM);
-        iOOMDisplayed = EFalse;
-        }
-    }
-
-void CNewSymbianHeapPool::ShowOOMDialog()
-    {
-    // Don't show it if we did once already
-    if (iOOMDisplayed)
-        return;
-
-    // If we got OOM, show a dialog (if the dialog was initted properly to begin with)
-    if (iOOMErrorDialog)
-        {
-        // If we couldn't load the message resource when we first initted, 
-        // try again now; this shouldn't ever happen
-        if (!iOOMMessage)
-            {
-            iOOMMessage = StringLoader::LoadL(R_QTN_BROWSER_DIALOG_OOM);
-            }
-        // If we have no dialog or message we unfortunately cannot display it!
-        if (iOOMMessage) 
-            {
-            iOOMErrorDialog->ShowNoteL(EAknGlobalWarningNote,iOOMMessage->Des());
-            iOOMDisplayed = ETrue;
-            }
-        }
-    }
-
-void CNewSymbianHeapPool::ResetOOMDialogDisplayed()
-    {
-    iOOMDisplayed = EFalse;
-    }
 
 #ifdef OOM_LOGGING   
 void CNewSymbianHeapPool::DumpHeapLogs()

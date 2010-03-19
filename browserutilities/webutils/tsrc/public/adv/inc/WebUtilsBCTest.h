@@ -23,7 +23,7 @@
 // INCLUDES
 #include "StifTestModule.h"
 #include <StifLogger.h>
-#include <cuseragent.h>
+#include <CUserAgent.h>
 
 // CONSTANTS
 //const ?type ?constant_var = ?constant;

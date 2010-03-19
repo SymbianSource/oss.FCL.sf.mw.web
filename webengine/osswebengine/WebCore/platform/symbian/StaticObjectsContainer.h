@@ -100,7 +100,6 @@ public:
     const Vector<CBrCtl*>& activeBrowserControls() const;
     void setFullScreenMode(bool mode);
     bool fullScreenMode(void);
-    void setIconDatabaseEnabled(bool enabled);
     
 private:
     static StaticObjectsContainer* gInstance;

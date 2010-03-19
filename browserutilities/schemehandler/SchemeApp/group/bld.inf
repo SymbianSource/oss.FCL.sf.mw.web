@@ -18,7 +18,7 @@
 */
 
 #include <platform_paths.hrh>
-#include "../../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
@@ -26,7 +26,7 @@ DEFAULT
 PRJ_EXPORTS
 ../../rom/SchemeHandler.iby  CORE_MW_LAYER_IBY_EXPORT_PATH(SchemeHandler.iby)
 ../../rom/SchemeHandlerResources.iby  LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(SchemeHandlerResources.iby)
-../loc/schemeapp.loc  MW_LAYER_LOC_EXPORT_PATH(schemeapp.loc)
+../loc/SchemeApp.loc  MW_LAYER_LOC_EXPORT_PATH(SchemeApp.loc)
 
 #ifdef __SERIES60_32__
 

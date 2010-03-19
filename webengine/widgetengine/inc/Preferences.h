@@ -167,11 +167,7 @@ public:
     * Remove preference for a particular key
     */
     void removePreferenceL( const TDesC& akey, const TDesC& avalue);   
-    void externalizeL(RWriteStream& aStream) const;
-
-    void internalizeL(RReadStream& aStream);
-      
-    void deleteAllPrefFiles();
+    
 
 private:
     RPtrHashMap<TDesC,PrefElement>* m_preferences;                

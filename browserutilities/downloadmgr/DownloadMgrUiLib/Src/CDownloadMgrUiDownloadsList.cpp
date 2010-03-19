@@ -15,11 +15,14 @@
 *
 */
 
+
+
 // INCLUDE FILES
-#include    <browser_platform_variant.hrh>
-#include    <cdownloadmgruidownloadslist.h>
-#include    <cdownloadmgruilibregistry.h>
-#include    <cdownloadmgruidownloadmenu.h>
+//#include <platform/mw/Browser_platform_variant.hrh>
+#include    <Browser_platform_variant.hrh>
+#include    "CDownloadMgrUiDownloadsList.h"
+#include    "CDownloadMgrUiLibRegistry.h"
+#include    "CDownloadMgrUiDownloadMenu.h"
 #include    "CDownloadsListArray.h"
 #include    "CDownloadsListDlg.h"
 #include    "AsyncEventHandlerArray.h"
@@ -39,6 +42,9 @@
 #include    <AknServerApp.h>
 #include    <UriUtils.h>
 
+// following line is temporary: AVKON dependency removal
+#undef BRDO_APP_GALLERY_SUPPORTED_FF
+
 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MGXFileManagerFactory.h>
 #include    <CMGXFileManager.h>
@@ -47,8 +53,8 @@
 
 #include    <DocumentHandler.h>
 #include    "bautils.h"
-#include    <browseruisdkcrkeys.h>
-#include    <aknnotewrappers.h> 
+#include    <BrowserUiSDKCRKeys.h>
+#include    <aknnotewrappers.h>
 #include    <StringLoader.h>
 #include    <apgtask.h>
 
@@ -68,11 +74,11 @@ class CDownloadsListExecuter;
 
 // LOCAL FUNCTION PROTOTYPES
 
-/** 
+/**
 * Find the given download in the model and give back the ui data and the index.
 * It returns 0, if the given download is not found in aListModel and aIndex is set to KErrNotFound!
 */
-inline TDownloadUiData* FindDlUiData( CDownloadsListArray& aListModel, 
+inline TDownloadUiData* FindDlUiData( CDownloadsListArray& aListModel,
                                        RHttpDownload& aDownload,
                                        TInt& aIndex );
 
@@ -87,13 +93,13 @@ NONSHARABLE_CLASS( CDownloadsListExtension ) : public CBase,
                                                public MDownloadHandlerObserver
     {
     public:  // Constructors and destructor
-        
+
         /**
         * Two-phased constructor.
         */
         static CDownloadsListExtension* NewL
              ( CDownloadMgrUiDownloadsList& aDownloadsList );
-        
+
         /**
         * Destructor.
         */
@@ -154,7 +160,7 @@ NONSHARABLE_CLASS( CDownloadsListExtension ) : public CBase,
         * Start a progress info timer update.
         */
 		void StartProgressTimer();
-        
+
     protected: // Constructors
 
         /**
@@ -187,7 +193,7 @@ NONSHARABLE_CLASS( CDownloadsListExtension ) : public CBase,
 		/*
 		* callback function for the UpdateProgressInfo
 		*/
-		static TInt		UpdateProgressInfoCallback(TAny* aPtr); 
+		static TInt		UpdateProgressInfoCallback(TAny* aPtr);
     };
 
 
@@ -195,53 +201,53 @@ NONSHARABLE_CLASS( CDownloadsListExtension ) : public CBase,
 NONSHARABLE_CLASS( CDownloadsListExecuter ) : public CActive
     {
     public:  // Constructors and destructor
-        
+
         /**
         * Two-phased constructor.
         */
-        static CDownloadsListExecuter* NewL( CDownloadMgrUiDownloadsList& aDownloadsList, 
+        static CDownloadsListExecuter* NewL( CDownloadMgrUiDownloadsList& aDownloadsList,
                                              CDownloadsListExecuter** aReferer );
-        
+
         /**
         * Two-phased constructor.
         */
-        static CDownloadsListExecuter* NewL( CDownloadMgrUiDownloadsList& aDownloadsList, 
-                                             CDownloadsListExecuter** aReferer, 
+        static CDownloadsListExecuter* NewL( CDownloadMgrUiDownloadsList& aDownloadsList,
+                                             CDownloadsListExecuter** aReferer,
                                              RHttpDownload& aHighlightDl );
-        
+
         /**
         * Destructor.
         */
         virtual ~CDownloadsListExecuter();
 
     public: // New
-    
+
         /**
         * Invoke RunL.
         */
         void Start();
-        
+
         /**
         * Check if the dialog already exists.
         */
         TBool DialogExists() const;
-        
+
         /**
         * Get a reference. Panics if null!
         */
         CDownloadsListDlg& Dialog() const;
-        
+
         /**
         * Execute the dialog now (wait dialog).
         */
         void ExecuteLD();
-        
+
     private: // Constructors
 
         /**
         * C++ default constructor.
         */
-        CDownloadsListExecuter( CDownloadMgrUiDownloadsList& aDownloadsList, 
+        CDownloadsListExecuter( CDownloadMgrUiDownloadsList& aDownloadsList,
                                 CDownloadsListExecuter** aReferer, RHttpDownload* aHighlightDl );
 
         /**
@@ -264,19 +270,19 @@ NONSHARABLE_CLASS( CDownloadsListExecuter ) : public CActive
         RHttpDownload* iHighlightDl; ///< Not owned.
         TBool iProgressiveDownload;
     };
-    
-    
-    
+
+
+
 // -----------------------------------------------------------------------------
 // CDownloadsListExecuter::CDownloadsListExecuter
 // -----------------------------------------------------------------------------
 //
 CDownloadsListExecuter::CDownloadsListExecuter
-    ( CDownloadMgrUiDownloadsList& aDownloadsList, 
-      CDownloadsListExecuter** aReferer, 
-      RHttpDownload* aHighlightDl ) 
+    ( CDownloadMgrUiDownloadsList& aDownloadsList,
+      CDownloadsListExecuter** aReferer,
+      RHttpDownload* aHighlightDl )
 :   CActive( CActive::EPriorityHigh ), // EPriorityHigh to be visible ASAP.
-    iDownloadsList( aDownloadsList ), 
+    iDownloadsList( aDownloadsList ),
     iReferer( aReferer ),
     iHighlightDl( aHighlightDl )
     {
@@ -299,7 +305,7 @@ void CDownloadsListExecuter::ConstructL()
 CDownloadsListExecuter* CDownloadsListExecuter::NewL
     ( CDownloadMgrUiDownloadsList& aDownloadsList, CDownloadsListExecuter** aReferer )
     {
-    CDownloadsListExecuter* self = 
+    CDownloadsListExecuter* self =
         new (ELeave) CDownloadsListExecuter( aDownloadsList, aReferer, 0 );
     CleanupStack::PushL( self );
     self->ConstructL();
@@ -312,11 +318,11 @@ CDownloadsListExecuter* CDownloadsListExecuter::NewL
 // -----------------------------------------------------------------------------
 //
 CDownloadsListExecuter* CDownloadsListExecuter::NewL
-    ( CDownloadMgrUiDownloadsList& aDownloadsList, 
-      CDownloadsListExecuter** aReferer, 
+    ( CDownloadMgrUiDownloadsList& aDownloadsList,
+      CDownloadsListExecuter** aReferer,
       RHttpDownload& aHighlightDl )
     {
-    CDownloadsListExecuter* self = 
+    CDownloadsListExecuter* self =
         new (ELeave) CDownloadsListExecuter
             ( aDownloadsList, aReferer, &aHighlightDl );
     CleanupStack::PushL( self );
@@ -380,7 +386,7 @@ CDownloadsListDlg& CDownloadsListExecuter::Dialog() const
 void CDownloadsListExecuter::ExecuteLD()
     {
     CLOG_ENTERFN("CDownloadsListExecuter::ExecuteLD");
-    
+
     delete iDialog;
     iDialog = NULL;
     iDialog = CDownloadsListDlg::NewL( iDownloadsList, iProgressiveDownload );
@@ -391,7 +397,7 @@ void CDownloadsListExecuter::ExecuteLD()
         {
         iDialog->HighlightDownload( *iHighlightDl );
         }
-        
+
     // Execute wait dialog... While it is running, 'this' can be deleted:
     TBool deleted( EFalse );
     iDeleted = &deleted;
@@ -408,9 +414,9 @@ void CDownloadsListExecuter::ExecuteLD()
                 {
                 delete iDialog;
                 }
-           
+
             iDownloadsList.SetDownloadListHide( EFalse );
-      
+
             iDialog = NULL;
             // Reset owner pointer to this object.
        	    if ( iReferer )
@@ -421,7 +427,7 @@ void CDownloadsListExecuter::ExecuteLD()
         // and delete this
         delete this;
         }
-        
+
     CLOG_LEAVEFN("CDownloadsListExecuter::ExecuteLD");
     }
 
@@ -453,18 +459,18 @@ void CDownloadsListExecuter::RunL()
 TInt CDownloadsListExecuter::RunError(TInt /*aError*/)
     {
     CLOG_ENTERFN("CDownloadsListExecuter::RunError");
-    
+
     // Reset owner pointer to this object.
     if ( iReferer )
         {
         *iReferer = 0;
         }
     delete this;
-    
+
     CLOG_LEAVEFN("CDownloadsListExecuter::RunError");
     return 0;
     }
-        
+
 // ============================ MEMBER FUNCTIONS ===============================
 
 // -----------------------------------------------------------------------------
@@ -472,7 +478,7 @@ TInt CDownloadsListExecuter::RunError(TInt /*aError*/)
 // -----------------------------------------------------------------------------
 //
 CDownloadsListExtension::CDownloadsListExtension
-    ( CDownloadMgrUiDownloadsList& aDownloadsList ) 
+    ( CDownloadMgrUiDownloadsList& aDownloadsList )
 :   iDownloadsList( aDownloadsList ),
     iIapId( 0 ),
     iIapIdGotAndSet( ETrue )
@@ -496,7 +502,7 @@ void CDownloadsListExtension::ConstructL()
 CDownloadsListExtension* CDownloadsListExtension::NewL
     ( CDownloadMgrUiDownloadsList& aDownloadsList )
     {
-    CDownloadsListExtension* self = 
+    CDownloadsListExtension* self =
         new (ELeave) CDownloadsListExtension( aDownloadsList );
     CleanupStack::PushL( self );
     self->ConstructL();
@@ -575,7 +581,7 @@ void CDownloadsListExtension::DisplayDownloadsListL()
         }
     else
         {
-        iDownloadsListExecuter = 
+        iDownloadsListExecuter =
             CDownloadsListExecuter::NewL( iDownloadsList, &iDownloadsListExecuter );
         iDownloadsListExecuter->ExecuteLD();
         }
@@ -598,7 +604,7 @@ void CDownloadsListExtension::DisplayDownloadsListAsynchronouslyL()
         }
     else
         {
-        iDownloadsListExecuter = 
+        iDownloadsListExecuter =
             CDownloadsListExecuter::NewL( iDownloadsList, &iDownloadsListExecuter );
         iDownloadsListExecuter->Start();
         }
@@ -684,7 +690,7 @@ void CDownloadsListExtension::StartProgressTimer()
 {
 	iUpdateProgressInfoTimer->Start(
 		0,
-		KUpdateProgressInfoInterval,  
+		KUpdateProgressInfoInterval,
 		TCallBack( UpdateProgressInfoCallback, this ) );
 }
 
@@ -745,12 +751,12 @@ void CDownloadMgrUiDownloadsList::ConstructL()
 	iProgressiveDownload = EFalse;
 	iRegistryModel.DownloadMgr().GetBoolAttribute(EDlMgrProgressiveDownload, iProgressiveDownload);
     CLOG_LEAVEFN("CDownloadMgrUiDownloadsList::ConstructL");
-    
+
     //whether the platform supports gallery app or not; defined in browser_platfrom_variant.hrh
     #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
     iPlatformSupportsGallery = ETrue;
     #endif
-  
+
     }
 
 // -----------------------------------------------------------------------------
@@ -760,7 +766,7 @@ void CDownloadMgrUiDownloadsList::ConstructL()
 CDownloadMgrUiDownloadsList* CDownloadMgrUiDownloadsList::NewL
 ( CDownloadMgrUiLibRegistry& aRegistryModel )
     {
-    CDownloadMgrUiDownloadsList* self = 
+    CDownloadMgrUiDownloadsList* self =
         new ( ELeave ) CDownloadMgrUiDownloadsList( aRegistryModel );
     CleanupStack::PushL( self );
     self->ConstructL();
@@ -793,7 +799,7 @@ CDownloadMgrUiDownloadsList::~CDownloadMgrUiDownloadsList()
     delete iExtension;
     iExtension = 0;
     CLOG_WRITE(" iExtension");
-    delete iAIWServiceHandler; 
+    delete iAIWServiceHandler;
     CLOG_LEAVEFN("CDownloadMgrUiDownloadsList::~CDownloadMgrUiDownloadsList");
     }
 
@@ -801,7 +807,7 @@ CDownloadMgrUiDownloadsList::~CDownloadMgrUiDownloadsList()
 // CDownloadMgrUiDownloadsList::DownloadMenu
 // -----------------------------------------------------------------------------
 //
-EXPORT_C 
+EXPORT_C
 CDownloadMgrUiDownloadMenu& CDownloadMgrUiDownloadsList::DownloadMenu() const
     {
     __ASSERT_DEBUG( iDownloadMenu, Panic( EUiLibPanNull ) );
@@ -812,18 +818,18 @@ CDownloadMgrUiDownloadMenu& CDownloadMgrUiDownloadsList::DownloadMenu() const
 // CDownloadMgrUiDownloadsList::DisplayDownloadsListL
 // -----------------------------------------------------------------------------
 //
-EXPORT_C 
+EXPORT_C
 void CDownloadMgrUiDownloadsList::DisplayDownloadsListL()
     {
     CLOG_ENTERFN("CDownloadMgrUiDownloadsList::DisplayDownloadsListL");
-    
+
     long noMediaDls = 0;
     iRegistryModel.DownloadMgr().GetIntAttribute( EDlMgrNoMediaDls, noMediaDls );
     TInt dlCount = iRegistryModel.DownloadMgr().CurrentDownloads().Count();
-    
+
     if (dlCount > noMediaDls)
     	iExtension->DisplayDownloadsListAsynchronouslyL();
-    
+
     CLOG_LEAVEFN("CDownloadMgrUiDownloadsList::DisplayDownloadsListL");
     }
 
@@ -843,7 +849,7 @@ void CDownloadMgrUiDownloadsList::DisplayDownloadsListL
 // CDownloadMgrUiDownloadsList::CancelDisplayingDownloadsList
 // -----------------------------------------------------------------------------
 //
-EXPORT_C 
+EXPORT_C
 void CDownloadMgrUiDownloadsList::CancelDisplayingDownloadsList()
     {
     CLOG_ENTERFN("CDownloadMgrUiDownloadsList::CancelDisplayingDownloadsList");
@@ -858,7 +864,7 @@ void CDownloadMgrUiDownloadsList::CancelDisplayingDownloadsList()
 // CDownloadMgrUiDownloadsList::IsVisible
 // -----------------------------------------------------------------------------
 //
-EXPORT_C 
+EXPORT_C
 TBool CDownloadMgrUiDownloadsList::IsVisible() const
     {
     return iExtension->IsDialogVisible();
@@ -868,61 +874,61 @@ TBool CDownloadMgrUiDownloadsList::IsVisible() const
 // CDownloadMgrUiDownloadsList::Count
 // -----------------------------------------------------------------------------
 //
-EXPORT_C 
+EXPORT_C
 TInt CDownloadMgrUiDownloadsList::Count() const
     {
     return ((iListModel!=NULL)?iListModel->Count():0);
     }
 
 // Not yet supported functions
-EXPORT_C 
+EXPORT_C
 void CDownloadMgrUiDownloadsList::GetIntAttributeL( const TUint /*aAttribute*/, TInt32& /*aValue*/ )
     {
     User::Leave( KErrNotSupported );
     }
-    
-EXPORT_C 
+
+EXPORT_C
 void CDownloadMgrUiDownloadsList::GetBoolAttributeL( const TUint /*aAttribute*/, TBool& /*aValue*/ )
     {
     User::Leave( KErrNotSupported );
     }
-    
-EXPORT_C 
+
+EXPORT_C
 void CDownloadMgrUiDownloadsList::GetStringAttributeL( const TUint /*aAttribute*/, TDes16& /*aValue*/  )
     {
     User::Leave( KErrNotSupported );
     }
-    
-EXPORT_C 
+
+EXPORT_C
 void CDownloadMgrUiDownloadsList::GetStringAttributeL( const TUint /*aAttribute*/, TDes8& /*aValue*/  )
     {
     User::Leave( KErrNotSupported );
     }
-    
-EXPORT_C 
+
+EXPORT_C
 void CDownloadMgrUiDownloadsList::SetIntAttributeL( const TUint /*aAttribute*/, TInt32 /*aValue*/ )
     {
     User::Leave( KErrNotSupported );
     }
-    
-EXPORT_C 
+
+EXPORT_C
 void CDownloadMgrUiDownloadsList::SetBoolAttributeL( const TUint /*aAttribute*/, TBool /*aValue*/ )
     {
     User::Leave( KErrNotSupported );
     }
-    
-EXPORT_C 
+
+EXPORT_C
 void CDownloadMgrUiDownloadsList::SetStringAttributeL( const TUint /*aAttribute*/, const TDesC16& /*aValue*/ )
     {
     User::Leave( KErrNotSupported );
     }
-    
-EXPORT_C 
+
+EXPORT_C
 void CDownloadMgrUiDownloadsList::SetStringAttributeL( const TUint /*aAttribute*/, const TDesC8& /*aValue*/ )
     {
     User::Leave( KErrNotSupported );
     }
-    
+
 // -----------------------------------------------------------------------------
 // CDownloadMgrUiDownloadsList::AddDownloadsToListModelL
 // -----------------------------------------------------------------------------
@@ -933,9 +939,9 @@ void CDownloadMgrUiDownloadsList::AddDownloadsToListModelL
     TInt downloads = aDownloadMgr.CurrentDownloads().Count();
     for ( TInt i = 0; i < downloads; ++i )
         {
-        RHttpDownload* download = 
+        RHttpDownload* download =
             (RHttpDownload*)(aDownloadMgr.CurrentDownloads().At(i));
-        // Extract the necessary information from 'download' and 
+        // Extract the necessary information from 'download' and
         // add a list box item.
         (void)AddDownloadToListModelL( aLBModel, *download );
         }
@@ -943,7 +949,7 @@ void CDownloadMgrUiDownloadsList::AddDownloadsToListModelL
 
 // -----------------------------------------------------------------------------
 // CDownloadMgrUiDownloadsList::AddDownloadToListModelL
-// This is a very expensive method, so when updating list box items, 
+// This is a very expensive method, so when updating list box items,
 // call the less expensive 'update' methods!
 // -----------------------------------------------------------------------------
 //
@@ -961,7 +967,7 @@ TInt CDownloadMgrUiDownloadsList::AddDownloadToListModelL
         }
     else
         {
-        // Do not add the download to the list if the storage 
+        // Do not add the download to the list if the storage
         // media is not in the device.
         TBool noMedia( EFalse );
         User::LeaveIfError( aDownload.GetBoolAttribute
@@ -972,7 +978,7 @@ TInt CDownloadMgrUiDownloadsList::AddDownloadToListModelL
         User::LeaveIfError( aDownload.GetBoolAttribute
                           ( EDlAttrHidden, isHidden ) );
         CLOG_WRITE_FORMAT(" EDlAttrHidden: %d",isHidden);
-        
+
         if ( noMedia || isHidden )
             {
             // Do not add it to the list - hide it from the user.
@@ -985,13 +991,13 @@ TInt CDownloadMgrUiDownloadsList::AddDownloadToListModelL
             CleanupStack::PushL( dlData );
 
             TInt err(KErrNone);
-            
+
             //      Get progress info
             err = aDownload.GetIntAttribute
                 ( EDlAttrState, dlData->iDownloadState );
             CLOG_WRITE_FORMAT(" EDlAttrState err: %d",err);
             User::LeaveIfError( err );
-            
+
             //Changes for the bug JERI-7P8CF2
             //Changes made in the server side to fix the video center receiving unexpected events
             //Reassigning these events back to the changes done in server side
@@ -1015,22 +1021,22 @@ TInt CDownloadMgrUiDownloadsList::AddDownloadToListModelL
                 {
                 User::LeaveIfError( err );
                 }
-            
+
             // Number of media objects in download ( inalbum)?
             err = aDownload.GetIntAttribute
                 ( EDlAttrNumMediaObjects, dlData->iNumMediaObjects );
             CLOG_WRITE_FORMAT(" EDlAttrNumMediaObjects err: %d",err);
             User::LeaveIfError( err );
-            
+
             //      Get file name
-            // In case of album - if download is complete, query album name, 
-            // otherwise query track name                
+            // In case of album - if download is complete, query album name,
+            // otherwise query track name
             if ((dlData->iNumMediaObjects > 1) &&
                 (EHttpDlMultipleMOCompleted == dlData->iDownloadState))
                 {
                 err = aDownload.GetStringAttribute
                     ( EDlAttrAlbumName, dlData->iName );
-                CLOG_WRITE_FORMAT(" EDlAttrAlbumName err: %d",err);    
+                CLOG_WRITE_FORMAT(" EDlAttrAlbumName err: %d",err);
                 }
             else
                 {
@@ -1038,13 +1044,13 @@ TInt CDownloadMgrUiDownloadsList::AddDownloadToListModelL
                     ( EDlAttrName, dlData->iName );
                 CLOG_WRITE_FORMAT(" EDlAttrName err: %d",err);
                 }
-                
+
             if ( err != KErrNone && err != KErrNotFound )
                 {
                 User::LeaveIfError( err );
                 }
             CLOG_WRITE_FORMAT(" EDlAttrName: %S",&(dlData->iName));
-            
+
             // If download name is empty, use the file name got from URI
             if ( dlData->iName.Length() == 0 )
                 {
@@ -1108,24 +1114,24 @@ TInt CDownloadMgrUiDownloadsList::AddDownloadToListModelL
             User::LeaveIfError( aDownload.GetBoolAttribute
                 ( EDlAttrPausable, dlData->iPausable ) );
             CLOG_WRITE_FORMAT(" EDlAttrPausable: %d",dlData->iPausable);
-    
+
             // Is the download on an external/removable memory (like MMC)?
-            err = aDownload.GetIntAttribute
-                ( EDlAttrDestRemovable, dlData->iExternalMemoryStatus );
+            err = aDownload.GetBoolAttribute
+                ( EDlAttrDestRemovable, dlData->iIsOnExternalMemory );
             CLOG_WRITE_FORMAT(" EDlAttrDestRemovable err: %d",err);
             // 'err' is ignored.
-            CLOG_WRITE_FORMAT(" EDlAttrDestRemovable: %d",dlData->iExternalMemoryStatus);
+            CLOG_WRITE_FORMAT(" EDlAttrDestRemovable: %d",dlData->iIsOnExternalMemory);
 
             // Currently active media object's index (in album)?
             err = aDownload.GetIntAttribute
                 ( EDlAttrActiveDownload, dlData->iActiveMoIndex );
             CLOG_WRITE_FORMAT(" EDlAttrActiveDownload err: %d",err);
             User::LeaveIfError( err );
-    
-            // First add the handler app's icon to model, so that we then 
-            // know the index of it that can then be set in the item text, 
+
+            // First add the handler app's icon to model, so that we then
+            // know the index of it that can then be set in the item text,
             // which is then also added to the model.
-            dlData->iIconIndex = 
+            dlData->iIconIndex =
                 iListModel->AddHandlerAppIconL( dlData->iContentType );
             CLOG_WRITE(" AddHandlerAppIconL OK");
 
@@ -1174,7 +1180,7 @@ void CDownloadMgrUiDownloadsList::DeleteDownloadL( RHttpDownload& aDownload )
             else
                 {
                 iListModel->Delete( index );
-                              
+
                 // Update view
                 if ( iExtension->IsDialogVisible() )
                     {
@@ -1184,7 +1190,7 @@ void CDownloadMgrUiDownloadsList::DeleteDownloadL( RHttpDownload& aDownload )
                 }
             }
         }
-    
+
     CLOG_LEAVEFN("CDownloadMgrUiDownloadsList::DeleteDownloadL");
     }
 
@@ -1194,17 +1200,17 @@ void CDownloadMgrUiDownloadsList::DeleteDownloadL( RHttpDownload& aDownload )
 //
 TBool CDownloadMgrUiDownloadsList::IsOneProgressive()
    {
-   TBool anyOneProgress = EFalse; 
+   TBool anyOneProgress = EFalse;
    if (iListModel == NULL)
       {
-   	  return EFalse; 
+   	  return EFalse;
       }
-   else 
+   else
       {
-      TInt count = Count(); 
+      TInt count = Count();
       for ( TInt i = 0; i < count; ++i )
          {
-      	 RHttpDownload& download = iListModel->Download(i); 
+      	 RHttpDownload& download = iListModel->Download(i);
          TInt err = download.GetBoolAttribute( EDlAttrProgressive, anyOneProgress );
           // If there is a COD download and check if it is attached. Then set it as attached while resuming
          TBool isCodDownload;
@@ -1216,21 +1222,21 @@ TBool CDownloadMgrUiDownloadsList::IsOneProgressive()
          THttpProgressState state;
          if( anyOneProgress )
          	{
-         	download.GetIntAttribute(EDlAttrProgressState, (TInt32&)state);	
+         	download.GetIntAttribute(EDlAttrProgressState, (TInt32&)state);
          	if(state == EHttpProgContentFileMoved || state == EHttpProgContentFileMovedAndDestFNChanged )
          	    {
          	    anyOneProgress = 0;//once the move() has happened the progressive Download is finished
-         	    }                  //and we can  bring MP to foreground and start another PD 
-           	}	
+         	    }                  //and we can  bring MP to foreground and start another PD
+           	}
          CLOG_WRITE_FORMAT(" EDlAttrProgressive err: %d",err);
-         if ( anyOneProgress ) 
-            return ETrue;      	 
+         if ( anyOneProgress )
+            return ETrue;
          }
       }
-   return anyOneProgress; 
+   return anyOneProgress;
    }
 
-        
+
 // -----------------------------------------------------------------------------
 // CDownloadMgrUiDownloadsList::NewDownloadCreatedL
 // -----------------------------------------------------------------------------
@@ -1263,39 +1269,40 @@ void CDownloadMgrUiDownloadsList::UpdateProgressInfoL
         {
         // Create a local copy
         TDownloadUiData dlData = *dlDataPtr;
-        
+
         // Track changed? We need to change icon of new track
         TInt32 moIndex(0);
         User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrActiveDownload, moIndex ) );
         TBool activeIndexChanged = (dlData.iActiveMoIndex != moIndex);
-        
+
         // Update download state - this must always be done!
         dlData.iDownloadState = aEvent.iDownloadState;
 		dlData.iProgressState = aEvent.iProgressState;
 		dlData.iActiveMoIndex = moIndex;
         aDownload.GetStringAttribute( EDlAttrName, dlData.iName );
         // Permanent redirection changes the filename.
-        if ( aEvent.iProgressState == EHttpProgRedirectedPermanently || 
+        if ( aEvent.iProgressState == EHttpProgRedirectedPermanently ||
              aEvent.iProgressState == EHttpProgRedirectedTemporarily )
             {
             CLOG_WRITE(" Redirection");
             }
         else if ( aEvent.iProgressState == EHttpProgResponseHeaderReceived )
-                {
-                // Is the download on an external/removable memory (like MMC)?
-                // Return value is ignored.
-                aDownload.GetIntAttribute( EDlAttrDestRemovable, dlData.iExternalMemoryStatus );
-                CLOG_WRITE_FORMAT(" EDlAttrDestRemovable: %d",dlData.iExternalMemoryStatus);
-                }
+        	{
+            // Is the download on an external/removable memory (like MMC)?
+            aDownload.GetBoolAttribute
+                ( EDlAttrDestRemovable, dlData.iIsOnExternalMemory );
+            // Return value is ignored.
+            CLOG_WRITE_FORMAT(" EDlAttrDestRemovable: %d",dlData.iIsOnExternalMemory);
+        	}
         else if ( aEvent.iProgressState == EHttpProgDlNameChanged )
             {
             CLOG_WRITE(" EHttpProgDlNameChanged");
             }
-        
+
         if (( aEvent.iProgressState == EHttpProgContentTypeChanged ) || activeIndexChanged )
             {
             // Update handler application icon
-            // Also update the content type, because the handler application 
+            // Also update the content type, because the handler application
             // icon depends from this.
             CLOG_WRITE_FORMAT(" EHttpProgContentTypeChanged: ActiveIndex - %d",dlData.iActiveMoIndex);
             HBufC8* contentType = iUiUtils->ContentTypeL( aDownload, ETrue );
@@ -1315,9 +1322,9 @@ void CDownloadMgrUiDownloadsList::UpdateProgressInfoL
             dlData.iIconIndex = iListModel->AddHandlerAppIconL( dlData.iContentType );
             }
         // Update the progress info.
-        User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrDownloadedSize, 
+        User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrDownloadedSize,
                                                        dlData.iDownloadedSize ) );
-        User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrLength, 
+        User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrLength,
                                                        dlData.iFullSize ) );
         // Update the download ui data in the 'model'.
         iListModel->UpdateL( index, dlData );
@@ -1334,7 +1341,7 @@ void CDownloadMgrUiDownloadsList::DownloadPausedL
     ( RHttpDownload& aDownload, THttpDownloadEvent aEvent )
     {
     CLOG_ENTERFN("CDownloadMgrUiDownloadsList::DownloadPausedL");
-    
+
     __ASSERT_DEBUG( iExtension->IsDialogVisible(), Panic( EUiLibPanPausedNotVisible ) );
     // First find the current download in the model.
     TInt index(0);
@@ -1353,7 +1360,7 @@ void CDownloadMgrUiDownloadsList::DownloadPausedL
 		dlData.iProgressState = aEvent.iProgressState;
 		User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrActiveDownload, dlData.iActiveMoIndex ) );
 		aDownload.GetStringAttribute( EDlAttrName, dlData.iName );
-        // Here we have to initialize the full size, if the 
+        // Here we have to initialize the full size, if the
         // content-type header arrives!!
         if ( aEvent.iProgressState == EHttpContentTypeReceived )
             {
@@ -1363,7 +1370,7 @@ void CDownloadMgrUiDownloadsList::DownloadPausedL
                 User::LeaveIfError( err );
                 }
 
-            // Also update the content type, because the handler application 
+            // Also update the content type, because the handler application
             // icon depends from this.
             HBufC8* contentType = iUiUtils->ContentTypeL( aDownload, ETrue );
             // Not pushed to cleanup stack - unnecessary.
@@ -1382,19 +1389,19 @@ void CDownloadMgrUiDownloadsList::DownloadPausedL
             dlData.iIconIndex = iListModel->AddHandlerAppIconL( dlData.iContentType );
             }
 
-        // Update downloaded size (introduced, because for non-pausable downloads 
+        // Update downloaded size (introduced, because for non-pausable downloads
         // paused command sets downloaded size back to 0 kB).
         User::LeaveIfError( aDownload.GetIntAttribute
                           ( EDlAttrDownloadedSize, dlData.iDownloadedSize ) );
-        
+
         // Update the download ui data in the 'model'.
         iListModel->UpdateL( index, dlData );
         // Update the 'view'
         iExtension->DlExecuter().Dialog().HandleModelChangeL( EDownloadChanged, index );
-        // Also need to update the middle softkey 
-        iExtension->DlExecuter().Dialog().HandleMiddleSoftKeyChangeL();        
+        // Also need to update the middle softkey
+        iExtension->DlExecuter().Dialog().HandleMiddleSoftKeyChangeL();
         }
-    
+
     CLOG_LEAVEFN("CDownloadMgrUiDownloadsList::DownloadPausedL");
     }
 
@@ -1423,7 +1430,7 @@ void CDownloadMgrUiDownloadsList::DownloadCompletedL
         dlData.iDownloadState = aEvent.iDownloadState;
 		dlData.iProgressState = aEvent.iProgressState;
 		User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrActiveDownload, dlData.iActiveMoIndex ) );
-		
+
 		// In case of Album download, change the name to Album name
 		if (dlData.iNumMediaObjects > 1)
 		    {
@@ -1433,12 +1440,12 @@ void CDownloadMgrUiDownloadsList::DownloadCompletedL
 			// Filename changed, get the updated filename
 		    {
 			CLOG_WRITE(" EHttpProgDlNameChanged");
- 	        aDownload.GetStringAttribute( EDlAttrName, dlData.iName ); 
+ 	        aDownload.GetStringAttribute( EDlAttrName, dlData.iName );
 		    }
 
-        __ASSERT_DEBUG( aEvent.iDownloadState == EHttpDlMultipleMOCompleted, 
+        __ASSERT_DEBUG( aEvent.iDownloadState == EHttpDlMultipleMOCompleted,
                         Panic( EUiLibPanDlStateNotCompleted ) );
-        
+
         if( dlData.iProgressState == EHttpProgContentFileMoved  || dlData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )
            {
             HBufC8* contentType = iUiUtils->ContentTypeL( aDownload, ETrue, KFirstMoIndex );
@@ -1452,16 +1459,16 @@ void CDownloadMgrUiDownloadsList::DownloadCompletedL
                 }
             dlData.iContentType.Copy( *contentType );
             delete contentType;
-            dlData.iIconIndex = 
-                iListModel->AddHandlerAppIconL( dlData.iContentType );  
-            
+            dlData.iIconIndex =
+                iListModel->AddHandlerAppIconL( dlData.iContentType );
+
             }
         // Unnecessary to update dlData.iDownloadedSize, as it is not displayed.
         // Update the download ui data in the 'model'.
         iListModel->UpdateL( index, dlData );
         // Update the 'view'
         iExtension->DlExecuter().Dialog().HandleModelChangeL( EDownloadChanged, index );
-        // Also need to update the middle softkey 
+        // Also need to update the middle softkey
         iExtension->DlExecuter().Dialog().HandleMiddleSoftKeyChangeL();
         }
     }
@@ -1493,7 +1500,7 @@ void CDownloadMgrUiDownloadsList::DownloadFailedL
 		User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrActiveDownload, dlData.iActiveMoIndex ) );
 
         // By default, update the progress info. Only the downloaded size changes.
-        User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrDownloadedSize, 
+        User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrDownloadedSize,
                                                        dlData.iDownloadedSize ) );
         // Update the download ui data in the 'model'.
         iListModel->UpdateL( index, dlData );
@@ -1527,7 +1534,7 @@ void CDownloadMgrUiDownloadsList::PauseableStateChangedL( RHttpDownload& aDownlo
         iListModel->UpdateL( index, dlData );
         }
     }
-    
+
 // -----------------------------------------------------------------------------
 // CDownloadMgrUiDownloadsList::HideMenu
 // -----------------------------------------------------------------------------
@@ -1572,7 +1579,7 @@ void CDownloadMgrUiDownloadsList::HandleDMgrEventL
 				if (!iIsTimerStarted )
                 {
 					iIsTimerStarted = ETrue;
-					// start the timer. 
+					// start the timer.
 					iExtension->StartProgressTimer();
                 }
 
@@ -1605,7 +1612,7 @@ void CDownloadMgrUiDownloadsList::HandleDMgrEventL
         case EHttpDlMoved:
             {
             // Download moved to this session.
-            // Add it to the list 
+            // Add it to the list
             NewDownloadCreatedL( aDownload );
             break;
             }
@@ -1616,14 +1623,14 @@ void CDownloadMgrUiDownloadsList::HandleDMgrEventL
             DeleteDownloadL( aDownload );
             break;
             }
-            
+
         case EHttpDlMediaInserted:
             {
             // Add new download to the list
             NewDownloadCreatedL( aDownload );
             break;
             }
-            
+
         case EHttpDlPausable:
         case EHttpDlNonPausable:
             {
@@ -1683,9 +1690,9 @@ void CDownloadMgrUiDownloadsList::HandleDMgrEventL
 void CDownloadMgrUiDownloadsList::PreLayoutDynInitL( CDownloadsListDlg& aDialog )
     {
     CLOG_ENTERFN("CDownloadMgrUiDownloadsList::PreLayoutDynInitL");
-    
+
     __ASSERT_DEBUG( iExtension->IsDialogVisible(), Panic( EUiLibPanNull ) );
-    
+
     delete iListModel;
     iListModel = NULL;
     iListModel = CDownloadsListArray::NewL();
@@ -1723,10 +1730,10 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
         HandleAIWCommandL(aCommandId, currDownload);
         return;
         }
-        
+
     switch ( aCommandId )
         {
-        case EAknSoftkeyOpen: // handle middlesoft key 
+        case EAknSoftkeyOpen: // handle middlesoft key
             {
             // First close the downloads list.
             CancelDisplayingDownloadsList();
@@ -1734,23 +1741,23 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 
 			if(iProgressiveDownload)
 			{
-            // check if it's pd supported 
-            TBool isPdSupported = EFalse; 
+            // check if it's pd supported
+            TBool isPdSupported = EFalse;
             // Get the PD player application's UID for the download
-            TUid pdPlayerUid = { 0 };    
+            TUid pdPlayerUid = { 0 };
             HBufC8* contentType = iUiUtils->ContentTypeL( currDownload, ETrue, KFirstMoIndex  );
             TDataType dataType( *contentType );
             delete contentType;
-            contentType = NULL;          
+            contentType = NULL;
             CDocumentHandler* docHandler = CDocumentHandler::NewLC();
             isPdSupported = docHandler->CanHandleProgressivelyL( dataType, pdPlayerUid );
             CleanupStack::PopAndDestroy( docHandler ); // docHandler
-            
+
             if ( isPdSupported && iUiUtils->IsNetworkPdCompatibleL() )
                 {
                 // Get the UI data for the current download
                 TDownloadUiData& dlData = iListModel->DlUiData( aDialog.CurrentItemIndex() );
-                TInt32 state( dlData.iProgressState );       
+                TInt32 state( dlData.iProgressState );
                 TBool isProgressively = ETrue;
                 if ( state == EHttpProgContentFileMoved || state == EHttpProgContentFileMovedAndDestFNChanged )
                     {
@@ -1758,22 +1765,22 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
                     // has already been moved, and it does not need to attach
                     // to download - it can just read completed download from
                     // filesystem.
-                    isProgressively = EFalse;                       
+                    isProgressively = EFalse;
                     }
                 // First close the downloads list.
                 CancelDisplayingDownloadsList();
                 iUiUtils->LaunchPdAppL(currDownload, isProgressively);
                 }
-            else 
+            else
                 {
                 iUiUtils->HandleContentL( currDownload, *iExtension );
-                CLOG_WRITE("HandleContentL OK");              
+                CLOG_WRITE("HandleContentL OK");
                 }
 			}
 		else
 			{
     	    iUiUtils->HandleContentL( currDownload, *iExtension );
-	        CLOG_WRITE("HandleContentL OK");                        
+	        CLOG_WRITE("HandleContentL OK");
 			}
            break;
             }
@@ -1786,12 +1793,12 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
             CLOG_WRITE(" CancelDisplayingDownloadsList OK");
 
            iUiUtils->HandleContentL( currDownload, *iExtension );
-           CLOG_WRITE("HandleContentL OK");            	
-           // After the termination of the handler, download is removed 
+           CLOG_WRITE("HandleContentL OK");
+           // After the termination of the handler, download is removed
            // from the list of downloads in NotifyHandlerExitL().
             break;
             }
-            
+
         case EDownloadsListCmdPlay:
             {
 			#ifdef __DMGR_PD_TESTHARNESS
@@ -1801,7 +1808,7 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 			#else
 				// Get the UI data for the current download
                 TDownloadUiData& dlData = iListModel->DlUiData( aDialog.CurrentItemIndex() );
-                TInt32 state( dlData.iProgressState );       
+                TInt32 state( dlData.iProgressState );
                 TBool isProgressively = ETrue;
                 if ( state == EHttpProgContentFileMoved || state == EHttpProgContentFileMovedAndDestFNChanged )
                     {
@@ -1809,7 +1816,7 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
                     // has already been moved, and it does not need to attach
                     // to download - it can just read completed download from
                     // filesystem.
-                    isProgressively = EFalse;                     	
+                    isProgressively = EFalse;
                     }
                     // First close the downloads list.
                     CancelDisplayingDownloadsList();
@@ -1821,18 +1828,18 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 
             break;
             }
-            
+
         case EDownloadsListCmdSave:
             {
             TBool saved = iUiUtils->SaveContentL( currDownload );
             if ( saved )
                 {
-                // Remove the download from the Downloads List to 
+                // Remove the download from the Downloads List to
                 // avoid confusion...
                 DeleteDownloadL( currDownload );
                 }
 	        // The save (moving) procedure is asynchronous!
-	        // CUserInteractionsEventHandler handles 
+	        // CUserInteractionsEventHandler handles
 	        // EHttpDlCompleted/EHttpProgMovingContentFile and
 	        // EHttpDlCompleted/EHttpProgContentFileMoved.
             break;
@@ -1841,7 +1848,7 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
         case EDownloadsListCmdDelete:
             {
             // Retrieve the full path to filename before deletion
-            // this way we check if the the actuall content file was deleted or not, 
+            // this way we check if the the actuall content file was deleted or not,
             // if not, we will manually delete it
             HBufC* fileName = HBufC::NewLC( KMaxPath );
             TPtr fileNamePtr = fileName->Des();
@@ -1873,8 +1880,8 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
                           note->ExecuteLD(*infoPrompt);
                           CleanupStack::PopAndDestroy(infoPrompt);
                          }
-    			   // Do not wait until the delete event is reported through the 
-    			   // observer callback, but update the list right now, 
+    			   // Do not wait until the delete event is reported through the
+    			   // observer callback, but update the list right now,
     			   // so the user will not be able to access and modify an already
     			   // deleted download:
     			   DeleteDownloadL( currDownload );
@@ -1892,9 +1899,9 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
     			   CleanupStack::PopAndDestroy( &rfs );
 
     			   // Notify Media Gallery about new media file
-    			   
-    			#ifdef BRDO_APP_GALLERY_SUPPORTED_FF   
-    			
+
+    			#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
+
     			   CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL(
     			       CEikonEnv::Static()->FsSession() );
     			   if( fileNamePtr.Length() > 0 )
@@ -1906,24 +1913,24 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
     			       {
     			       TRAP_IGNORE( mgFileManager->UpdateL() );
     			       }
-    			 
+
     			   delete mgFileManager;
     			   mgFileManager = NULL;
-    			 
+
     			 #else
-    			 
+
     			  if( fileNamePtr.Length() > 0 )
     			       {
     			       TRAP_IGNORE( iUiUtils->UpdateDCFRepositoryL( fileNamePtr ) );
     			       }
-    			 
-    			 #endif  
-    			   
+
+    			 #endif
+
                 	}
                  else
     	           	{
     	           	DeleteDownloadL( currDownload );
-    	           	} 
+    	           	}
     			 }
 
                CleanupStack::PopAndDestroy( fileName );
@@ -1963,7 +1970,7 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
                 RHttpDownload& download = iListModel->Download(i);
                 TInt32 dlState(0);
                 TInt err = download.GetIntAttribute( EDlAttrState, dlState );
-                
+
                 //Changes for the bug JERI-7P8CF2
                 //Changes made in the server side to fix the video center receiving unexpected events
                 //Reassigning these events back to the changes done in server side
@@ -1975,7 +1982,7 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 		            {
 		    	     dlState  = EHttpDlMultipleMOFailed;
 		            }
-                
+
                 if ( !err && ( dlState == EHttpDlPaused || dlState == EHttpDlMultipleMOFailed ) )
                     {
                     download.Start(); // return value is ignored.
@@ -1996,36 +2003,16 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 	            	iIsCancelInProgress = EFalse;
 	            	User::LeaveIfError(err);
 	            	}
-	            
+
 	            if ( cancelled )
 	                {
-                    DeleteDownloadL( currDownload );
-                    
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF     
-                    TInt currentItemIndex = aDialog.CurrentItemIndex();
-                    if (currentItemIndex != -1)
-                        {   
-                        TInt Inprogress = iListModel->DownloadsCount
-                                      ( MASKED_DL_STATE(EHttpDlCreated) |
-                                        MASKED_DL_STATE(EHttpDlPaused) |
-                                        MASKED_DL_STATE(EHttpDlInprogress) |
-                                        MASKED_DL_STATE(EHttpDlMultipleMOFailed));
-                        if ( Inprogress > 1 )
-                            {
-                            aDialog.ButtonGroupContainer()->MakeCommandVisible( EAknSoftkeyOptions, ETrue );
-                            } 
-                        else
-                            {
-                            aDialog.ButtonGroupContainer()->MakeCommandVisible( EAknSoftkeyOptions, EFalse );
-                            }
-                        }
-#endif                    
+	                DeleteDownloadL( currDownload );
 	                }
 	            iIsCancelInProgress = EFalse;
             	}
             break;
             }
-            
+
         case EDownloadsListCmdCancelAll:
         	{
             if (!iIsCancelInProgress)
@@ -2058,9 +2045,9 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 
         case EDownloadsListCmdGallery:
             {
-            
+
 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
-            
+
             TVwsViewId id = TVwsViewId(
                 TUid::Uid( KMediaGalleryUID3 ),
                 TUid::Uid( KMediaGalleryListViewUID ) );
@@ -2068,17 +2055,17 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
             // By default, custom message is empty
             TPtrC8 customMessage( KNullDesC8 );
 
-            CEikonEnv::Static()->EikAppUi()->ActivateViewL( 
-                    id, 
+            CEikonEnv::Static()->EikAppUi()->ActivateViewL(
+                    id,
                     TUid::Uid( KMediaGalleryCmdMoveFocusToAllFilesTab ),
                     customMessage );
-#endif                    
+#endif
             break;
             }
-      
+
         case EDownloadsListCmdFileManager:
             {
- 
+
             if ( iPlatformSupportsGallery )
                 {
             	LaunchFileManagerApplication();
@@ -2087,50 +2074,50 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
                 {
             	CAiwServiceHandler* serviceHandler = CAiwServiceHandler::NewL();
                 serviceHandler->AttachL( R_DMUL_FILEMANAGER_AIW_INTEREST );
-            
+
                 CAiwGenericParamList* inParams = CAiwGenericParamList::NewLC();
-             
+
                 //get the destination file path
                 HBufC* fileName = HBufC::NewLC( KMaxPath );
                 TPtr fileNamePtr = fileName->Des();
                 User::LeaveIfError ( currDownload.GetStringAttribute( EDlAttrDestFilename, fileNamePtr ) );
-               
+
                 // Locate the last '\\' character and remove the file name so that we will get the folder name
                 TInt len = fileNamePtr.LocateReverse('\\');
                 TPtr ptr = fileNamePtr.LeftTPtr(len + 1);
-            
+
                 // Append the directory name to be opened
                 inParams->AppendL(TAiwGenericParam(EGenericParamDir, TAiwVariant( ptr ) ) );
                 //Append the sort method
                 inParams->AppendL(TAiwGenericParam(EGenericParamDir, TAiwVariant( KMostRecentSort ) ) );
                 //Append to define whether to open in standalone mode
                 inParams->AppendL(TAiwGenericParam(EGenericParamDir, TAiwVariant( KLauchStandAlone ) ) );
-    
+
                 TRAPD( err, serviceHandler->ExecuteServiceCmdL( KAiwCmdEdit, *inParams, serviceHandler->OutParamListL() ));
-            
+
     	   		CleanupStack::PopAndDestroy( fileName );
             	CleanupStack::PopAndDestroy( inParams );
-        	
+
         	    delete serviceHandler;
-        	    
+
         	    //if there is any error, open the file manager in root folder
                 if (err != KErrNone)
           	        {
           	        LaunchFileManagerApplication();
            		    }
                 }
-  
+
             break;
             }
-         
+
         default:
             {
             break;
             }
         }
     }
-    
-    
+
+
 // -----------------------------------------------------------------------------
 // CDownloadMgrUiDownloadsList::LaunchFileManagerApplication
 // -----------------------------------------------------------------------------
@@ -2138,7 +2125,7 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
 
 void CDownloadMgrUiDownloadsList::LaunchFileManagerApplication()
 {
-	
+
     TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
     CRepository *repository=CRepository::NewL(KCRUidBrowser);
     TInt fileManagerId;
@@ -2149,16 +2136,16 @@ void CDownloadMgrUiDownloadsList::LaunchFileManagerApplication()
         {
         task.BringToForeground();
         }
-    else 
+    else
         {
         RApaLsSession appArcSession;
         User::LeaveIfError( appArcSession.Connect() );
         CleanupClosePushL( appArcSession );
         TThreadId id1;
-        User::LeaveIfError( appArcSession.StartDocument( KNullDesC, id, id1 ) );  
+        User::LeaveIfError( appArcSession.StartDocument( KNullDesC, id, id1 ) );
         CleanupStack::PopAndDestroy( &appArcSession );
         }
-	
+
 }
 
 
@@ -2166,8 +2153,8 @@ void CDownloadMgrUiDownloadsList::LaunchFileManagerApplication()
 // CDownloadMgrUiDownloadsList::DynInitMenuPaneL
 // -----------------------------------------------------------------------------
 //
-void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog, 
-                                                    TInt aResourceId, 
+void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
+                                                    TInt aResourceId,
                                                     CEikMenuPane* aMenuPane )
     {
     CLOG_ENTERFN("CDownloadMgrUiDownloadsList::DynInitMenuPaneL");
@@ -2183,19 +2170,19 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
         __ASSERT_DEBUG( 0 <= currentItemIndex, Panic( EUiLibPanDLNegItemIndex ) );
         RHttpDownload& currDownload = iListModel->Download( currentItemIndex );
         CLOG_WRITE_FORMAT(" currDownload: 0x%x",&currDownload);
-        
+
         // Get the UI data for the current download
         TDownloadUiData& dlData = iListModel->DlUiData( aDialog.CurrentItemIndex() );
         TInt32 state( dlData.iDownloadState );
         CLOG_WRITE_FORMAT(" state: %d",state);
 
-        // The moved state is only a temporary state - the server 
-        // sets the download's original state back right after it, 
+        // The moved state is only a temporary state - the server
+        // sets the download's original state back right after it,
         // thus we query the state again:
         if ( state == EHttpDlMoved )
             {
             User::LeaveIfError( currDownload.GetIntAttribute( EDlAttrState, state ) );
-            
+
             //Changes for the bug JERI-7P8CF2
             //Changes made in the server side to fix the video center receiving unexpected events
             //Reassigning these events back to the changes done in server side
@@ -2207,28 +2194,28 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
 		        {
 		        state  = EHttpDlMultipleMOFailed;
 		        }
-		            
+
             CLOG_WRITE_FORMAT(" state re-query: %d",state);
             }
-        __ASSERT_DEBUG( state != EHttpDlMoved, Panic( EUiLibPanStateIsStillMoved ) );        
-        
-        TBool wasCompleted   = state == EHttpDlMultipleMOCompleted;        
-        
-        // Get if it's theme         
-        TInt isThemeType = 0; 
+        __ASSERT_DEBUG( state != EHttpDlMoved, Panic( EUiLibPanStateIsStillMoved ) );
+
+        TBool wasCompleted   = state == EHttpDlMultipleMOCompleted;
+
+        // Get if it's theme
+        TInt isThemeType = 0;
         HBufC8* contentType = HBufC8::NewLC(KMaxContentTypeLength);
-        TPtr8 contentTypePtr = contentType->Des(); 
+        TPtr8 contentTypePtr = contentType->Des();
         User::LeaveIfError
                 ( currDownload.GetStringAttribute( EDlAttrContentType, contentTypePtr ) );
-        isThemeType = !contentType->Compare(KSisxContentType);  
-        CleanupStack::PopAndDestroy( contentType );        
-		
+        isThemeType = !contentType->Compare(KSisxContentType);
+        CleanupStack::PopAndDestroy( contentType );
+
     if ( aResourceId == R_DMUL_DOWNLOADSLIST_MENU )
         {
         __ASSERT_DEBUG( 0<iListModel->Count(), Panic( EUiLibPanOptionsShownWhileNoDownloads ) );
 
         TBool isCreated     = state == EHttpDlCreated;
-        // The fix of PHAN-6KVK5R makes this line no longer necessary 
+        // The fix of PHAN-6KVK5R makes this line no longer necessary
         // TBool isInProgress  = state == EHttpDlInprogress;
         TBool isPaused      = state == EHttpDlPaused;
         TBool isCompleted   = state == EHttpDlMultipleMOCompleted;
@@ -2250,49 +2237,48 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
         TBool gallerySupported( EFalse );
         s60Supported = iUiUtils->IsContentTypeSupportedL( dlData.iContentType );
         gallerySupported = CDownloadUtils::IsGallerySupported(dlData.iContentType);
-        CLOG_WRITE_FORMAT(" s60Supported: %d",s60Supported);       
-        CLOG_WRITE_FORMAT(" gallerySupported: %d",gallerySupported);        
+        CLOG_WRITE_FORMAT(" s60Supported: %d",s60Supported);
+        CLOG_WRITE_FORMAT(" gallerySupported: %d",gallerySupported);
 
         TBool isCodDownload( EFalse );
         TInt err = currDownload.GetBoolAttribute( EDlAttrCodDownload, isCodDownload );
         CLOG_WRITE_FORMAT(" EDlAttrCodDownload err: %d",err);
-        
+
         TBool isCodPdDownload( EFalse );
         err = currDownload.GetBoolAttribute( EDlAttrCodPdAvailable, isCodPdDownload );
         CLOG_WRITE_FORMAT(" EDlAttrCodPdAvailable err: %d",err);
-        
-        // Get if it can be handled progressively 
-        TBool canProgHandled = EFalse; 
-        TUid pdPlayerUid = { 0 };    
+
+        // Get if it can be handled progressively
+        TBool canProgHandled = EFalse;
+        TUid pdPlayerUid = { 0 };
         HBufC8* contentType = iUiUtils->ContentTypeL( currDownload, ETrue );
         TDataType dataType( *contentType );
         delete contentType;
-        contentType = NULL;          
+        contentType = NULL;
         CDocumentHandler* docHandler = CDocumentHandler::NewLC();
         canProgHandled = docHandler->CanHandleProgressivelyL( dataType, pdPlayerUid );
-        CleanupStack::PopAndDestroy( docHandler ); // docHandler              
+        CleanupStack::PopAndDestroy( docHandler ); // docHandler
 
-#ifndef BRDO_SINGLE_CLICK_ENABLED_FF        
         //delete open file manager when download is not complete
         if( !(isCompleted))
             {
-            aMenuPane->DeleteMenuItem( EDownloadsListCmdFileManager );    
+            aMenuPane->DeleteMenuItem( EDownloadsListCmdFileManager );
             }
-            
-        // For any gallery supported download,  "go to gallery" option should be displayed in the download list option when the download completes     
-        
-        
+
+        // For any gallery supported download,  "go to gallery" option should be displayed in the download list option when the download completes
+
+
         if ( (!( isCompleted && s60Supported && gallerySupported ) ) || (!iPlatformSupportsGallery) )
             {
 			aMenuPane->DeleteMenuItem( EDownloadsListCmdGallery );
     		}
-    		
-        if ( !( isCompleted && s60Supported && gallerySupported && 
+
+        if ( !( isCompleted && s60Supported && gallerySupported &&
               ( !isDrmDownload || ( isDrmDownload && isDrmRightsOnPhone ) ) ) )
             {
             aMenuPane->DeleteMenuItem( EDownloadsListCmdUseAs );
 			}
-    		
+
 	    else
 	        {
 	        TInt32 numMediaObjects = 0;
@@ -2302,62 +2288,62 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
 	            aMenuPane->DeleteMenuItem( EDownloadsListCmdUseAs );
 	            }
 	        }
-	            
+
         if( iProgressiveDownload || isCompleted )
             {
             if ( canProgHandled )
                 {
-                aMenuPane->DeleteMenuItem( EDownloadsListCmdOpen );           
-                if (isCodDownload && !isCompleted ) 
+                aMenuPane->DeleteMenuItem( EDownloadsListCmdOpen );
+                if (isCodDownload && !isCompleted )
                     {
                     if ( !( gallerySupported && canProgHandled  && isCodPdDownload &&
                        ( !isDrmDownload || ( isDrmDownload && isDrmRightsOnPhone ) ) ) || (isPaused || isFailed))
-                       aMenuPane->DeleteMenuItem( EDownloadsListCmdPlay );                
+                       aMenuPane->DeleteMenuItem( EDownloadsListCmdPlay );
                     }
-                    else 
+                    else
                     {
                         if ( !( gallerySupported && canProgHandled &&
-                           ( !isDrmDownload || ( isDrmDownload && isDrmRightsOnPhone ))) || (isPaused || isFailed))           
-                           aMenuPane->DeleteMenuItem( EDownloadsListCmdPlay );	
-                    }     
+                           ( !isDrmDownload || ( isDrmDownload && isDrmRightsOnPhone ))) || (isPaused || isFailed))
+                           aMenuPane->DeleteMenuItem( EDownloadsListCmdPlay );
+                    }
                 }
-            else 
+            else
                 {
                 aMenuPane->DeleteMenuItem( EDownloadsListCmdPlay );
-            
-                if ( !( isCompleted && ( s60Supported ) && 
+
+                if ( !( isCompleted && ( s60Supported ) &&
                       ( !isDrmDownload || ( isDrmDownload && isDrmRightsOnPhone ) ) ) )
                     {
                     aMenuPane->DeleteMenuItem( EDownloadsListCmdOpen );
                     }
-               
-         //there should not be open in menu when download is not complete and file is not supported by s60  or Gallery        
-              /*  else if( isCompleted && ( !s60Supported && !gallerySupported))  
+
+         //there should not be open in menu when download is not complete and file is not supported by s60  or Gallery
+              /*  else if( isCompleted && ( !s60Supported && !gallerySupported))
                     {
-                    aMenuPane->DeleteMenuItem( EDownloadsListCmdOpen );   
+                    aMenuPane->DeleteMenuItem( EDownloadsListCmdOpen );
                     }*/
                 }
              }
-            
+
         else // if iProgressiveDownload == EFalse
             {
             aMenuPane->DeleteMenuItem( EDownloadsListCmdPlay );
-            
-            if ( !( isCompleted && s60Supported && 
+
+            if ( !( isCompleted && s60Supported &&
                   ( !isDrmDownload || ( isDrmDownload && isDrmRightsOnPhone ) ) ) )
                 {
                 aMenuPane->DeleteMenuItem( EDownloadsListCmdOpen );
                 }
-                      
-            else if( isCompleted && !s60Supported && gallerySupported)  
+
+            else if( isCompleted && !s60Supported && gallerySupported)
                 {
-                aMenuPane->DeleteMenuItem( EDownloadsListCmdOpen );   
+                aMenuPane->DeleteMenuItem( EDownloadsListCmdOpen );
                 }
             }
-            
-        // ELFG-732DK3: There is no need to have save option since it's already saved 
-        aMenuPane->DeleteMenuItem( EDownloadsListCmdSave ); 
-                    
+
+        // ELFG-732DK3: There is no need to have save option since it's already saved
+        aMenuPane->DeleteMenuItem( EDownloadsListCmdSave );
+
         if ( !( isCompleted ) )
             {
             aMenuPane->DeleteMenuItem( EDownloadsListCmdDelete );
@@ -2377,7 +2363,7 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
             {
             aMenuPane->DeleteMenuItem( EDownloadsListCmdResume );
             }
-        // Count paused downloads. Note that Creates and Failed downloads 
+        // Count paused downloads. Note that Creates and Failed downloads
         // are also considered as Paused, and they can be resumed.
         TInt pausedCount = iListModel->DownloadsCount
                            ( MASKED_DL_STATE(EHttpDlCreated) |
@@ -2388,70 +2374,35 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
         if ( !( 1 < pausedCount ) )
             {
             aMenuPane->DeleteMenuItem( EDownloadsListCmdResumeAll );
-            } 
-            
+            }
+
         TInt downloadCount = iListModel->DownloadsCount
                              ( MASKED_DL_STATE(EHttpDlCreated) |
                                MASKED_DL_STATE(EHttpDlInprogress)|
                                MASKED_DL_STATE(EHttpDlPaused) );
         CLOG_WRITE_FORMAT(" download count: %d",downloadCount);
-        
+
         if ( !( 1 < downloadCount ) )
             {
             aMenuPane->DeleteMenuItem( EDownloadsListCmdCancelAll );
-            }              
-                             
+            }
+
        	if ( iPlatformSupportsGallery )
        	    {
        		if ( isCompleted && gallerySupported && s60Supported )
                 {
                 aMenuPane->DeleteMenuItem( EDownloadsListCmdFileManager );
                 }
-            }
-#else
-    // Count paused downloads. Note that Creates and Failed downloads 
-            // are also considered as Paused, and they can be resumed.
-            TInt pausedCount = iListModel->DownloadsCount
-                               ( MASKED_DL_STATE(EHttpDlCreated) |
-                                 MASKED_DL_STATE(EHttpDlPaused) |
-                                 MASKED_DL_STATE(EHttpDlMultipleMOFailed) );
-            CLOG_WRITE_FORMAT(" paused count: %d",pausedCount);
-            //
-            if ( !( 1 < pausedCount ) )
-                {
-                aMenuPane->DeleteMenuItem( EDownloadsListCmdResumeAll );
-                } 
-                
-            TInt downloadCount = iListModel->DownloadsCount
-                                 ( MASKED_DL_STATE(EHttpDlCreated) |
-                                   MASKED_DL_STATE(EHttpDlInprogress)|
-                                   MASKED_DL_STATE(EHttpDlPaused) );
-            CLOG_WRITE_FORMAT(" download count: %d",downloadCount);
-            
-            if ( !( 1 < downloadCount ) )
-                {
-                aMenuPane->DeleteMenuItem( EDownloadsListCmdCancelAll );
-                }              
-#endif          
+       	    }
         }
-    if ( wasCompleted && !isThemeType ) 
+
+    if ( wasCompleted && !isThemeType )
         {
-        InitializeAIWPlugInMenusL( aResourceId, aMenuPane, currDownload );		
+        InitializeAIWPlugInMenusL( aResourceId, aMenuPane, currDownload );
         }
     CLOG_LEAVEFN("CDownloadMgrUiDownloadsList::DynInitMenuPaneL");
     }
 
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-void CDownloadMgrUiDownloadsList::AIWPlugInMenusL(TInt aResourceId,CEikMenuPane* aMenuPane)
-    {
-    if( !iAIWServiceHandler )
-        {
-        AttachAIWInterestL();
-        }
-    RHttpDownload& currDownload = iListModel->Download( 0 );
-    InitializeAIWPlugInMenusL( aResourceId, aMenuPane, currDownload );  
-    }
-#endif
 // -----------------------------------------------------------------------------
 // CDownloadMgrUiDownloadsList::OfferKeyEventL
 // -----------------------------------------------------------------------------
@@ -2491,7 +2442,7 @@ TKeyResponse CDownloadMgrUiDownloadsList::OfferKeyEventL
 // FindDlUiData
 // -----------------------------------------------------------------------------
 //
-inline TDownloadUiData* FindDlUiData( CDownloadsListArray& aListModel, 
+inline TDownloadUiData* FindDlUiData( CDownloadsListArray& aListModel,
                                        RHttpDownload& aDownload,
                                        TInt& aIndex )
     {
@@ -2506,7 +2457,7 @@ inline TDownloadUiData* FindDlUiData( CDownloadsListArray& aListModel,
         return &( aListModel.DlUiData( aIndex ) );
         }
     };
-    
+
 // -----------------------------------------------------------------------------
 // CDownloadMgrDownloadsList::AttachAIWInterestL
 // -----------------------------------------------------------------------------
@@ -2563,7 +2514,7 @@ void CDownloadMgrUiDownloadsList::ProvideInputParametersL( CAiwGenericParamList&
 	aParams.AppendL( genericParamFileName );
 
 	HBufC* contentType = HBufC::NewLC(KMaxContentTypeLength);
-	TPtr contentTypePtr = contentType->Des(); 
+	TPtr contentTypePtr = contentType->Des();
     User::LeaveIfError
                 ( aDownload.GetStringAttribute( EDlAttrContentType, contentTypePtr ) );
     fileNameVariant.Set(contentTypePtr);
@@ -2571,9 +2522,9 @@ void CDownloadMgrUiDownloadsList::ProvideInputParametersL( CAiwGenericParamList&
     aParams.AppendL( genericParamMimeType );
     CleanupStack::PopAndDestroy( contentType );
     CleanupStack::PopAndDestroy( fileName );
-   
+
     }
-    
+
 // -----------------------------------------------------------------------------
 // CDownloadMgrUiDownloadsList::InitializeAIWPlugInMenusL
 // -----------------------------------------------------------------------------
@@ -2627,7 +2578,7 @@ TInt AskIapIdL( TUint32& aId )
 
     CDesCArrayFlat* nameArray = new (ELeave) CDesCArrayFlat(16);
     CleanupStack::PushL( nameArray );
-    
+
     // Get IAP names and ids from the database
     CCommsDatabase* TheDb = CCommsDatabase::NewL( EDatabaseTypeIAP );
     CleanupStack::PushL( TheDb );
@@ -2643,42 +2594,42 @@ TInt AskIapIdL( TUint32& aId )
     {
         view->ReadTextL( TPtrC(COMMDB_NAME), name );
         view->ReadUintL( TPtrC(COMMDB_ID), id );
-        
+
         idArray.Insert( id, 0 );
         nameArray->InsertL( 0, name );
 
         res = view->GotoNextRecord();
         RDebug::Print(_L("IAP name, id: %S, %d"), &name, id);
     }
-    
+
     CleanupStack::PopAndDestroy( view ); // view
     CleanupStack::PopAndDestroy( TheDb ); // TheDb
-    
+
     // Create listbox and PUSH it.
     CEikTextListBox* list = new(ELeave) CAknSinglePopupMenuStyleListBox;
     CleanupStack::PushL( list );
-    
+
     // Create popup list and PUSH it.
     CAknPopupList* popupList = CAknPopupList::NewL(
         list, R_AVKON_SOFTKEYS_OK_EMPTY__OK,
         AknPopupLayouts::EMenuWindow);
     CleanupStack::PushL( popupList );
-    
+
     // initialize listbox.
     list->ConstructL( popupList, CEikListBox::ELeftDownInViewRect );
     list->CreateScrollBarFrameL( ETrue );
     list->ScrollBarFrame()->SetScrollBarVisibilityL(
         CEikScrollBarFrame::EOff,
         CEikScrollBarFrame::EAuto );
-    
+
     // Set listitems.
     CTextListBoxModel* model = list->Model();
     model->SetItemTextArray( nameArray );
     model->SetOwnershipType( ELbmDoesNotOwnItemArray );
-    
+
     // Set title
     popupList->SetTitleL( _L("Select IAP:") );
-    
+
     // Show popup list.
     TInt popupOk = popupList->ExecuteLD();
     CleanupStack::Pop( popupList ); // popupList
@@ -2687,9 +2638,9 @@ TInt AskIapIdL( TUint32& aId )
         TInt index = list->CurrentItemIndex();
         aId = idArray[index];
         }
-    
+
     CleanupStack::PopAndDestroy( 3, &idArray );  // list, nameArray, idArray
-    
+
     return popupOk;
     }
 #endif // #ifdef __WINS__

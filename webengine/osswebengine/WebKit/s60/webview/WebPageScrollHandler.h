@@ -24,7 +24,7 @@
 #include <e32base.h>
 #include <coedef.h>
 #include <w32std.h>
-#include <stmgestureinterface.h>
+#include <rt_gesturehelper.h>
 #include "WebScrollingDecelerator.h"
 
 
@@ -180,9 +180,9 @@ class WebPageScrollHandler: public CBase
         static int pageOverviewScrollCallback( TAny* aPtr );
         //static int handleScrollTimerEventCallback( TAny* ptr);
         void scrollPageOverviewGH();
-        void handleScrollingGH(const TStmGestureEvent& aGesture);
-        void handleTouchDownGH(const TStmGestureEvent& aGesture);
-        void handleTouchUpGH(const TStmGestureEvent& aGesture);
+        void handleScrollingGH(const RT_GestureHelper::TGestureEvent& aEvent);
+        void handleTouchDownGH(const RT_GestureHelper::TGestureEvent& aEvent);
+        void handleTouchUpGH(const RT_GestureHelper::TGestureEvent& aEvent);
         void updateScrollbars(const TPoint& scrollPos, TPoint& newscrollDelta);
 
 public:
@@ -193,7 +193,7 @@ public:
         bool calculateScrollableElement(const TPoint& aNewPosition);
         
         void scrollPageOverview(const TPointerEvent& pointerEvent);
-        bool startDeceleration(const TStmGestureEvent& aGesture);
+        bool startDeceleration(const RT_GestureHelper::TGestureEvent& aEvent);
         
      private:  
         // Pointer to owning view

@@ -15,11 +15,12 @@
 *
 */
 
-#include "nwx_logger.h"
 
-#include <nw_dom_text.h>
+#include <nwx_logger.h>
+
+#include "nw_dom_text.h"
 #include "wml_deck_iter.h"
-#include <nw_dom_document.h>
+#include "nw_dom_document.h"
 #include "BrsrStatusCodes.h"
 
 static NW_DOM_Node_t* x_GetNextElement_AllChildren (NW_Wml_DeckIter_t* thisObj)

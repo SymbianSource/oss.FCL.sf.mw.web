@@ -15,12 +15,13 @@
 *
 */
 
+
 #ifndef TCSSReader_H
 #define TCSSReader_H
 
 //  INCLUDES
 #include "nwx_defs.h"
-#include <nw_string_string.h>
+#include "nw_string_string.h"
 #include <e32std.h>
 
 // CONSTANTS

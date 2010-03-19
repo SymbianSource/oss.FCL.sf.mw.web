@@ -32,8 +32,8 @@
 #include <aknpictographinterface.h>
 #include <aknpictographdrawerinterface.h>
 
-#include <brctldefs.h>
-#include <brctldialogsprovider.h>
+#include <BrCtlDefs.h>
+#include <BrCtlDialogsProvider.h>
 #include "BrsrStatusCodes.h"
 #include "ImageUtils.h"
 #include "LMgrBoxTreeListener.h"
@@ -43,7 +43,7 @@
 #include "CBrowserSettings.h"
 
 #include "BrCtl.h"
-#include <MemoryManager.h>
+#include "MemoryManager.h"
 #include "pagescaler.h"
 
 

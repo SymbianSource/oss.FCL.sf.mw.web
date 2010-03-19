@@ -17,8 +17,8 @@
 #ifndef BROWSERUIINTERNALCRKEYS_H
 #define BROWSERUIINTERNALCRKEYS_H
 
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 
-#pragma message ("Please include browseruisdkcrkeys.h in place of browseruiinternalcrkeys.h")
+#pragma message ("Please include BrowserUiSDKCRKeys.h in place of BrowserUiInternalCRKeys.h")
 
 #endif      // BROWSERUIINTERNALCRKEYS_H

@@ -26,7 +26,7 @@
 #include <RTSecMgrUtility.h>
 #include <RTSecMgrScriptSession.h>
 #include <RTSecMgrCommonDef.h>
-#include <widgetregistryclient.h>
+#include <WidgetRegistryClient.h>
 #include <PropertyNameArray.h>
 #include <internal.h>
 #include <liwvariant.h>

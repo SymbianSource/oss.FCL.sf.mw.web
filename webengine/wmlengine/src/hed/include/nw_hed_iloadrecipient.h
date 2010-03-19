@@ -15,19 +15,22 @@
 *
 */
 
+
 #ifndef NW_HED_ILOADRECIPIENT_H
 #define NW_HED_ILOADRECIPIENT_H
 
 #include "nw_object_interface.h"
-#include "nw_Text_Abstract.h"
+#include "NW_Text_Abstract.h"
 #include "nw_hed_urlrequest.h"
-#include "urlloader_urlresponse.h"
+#include <urlloader_urlresponse.h>
 #include "BrsrStatusCodes.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
   
+
+
 /* ------------------------------------------------------------------------- *
    forward declarations
  * ------------------------------------------------------------------------- */

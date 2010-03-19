@@ -16,13 +16,15 @@
 *
 */
 
+
+
 #ifndef HTTPDOWNLOADMANAGER_H
 #define HTTPDOWNLOADMANAGER_H
 
 //  INCLUDES
 #include "HttpDownload.h"
 
-#include <httpdownloadmgrcommon.h>
+#include <HttpDownloadMgrCommon.h>
 #include <e32std.h>
 #include <f32file.h>
 

@@ -20,7 +20,7 @@
 #include "../../bidi.h"
 #include "PlatformString.h"
 #include <centralrepository.h>
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 #include "PluginSkin.h"
 #include "PluginWin.h"
 #include "PluginHandler.h"
@@ -33,7 +33,7 @@
 #include "BrCtl.h"
 #include "WebCoreGraphicsContext.h"
 #include "StaticObjectsContainer.h"
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "SettingsContainer.h"
 #include <Uri8.h>
 #include <StringLoader.h>
@@ -47,10 +47,12 @@
 
 #include <ApEngineConsts.h>
 #include <Uri8.h>
-#include <internetconnectionmanager.h>
+#include <InternetConnectionManager.h>
 #include <es_enum.h>
+#include <TextEncoding.h>
+#include "CString.h"
 #include "WidgetExtension.h"
-#include <widgetregistryclient.h>
+#include <WidgetRegistryClient.h>
 
 // CONSTANTS
 using namespace WebCore;
@@ -98,13 +100,10 @@ TInt RunScriptCb( TAny* aPtr );
 // return an absolute url that results from refUrl being resolved against 
 // baseUrl.
 // ----------------------------------------------------------------------------
-HBufC8* makeAbsoluteUrlL(const TDesC8* baseUrl,const TDesC8* docUrl, const TDesC8& refUrl)
+HBufC8* makeAbsoluteUrlL(const TDesC8& baseUrl, const TDesC8& refUrl)
 {
     TUriParser8 baseUrlparser;
-    if(baseUrl == NULL)
-        baseUrlparser.Parse(*docUrl); 
-    else
-        baseUrlparser.Parse(*baseUrl);
+    baseUrlparser.Parse(baseUrl); 
     TUriParser8 refUrlparser;
     refUrlparser.Parse(refUrl); 
 
@@ -805,7 +804,7 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
     if (url.Ptr() == NULL ) {                        
         return KErrArgument;
     }
-    _LIT8(KSwfExtn, ".swf");
+
     _LIT8(KJs, "javascript:");
     if ((url.Length() > KJs().Length() ) &&(url.Left(KJs().Length()).FindF(KJs) == 0)) {
         HBufC* pBuffer = HBufC::NewL(url.Length());
@@ -822,18 +821,24 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
      }
 
     // make sure it is an absolute URL
-    HBufC8* docUrl = HBufC8::NewLC(core(m_frame)->document()->baseURI().length());
-    docUrl->Des().Copy(core(m_frame)->document()->baseURI());
-    HBufC8* absoluteUrl = makeAbsoluteUrlL(m_url, docUrl, url); 
+    HBufC8* absoluteUrl = makeAbsoluteUrlL(*m_url, url); 
     CleanupStack::PushL(absoluteUrl);
 
-    if( (loadmode == ELoadModePlugin ) || (url.FindF(KSwfExtn)!= KErrNotFound) ){    
+    if (loadmode == ELoadModePlugin ) {    
         
         if (m_instance && m_pluginfuncs) {
         
-            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(url, this, core(m_frame), notifydata, notify);
+            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(url, this, core(m_frame), notifydata);
             if (pluginloader) {
-                pluginloader->start();                                          
+                pluginloader->start();                            
+
+                if ( notify ) {
+                    HBufC* url16 = HBufC::NewLC( url.Length() );
+                    url16->Des().Copy( url );
+                    m_pluginfuncs->urlnotify( m_instance, *url16, NPRES_DONE, notifydata );        
+                    CleanupStack::PopAndDestroy(url16);
+                }
+                
             }                
         }                 
     }
@@ -844,7 +849,7 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
         CleanupStack::PopAndDestroy(windowType);
     }
 
-    CleanupStack::PopAndDestroy(2);
+    CleanupStack::PopAndDestroy(absoluteUrl);
 
     return KErrNone;
 }
@@ -852,9 +857,7 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
 int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfile, bool notify, void* notifydata,const TDesC* aWindowType)
 {
     // make sure it is an absolute URL
-    HBufC8* docUrl = HBufC8::NewLC(core(m_frame)->document()->baseURI().length());
-    docUrl->Des().Copy(core(m_frame)->document()->baseURI());
-    HBufC8* absoluteUrl = makeAbsoluteUrlL(m_url, docUrl, url);     
+    HBufC8* absoluteUrl = makeAbsoluteUrlL(*m_url, url);     
     CleanupStack::PushL(absoluteUrl);
     TPluginLoadMode loadmode = GetLoadMode(aWindowType);
  
@@ -904,9 +907,11 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
         int start_content = buffer.Find(KRequestEOH());    
         start_content =  (start_content != KErrNotFound) ? start_content+ KRequestEOH().Length() : 0;                
         
-        HBufC8* body = HBufC8::NewLC(buffer.Mid(start_content).Length());                
-        body->Des().Copy(buffer.Mid(start_content));        
-        FormData* fd = new (ELeave) FormData(body->Ptr(),body->Length());                                          
+        HBufC* body = HBufC::NewLC(buffer.Mid(start_content).Length()+1);                
+        body->Des().Copy(buffer.Mid(start_content));
+        TextEncoding *ecoder = new TextEncoding(core(mainFrame(m_frame))->loader()->encoding());
+        CString decoded_body = ecoder->encode(body->Des().PtrZ(),body->Length());
+        FormData* fd = new (ELeave) FormData(decoded_body.data(),decoded_body.length());                                               
         request.setHTTPBody(fd);                                              
         CleanupStack::PopAndDestroy(); // body
     }
@@ -915,9 +920,17 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
     if (loadmode == ELoadModePlugin ) {    
                         
         if (m_instance && m_pluginfuncs) {
-            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(request, this, core(m_frame), notifydata, notify);
+            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(request, this, core(m_frame), notifydata);
             if (pluginloader) {
-                pluginloader->start();                                           
+                pluginloader->start();                            
+
+                if ( notify ) {
+                    HBufC* url16 = HBufC::NewLC( url.Length() );
+                    url16->Des().Copy( url );
+                    m_pluginfuncs->urlnotify( m_instance, *url16, NPRES_DONE, notifydata );        
+                    CleanupStack::PopAndDestroy(url16);
+                }
+                
             }                
         }                 
     }
@@ -929,7 +942,7 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
     }
     
 
-    CleanupStack::PopAndDestroy(2);
+    CleanupStack::PopAndDestroy(absoluteUrl);
 
     return KErrNone;
 }
@@ -991,25 +1004,6 @@ void* PluginSkin::pluginScriptableObject()
     return (void *)0;
 }
 
-TBool validateDataScheme(const TPtrC8& url)
-{
-    // Check if body part of "data:" exists = data:[<mediatype>][;base64],<body>. RFC-2397 : http://www.faqs.org/rfcs/rfc2397
-    TPtrC8 urlPtr8 = url;
-    
-    if(url.Length() <= 0 )
-           return EFalse;
-    
-    TInt commaPos( urlPtr8.Locate( ',' ) );
-    if (commaPos == KErrNotFound )
-        return EFalse;
-    
-    TPtrC8 datapart (urlPtr8.Mid(commaPos + 1)); 
-    if (datapart.Length() <= 0)
-        return EFalse;
-
-    return ETrue;
-}
-
 TBool PluginSkin::isBrowserScheme(const TPtrC8& url)
 {
     TBool supported(EFalse);
@@ -1017,12 +1011,8 @@ TBool PluginSkin::isBrowserScheme(const TPtrC8& url)
     if( parser.Parse( url ) == KErrNone ) {
         TPtrC8 scheme = parser.Extract( EUriScheme );
         if (scheme.CompareF( _L8("http" ) ) == 0 || scheme.CompareF( _L8("https" ) ) == 0 
-            || scheme.Length() == 1 || scheme.CompareF( _L8("file") ) == 0) {
+            || scheme.Length() == 1 || scheme.CompareF( _L8("file") ) == 0 || scheme.CompareF( _L8("data") ) == 0) {
             supported = ETrue;
-        }
-        else if(scheme.CompareF( _L8("data") ) == 0) {
-            // if the scheme is "data", check its validity according to RFC-2397 : http://www.faqs.org/rfcs/rfc2397
-            supported = validateDataScheme(url);
         }
     }
     return supported;
@@ -1060,9 +1050,8 @@ void PluginSkin::setPluginWinClipedRect()
                            frameRectInViewCoord.Intersects(viewRect);
       
     if (m_pluginwin) {
-        TBool visibility = isFrameVisible && !isPageViewMode && isPluginVisible;
-        m_pluginwin->makeVisible(visibility);
-        if (!m_pluginwin->isPluginInFullscreen() && visibility) {
+        m_pluginwin->makeVisible( isFrameVisible && !isPageViewMode && isPluginVisible);
+        if (!m_pluginwin->isPluginInFullscreen()) {
             clipRect.Intersection(fullRect);
             m_pluginwin->SetRect(clipRect);
         }

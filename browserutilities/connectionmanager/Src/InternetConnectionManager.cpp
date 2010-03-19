@@ -65,10 +65,10 @@
 #include <CommsDatTypeInfoV1_1.h>
 
 	//User Includes
-#include <internetconnectionmanager.h>
+#include "InternetConnectionManager.h"
 #include "connman.hrh"
 #include "connectionmanagerlogger.h"
-#include <connectionobservers.h>
+#include "connectionobservers.h"
 #include "connmanactiveconnector.h"
 
 using namespace CMManager;
@@ -1041,7 +1041,7 @@ EXPORT_C TInt CInternetConnectionManager::StartConnectionL( TBool aDisableConnNe
     
     if (iConnectionType == EDestination)
     	{
-    	err = ConnectWithSnapIdL(iRequestedSnapId);	
+    	err = ConnectWithSnapId(iRequestedSnapId);	
     	return err;
     	}
     	else
@@ -1642,17 +1642,6 @@ EXPORT_C void CInternetConnectionManager::ShowConnectionChangedDlg()
     }
     
 //------------------------------------------------------------------------
-//CInternetConnectionManager::CancelConnection
-//    
- void CInternetConnectionManager::CancelConnection()
-    {
-    if(iSyncConnector && iSyncConnector->IsActive()) 
-        {
-        iSyncConnector->Cancel();
-        }
-	}
-		
-//------------------------------------------------------------------------
 //CInternetConnectionManager::AskIap
 //------------------------------------------------------------------------
 EXPORT_C TInt CInternetConnectionManager::AskIap( TUint32& aNewIap )
@@ -2011,9 +2000,9 @@ void CInternetConnectionManager::InitializeL()
     }
     
 //------------------------------------------------------------------------
-//CInternetConnectionManager::ConnectWithSnapIdL
+//CInternetConnectionManager::ConnectWithSnapId
 //------------------------------------------------------------------------    
-TInt CInternetConnectionManager::ConnectWithSnapIdL(TUint32 aRequestedSnapId)
+TInt CInternetConnectionManager::ConnectWithSnapId(TUint32 aRequestedSnapId)
 	{
 
     CLOG_WRITE_1( "CInternetConnectionManager::ConnectWithSnapId - %d", aRequestedSnapId );

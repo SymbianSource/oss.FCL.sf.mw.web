@@ -15,15 +15,16 @@
  *
 */
 
-#include <feedsentity.h>
-#include <feedsmap.h>
+
+#include "FeedsEntity.h"
+#include "FeedsMap.h"
 #include "PackedAttributes.h"
-#include <feedattributes.h>
-#include <folderattributes.h>
+#include "FeedAttributes.h"
+#include <FolderAttributes.h>
 #include "Packed.h"
 #include "PackedFeed.h"
 #include "PackedFolder.h"
-#include <feedsinterface.h>
+#include "FeedsInterface.h"
 
 // Constant definitions
 _LIT(KNew, "new");

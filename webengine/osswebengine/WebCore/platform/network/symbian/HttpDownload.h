@@ -18,12 +18,12 @@
 #ifndef __HTTPDOWNLOAD_H__
 #define __HTTPDOWNLOAD_H__
 
-#include <brctlspecialloadobserver.h>
+#include <BrCtlSpecialLoadObserver.h>
 #include "HttpUiCallbacks.h"
 #include "HttpCallbacks.h"
-#include <downloadmgrclient.h>
-#include <cdownloadmgruilibregistry.h>
-#include <brctldownloadobserver.h>
+#include <DownloadMgrClient.h>
+#include <CDownloadMgrUiLibRegistry.h>
+#include <BrCtlDownloadObserver.h>
 
 class HttpDlConnection;
 class RHTTPTransaction;
@@ -33,11 +33,7 @@ class HttpSessionManager;
 class HttpDownload : public MHttpDownloadMgrObserver, public MHttpDownloadMgrNextUriObserver
 {
 public:
-    /**
-    * Two-phased constructor.
-    */
-    static HttpDownload* NewL(HttpSessionManager* sessionManager);
-   
+    HttpDownload(HttpSessionManager* sessionManager);
     virtual ~HttpDownload();
     void continueDownloadL(RHTTPTransaction* connTransaction, HttpDlConnection* dlConnection);
 
@@ -95,13 +91,6 @@ public:
     unsigned int numOfDownloads();
 
 private:
-   /**
-    * By default Symbian 2nd phase constructor is private.
-    */
-    void ConstructL(HttpSessionManager* sessionManager);
-    
-    HttpDownload();
-
    /**
     * Initialize Download Manager
     */

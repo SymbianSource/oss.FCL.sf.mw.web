@@ -17,9 +17,10 @@
 *
 */
 
+
 // INCLUDE FILES
 
-#include <favouritesitem.h>
+#include "FavouritesItem.h"
 #include "FavouritesItemImpl.h"
 #include "FavouritesPanic.h"
 

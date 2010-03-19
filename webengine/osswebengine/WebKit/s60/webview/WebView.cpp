@@ -28,7 +28,7 @@
 * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
-#include <browser_platform_variant.hrh>
+#include <Browser_platform_variant.hrh>
 #include "config.h"
 #include "../../bidi.h"
 #include "brctl.h"
@@ -60,7 +60,7 @@
 #include "PluginWin.h"
 #include "PluginPlayer.h"
 #include "WebKitLogger.h"
-#include "WebPagePinchZoomHandler.h"
+
 
 #include "Page.h"
 #include "Settings.h"
@@ -90,7 +90,7 @@
 using namespace HTMLNames;
 
 #include <AknUtils.h>
-#include <cuseragent.h>
+#include <CUserAgent.h>
 #include "WebPageZoomHandler.h"
 
 #include "PlatformFontCache.h"
@@ -200,9 +200,6 @@ m_brctl(brctl)
 , m_allowRepaints(true)
 , m_prevEditMode(false)
 , m_firedEvent(0)
-, m_waitTimer(0)
-, m_pinchZoomHandler(NULL)
-, m_isPinchZoom(false)
 {
 }
 
@@ -229,16 +226,12 @@ WebView::~WebView()
     delete m_fastScrollTimer;
 
     delete [] m_ptrbuffer;
-	delete m_pinchZoomHandler;
     delete m_repainttimer;
     delete m_webfeptexteditor;
     delete m_webcorecontext;
     delete m_bitmapdevice;
     delete m_page;
     delete m_pageScaler;
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF    
-    m_pageScaler = NULL;
-#endif    
     delete m_pageView;
     delete m_webFormFill;
     delete m_toolbar;
@@ -248,8 +241,6 @@ WebView::~WebView()
     delete m_pageScrollHandler;
     delete m_pluginplayer;
     delete m_fepTimer;
-    delete m_waitTimer;
-    delete m_waiter;
     delete m_popupDrawer;
     delete m_tabbedNavigation;
     delete m_userAgent;
@@ -343,10 +334,7 @@ void WebView::ConstructL( CCoeControl& parent )
     if (m_brctl->capabilities() & TBrCtlDefs::ECapabilityAutoFormFill) {
         m_webFormFill = new WebFormFill(this);
     }
-    
-    //Creates the Pinch Zoom Handler
-    m_pinchZoomHandler = WebPagePinchZoomHandler::NewL(this);
-    
+
     // Create the PointerEventHandler
     m_ptrbuffer = new TPoint[256];
     m_webpointerEventHandler = WebPointerEventHandler::NewL(this);
@@ -369,13 +357,8 @@ void WebView::ConstructL( CCoeControl& parent )
     MakeViewVisible(ETrue);
     m_isPluginsVisible=ETrue;
     CCoeControl::SetFocus(ETrue);
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-    //To enable advance pointer info for multi-touch
-    Window().EnableAdvancedPointers();
-#endif 
+
     cache()->setCapacities(0, 0, defaultCacheCapacity);
-    
-    m_waiter = new(ELeave) CActiveSchedulerWait();
 }
 
 void WebView::initializePageScalerL()
@@ -416,27 +399,13 @@ void WebView::Draw( const TRect& rect ) const
         gc.DrawBitmap( m_destRectForZooming, StaticObjectsContainer::instance()->webSurface()->offscreenBitmap(), m_srcRectForZooming );
 
         if ( m_startZoomLevel > m_currentZoomLevel) {
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-            TInt destRectWidth = m_destRectForZooming.Width();
-            TInt destRectHeight = m_destRectForZooming.Height();
-            TRect rectLeft(TPoint(rect.iTl),
-                            TPoint(rect.iTl.iX + m_destRectForZooming.iTl.iX, rect.iBr.iY));
-            
-            TRect rectRight(TPoint(rect.iTl.iX + destRectWidth + m_destRectForZooming.iTl.iX, rect.iTl.iY),
-                            TPoint(rect.iBr));
-            
-            TRect rectTop(TPoint(rect.iTl.iX + m_destRectForZooming.iTl.iX, rect.iTl.iY),
-                              TPoint(rect.iTl.iX + m_destRectForZooming.iTl.iX + destRectWidth, rect.iTl.iY + m_destRectForZooming.iTl.iY));
 
-            TRect rectBottom(TPoint(rect.iTl.iX + m_destRectForZooming.iTl.iX, rect.iTl.iY + m_destRectForZooming.iTl.iY + destRectHeight),
-                              TPoint(rect.iTl.iX + destRectWidth + m_destRectForZooming.iTl.iX, rect.iBr.iY));
-#else 
             TRect rectLeft( TPoint( rect.iTl.iX + m_destRectForZooming.Width() - 2, rect.iTl.iY ),
                             TPoint( rect.iBr ));
 
             TRect rectBottom( TPoint( rect.iTl.iX, rect.iTl.iY + m_destRectForZooming.Height() - 2 ),
                               TPoint( rect.iBr.iX + m_destRectForZooming.Width(), rect.iBr.iY ));
-#endif 
+
 
             const TRgb colorTest(KZoomBgRectColor,KZoomBgRectColor,KZoomBgRectColor);
             gc.SetPenColor(colorTest);
@@ -444,10 +413,6 @@ void WebView::Draw( const TRect& rect ) const
             gc.SetBrushColor(colorTest);
             gc.DrawRect( rectLeft );
             gc.DrawRect( rectBottom );
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-            gc.DrawRect( rectRight );
-            gc.DrawRect( rectTop );
-#endif 
 
         }
 
@@ -520,9 +485,6 @@ void WebView::MakeViewVisible(TBool visible)
             //Reset the iFocusedElementType to be the same as before the second window is opened.
             cursor->setPosition(m_savedCursorPosition);
             cursor->updatePositionAndElemType(m_savedCursorPosition);
-            if ( m_widgetextension && m_focusedElementType == TBrCtlDefs::EElementSelectBox){
-                m_focusedElementType = TBrCtlDefs::EElementNone;
-            }
         } else
             m_savedCursorPosition = cursor->position();
         cursor->cursorUpdate(visible & !AknLayoutUtils::PenEnabled());
@@ -553,9 +515,7 @@ void WebView::MakeViewVisible(TBool visible)
 
     if ( visible ) {
       clearOffScreenBitmap();
-      m_tabbedNavigation->initializeForPage();
       syncRepaint( mainFrame()->frameView()->visibleRect() );
-      TRAP_IGNORE( m_webfeptexteditor->EnableCcpuL() ); 
     }
 
 }
@@ -566,7 +526,7 @@ void WebView::doLayout()
 {
 
     int zoomLevel = m_currentZoomLevel;
-    if(m_widgetextension && !(m_widgetextension->IsWidgetPublising())) {
+    if(!(   m_widgetextension && m_widgetextension->IsWidgetPublising())) {
         zoomLevelChanged( KZoomLevelDefaultValue );
     }
     Frame* f = m_page->mainFrame();
@@ -1104,9 +1064,6 @@ bool WebView::handleMSK(const TKeyEvent& keyevent, TEventCode eventcode, Frame* 
           m_focusedElementType == TBrCtlDefs::EElementBrokenImage ) &&
           keyevent.iRepeats && !m_brctl->wmlMode() ) {
          launchToolBarL();
-        if(m_toolbar) {
-			 sendMouseEventToEngineIfNeeded(TPointerEvent::EButton1Up, cursor->position(), frame);
-        }
      }
     
      return true;
@@ -1117,7 +1074,6 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
     bool downEventConsumed = false;
     bool consumed = false;
     bool tabbedNavigation = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed);
-    bool navigationNone = (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone);
     /*
      * For each platform keyDown event EventHandler::keEvent() generates 
      * keydown and keypress.
@@ -1126,11 +1082,8 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
      * and send it here.
      */
     if (eventcode == EEventKeyDown){
-        downEventConsumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame) || 
-                            ((m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox && // style of input box     
-                              page()->chrome()->client()->elementVisibilityChanged()));
+        downEventConsumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame);
     }
-     
     /*
      * downEventConsumed will be true if JavaScript consumes key event
      * If we are not in the widget mode we want to deactivate input box
@@ -1142,11 +1095,7 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
     if (!widgetDownEventConsumed && needDeactivateEditable(keyevent, eventcode, frame, downEventConsumed)) {
         deactivateEditable();
     }
-    if(!navigationNone)
-    if(frame->document()->focusedNode() != NULL && IS_DOWN_KEY(keyevent) && frame->document()->focusedNode()->changed())
-        {
-        deactivateEditable();
-        }
+
     if (tabbedNavigation) {
         consumed = downEventConsumed || handleTabbedNavigation(m_currentEventKey, m_currentEventCode);
     }
@@ -1418,7 +1367,7 @@ bool WebView::handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, 
        (keyevent.iScanCode == EStdKeyEnter) ) {
        // pass it to webcore
 
-        if (( m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox ||
+        if (( m_focusedElementType == TBrCtlDefs::EElementInputBox ||
             m_focusedElementType == TBrCtlDefs::EElementTextAreaBox) &&
             m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed ) {
             if (!m_prevEditMode) {
@@ -1516,18 +1465,6 @@ TKeyResponse WebView::OfferKeyEventL(const TKeyEvent& keyevent, TEventCode event
 
     if (m_popupDrawer)
         return m_popupDrawer->handleOfferKeyEventL(keyevent, eventcode );
-    
-    if (m_focusedElementType == TBrCtlDefs::EElementObjectBox 
-        || m_focusedElementType == TBrCtlDefs::EElementActivatedObjectBox) {
-        
-        Node* node = static_cast<Node*>(cursor->getElementUnderCursor());
-        MWebCoreObjectWidget* view = widget(node);
-        PluginSkin* plugin = static_cast<PluginSkin*>(view);
-        if (plugin && plugin->pluginWin() && !(plugin->pluginWin()->Windowed())) {
-            if (EKeyWasConsumed == plugin->pluginWin()->OfferKeyEventL(keyevent, eventcode))
-                return EKeyWasConsumed;
-        }
-    }    
 
     if ( m_webFormFillPopup && m_webFormFillPopup->IsVisible() && AknLayoutUtils::PenEnabled() ) {
 	    if (EKeyWasConsumed == m_webFormFillPopup->HandleKeyEventL(keyevent, eventcode)) {
@@ -1766,8 +1703,6 @@ CCoeControl& WebView::PageControlView()
 void WebView::setEditable(TBool editable)
 {
     Frame* frame = core(mainFrame());
-    
-    page()->chrome()->client()->setElementVisibilityChanged(false);
     if (!frame || m_isEditable == editable)
         return;
 
@@ -2049,7 +1984,6 @@ void WebView::exitFindState()
     m_findKeyword = NULL;
     WebFrame* selectedFrame = mainFrame()->findFrameWithSelection();
     selectedFrame->clearSelection();
-    setFocusNone();
 }
 
 bool WebView::isSmallPage()
@@ -2063,6 +1997,30 @@ void WebView::willSubmitForm(FormState* formState)
 {
     if (m_webFormFill) {
         m_webFormFill->willSubmitForm(formState);
+    }
+}
+
+
+//-------------------------------------------------------------------------------
+// WebView::HandlePointerBufferReadyL
+// Handles pointer move events
+//-------------------------------------------------------------------------------
+void WebView::HandlePointerBufferReadyL()
+{
+    memset(m_ptrbuffer,0,256*sizeof(TPoint));
+    TPtr8 ptr((TUint8 *)m_ptrbuffer,256*sizeof(TPoint));
+
+    TInt numPnts = Window().RetrievePointerMoveBuffer(ptr);
+    int i = 0;
+    if (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone) {
+        if (numPnts > 20)
+            i = numPnts - 20;
+    }
+    for (; i < numPnts; i++) {
+        TPointerEvent pe;
+        pe.iType = TPointerEvent::EDrag;
+        pe.iPosition = m_ptrbuffer[i];
+        m_webpointerEventHandler->HandlePointerEventL(pe);
     }
 }
 
@@ -2419,25 +2377,6 @@ void WebView::zoomLevelChanged(int newZoomLevel)
     mainFrame()->scalingFactorChanged(z);
     view->checkScrollbarVisibility();
 
-    if (m_isPinchZoom) {
-        if (newZoomLevel > m_startZoomLevel) {
-            TPoint cpos( mainFrame()->frameView()->contentPos());
-            cpos.iX = cpos.iX + m_pinchDocDelta.iX +.5;
-            cpos.iY = cpos.iY + m_pinchDocDelta.iY +.5;
-            mainFrame()->frameView()->setContentPos(cpos);
-        }
-        if (m_startZoomLevel > newZoomLevel) {
-            TPoint cpos( mainFrame()->frameView()->contentPos());
-            cpos.iX = cpos.iX - m_pinchDocDelta.iX +.5;
-            cpos.iY = cpos.iY - m_pinchDocDelta.iY +.5;
-           
-            if (cpos.iX < 0) cpos.iX = 0;
-            if (cpos.iY < 0) cpos.iY = 0;
-            mainFrame()->frameView()->setContentPos(cpos);
-        }
-        m_isPinchZoom = false;
-    }
-   
     TRect rect = view->rect();
 
     TInt tlx = (rect.iTl.iX * currZoomLevel) / m_currentZoomLevel;
@@ -2536,14 +2475,7 @@ void WebView::setZoomLevelAdaptively()
 
     setZoomLevel(zoomLevel);
     mainFrame()->notifyPluginsOfScrolling();
-    
-    if (zoomLevel == KZoomLevelDefaultValue)
-        {
-        // for pages based on tables this is required
-        doLayout();
-        }
-    
- }
+}
 
 //-------------------------------------------------------------------------------
 // WebView::openPluginPlayerL
@@ -2599,7 +2531,6 @@ CWidgetExtension* WebView::createWidgetExtension(MWidgetCallback &aWidgetCallbac
 #if USE(LOW_BANDWIDTH_DISPLAY)
         m_page->mainFrame()->loader()->setUseLowBandwidthDisplay(false);
 #endif
-    StaticObjectsContainer::instance()->setIconDatabaseEnabled(false);
     }
 
     //Widgets dont need memory cache for dead objects. hence set it to 0
@@ -2953,120 +2884,6 @@ void WebView::windowObjectCleared() const
         WebView* that = const_cast<WebView*>(this);
         that->m_widgetextension->windowObjectCleared();
     }
-}
-
-void WebView::wait(double t)
-{
-    if (!m_waitTimer) {
-        m_waitTimer = new WebCore::Timer<WebView>(this, &WebView::waitTimerCB);
-    }
-    
-    if (!m_waitTimer->isActive()) {
-        m_waitTimer->startOneShot(t);
-    }
-    
-    if (!m_waitTimer->isActive() && !m_waiter->IsStarted()) {
-        m_waiter->Start();  
-    }
-}
-
-void WebView::waitTimerCB(WebCore::Timer<WebView>* t)
-{
-    if (m_waiter->IsStarted()) {
-        m_waiter->AsyncStop();
-    }
-}
-
-//-------------------------------------------------------------------------------
-// WebView::setPinchBitmapZoomLevel
-//-------------------------------------------------------------------------------
-void WebView::setPinchBitmapZoomLevel(int zoomLevel)
-{
-    m_zoomLevelChangedByUser = true;
-    m_dirtyZoomMode = true;
-    m_isPluginsVisible = false;
-    mainFrame()->makeVisiblePlugins(false);
-    m_isPinchZoom = true;
-
-    if (zoomLevel > m_startZoomLevel) {
-        setPinchBitmapZoomIn(zoomLevel);
-    }
-    else {
-        setPinchBitmapZoomOut(zoomLevel);
-    }
-    m_currentZoomLevel = zoomLevel;
-    DrawNow();
-}
-
-//-------------------------------------------------------------------------------
-// WebView::setPinchBitmapZoomIn
-//-------------------------------------------------------------------------------
-void WebView::setPinchBitmapZoomIn(int zoomLevel)
-{
-    TPoint pinchCenter = m_pinchZoomHandler->pinchCenter();
-    
-    // cut m_srcRectForZooming from m_offscreenrect and enlarge it to fit the view rect
-    TRealPoint centerAfterZoom; 
-    //find out the new position of Pinch Center after applying zoom
-    centerAfterZoom.iX = (float)pinchCenter.iX * zoomLevel/m_startZoomLevel;
-    centerAfterZoom.iY = (float)pinchCenter.iY * zoomLevel/m_startZoomLevel;
-    TRealPoint centerDelta;
-    //get the shift in the Pinch Center
-    centerDelta.iX = centerAfterZoom.iX - pinchCenter.iX;
-    centerDelta.iY = centerAfterZoom.iY - pinchCenter.iY;
-    TPoint shiftInView;
-    //find out how much shift needs to be applied to the current zoom, w.r.t. the new view
-    shiftInView.iX = centerDelta.iX * m_startZoomLevel / zoomLevel;
-    shiftInView.iY = centerDelta.iY * m_startZoomLevel / zoomLevel;
-    //width and height of the rectangle that should be used for bitmap stretching 
-    float newWidth  = (float)m_offscreenrect.Width()  * m_startZoomLevel / zoomLevel;
-    float newHeight = (float)m_offscreenrect.Height() * m_startZoomLevel /zoomLevel;
-    //defining the source rectangle which needs to be bitmap stretched
-    m_srcRectForZooming.iTl.iX = shiftInView.iX;
-    m_srcRectForZooming.iTl.iY = shiftInView.iY;
-    m_srcRectForZooming.iBr.iX = newWidth  + shiftInView.iX; 
-    m_srcRectForZooming.iBr.iY = newHeight + shiftInView.iY;
-    //destRectForZooming is the Coecontrol Rect itself
-    m_destRectForZooming = Rect();
-    //get the shift in the document so that during the next engine re-draw, the origin needs to be updated based on that
-    m_pinchDocDelta.iX = (float)shiftInView.iX * 100 / m_startZoomLevel;   
-    m_pinchDocDelta.iY = (float)shiftInView.iY * 100 / m_startZoomLevel;
-}
-
-
-//-------------------------------------------------------------------------------
-// WebView::setPinchBitmapZoomOut
-//-------------------------------------------------------------------------------
-void WebView::setPinchBitmapZoomOut(int zoomLevel)
-{
-    TPoint pinchCenter = m_pinchZoomHandler->pinchCenter();
-
-    // take the whole rect and calculate new rect to fit it the rest of view rect paint gray colour
-    TRealPoint centerAfterZoom; 
-    //find out the new position of Pinch Center after applying zoom
-    centerAfterZoom.iX = (float)pinchCenter.iX * m_startZoomLevel / zoomLevel;
-    centerAfterZoom.iY = (float)pinchCenter.iY * m_startZoomLevel / zoomLevel;
-    TRealPoint centerDelta;
-    //get the shift in the Pinch Center
-    centerDelta.iX = centerAfterZoom.iX - pinchCenter.iX;
-    centerDelta.iY = centerAfterZoom.iY - pinchCenter.iY;
-    TPoint shiftInView;
-    //find out how much shift needs to be applied to the current zoom, w.r.t. the new view
-    shiftInView.iX = centerDelta.iX * zoomLevel / m_startZoomLevel;
-    shiftInView.iY = centerDelta.iY * zoomLevel / m_startZoomLevel;
-    //width and height of the rectangle
-    float newWidth  = (float)m_offscreenrect.Width()  * zoomLevel / m_startZoomLevel;
-    float newHeight = (float)m_offscreenrect.Height() * zoomLevel / m_startZoomLevel;
-    //defining the co-ordinates of the destination rectangle.
-    m_destRectForZooming.iTl.iX = shiftInView.iX;
-    m_destRectForZooming.iTl.iY = shiftInView.iY;
-    m_destRectForZooming.iBr.iX = newWidth  + shiftInView.iX;
-    m_destRectForZooming.iBr.iY = newHeight + shiftInView.iY;
-    //srcRectForZooming is the Coecontrol Rect itself
-    m_srcRectForZooming = Rect();
-    //get the shift in the document so that during the next engine re-draw, the origin needs to be updated based on that
-    m_pinchDocDelta.iX = (float)shiftInView.iX * 100 / zoomLevel;   
-    m_pinchDocDelta.iY = (float)shiftInView.iY * 100 / zoomLevel;
 }
 
 // END OF FILE

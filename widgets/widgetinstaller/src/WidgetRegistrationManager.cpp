@@ -20,14 +20,11 @@
 #include "WidgetUIOperationsWatcher.h"
 #include <apgcli.h>
 #include <APGICNFL.h>
-#include <S32MEM.H>
-#include <widgetregistryconstants.h>
-
 #ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
 #include <apgicnflpartner.h>
-//#include <apgicnflinternal.h>
-#endif
-
+#endif //SYMBIAN_ENABLE_SPLIT_HEADERS
+#include <S32MEM.H>
+#include <WidgetRegistryConstants.h>
 
 // CONSTANTS
 _LIT(KMBMExt, ".mbm");

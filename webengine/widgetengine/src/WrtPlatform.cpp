@@ -20,8 +20,8 @@
 // INCLUDE FILES
 
 #include "WrtPlatform.h"
-#include <swi\sisregistryentry.h>
-#include <swi\sisregistrysession.h>
+#include <sisregistryentry.h>
+#include <sisregistrysession.h>
 #include <sysutil.h> 
 #include <etel.h>
 #include <etelmm.h>

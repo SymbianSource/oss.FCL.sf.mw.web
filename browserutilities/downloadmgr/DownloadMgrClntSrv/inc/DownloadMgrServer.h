@@ -20,7 +20,7 @@
 #define __DOWNLOADMGR_SERVER_H__
 
 //  INCLUDES
-#include "HttpDownloadManagerServerEngine.h"
+#include <HttpDownloadManagerServerEngine.h>
 #include <e32base.h>
 
 // FORWARD DECLARATIONS
@@ -601,13 +601,6 @@ NONSHARABLE_CLASS( CDownloadMgrSession ) :
         * @return None.
 		*/
 		void SetString8AttributeL();
-		
-		/**
-		* Get the number of live subsessions.
-		* @param -
-        * @return None.
-		*/
-		void GetNumberOfSubsession();
 
     private:      // from CSession
 

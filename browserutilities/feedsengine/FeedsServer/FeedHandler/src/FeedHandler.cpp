@@ -16,12 +16,14 @@
 *
 */
 
+
 #include "CleanupLibXml2.h"
 #include "FeedHandler.h"
-#include <leaktracker.h>
+#include "LeakTracker.h"
 #include "RssFeedParser.h"
 #include "AtomFeedParser.h"
-#include <xmlutils.h>
+#include "XmlUtils.h"
+
 
 // -----------------------------------------------------------------------------
 // CFeedHandler::NewL

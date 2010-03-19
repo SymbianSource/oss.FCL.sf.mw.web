@@ -15,6 +15,8 @@
 *
 */
 
+
+
 #ifndef __CXMLOBSERVER_H
 #define __CXMLOBSERVER_H
 
@@ -22,8 +24,9 @@
 #include <e32std.h>
 #include <eikenv.h>
 #include "CXMLAttributes.h"
-#include <mxmlcontenthandler.h>
-#include <mwbxmlcontenthandler.h>
+#include "MXMLContentHandler.h"
+#include "MWBXMLContentHandler.h"
+
 
 // CLASS DECLARATION
 

@@ -46,10 +46,12 @@
 #include "nw_lmgr_statictablebox.h"
 #include "nw_xhtml_xhtml_1_0_tokens.h"
 #include "nwx_statuscodeconvert.h"
-#include <nw_dom_attribute.h>
-#include <nw_dom_element.h>
-#include <Oma2Agent.h>
+#include "nw_dom_attribute.h"
+#include "nw_dom_element.h"
+#include "Oma2Agent.h"
 #include "nwx_ctx.h"
+
+
 
 /* The Media server seems to return a value larger than this if the animation
  * should end; it is 0xffff x 10; I'm not sure if this is significant. I didn't

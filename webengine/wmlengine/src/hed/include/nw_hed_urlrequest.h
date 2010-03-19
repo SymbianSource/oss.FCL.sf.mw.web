@@ -15,6 +15,7 @@
 *
 */
 
+
 #ifndef NW_HED_URLREQUEST_H
 #define NW_HED_URLREQUEST_H
 
@@ -23,7 +24,7 @@
 #include "nw_adt_dynamicvector.h"
 #include "NW_Text_Abstract.h"
 #include "urlloader_urlresponse.h"
-#include "nwx_http_header.h"
+#include <nwx_http_header.h>
 #include "nwx_buffer.h"
 #include "NW_HED_EXPORT.h"
 #include "BrsrStatusCodes.h"
@@ -31,6 +32,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
 
 typedef enum NW_HED_UrlRequest_LoadMode_e {
   NW_HED_UrlRequest_LoadNormal,

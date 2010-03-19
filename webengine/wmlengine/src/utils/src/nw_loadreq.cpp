@@ -15,6 +15,7 @@
 *
 */
 
+
 /*
 **-------------------------------------------------------------------------
 **  Component Generic Include
@@ -31,7 +32,7 @@
 #include "nwx_url_utils.h"
 #include "nw_nvpair.h"
 #include "nw_wae_reader.h"
-#include <nw_string_string.h>
+#include "nw_string_string.h"
 #include "nwx_http_defs.h"
 #include "nwx_settings.h"
 #include "nwx_statuscodeconvert.h"
@@ -44,6 +45,7 @@
 #include "nw_loadreq.h"
 #include "urlloader_urlloaderint.h"
 #include "BrsrStatusCodes.h"
+#include "nwx_http_defs.h"
 
 /*
 **-------------------------------------------------------------------------

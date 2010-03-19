@@ -71,8 +71,8 @@ const TUint32 KWebUtilsBrowserVersionMajor =	0x0000000F;
 // Browser Version Minor
 const TUint32 KWebUtilsBrowserVersionMinor =	0x00000010;
 
-// Browser Version Feature Rev 
-const TUint32 KWebUtilsBrowserVersionFeatureRev =	0x00000011;
+// Browser Version SVN Rev 
+const TUint32 KWebUtilsBrowserVersionSVNRev =	0x00000011;
 
 // Browser Name
 const TUint32 KWebUtilsBrowserName =	0x00000012;
@@ -80,7 +80,5 @@ const TUint32 KWebUtilsBrowserName =	0x00000012;
 // Ignore product program config when TRUE 
 const TUint32 KWebUtilsIgnoreConfig =	0x00000013;
 
-// Browser Version Patch Rev 
-const TUint32 KWebUtilsBrowserVersionPatchRev =	0x00000014;
 		
 #endif // WEBUTILSINTERNALCRKEYS_H

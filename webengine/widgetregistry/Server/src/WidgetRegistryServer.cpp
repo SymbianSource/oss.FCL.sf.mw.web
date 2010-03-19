@@ -15,10 +15,11 @@
 *
 */
 
+
 #include <e32base.h>
 #include <w32std.h>
 #include <apgcli.h>
-#include <widgetregistryconstants.h>
+#include "WidgetRegistryConstants.h"
 #include "widgetregistryserver.h"
 #include "widgetregistrysession.h"
 
@@ -126,9 +127,6 @@ void CWidgetRegistryServer::RunServerL()
         TRAP_IGNORE(
             apparcSession.RegisterNonNativeApplicationTypeL(
                 KUidWidgetLauncher, KLauncherApp()));
-
-		    apparcSession.PrepareNonNativeApplicationsUpdatesL();
-            apparcSession.ForceCommitNonNativeApplicationsUpdatesL();
         apparcSession.Close();
         }
 

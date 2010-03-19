@@ -38,6 +38,7 @@
 #include "nwx_http_defs.h"
 #include "BrsrStatusCodes.h"
 
+
 /* prototypes */
 NW_Bool read_header_info(NW_Reader_t *r);
 NW_Bool read_constpool(NW_Reader_t *r);

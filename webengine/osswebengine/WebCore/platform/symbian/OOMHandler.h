@@ -44,7 +44,7 @@
 #define __OOMHANDLER_H__
 
 #include <e32def.h>
-#include <MemoryManager.h>
+#include "MemoryManager.h"
 
 namespace WebCore {
 

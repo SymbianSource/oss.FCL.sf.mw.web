@@ -19,7 +19,7 @@
 #ifndef CXML_NW2CXMLTYPES_H
 #define CXML_NW2CXMLTYPES_H
 
-#include <cxml_type_def.h>
+#include "cxml_type_def.h"
 
 #ifdef __cplusplus
 extern "C"

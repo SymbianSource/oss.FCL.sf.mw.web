@@ -23,7 +23,7 @@
 //  INCLUDES
 #include <e32base.h>
 #include <e32std.h>
-#include <downloadmgrclient.h>
+#include <DownloadMgrClient.h>
 #include <badesca.h>
 #include <bamdesca.h>
 #include <apgcli.h>
@@ -60,10 +60,10 @@ NONSHARABLE_CLASS( TDownloadUiData )
         TInt32 iDownloadedSize;
         TInt   iIconIndex;
         TBool  iPausable;
+        TBool  iIsOnExternalMemory;
 		TInt32 iProgressState;
 		TInt32 iNumMediaObjects;
 		TInt32 iActiveMoIndex;
-        TInt32 iExternalMemoryStatus;
     };
 /// Array of UI data T objects.
 typedef CArrayFixFlat< TDownloadUiData > CDownloadUiDataArray;
@@ -206,9 +206,8 @@ NONSHARABLE_CLASS( CDownloadsListArray ) : public CBase
         /** Temp storage. Should be long enough to hold R_DMUL_DOWNLOAD_COMPLETE 
             localized string or the progress info (max 14). */
         TBuf<KMaxDownloadItemTextPartLength> iProgressInfoRes;
-        TInt iPausedIconIndex; ///< Pause icon index in list box model
-        TInt iExternalMemoryIconIndex; ///< MMC icon index in list box model
-        TInt iInternalMassMemoryIconIndex;  ///< Mass Memory icon index in list box model
+        TInt iPausedIconIndex; ///< Default icon index in list box model
+        TInt iExternalMemoryIconIndex; ///< Default icon index in list box model
         HBufC* iCompletedString; ///< Owned.
         HBufC* iSavedToGalleryString; ///< Owned.
         

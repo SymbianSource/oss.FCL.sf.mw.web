@@ -24,7 +24,8 @@
 
 //System includes
 #include <es_sock.h>
-
+#include <es_enum.h> 
+#include <cdbcols.h>
 
 //You should inherit from this if you want to observe connection stages
 class MConnectionStageObserver

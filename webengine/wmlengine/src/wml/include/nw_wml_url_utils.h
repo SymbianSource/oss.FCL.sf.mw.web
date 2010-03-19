@@ -34,8 +34,9 @@
 extern "C" {
 #endif
 
+
 #include "nw_wml_core.h"
-#include <nwx_status.h>
+#include "nwx_status.h"
 
 #ifdef __cplusplus
 } /* extern "C" */

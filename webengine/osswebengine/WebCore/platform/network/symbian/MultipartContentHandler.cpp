@@ -18,13 +18,13 @@
 // INCLUDE FILES
 #include "config.h"
 #include "MultipartContentHandler.h"
-#include <multipartparser.h>
-#include <bodypart.h>
+#include "MultipartParser.h"
+#include "BodyPart.h"
 #include "HttpSessionManager.h"
-#include "httpcachemanager.h"
+#include "HttpCacheManager.h"
 #include <http/rhttptransaction.h>
 #include <Uri16.h>
-#include "httpfiltercommonstringsext.h"
+#include "HttpFilterCommonStringsExt.h"
 #include "WebCharsetData.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"

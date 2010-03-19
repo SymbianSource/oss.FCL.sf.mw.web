@@ -15,6 +15,7 @@
 *
 */
 
+
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 #include <e32std.h>
 
@@ -36,7 +37,8 @@
 #include "nw_lmgr_statictablecellbox.h"
 #include "nwx_logger.h"
 #include "nwx_settings.h"
-#include <MemoryManager.h>
+#include "MemoryManager.h"
+
 
 /*required for animations*/
 

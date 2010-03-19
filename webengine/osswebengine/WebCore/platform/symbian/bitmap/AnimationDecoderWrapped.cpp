@@ -49,7 +49,7 @@
 #include "MaskedBitmap.h"
 #include "ImageObserver.h"
 #include "SyncDecodeThread.h"
-#include <Oma2Agent.h>
+#include "Oma2Agent.h"
 using namespace ContentAccess;
 
 namespace TBidirectionalState {
@@ -69,8 +69,6 @@ namespace
 
 using namespace WebCore;
 CSynDecodeThread *CAnimationDecoderWrapped::iSyncDecodeThread  = NULL;
-const TInt KDownScaleFactor = 2; // scaling is done by a factor of 2.For ex.2,4,8...( similar to ImageViewer )
-const TInt KMaxDownScaleFactor = 8; // limit scaling to 8
 
 // ============================ MEMBER FUNCTIONS ===============================
 // -----------------------------------------------------------------------------
@@ -83,8 +81,8 @@ CAnimationDecoderWrapped::CAnimationDecoderWrapped( ImageObserver* aObs )
     , iObserver(aObs)
     , iLoopCount( -1 )
     , iCurLoopCount( -1 )
-    , iSyncBitmapHandle(0)
-    , iSyncMaskHandle(0)
+    , iSyncBitmapHandle(-1)
+    , iSyncMaskHandle(-1)
     , iDecodeInProgress(ETrue)
     , iIsInvalid(EFalse)
     , iCanBeDeleted(ETrue)
@@ -175,25 +173,17 @@ CMaskedBitmap* CAnimationDecoderWrapped::Destination()
         return iDestination; 
     }
         
-    if (iSyncBitmapHandle || iSyncMaskHandle) {       
+    if (iSyncBitmapHandle != -1 && iSyncMaskHandle != -1) {
         CFbsBitmap* bitmap = new CFbsBitmap();
-        TInt errBmp = bitmap->Duplicate(iSyncBitmapHandle);
-        
-        CFbsBitmap* mask = NULL;
-        TInt errMask = KErrNone;
-        if(iSyncMaskHandle) {
-            CFbsBitmap* mask = new CFbsBitmap();
-            errMask = mask->Duplicate(iSyncMaskHandle);
-        }
-        
-        if(errBmp==KErrNone && errMask==KErrNone) {
-            iDestination = new CMaskedBitmap(bitmap, mask);
-            iDestination->SetFrameIndex(0);
-            iDestination->SetFrameDelay(0);
-        }
+        bitmap->Duplicate(iSyncBitmapHandle);
+        CFbsBitmap* mask = new CFbsBitmap();
+        mask->Duplicate(iSyncMaskHandle);
 
-        iSyncBitmapHandle = 0;
-        iSyncMaskHandle = 0;
+        iDestination = new CMaskedBitmap(bitmap, mask);
+        iDestination->SetFrameIndex(0);
+        iDestination->SetFrameDelay(0);
+        iSyncBitmapHandle = -1;
+        iSyncMaskHandle = -1;
     }
     
     return iDestination;
@@ -379,6 +369,7 @@ void CAnimationDecoderWrapped::StartDecodingL()
     iAnimation = iAnimationFrameCount > 1;
     iFrameInfo = iDecoder->FrameInfo( 0 );
     iSizeAvailable = ETrue;
+
     if (iFrameInfo.iFlags & TFrameInfo::ETransparencyPossible){
         // we only support gray2 and gray256 tiling
         TDisplayMode maskmode = ( (iFrameInfo.iFlags & TFrameInfo::EAlphaChannel) && (iFrameInfo.iFlags & TFrameInfo::ECanDither)) ? EGray256 : EGray2;
@@ -390,15 +381,11 @@ void CAnimationDecoderWrapped::StartDecodingL()
             RunError(KErrNoMemory);
     }
     else {
-         TInt error = ScaleImageIfRequired();
-         if (!error)
-             {
-             LoadFrame(0);
-             }
-         else
-             {
-             RunError(error);	
-             }
+        TInt error = iDestination->Create( iFrameInfo.iOverallSizeInPixels, DisplayMode() );
+        if (!error)
+            LoadFrame(0);
+        else
+            RunError(KErrNoMemory);
     }
 }
 
@@ -627,10 +614,7 @@ void CAnimationDecoderWrapped::CompleteLoadL()
         iDestination->SetFrameIndex( iFrameIndex );
         iDestination->SetFrameDelay( 0 );
         //Compress non-animated images via FBServ (losslessly, idle priority) 
-        //the 1x1 image is directly fetched before decompressing it which results in a crash in fbsserv and therefore a white background is displayed.
-        //If the Image is of pixel (1,1) do not compress.
-        if( frameSize != TSize(1,1) )
-           iDestination->CompressInBackground();
+        iDestination->CompressInBackground();     
 
         // Normal image ready
         //iDestination = NULL;
@@ -775,42 +759,6 @@ void CAnimationDecoderWrapped::SelfComplete( TInt aError )
     User::RequestComplete( status, aError );
 }
 
-// -----------------------------------------------------------------------------
-// CAnimationDecoderWrapped::ScaleImageIfRequired
-// Images that are too large to be displayed are scaled down 
-// @return error code
-// -----------------------------------------------------------------------------
-TInt CAnimationDecoderWrapped::ScaleImageIfRequired()
-    {
-    TInt error = iDestination->Create( iFrameInfo.iOverallSizeInPixels, DisplayMode() );
-    // if the image is too large try scaling it down
-    if ( error == KErrNoMemory )
-        {
-        TBool fullyScalable(iFrameInfo.iFlags & TFrameInfo::EFullyScaleable);
-        // check if scaling is possible
-        if ( !fullyScalable )
-            {
-            TInt scalingLevel(KDownScaleFactor);
-            do 
-                {
-                TSize scaledSize( iFrameInfo.iOverallSizeInPixels.iWidth / scalingLevel + ( iFrameInfo.iOverallSizeInPixels.iWidth % scalingLevel ? 1 : 0 ),
-                                  iFrameInfo.iOverallSizeInPixels.iHeight / scalingLevel + ( iFrameInfo.iOverallSizeInPixels.iHeight % scalingLevel ? 1 : 0 ) );
-                error = iDestination->Create( scaledSize, DisplayMode() );
-                // retry only for KErrNoMemory condition
-                if (error == KErrNoMemory)
-                    {
-                    // increase to next down scaling level
-                    scalingLevel *= KDownScaleFactor ;
-                    }
-                else
-                    {
-                    // image scaled to appropriate level
-                    iFrameInfo.iOverallSizeInPixels = scaledSize;
-                    }
-                }while (error == KErrNoMemory &&  scalingLevel <= KMaxDownScaleFactor);// loop until we can scale the image without any error
-            }
-        }
-    return error;
-    }
+
 
 //  End of File

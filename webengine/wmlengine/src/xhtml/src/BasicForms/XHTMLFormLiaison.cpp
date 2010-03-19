@@ -15,15 +15,15 @@
 *
 */
 
+
 #include <e32def.h>
 #include <calslbs.h>
 #include <StringLoader.h>
 #include <webkit.rsg>
 #include <commoncontentpolicy.h>
 
-#include <brctldialogsprovider.h>
-
 #include "BrCtl.h"
+#include "BrCtlDialogsProvider.h"
 
 #include "BrsrStatusCodes.h"
 #include "MVCShell.h"
@@ -31,7 +31,7 @@
 #include "nw_adt_mapiterator.h"
 #include "nw_basicforms_xhtmlformliaisoni.h"
 //#include "nw_ecma_contenthandler.h"
-#include <nw_dom_document.h>
+#include "nw_dom_document.h"
 #include "nw_dom_domvisitor.h"
 #include "nw_fbox_formbox.h"
 #include "nw_fbox_optgrpbox.h"
@@ -45,6 +45,7 @@
 #include "nwx_string.h"
 //R->ul #include "urlloader_urlloaderint.h"
 #include "TEncodingMapping.h"
+
 
 // LOCAL CONSTANTS
 _LIT(KEmptyTitle, "");

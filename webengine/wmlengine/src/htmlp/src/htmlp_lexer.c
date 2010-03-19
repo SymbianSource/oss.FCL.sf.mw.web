@@ -15,6 +15,7 @@
 *
 */
 
+
 /*
 
 Lexer for HTML parser.
@@ -24,7 +25,7 @@ Lexer for HTML parser.
 
 #include "nwx_defs.h"
 #include "nw_htmlp_lexer.h"
-#include <nw_string_char.h>
+#include "nw_string_char.h"
 #include "BrsrStatusCodes.h"
 
 /* Does not copy the buffer */

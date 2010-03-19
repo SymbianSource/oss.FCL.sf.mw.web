@@ -15,12 +15,13 @@
 *
 */
 
+
 TARGET      JavaScriptCore.DLL
 TARGETTYPE  dll
 UID 0x1000008d 0x10281B70
 
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 #ifdef __S60_32__
 LANG sc 
@@ -71,8 +72,8 @@ SYSTEMINCLUDE ../../../../JavaScriptCore/icu
 SYSTEMINCLUDE ../../../../JavaScriptCore/ForwardingHeaders
 SYSTEMINCLUDE ../../../../
 
-OS_LAYER_ESTLIB_SYSTEMINCLUDE
-OS_LAYER_LIBC_SYSTEMINCLUDE
+MW_LAYER_LIBC_SYSTEMINCLUDE
+MW_LAYER_STDAPIS_SYSTEMINCLUDE
 
 SOURCEPATH ../../../../DerivedSources/JavaScriptCore
 SOURCE grammar.cpp
@@ -129,6 +130,7 @@ SOURCE DateMath.cpp
 SOURCE JSWrapperObject.cpp
 SOURCE PropertyNameArray.cpp
 
+
 SOURCEPATH ../../../../JavaScriptCore/pcre
 SOURCE pcre_refcount.c
 SOURCE pcre_ucp_findchar.c
@@ -175,5 +177,6 @@ SOURCE          npscript.cpp
 LIBRARY         estlib.lib
 LIBRARY         euser.lib
 LIBRARY		memman.lib
-LIBRARY     	charconv.lib
+LIBRARY     charconv.lib
+
 

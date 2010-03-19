@@ -30,13 +30,13 @@
 *****************************************************************/
 
 #include "cxml_internal.h"
-#include <nw_wbxml_token.h>
-#include <nw_wbxml_dictionary.h>
-#include <nw_wbxml_document.h>
-#include <nw_wbxml_event.h>
-#include <nw_wbxml_reader.h>
+#include "nw_wbxml_token.h"
+#include "nw_wbxml_dictionary.h"
+#include "nw_wbxml_document.h"
+#include "nw_wbxml_event.h"
+#include "nw_wbxml_reader.h"
 #include "nw_wbxml_parsei.h"
-#include <nw_string_char.h>
+#include "nw_string_char.h"
 
 #ifndef HTTP_utf_8
 #define HTTP_utf_8 0x6A

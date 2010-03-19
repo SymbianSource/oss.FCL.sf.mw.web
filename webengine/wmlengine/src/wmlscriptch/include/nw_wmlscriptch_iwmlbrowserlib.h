@@ -15,6 +15,7 @@
 *
 */
 
+
 #ifndef NW_WMLSCH_IWMLBROWSERLIB_H
 #define NW_WMLSCH_IWMLBROWSERLIB_H
 
@@ -26,16 +27,19 @@
 extern "C" {
 #endif /* __cplusplus */
   
+
 /* ------------------------------------------------------------------------- *
    forward declarations
  * ------------------------------------------------------------------------- */
 typedef struct NW_WmlsCh_IWmlBrowserLib_Class_s NW_WmlsCh_IWmlBrowserLib_Class_t;
 typedef struct NW_WmlsCh_IWmlBrowserLib_s NW_WmlsCh_IWmlBrowserLib_t;
 
+
 /* ------------------------------------------------------------------------- *
    method type prototypes
  * ------------------------------------------------------------------------- */
 
+ 
 typedef 
 TBrowserStatusCode
 (*NW_WmlsCh_IWmlBrowserLib_Init_t) (NW_WmlsCh_IWmlBrowserLib_t *wmlBrowser);

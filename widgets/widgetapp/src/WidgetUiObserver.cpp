@@ -27,7 +27,7 @@
 #include <ActiveApDb.h>
 #include <EscapeUtils.h>
 #include <Uri16.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 #include "WidgetUiObserver.h"
 #include "WidgetUiWindow.h"
 #include "WidgetUiWindowView.h"
@@ -266,7 +266,7 @@ TBool CWidgetUiObserver::ResolveEmbeddedLinkL(const TDesC& aEmbeddedUrl,
         CleanupStack::PushL( buf );
         HBufC* contentType = NULL;
         TPtrC p( NULL, 0 );
-        contentType = RecognizeLC( *iFileName );
+        contentType = RecognizeLC( *iFileName, *buf );
         aEmbeddedLinkContent.HandleResolveComplete( *contentType, p, buf );
         CleanupStack::PopAndDestroy( 2, buf ); // contentType, buf
         return ETrue;
@@ -442,25 +442,19 @@ HBufC8* CWidgetUiObserver::ReadFileL( const TDesC& aFileName )
 // CWidgetUiObserver::RecognizeL
 // -----------------------------------------------------------------------------
 //
-HBufC* CWidgetUiObserver::RecognizeLC( const TDesC& aFileName )
+HBufC* CWidgetUiObserver::RecognizeLC( const TDesC& aFileName, const TDesC8& aData )
     {
     TDataRecognitionResult dataType;
     RApaLsSession apaSession;
     TInt ret;
-    
-    RFile file;
-    User::LeaveIfError( file.Open(CCoeEnv::Static()->FsSession(), aFileName, EFileRead|EFileShareAny) );
-    CleanupClosePushL( file );
 
     CleanupClosePushL(apaSession);
     User::LeaveIfError( apaSession.Connect() );
 
     // Ask the application architecture to find the file type
-    ret = apaSession.RecognizeData( file, dataType );
+    ret = apaSession.RecognizeData( aFileName, aData, dataType );
     apaSession.Close();
-    
     CleanupStack::PopAndDestroy(1, &apaSession);
-    CleanupStack::PopAndDestroy( &file );
     
     TPtrC8 mimeTypePtr = dataType.iDataType.Des8();
     TInt len = mimeTypePtr.Length() + 1;

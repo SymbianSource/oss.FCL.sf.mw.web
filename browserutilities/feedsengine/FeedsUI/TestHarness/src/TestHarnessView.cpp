@@ -15,6 +15,7 @@
 *
 */
 
+
 #include <aknviewappui.h>
 #include <avkon.hrh>
 #include <avkon.rsg>
@@ -24,10 +25,11 @@
 #include "FeedsApp.hrh"
 
 #include "FeedsAppUi.h"
-#include <leaktracker.h>
+#include "LeakTracker.h"
 #include "TestHarness.h"
 #include "TestHarnessView.h"
 #include "TestHarnessContainer.h"
+
 
 // -----------------------------------------------------------------------------
 // CTestHarnessView::NewL

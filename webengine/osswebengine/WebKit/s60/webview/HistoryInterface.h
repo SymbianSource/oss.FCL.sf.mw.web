@@ -21,7 +21,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 
 // CONSTANTS
 

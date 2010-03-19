@@ -34,7 +34,7 @@
 #include "brctl.h"
 
 #include <e32base.h>
-#include <brctldialogsprovider.h>
+#include <BrCtlDialogsProvider.h>
 
 const TInt KDefaultSize(1);
 namespace WebCore {

@@ -15,11 +15,12 @@
 *
 */
 
+
 #include "cxml_internal.h"
-#include <nw_dom_element.h>
-#include <nw_dom_attribute.h>
-#include <nw_dom_document.h>
-#include <nw_wbxml_dictionary.h>
+#include "nw_dom_element.h"
+#include "nw_dom_attribute.h"
+#include "nw_dom_document.h"
+#include "nw_wbxml_dictionary.h"
 
 /* 
  * Returns

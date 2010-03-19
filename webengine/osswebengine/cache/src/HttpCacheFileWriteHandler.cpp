@@ -23,7 +23,7 @@
 #include "HttpCachePostponeWriteUtilities.h"
 #include "HttpCacheUtil.h"
 #include "HttpCacheObserver.h"
-#include <httpcachemanagerinternalcrkeys.h>
+#include <HttpCacheManagerInternalCRKeys.h>
 #include <centralrepository.h>
 #include <hal.h>
 #include <f32file.h>

@@ -18,9 +18,9 @@
 
 // INCLUDE FILES
 #include <http.h>
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 #include "HttpRequestHeaderManager.h"
-#include "httpfiltercommonstringsext.h"
+#include "HttpFilterCommonStringsExt.h"
 #include "ResourceRequest.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"

@@ -17,6 +17,7 @@
 *
 */
 
+
 #ifndef ROAP_APP_LOGGER_H
 #define ROAP_APP_LOGGER_H
 

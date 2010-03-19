@@ -15,10 +15,11 @@
 *
 */
 
+
 #include <bldvariant.hrh>
 #include "CBrowserSettings.h"
 
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 #include <centralrepository.h>
 
 #include <eikenv.h>

@@ -19,7 +19,8 @@
 #include <e32base.h>
 #include <f32file.h>
 #include <s32mem.h>
-#include <widgetregistryclient.h>
+#include "WidgetRegistryClient.h"
+
 
 // ============================================================================
 // Starts the widget registry server

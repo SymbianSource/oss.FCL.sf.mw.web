@@ -19,7 +19,7 @@
 
 
 #include "ImageMapPopup.h"
-#include <browser_platform_variant.hrh>
+
 #include <e32math.h>
 #include <apmstd.h>
 #include <bitdev.h>
@@ -317,13 +317,8 @@ TInt CImageMapPopup::CreateAndRunL( CArrayPtrFlat<CFbsBitmap>& aBitmapList, CArr
 //
 void CImageMapPopup::HandleListBoxEventL( CEikListBox* /*aListBox*/, TListBoxEvent aEventType )
   {
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF  	
   if(aEventType == MEikListBoxObserver::EEventItemDoubleClicked || 
-     aEventType == MEikListBoxObserver::EEventEnterKeyPressed || aEventType == EEventItemSingleClicked)
-#else
-	if(aEventType == MEikListBoxObserver::EEventItemDoubleClicked || 
      aEventType == MEikListBoxObserver::EEventEnterKeyPressed)
-#endif     	
     {
     AttemptExitL( ETrue );
     }

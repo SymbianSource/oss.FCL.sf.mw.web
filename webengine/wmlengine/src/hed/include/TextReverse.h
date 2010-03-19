@@ -15,6 +15,8 @@
 *
 */
 
+
+
 #ifndef TEXTREVERSE_H
 #define TEXTREVERSE_H
 
@@ -22,10 +24,11 @@
 extern "C" {
 #endif
 
+
 //  INCLUDES
 #include "nwx_defs.h"
 #include "nwx_http_defs.h"
-#include <nw_string_string.h>
+#include "nw_string_string.h"
 #include "BrsrStatusCodes.h"
 
 // CONSTANTS
@@ -35,6 +38,8 @@ extern "C" {
 // DATA TYPES
 
 // FUNCTION PROTOTYPES
+
+
 
 TBrowserStatusCode ReverseText(NW_String_t* string);
 

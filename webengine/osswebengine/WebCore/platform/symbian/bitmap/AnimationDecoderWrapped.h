@@ -208,7 +208,6 @@ class CAnimationDecoderWrapped  : public CActive
         void ErrorCleanup();
         void SelfComplete( TInt aError = KErrNone );
         HBufC8* DecodeDRMImageContentL(const TDesC8& aData);
-        TInt ScaleImageIfRequired();
 
   private: // Private constructors
 

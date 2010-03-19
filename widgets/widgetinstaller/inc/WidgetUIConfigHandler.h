@@ -21,8 +21,8 @@
 
 // INCLUDES
 #include <libxml2_tree.h>
-#include <widgetregistryconstants.h>
-#include <widgetpropertyvalue.h>
+#include <WidgetRegistryConstants.h>
+#include <WidgetPropertyValue.h>
 
 // FORWARD DECLARATION
 

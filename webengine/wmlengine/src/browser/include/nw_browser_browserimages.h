@@ -22,6 +22,7 @@
 
 _LIT( KBrowserBitmapsName,"browserbitmaps.mbm" );
 
+
 const TUint qgn_prop_wml_square                 = 0;
 const TUint qgn_prop_wml_disc                   = 1;
 const TUint qgn_prop_wml_circle                 = 2;

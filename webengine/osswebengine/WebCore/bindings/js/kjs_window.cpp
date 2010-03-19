@@ -1543,15 +1543,7 @@ int Window::installTimeout(ScheduledAction* a, int t, bool singleShot)
     
 #if PLATFORM(SYMBIAN)
     if (d->m_evt && d->m_evt->type() == "mouseover")  {
-        if (singleShot) {
-            double interval = max(0.001, t * 0.001);
-            if (interval < cMinimumTimerInterval && (timerNestingLevel + 1) >= cMaxTimerNestingLevel) {
-                interval = cMinimumTimerInterval;
-            }
-            impl()->frame()->page()->chrome()->wait(interval);
-            a->execute(this);
-            return lastUsedTimeoutId;
-        }
+        impl()->frame()->page()->chrome()->setElementVisibilityChanged(true);
     }
 #endif        
 

@@ -19,6 +19,7 @@
 TARGET          WebKit.lib
 TARGETTYPE      lib
 
+
 VENDORID        VID_DEFAULT
 
 SOURCEPATH      ../../WebView
@@ -41,8 +42,6 @@ SOURCE          WmlResourceLoaderClient.cpp
 SOURCE          BrCtlDialogsProviderUtils.cpp
 SOURCE          WebToolBarInterface.cpp
 SOURCE          WebDataLoadConsumer.cpp
-SOURCE          WebGestureInterface.cpp
-SOURCE          WebPagePinchZoomHandler.cpp
 
 SOURCE          WebPageFullScreenHandler.cpp
 SOURCE          WebPageScrollHandler.cpp

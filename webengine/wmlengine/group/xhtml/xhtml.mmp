@@ -15,7 +15,8 @@
 *
 */
 
-#include  "../webkitcommon.mmpi"
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          xhtml.lib
 TARGETTYPE      lib
@@ -23,10 +24,13 @@ TARGETTYPE      lib
 CAPABILITY CAP_GENERAL_DLL
 VENDORID        VID_DEFAULT
 
+
 MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER 1
 
 SOURCEPATH      ../../src/xhtml/src/
+
+#include  "../webkitcommon.mmpi"
 
 SOURCE	structure/XHTMLHeadElementHandler.cpp
 SOURCE	structure/XHTMLStructureModule.cpp
@@ -86,3 +90,35 @@ SOURCE  frame/XHTMLFrameModule.cpp
 SOURCE  frame/XHTMLFrameElementHandler.cpp
 SOURCE  ignore/XHTMLIgnoreElementHandler.cpp
 SOURCE  XHTMLMessageListener.cpp
+
+
+USERINCLUDE     .
+USERINCLUDE     ../../src/adt/include
+USERINCLUDE     ../../src/css/include
+USERINCLUDE     ../../src/Evt/include
+USERINCLUDE     ../../src/htmlp/include
+USERINCLUDE     ../../src/fbox/include
+USERINCLUDE     ../../src/gdi/include
+USERINCLUDE     ../../src/hed/include
+USERINCLUDE     ../../src/ImageCH/include
+USERINCLUDE     ../../src/image/include
+USERINCLUDE     ../../src/lmgr/include
+USERINCLUDE     ../../src/markup/include
+USERINCLUDE     ../../src/Msg/include
+USERINCLUDE     ../../src/mvc/include
+USERINCLUDE     ../../src/object/include
+USERINCLUDE     ../../src/scrolling/inc
+USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/text/include
+USERINCLUDE     ../../src/wmlscriptch/include
+USERINCLUDE     ../../src/xhtml/include
+USERINCLUDE     ../../src/wml/src
+USERINCLUDE     ../../src/wml/include
+USERINCLUDE     ../../src/wmlcontrol/include
+USERINCLUDE   	../../src/utils/include
+
+SYSTEMINCLUDE   ../../src/utils/include
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
+MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_LIBC_SYSTEMINCLUDE

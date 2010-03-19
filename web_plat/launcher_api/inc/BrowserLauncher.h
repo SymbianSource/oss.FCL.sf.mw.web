@@ -24,7 +24,7 @@
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-#include <favouritesdb.h>
+#include <FavouritesDb.h>
 
 // FORWARD DECLARATIONS
 class CBrowserLauncherExtension;

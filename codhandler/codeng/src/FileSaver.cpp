@@ -11,14 +11,16 @@
 *
 * Contributors:
 *
-* Description: 
-*      Implementation of class CFileSaver.   
-*      
+* Description:
+*      Implementation of class CFileSaver.
+*
 *
 */
 
+
 // INCLUDE FILES
-#include <browser_platform_variant.hrh>
+//#include <platform/mw/Browser_platform_variant.hrh>
+#include <Browser_platform_variant.hrh>
 #include "FileSaver.h"
 #include "CodBuffStorage.h"
 #include "CodLoadObserver.h"
@@ -31,9 +33,12 @@
 #include "CodData.h"
 
 #include <f32file.h>
-#include <httpdownloadmgrcommon.h>
+#include <HttpDownloadMgrCommon.h>
 #include <DocumentHandler.h>
 #include <pathinfo.h>
+
+// following one line is temporary: AVKON dependency removal
+#undef BRDO_APP_GALLERY_SUPPORTED_FF
 
 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include <MGXFileManagerFactory.h>
@@ -45,6 +50,7 @@
 
 const TInt KDefaultStorageBufferSize = 128 * 1024;
 const TInt KDefaultStorageBufferSizePD = 16 * 1024;
+
 
 // ================= MEMBER FUNCTIONS =======================
 
@@ -78,7 +84,7 @@ void CFileSaver::ConstructL()
     CCodSaver::ConstructL();
     iBufferSize =  KDefaultStorageBufferSize ;
     iProgressiveDownload = EFalse ;
-    
+
     iStorage = CCodBuffStorage::NewL(this);
     }
 
@@ -104,7 +110,7 @@ CFileSaver::CFileSaver
     {
     CLOG(( ECodEng, 2, _L("*** CFileSaver::CFileSaver") ));
     }
-  
+
 // ---------------------------------------------------------
 // CFileSaver::~CFileSaver()
 // ---------------------------------------------------------
@@ -125,33 +131,33 @@ void CFileSaver::OpenStoreL()
     {
     CLOG(( ECodEng, 2, _L("CFileSaver::OpenStoreL") ));
     __ASSERT_DEBUG( iState == EInit, CodPanic( ECodInternal ) );
-    
+
     // Store (temp file) is not opened now.
     // Opening is deferred until first data chunk arrives.
 
-    TInt err = iFile.Open(  iFs, 
-                            iFname, 
-                            EFileShareAny | 
-                            EFileStream | 
+    TInt err = iFile.Open(  iFs,
+                            iFname,
+                            EFileShareAny |
+                            EFileStream |
 #ifdef BRDO_RFILE_WRITE_DIRECT_IO_FF
                             EFileWrite |
                             EFileWriteDirectIO );
-#else                            
+#else
                             EFileWrite );
-#endif                            
-                       
-	if(err == KErrNotFound)                               
+#endif
+
+	if(err == KErrNotFound)
 	    {
-        err = iFile.Replace( iFs, 
-                           iFname, 
-                           EFileShareAny | 
-                           EFileStream | 
+        err = iFile.Replace( iFs,
+                           iFname,
+                           EFileShareAny |
+                           EFileStream |
 #ifdef BRDO_RFILE_WRITE_DIRECT_IO_FF
                                        EFileWrite |
                                        EFileWriteDirectIO );
-#else                           
+#else
                            EFileWrite );
-#endif                           
+#endif
 
 	    }
 
@@ -163,7 +169,7 @@ void CFileSaver::OpenStoreL()
     iSize = 0;
     iState = EStoreOpen;
     }
-    
+
 // ---------------------------------------------------------
 // CFileSaver::AppendData()
 // ---------------------------------------------------------
@@ -183,10 +189,10 @@ TInt CFileSaver::AppendData( const TDesC8& aData )
             {
             // nothing persisted yet. If there's a file with the same name,
             // delete it.
-            err = iFile.Replace( iFs, 
-                                   iFname, 
-                                   EFileShareAny | 
-                                   EFileStream | 
+            err = iFile.Replace( iFs,
+                                   iFname,
+                                   EFileShareAny |
+                                   EFileStream |
                                    EFileWrite );
             }
         else*/
@@ -196,7 +202,7 @@ TInt CFileSaver::AppendData( const TDesC8& aData )
         {
         err = iStorage->WriteOutNextBodyDataL(aData );
         }
-    
+
     CLOG(( EHttpLoad, 2, _L("<- CFileSaver::AppendData returns (%d)"), err ));
     return err;
     }
@@ -244,7 +250,7 @@ void CFileSaver::CheckResponseAttributesL( const CCodData& aData )
     //
     // There is a safety upper bound on the transaction size, that is already
     // applied. See SetMaxSize().
-    
+
     TDataType drm( KOma1DrmMessageContentType );
     TDataType dcf( KOma1DcfContentType );
 
@@ -308,7 +314,7 @@ void CFileSaver::BulkInstallL( TRequestStatus* aStatus, const CCodData &aData, c
 */
     if (!aAttached)
 	    {
-#if 0 
+#if 0
         RFs fs;
         TInt err( KErrNone );
         HBufC* filename = HBufC::NewLC(KMaxFileName);
@@ -322,25 +328,25 @@ void CFileSaver::BulkInstallL( TRequestStatus* aStatus, const CCodData &aData, c
         TInt error = fs.MkDirAll(filenamePtr);
         if (error!=KErrNone && error!=KErrAlreadyExists)
            {
-            User::Leave(error);   
+            User::Leave(error);
            }
-   
+
         // Find a unique name to avoid any conflict.
         // Here iFname has full path of current location of file
         // and filename has destination path.
         FindUniqueDestinationFileNameL( iFname, filename );
-        
-        filenamePtr = filename->Des();     
-               
+
+        filenamePtr = filename->Des();
+
         err = file->Move(iFname, filenamePtr, CFileMan::EOverWrite);
-    
+
         if(err != KErrNone)
            {
            User::Leave(err);
            }
-       
-        iFname = filenamePtr;              
-        NotifyMediaGalleryL( filenamePtr );        
+
+        iFname = filenamePtr;
+        NotifyMediaGalleryL( filenamePtr );
         CleanupStack::PopAndDestroy(file);
         CleanupStack::PopAndDestroy(&fs);
         CleanupStack::PopAndDestroy(filename);
@@ -350,8 +356,8 @@ void CFileSaver::BulkInstallL( TRequestStatus* aStatus, const CCodData &aData, c
         CleanupClosePushL(fs);
         CFileMan* file=CFileMan::NewL(fs);
         CleanupStack::PushL(file);
-        
-        
+
+
         for( TInt i = 1; i <= aData.Count() ; ++i )
             {
             HBufC* filename = HBufC::NewLC(KMaxFileName);
@@ -362,22 +368,22 @@ void CFileSaver::BulkInstallL( TRequestStatus* aStatus, const CCodData &aData, c
             TInt error = fs.MkDirAll(filenamePtr);
             if (error!=KErrNone && error!=KErrAlreadyExists)
                {
-                User::Leave(error);   
+                User::Leave(error);
                }
             iFname = (*aData[i]).iFullName->Des();
-            
+
             // Find a unique name to avoid any conflict.
             // Here iFname has full path of current location of file
             // and filename has destination path.
             FindUniqueDestinationFileNameL( iFname, filename );
-            
+
             filenamePtr = filename->Des();
             TInt err = file->Move(iFname, filenamePtr, CFileMan::EOverWrite);
             if(err != KErrNone)
             	{
             	User::LeaveIfError(err);
             	}
-            iFname = filenamePtr;              
+            iFname = filenamePtr;
             NotifyMediaGalleryL( filenamePtr );
 
             (*aData[i]).iFileName = iFname;
@@ -419,7 +425,7 @@ void CFileSaver::InstallL( TRequestStatus* aStatus, const TDesC& /* aName */, co
 */
     if (!aAttached)
 	    {
-#ifdef RD_MULTIPLE_DRIVE 
+#ifdef RD_MULTIPLE_DRIVE
         RFs fs;
         TInt err( KErrNone );
         HBufC* filename = HBufC::NewLC(KMaxFileName);
@@ -433,25 +439,25 @@ void CFileSaver::InstallL( TRequestStatus* aStatus, const TDesC& /* aName */, co
         TInt error = fs.MkDirAll(filenamePtr);
         if (error!=KErrNone && error!=KErrAlreadyExists)
            {
-            User::Leave(error);   
+            User::Leave(error);
            }
-   
+
         // Find a unique name to avoid any conflict.
         // Here iFname has full path of current location of file
         // and filename has destination path.
         FindUniqueDestinationFileNameL( iFname, filename );
-        
-        filenamePtr = filename->Des();     
-               
+
+        filenamePtr = filename->Des();
+
         err = file->Move(iFname, filenamePtr, CFileMan::EOverWrite);
-    
+
         if(err != KErrNone)
            {
            User::Leave(err);
            }
-       
-        iFname = filenamePtr;              
-        NotifyMediaGalleryL( filenamePtr );        
+
+        iFname = filenamePtr;
+        NotifyMediaGalleryL( filenamePtr );
         CleanupStack::PopAndDestroy(file);
         CleanupStack::PopAndDestroy(&fs);
         CleanupStack::PopAndDestroy(filename);
@@ -469,22 +475,22 @@ void CFileSaver::InstallL( TRequestStatus* aStatus, const TDesC& /* aName */, co
             TInt error = fs.MkDirAll(filenamePtr);
             if (error!=KErrNone && error!=KErrAlreadyExists)
                {
-                User::Leave(error);   
+                User::Leave(error);
                }
 
             // Find a unique name to avoid any conflict.
             // Here iFname has full path of current location of file
             // and filename has destination path.
             FindUniqueDestinationFileNameL( iFname, filename );
-            
+
             filenamePtr = filename->Des();
             TInt err = file->Move(iFname, filenamePtr, CFileMan::EOverWrite);
-        
+
             if(err != KErrNone)
                {
                User::Leave(err);
                 }
-            iFname = filenamePtr;              
+            iFname = filenamePtr;
             NotifyMediaGalleryL( filenamePtr );
             CleanupStack::PopAndDestroy(file);
             CleanupStack::PopAndDestroy(&fs);
@@ -554,7 +560,7 @@ void CFileSaver::Cleanup( TBool aDeleteFile )
     // Expected error: KErrNotFound (if there is no temp file).
     // Unexpected error: all the rest -> nothing we can do with them.
     CloseStore();
-    
+
 	if( aDeleteFile )
 	    {
 #ifdef __TEST_COD_LOG
@@ -578,53 +584,53 @@ void CFileSaver::Cleanup( TBool aDeleteFile )
     CLOG(( ECodEng, 2, _L("<- CFileSaver::Cleanup") ));
     }
 
-  
+
 // ---------------------------------------------------------
 // CFileSaver::UpdateDCFRepositoryL()
-// Update saved file to DCFRepository  
+// Update saved file to DCFRepository
 // ---------------------------------------------------------
-// 
+//
 void CFileSaver::UpdateDCFRepositoryL( const TDesC& aFileName )
     {
     CDcfEntry* dcfEntry = NULL;
-    dcfEntry = CDcfEntry::NewL();    
+    dcfEntry = CDcfEntry::NewL();
     CleanupStack::PushL( dcfEntry );
-    
+
     CDcfRep* dcfRep = NULL;
     dcfRep = CDcfRep::NewL();
     CleanupStack::PushL( dcfRep );
 
-    dcfEntry->SetLocationL( aFileName, 0 );    
+    dcfEntry->SetLocationL( aFileName, 0 );
     dcfRep->UpdateL( dcfEntry );
     CleanupStack::PopAndDestroy(2); // dcfEntry, dcfRep
-    }   
-    
+    }
+
 // ---------------------------------------------------------
 // CFileSaver::UpdateMediaGalleryIfNeededL()
 // Calls MediaGallery Update method so that media gallery
 // knows update its view.
 // ---------------------------------------------------------
-// 
+//
 
 
 void CFileSaver::UpdateMediaGalleryIfNeededL( const TDesC& aFileName )
     {
-#ifdef BRDO_APP_GALLERY_SUPPORTED_FF           
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
     CMGXFileManager* fm = MGXFileManagerFactory::NewFileManagerL( iFs );
     CleanupStack::PushL(fm);
     fm->UpdateL(aFileName);
     CleanupStack::PopAndDestroy(); // fm
-#endif    
+#endif
     }
 // ---------------------------------------------------------
 // CFileSaver::NotifyMediaGalleryL()
 // Notify media gallery about the new file.
 // ---------------------------------------------------------
-// 
+//
 void CFileSaver::NotifyMediaGalleryL( const TDesC& aFileName )
     {
-#ifdef BRDO_APP_GALLERY_SUPPORTED_FF    
-    
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
+
     CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL( iFs );
     CleanupStack::PushL( mgFileManager );
 
@@ -635,8 +641,8 @@ void CFileSaver::NotifyMediaGalleryL( const TDesC& aFileName )
     TRAP_IGNORE( UpdateMediaGalleryIfNeededL( aFileName ) );
 
 #endif
-    
-    
+
+
     // Notify DCF repository
     TRAP_IGNORE( UpdateDCFRepositoryL( aFileName ) );
     }
@@ -649,7 +655,7 @@ TInt CFileSaver::DownloadedFileSize()
     // check how many bytes are already persisted
     TInt DownloadedSize(0);
     TInt err = iFile.Size( (TInt&)DownloadedSize );
-    
+
     CLOG(( ECodStorage, 2, _L("CFileSaver::DownloadedFileSize  Downloaded size = %d  error = %d"), \
                DownloadedSize,err ));
 
@@ -657,21 +663,21 @@ TInt CFileSaver::DownloadedFileSize()
         return err;
     return DownloadedSize;
     }
-    
-    
+
+
 /**
 * Discard the old contents
-*/        
+*/
 void CFileSaver::ResetL()
     {
-    
-    
+
+
     iFile.Close();
-    
-    User::LeaveIfError( iFile.Replace(  iFs, 
-                                        iFname, 
-                                        EFileShareAny | 
-                                        EFileStream | 
+
+    User::LeaveIfError( iFile.Replace(  iFs,
+                                        iFname,
+                                        EFileShareAny |
+                                        EFileStream |
                                         EFileWrite ) );
     }
 
@@ -687,8 +693,8 @@ void CFileSaver::SetProgressiveMode( TBool aValue )
         {
         iBufferSize = KDefaultStorageBufferSizePD;
         }
-    
-    
+
+
     if( iBufferSize != iStorage->CurrentBufferSize())
         {
         FlushL();
@@ -696,10 +702,10 @@ void CFileSaver::SetProgressiveMode( TBool aValue )
 
     if ( iFile.SubSessionHandle() )
         {
-     	
+
         if( iProgressiveDownload )
             {
-            if( iLength != KDefaultContentLength )    
+            if( iLength != KDefaultContentLength )
                 {
                 iFile.SetSize( iLength );
                 }
@@ -735,11 +741,11 @@ void CFileSaver::FlushL()
 //
 void CFileSaver::OnComplete()
     {
-    CLOG(( ECodEng, 2, _L("-> CFileSaver::OnComplete") ));    
+    CLOG(( ECodEng, 2, _L("-> CFileSaver::OnComplete") ));
     FlushL();
     iStorage->ClearErrors();
     iFile.Close();
-    CLOG(( ECodEng, 2, _L("<- CFileSaver::OnComplete") ));     
+    CLOG(( ECodEng, 2, _L("<- CFileSaver::OnComplete") ));
     }
 
 

@@ -244,12 +244,6 @@ NONSHARABLE_CLASS(  CInternetConnectionManager ): public CBase,
         * @return none.
         */
         IMPORT_C void ShowConnectionChangedDlg();
-        
-        /**
-        * Cancels the connection.
-        * @return none.
-        */         
-         virtual void CancelConnection();
 	
 	public:
 
@@ -402,7 +396,7 @@ NONSHARABLE_CLASS(  CInternetConnectionManager ): public CBase,
 		/**
 		*Utility functions that are used to establish a connection with a snap Id
 		*/
- 		TInt ConnectWithSnapIdL(TUint32 aRequestedSnapId);
+ 		TInt ConnectWithSnapId(TUint32 aRequestedSnapId);
  		
  		TInt ConnectSnapWithoutCheckL(TUint32 aRequestedSnapId);
 		 

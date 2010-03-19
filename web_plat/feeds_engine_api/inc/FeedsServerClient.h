@@ -15,6 +15,7 @@
 *
 */
 
+
 #ifndef FEEDS_SERVER_CLIENT_H
 #define FEEDS_SERVER_CLIENT_H
 
@@ -27,9 +28,9 @@
 #include <FeedsServerSettings.h>
 
 //API changes
-#include <feedsinterface.h>
-#include <feedsmap.h>
-#include <transaction.h>
+#include "FeedsInterface.h"
+#include "FeedsMap.h"
+#include "Transaction.h"
 
 // CONSTANTS
 
@@ -40,6 +41,7 @@
 // FUNCTION PROTOTYPES
 
 // FORWARD DECLARATIONS
+
 
 // CLASS DECLARATION
    class CClientRequestHandler;

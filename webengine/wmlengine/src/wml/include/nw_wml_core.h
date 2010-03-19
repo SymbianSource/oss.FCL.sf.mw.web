@@ -15,6 +15,7 @@
 *
 */
 
+
 /*
     $Workfile: nw_wml_core.h $
 
@@ -54,7 +55,9 @@ extern "C" {
 #include "urlloader_urlresponse.h"
 #include "BrsrStatusCodes.h"
 
+
 #define MAX_NUMBER_INTRA_OEF 15 /* the value is so chosen that the call stack does not max out - Vishy*/
+
 
 /*---------------------------------------------------------------------
  * NW_Wml_History_t -- history stack element -- holds information needed

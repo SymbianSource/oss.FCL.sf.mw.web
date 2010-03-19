@@ -18,12 +18,11 @@
 
 // INCLUDE FILES
 #include <../bidi.h>
-#include <brctldialogsprovider.h>
-
 #include "HistoryController.h"
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "HistoryView.h"
 #include "HistoryEntry.h"
+#include "BrCtlDialogsProvider.h"
 
 // EXTERNAL DATA STRUCTURES
 

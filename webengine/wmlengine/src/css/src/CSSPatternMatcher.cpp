@@ -15,14 +15,16 @@
 *
 */
 
+
+
 // INCLUDE FILES
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 
 #include "CSSPatternMatcher.h"
-#include <nw_dom_document.h>
+#include "nw_dom_document.h"
 #include "nw_evt_activateevent.h"
 #include "nw_evt_focusevent.h"
-#include "nwx_assert.h"
+#include <nwx_assert.h>
 #include "nwx_string.h"
 
 #include "nw_hed_contenthandler.h"
@@ -30,7 +32,7 @@
 #include "nw_hed_historyvisitor.h"
 #include "nw_xhtml_xhtml_1_0_tokens.h"
 #include "BrsrStatusCodes.h"
-#include <MemoryManager.h>
+#include "MemoryManager.h"
 
 // EXTERNAL DATA STRUCTURES
 

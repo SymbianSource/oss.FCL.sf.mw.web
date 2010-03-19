@@ -17,7 +17,7 @@
 
 #include <platform_paths.hrh>
 #include <data_caging_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 #include "../../CodEng/inc/CodDefs.h"
 
 TARGET      CodUi.dll
@@ -41,7 +41,7 @@ SOURCE      CodViewerApp.cpp
 SOURCE      DdViewerApp.cpp
 SOURCE      CodDownloadImpl.cpp
 SOURCE      CodDialog.cpp
-SOURCE		  CodConfirm.cpp 
+SOURCE		CodConfirm.cpp 
 
 START RESOURCE ../data/CodUi.rss
 DEPENDS avkon.rsg
@@ -55,9 +55,12 @@ LANGUAGE_IDS
 END
 
 USERINCLUDE     ../inc
-USERINCLUDE     ../../CodEng/inc
+
+
+SYSTEMINCLUDE   ../../CodEng/inc
 
 MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_ECOM_SYSTEMINCLUDE
 
 LIBRARY         efsrv.lib
 LIBRARY         apparc.lib

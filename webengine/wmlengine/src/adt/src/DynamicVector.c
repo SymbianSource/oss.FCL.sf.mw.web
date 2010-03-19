@@ -17,7 +17,7 @@
 
 
 #include "nw_adt_dynamicvectori.h"
-#include "nwx_assert.h"
+#include <nwx_assert.h>
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- *

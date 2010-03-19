@@ -15,15 +15,18 @@
 *
 */
 
+
 #include "FeedsRec.h"
 
-#include <ecom/implementationproxy.h>
+#include <ImplementationProxy.h>
+
 
 // Constants
 _LIT8(KMimeTypeRss,   "application/rss+xml");
 //_LIT8(KMimeTypeAtom,  "application/atom+xml");
 _LIT8(KMimeTypeXml1,  "application/xml");
 _LIT8(KMimeTypeXml2,  "text/xml");
+
 
 // -----------------------------------------------------------------------------
 // CFeedsRec::CFeedsRec
@@ -49,6 +52,7 @@ TUint CFeedsRec::PreferredBufSize()
 	return 0x100;
 	}
 
+
 // -----------------------------------------------------------------------------
 // CFeedsRec::SupportedDataTypeL
 //
@@ -68,6 +72,7 @@ TDataType CFeedsRec::SupportedDataTypeL(TInt aIndex) const
             return TDataType();
         }
 	}
+
 
 // -----------------------------------------------------------------------------
 // CFeedsRec::DoRecognizeL
@@ -95,6 +100,7 @@ void CFeedsRec::DoRecognizeL(const TDesC& aName, const TDesC8& aBuffer)
     // Examine the buffer for Opml 1.0.
     // TODO: in 3.1
     }
+
 
 // -----------------------------------------------------------------------------
 // CFeedsRec::DoRecognizeRss
@@ -164,11 +170,13 @@ TInt CFeedsRec::RecognizeRss(const TDesC& /*aName*/, const TDesC8& aBuffer)
     return confidence;
     }
 
+
 // Constants
 const TImplementationProxy ImplementationTable[] = 
 	{
     IMPLEMENTATION_PROXY_ENTRY(KFeedsRecImplUIDValue, CFeedsRec::CreateRecognizerL)
 	};
+
 
 // -----------------------------------------------------------------------------
 // ImplementationGroupProxy
@@ -182,6 +190,7 @@ EXPORT_C const TImplementationProxy* ImplementationGroupProxy(TInt& aTableCount)
 
     return ImplementationTable; 
     }
+
 
 // -----------------------------------------------------------------------------
 // CFeedsRec::CreateRecognizerL

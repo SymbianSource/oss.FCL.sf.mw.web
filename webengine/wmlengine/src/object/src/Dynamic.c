@@ -15,9 +15,10 @@
 *
 */
 
+
 #include "nw_object_dynamici.h"
 #include "nw_object_aggregatei.h"
-#include "nwx_mem.h"
+#include <nwx_mem.h>
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- */

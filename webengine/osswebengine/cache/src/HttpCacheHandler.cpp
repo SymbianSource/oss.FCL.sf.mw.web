@@ -17,7 +17,7 @@
 
 // INCLUDE FILES
 #include "HttpCacheHandler.h"
-#include "httpcachemanager.h"
+#include "HttpCacheManager.h"
 #include "HttpCacheEntry.h"
 #include "HttpCacheLookupTable.h"
 #include "HttpCacheStreamHandler.h"
@@ -32,7 +32,7 @@
 #include <httperr.h>
 #include <s32file.h>
 #include <s32mem.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 
 // EXTERNAL DATA STRUCTURES
 

@@ -18,7 +18,7 @@
 
 #include <defaultcaps.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET			DownloadMgrServer.exe
 TARGETTYPE		exe
@@ -26,7 +26,6 @@ TARGETTYPE		exe
 UID    0x1000008c 0x10008D60
 
 EPOCHEAPSIZE 0x2000 0x300000
-
 MW_LAYER_SYSTEMINCLUDE
 
 USERINCLUDE	    ../inc
@@ -34,10 +33,11 @@ USERINCLUDE	    ../inc
 SOURCEPATH	../src
 SOURCE		DownloadMgrMain.cpp 
 
+
 LIBRARY euser.lib
 
 LIBRARY DownloadMgr.lib                      
 
-CAPABILITY CAP_SERVER -SwEvent -Location -LocalServices -UserEnvironment -WriteUserData ReadUserData NetworkControl
+CAPABILITY CAP_SERVER -SwEvent -Location -LocalServices -UserEnvironment -ReadUserData -WriteUserData NetworkControl
 
 VENDORID VID_DEFAULT

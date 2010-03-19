@@ -15,12 +15,15 @@
 *
 */
 
+
+
 #ifndef NW_CXML_PARSER_H
 #define NW_CXML_PARSER_H
 
 //  INCLUDES
 
 // This header file includes all public API headers for the cXML Parser.
+
 
 #include <nw_xmlp_xmlreader.h>
 #include <nw_xmlp_xmlparser.h>

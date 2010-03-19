@@ -22,7 +22,7 @@
 //  INCLUDES
 #include "CSSEventListener.h"
 #include "CSSBufferList.h"
-#include <nw_wbxml_dictionary.h>
+#include "nw_wbxml_dictionary.h"
 #include "nw_css_processori.h"
 #include "CSSPatternMatcher.h"
 #include "CSSSelector.h"

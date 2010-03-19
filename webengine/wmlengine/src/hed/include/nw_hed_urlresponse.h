@@ -15,14 +15,15 @@
 *
 */
 
+
 #ifndef NW_HED_URLRESPONSE_H
 #define NW_HED_URLRESPONSE_H
 
 #include "nw_object_dynamic.h"
 #include "nw_adt_dynamicvector.h"
-#include "nw_text_abstract.h"
-#include "urlloader_urlresponse.h"
-#include "nw_hed_export.h"
+#include "NW_Text_Abstract.h"
+#include <urlloader_urlresponse.h>
+#include "NW_HED_EXPORT.h"
 #include "BrsrStatusCodes.h"
 
 #ifdef __cplusplus

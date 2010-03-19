@@ -27,8 +27,8 @@
 #ifndef NW_HED_DOM_HELPER_H
 #define NW_HED_DOM_HELPER_H
 
-#include <nw_dom_node.h>
-#include <nw_string_string.h>
+#include "nw_dom_node.h"
+#include "nw_string_string.h"
 #include "nw_hed_context.h"
 #include "nw_hed_entityset.h"
 #include "BrsrStatusCodes.h"

@@ -17,7 +17,7 @@
 
 #ifndef __BROWSER_SDK
 #include <platform_paths.hrh>
-#include "../../../../../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../../../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 #endif
 
 PRJ_PLATFORMS
@@ -26,10 +26,10 @@ DEFAULT GCCE
 PRJ_EXPORTS
 
 #ifndef __BROWSER_SDK
-../inc/brctldefs.h                MW_LAYER_PUBLIC_EXPORT_PATH(brctldefs.h)
+../inc/BrCtlDefs.h                MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlDefs.h)
 ../inc/brctlinterface.h           MW_LAYER_PUBLIC_EXPORT_PATH(brctlinterface.h)
 #else
-../inc/brctldefs.h                /epoc32/include/brctldefs.h
+../inc/BrCtlDefs.h                /epoc32/include/BrCtlDefs.h
 ../inc/brctlinterface.h           /epoc32/include/brctlinterface.h
 #endif //#ifndef __BROWSER_SDK
 

@@ -19,7 +19,7 @@
 // INCLUDE FILES
 #include <e32base.h>
 #include <npruntime.h>
-#include <browser_platform_variant.hrh>
+#include <Browser_platform_variant.hrh>
 
 // EXTERNAL DATA STRUCTURES
 

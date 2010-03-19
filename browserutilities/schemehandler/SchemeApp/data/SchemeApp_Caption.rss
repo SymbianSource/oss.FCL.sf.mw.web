@@ -18,7 +18,7 @@
 
 
 #include <apcaptionfile.rh>
-#include "schemeapp.loc"
+#include "SchemeApp.loc"
 
 //----------------------------------------------------
 //   

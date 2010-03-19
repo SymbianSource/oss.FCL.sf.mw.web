@@ -15,15 +15,17 @@
 *
 */
 
-#include <folderattributes.h>
+
+#include "FolderAttributes.h"
 #include "FeedsDatabase.h"
 #include "FeedsServer.h"
-#include <leaktracker.h>
+#include "LeakTracker.h"
 #include "Logger.h"
 #include "PackedFeed.h"
 #include "PackedFolder.h"
 #include "UpdateAllFeedsTask.h"
 #include <SysUtil.h>
+
 
 // -----------------------------------------------------------------------------
 // CUpdateAllFeedsTask::NewL
@@ -252,9 +254,6 @@ void CUpdateAllFeedsTask::UpdateNextFeedL()
                 // Get feed's url from the datbase.
                 (void) iFeedsServer.Database().UrlFromFeedIdL(
                         iFeedIds[iNextFeedIndex], feedUrl);
-                
-                User::LeaveIfNull(feedUrl);
-                
                 CleanupStack::PushL(feedUrl);
                 
                 // Create a new task to update the feed.

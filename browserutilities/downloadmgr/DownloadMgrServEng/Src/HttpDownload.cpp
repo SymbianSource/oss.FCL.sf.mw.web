@@ -18,7 +18,8 @@
 
 
 // INCLUDE FILES
-#include    <browser_platform_variant.hrh>
+//#include <platform/mw/Browser_platform_variant.hrh>
+#include    <Browser_platform_variant.hrh>
 #include    "HeaderField.h"
 #include    "HttpDownloadManagerServerEngine.h"
 #include    "HttpClientApp.h"
@@ -32,9 +33,12 @@
 #include    <Uri16.h>
 #include    <F32FILE.H>
 #include    <EscapeUtils.h>
-#include    <httpfiltercommonstringsext.h>
+#include    <HttpFilterCommonStringsExt.h>
 #include    <tinternetdate.h>
 #include    <SysUtil.h>
+
+// following line is temporary: AVKON dependency removal
+#undef BRDO_APP_GALLERY_SUPPORTED_FF
 
 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MGXFileManagerFactory.h>
@@ -49,7 +53,7 @@
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;
 
-// EXTERNAL FUNCTION PROTOTYPES  
+// EXTERNAL FUNCTION PROTOTYPES
 //extern ?external_function( ?arg_type,?arg_type );
 
 // CONSTANTS
@@ -58,7 +62,7 @@ const TInt32 KDmgrVersionNumber = 0x0301;   // version number of the info file
 const TInt   KUrlFixChar = '_';
 const TInt KMaxHeaderOfMultipart = 32000;
 const TInt KRespSizeForRecognition = 1024;  //for THttpProgressState EHttpContTypeRecognitionAvail
-const TInt KMinDataSizeToSend = (32*1024);  //for Browser Control to call NewDownloadL     
+const TInt KMinDataSizeToSend = (32*1024);  //for Browser Control to call NewDownloadL
 const TInt KErrCodHttpDownloadPaused = -20045;  //Error code set by the CodHandler if the download is paused by the client
 const TInt KHttp903LossOfService = 903; //Error code set by the CodHandler if connection is lost
 const TInt KHttp954LoaderError = 954; //Error code set by the CodHandler if Loader error is found
@@ -110,7 +114,7 @@ _LIT( KDownloadPath, "download");
 // LOCAL CONSTANTS AND MACROS
 const TInt KDMHttpErrorBase = -25000;
 #define GLOBAL_HTTP_ERROR( err ) ( KDMHttpErrorBase - err )
-const TInt  KErrMultipeObjectDownloadFailed = -20046;  
+const TInt  KErrMultipeObjectDownloadFailed = -20046;
 
 // MODULE DATA STRUCTURES
 //enum ?declaration
@@ -202,16 +206,16 @@ void CHttpDownload::ConstructL( const TDesC8& aUrl )
             TRAPD(err, PauseL() );
 
             --iDontFireEvent;
-            
+
             User::LeaveIfError( err );
             }
         }
 
     if( !iStorage->CheckContentFileIntegrityL() )
         {
-        if (iStorage->ProgressiveDownload() && 
-             iStorage->Length() == iStorage->DownloadedSize() ) 
-            // If it was a progressive download 
+        if (iStorage->ProgressiveDownload() &&
+             iStorage->Length() == iStorage->DownloadedSize() )
+            // If it was a progressive download
             // and downloaded size = content length,
             // it means that download was not properly closed
             // in the previous session
@@ -223,8 +227,8 @@ void CHttpDownload::ConstructL( const TDesC8& aUrl )
             OnError( KErrUnknown, EContentFileIntegrity );
             }
         }
-        
-        iMoveInProgress = EFalse;          
+
+        iMoveInProgress = EFalse;
     }
 
 // -----------------------------------------------------------------------------
@@ -241,7 +245,7 @@ CHttpDownload* CHttpDownload::NewL( const TDesC8& aUrl,
     CHttpDownload* self = new( ELeave ) CHttpDownload( aClientApp,
                                                        aId,
                                                        aClAppInstance );
-    
+
     CleanupStack::PushL( self );
     self->ConstructL( aUrl );
     CleanupStack::Pop();
@@ -249,7 +253,7 @@ CHttpDownload* CHttpDownload::NewL( const TDesC8& aUrl,
     return self;
     }
 
-    
+
 // Destructor
 CHttpDownload::~CHttpDownload()
     {
@@ -268,13 +272,13 @@ CHttpDownload::~CHttpDownload()
     delete iHttpProxyUsername;
     delete iHttpProxyPassword;
     delete iContentType;
-    delete iDDType;    
+    delete iDDType;
     delete iMediaType;
     delete iDlName;
 	delete iDispositionType;
     delete iFileMan;
-    
-    
+
+
     delete iHashedMsgBody;
     delete iDownloadInfo;
     delete iAttachmentFileName;
@@ -311,9 +315,9 @@ CHttpDownload::~CHttpDownload()
     delete iStorage;
     iStorage = NULL;
     delete iHeaderOfMultipart;
-    
+
     iMoveInProgress = EFalse;
-    
+
     CLOG_CLOSE;
     }
 
@@ -326,7 +330,7 @@ CHttpDownload::~CHttpDownload()
 EXPORT_C void CHttpDownload::Attach( CHttpClientAppInstance* aClientAppInstance )
     {
     LOGGER_ENTERFN( "CHttpDownload::Attach" );
-    
+
     __ASSERT_DEBUG( !iPDClAppInstance, DMPanic( KErrInUse) );
     iPDClAppInstance = aClientAppInstance;
     }
@@ -376,7 +380,7 @@ EXPORT_C void CHttpDownload::StartL()
             {
             TriggerEvent( EHttpDlAlreadyRunning );
             }
-            
+
         // This is the place where client already set every continue
         // download attribute
         StoreDownloadInfoL();
@@ -418,7 +422,7 @@ EXPORT_C void CHttpDownload::StartL()
                 ParseDownloadNameL();
                 StoreDownloadInfoL();
                 SetDownloadStatus( EHttpStarted );
-                
+
                if( !iConnHandler )
                     // assign download to the connhandler
                     // connection is surely up because it was created from client side
@@ -456,7 +460,7 @@ EXPORT_C void CHttpDownload::StartL()
                 return;
                 }
             else if( iRestartAction == ERestartForced )
-                // doesn't matter what we have. 
+                // doesn't matter what we have.
                 // Download must be restarted from the very beginning
                 {
                 ForcedRestartL();
@@ -518,7 +522,7 @@ EXPORT_C void CHttpDownload::StartL()
         iPDClAppInstance = NULL;
         }
     if( iClAppInstance )
-        {        
+        {
         if( !iConnHandler )
             {
             iConnHandler = iClAppInstance->ConnHandler();
@@ -530,7 +534,7 @@ EXPORT_C void CHttpDownload::StartL()
     iDlStartedByClient = ETrue;
 
     SetDownloadStatus( EHttpStarted );
-    
+
     }
 
 // -----------------------------------------------------------------------------
@@ -632,7 +636,7 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
                     SetDownloadStatus( EHttpProgNone, EHttpDlDeleting );
                     return;
                     }
-                }        
+                }
             }
         }
 
@@ -640,7 +644,7 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
     // This won't be reenabled at the end of this function so
     // don't call delete only from outside of this class.
     ++iDontFireEvent;
-    
+
     TPath folder;
     TFileName file;
 
@@ -656,18 +660,18 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
     //delete main info file
     err = iClientApp->Engine()->Fs().Delete( file );
     CLOG_WRITE_2( "Delete info file: %S, err : %d", &file, err );
-    
+
     //delete subinfo file
     CFileMan* fileMan = CFileMan::NewL(iClientApp->Engine()->Fs() );
     file.Format( _L("%S%d_*"), &folder, iId );
     fileMan->Delete( file );
     delete fileMan;
-        
+
 
     // to make sure the CHttpStorage releases the content file
     // and deletes it.
     CHttpStorage::TFileCloseOperation closeOp = CHttpStorage::EDeleteFile;
-    
+
     if( iStorage->DestFNameSet() && iDlState == EHttpDlMultipleMOCompleted )
         // Do NOT delete the file: if the destination filename was
         // set by the client and download completed.
@@ -675,7 +679,7 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
 	        CLOG_WRITE("Keep file");
 	        closeOp = CHttpStorage::EKeepFile;
 	        }
-	        
+
 	if( iStorage->RFileSetByClient())
 	    {
 	    TBool pausable;
@@ -685,7 +689,7 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
             CLOG_WRITE("Keep file");
 	        closeOp = CHttpStorage::EKeepFile;
             }
-		
+
 	    }
     if( iCodDlData )
 	    {
@@ -696,36 +700,36 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
 		    	{
 		    	TPtrC fullName = ((*iCodDlData)[i])->DestFilename();
 		    	ClientApp()->Engine()->Fs().Delete( fullName );
-		    	}	
+		    	}
 		    }
-		// For User Cancel to Cancel Multiple download, Current and Queued DLs will be delete, completed ones will be kept    
+		// For User Cancel to Cancel Multiple download, Current and Queued DLs will be delete, completed ones will be kept
 		else if( EHttpDlInprogress == iDlState || EHttpDlPaused == iDlState || EHttpDlDeleting == iDlState)
 			{
 			for(TInt i = 1; i <= iCodDlData->Count(); i++)
 		    	{
-		    	if( EInProgress == ((*iCodDlData)[i])->State() || EFailed == ((*iCodDlData)[i])->State() )	// OnGoing and Queued will be deleted	  
+		    	if( EInProgress == ((*iCodDlData)[i])->State() || EFailed == ((*iCodDlData)[i])->State() )	// OnGoing and Queued will be deleted
 			    	{
 			    	TPtrC fullName = ((*iCodDlData)[i])->DestFilename();
 			    	if(fullName.Length())
 			    	    {
-			    	    ClientApp()->Engine()->Fs().Delete( fullName );	    
+			    	    ClientApp()->Engine()->Fs().Delete( fullName );
 			    	    }
-			    	}  
-		    	//else if( ESucceeded == ((*iCodDlData)[i])->State() ) 
+			    	}
+		    	//else if( ESucceeded == ((*iCodDlData)[i])->State() )
 		    	// Completed ones will be kept and moved to Gallery
 		    	else if( ESucceeded == ((*iCodDlData)[i])->State() )
 			    	{
 			    	MoveInDelete(i);
 			    	}
-		    	}	
-			} 	
+		    	}
+			}
 	    }
     else
     	{
     	iStorage->CloseDestinationFile( closeOp );
     	}
     // when delete there's no store -> no leave
-    //  aClAppInstance->ClientApp()->UnregisterDownload( this ); 
+    //  aClAppInstance->ClientApp()->UnregisterDownload( this );
     }
 
 
@@ -738,12 +742,12 @@ EXPORT_C void CHttpDownload::Delete( CHttpClientAppInstance* aClAppInstance )
 EXPORT_C void CHttpDownload::DeleteInfoFile( CHttpClientAppInstance* aClAppInstance )
     {
     CLOG_WRITE( "DeleteInfoFile()" );
-    
+
     // This should be called only after the completion of download
-	if( ! (EHttpDlMultipleMOCompleted == iDlState && 
-    		( 
+	if( ! (EHttpDlMultipleMOCompleted == iDlState &&
+    		(
     		EHttpProgContentFileMoved == iProgState ||
-    		EHttpProgContentFileMovedAndDestFNChanged == iProgState 
+    		EHttpProgContentFileMovedAndDestFNChanged == iProgState
     		)
     	))
 		{
@@ -754,7 +758,7 @@ EXPORT_C void CHttpDownload::DeleteInfoFile( CHttpClientAppInstance* aClAppInsta
     // This won't be reenabled at the end of this function so
     // don't call delete only from outside of this class.
     ++iDontFireEvent;
-    
+
     TPath folder;
     TFileName file;
 
@@ -768,19 +772,19 @@ EXPORT_C void CHttpDownload::DeleteInfoFile( CHttpClientAppInstance* aClAppInsta
     iClientApp->Engine()->CODDownloadInfoFolder( iClientApp, folder );
     file.Format( _L("%S%d"), &folder, iId );
     CLOG_WRITE_1( "Delete info file: %S", &file );
-    iClientApp->Engine()->Fs().Delete( file );    
-    
+    iClientApp->Engine()->Fs().Delete( file );
+
     //delete subinfo file
     CFileMan* fileMan = CFileMan::NewL(iClientApp->Engine()->Fs() );
     file.Format( _L("%S%d_*"), &folder, iId );
     fileMan->Delete( file );
     delete fileMan;
-    
+
 
     // to make sure the CHttpStorage releases the content file
     // and deletes it.
     CHttpStorage::TFileCloseOperation closeOp = CHttpStorage::EDeleteFile;
-    
+
     if( iStorage->DestFNameSet() && iDlState == EHttpDlMultipleMOCompleted )
         // Do NOT delete the file: if the destination filename was
         // set by the client and download completed.
@@ -788,11 +792,11 @@ EXPORT_C void CHttpDownload::DeleteInfoFile( CHttpClientAppInstance* aClAppInsta
         CLOG_WRITE("Keep file");
         closeOp = CHttpStorage::EKeepFile;
         }
-        
+
     iStorage->CloseDestinationFile( closeOp );
 
-    // when delete there's no store -> no leave	
-    aClAppInstance->ClientApp()->UnregisterDownload( this ); 
+    // when delete there's no store -> no leave
+    aClAppInstance->ClientApp()->UnregisterDownload( this );
     }
 
 
@@ -805,9 +809,9 @@ EXPORT_C void CHttpDownload::DeleteInfoFile( CHttpClientAppInstance* aClAppInsta
 EXPORT_C void CHttpDownload::MoveL()
     {
     LOGGER_ENTERFN( "MoveL" );
-    
-    
-    if(iMoveInProgress) 
+
+
+    if(iMoveInProgress)
     {
     	CLOG_WRITE(" return MoveL  ");
     	return;
@@ -829,18 +833,18 @@ EXPORT_C void CHttpDownload::MoveL()
         {
         User::Leave( KErrInUse );
         }
-        
+
         //File is already moved. Ignore the move
     if( iProgState == EHttpProgContentFileMovedAndDestFNChanged ||
-    
+
       	iProgState ==  EHttpProgContentFileMoved )
         {
         return;
         }
-        
+
     __ASSERT_DEBUG( !IsActive(), DMPanic( KErrInUse ) );
     //__ASSERT_DEBUG( !iFileMan, DMPanic( KErrInUse ) );
-    
+
     if(_OMADLOTA2_MULTI_DOWNLOAD)
         {
 		iMOMoved = 1;
@@ -853,7 +857,7 @@ EXPORT_C void CHttpDownload::MoveL()
 	RFs &rFs = iClientApp->Engine()->Fs();
 	if(!iFileMan)
 		{
-		iFileMan = CFileMan::NewL(rFs);	
+		iFileMan = CFileMan::NewL(rFs);
 		}
 
     CLOG_WRITE_1( "Src: %S", iStorage->LocalFilename() );
@@ -871,40 +875,40 @@ EXPORT_C void CHttpDownload::MoveL()
         CreateIndexedNameL(uniqueName , fileNamePtr , index);
         if( !BaflUtils::FileExists( rFs , *uniqueName ) )
         //Check if file name exist in Destination path
-        //Generate Unique name if exist 
+        //Generate Unique name if exist
             {
             bFound =ETrue;
             break;
             }
         iDlNameChanged = ETrue;
-            
+
         }while( !bFound );
-    CleanupStack::PopAndDestroy( fileName );           
+    CleanupStack::PopAndDestroy( fileName );
 
   	if( iDlNameChanged )
   	    {
   	    HBufC16* destFileName ;
-  	    destFileName = iStorage->DestFilename();           
+  	    destFileName = iStorage->DestFilename();
   	    TPtr destFileNamePtr = destFileName->Des();
-  	    destFileNamePtr.Replace(0, destFileNamePtr.Length() , *uniqueName);    
+  	    destFileNamePtr.Replace(0, destFileNamePtr.Length() , *uniqueName);
   	    TInt lastSlashPos = destFileNamePtr.LocateReverse( '\\' );
   	    TPtr dlName = destFileNamePtr.MidTPtr(lastSlashPos +1 );
         TInt dotPos = iDlName->LocateReverse( '.' );
         if( dotPos == KErrNotFound )
             {
-            //Remove Extension from dlName as it was not present in old iDlName 
+            //Remove Extension from dlName as it was not present in old iDlName
             dotPos = dlName.LocateReverse( '.' );
             if(dotPos != KErrNotFound )
                 {
                 dlName.Copy( dlName.Left(dotPos));
-                }            
+                }
             }
   	    //download name has changed
   	    ReallocateStringL( iDlName, dlName, KDownloadNameMaxSize );
-  	    }      
-  	    
-  	TInt err =iFileMan->Move( *iStorage->LocalFilename(), 
-                                        *iStorage->DestFilename(), 
+  	    }
+
+  	TInt err =iFileMan->Move( *iStorage->LocalFilename(),
+                                        *iStorage->DestFilename(),
                                         CFileMan::EOverWrite,
                                         iStatus );
     if(err != KErrNone)
@@ -912,8 +916,8 @@ EXPORT_C void CHttpDownload::MoveL()
     	iMoveInProgress = EFalse;
     	CLOG_WRITE("setting iMoveInProgress false when move fails");
     	}
-    	
-    User::LeaveIfError( err ); 
+
+    User::LeaveIfError( err );
     // waiting for move to complete
     SetActive();
     SetDownloadStatus( EHttpProgMovingContentFile, iDlState );
@@ -925,7 +929,7 @@ EXPORT_C void CHttpDownload::MoveL()
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
 							                   TInt32& aValue )
     {
     LOGGER_ENTERFN( "GetIntAttributeL" );
@@ -974,7 +978,7 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
             {
             if ( iCodDownload )
                 {
-                aValue = iMoLength;    
+                aValue = iMoLength;
                 }
             else
                 {
@@ -987,7 +991,7 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
             {
             if( iCodDownload )
                 {
-                aValue = iStorage->MoDownloadedSize();    
+                aValue = iStorage->MoDownloadedSize();
                 }
             else
                 {
@@ -995,7 +999,7 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
                 }
             }
             break;
-            
+
         case EDlAttrLength:
             {
             aValue = iStorage->Length();
@@ -1076,11 +1080,11 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
             break;
 
         case EDlAttrFotaPckgId:
-            {     
+            {
             aValue = iFotaPckgId;
             }
             break;
-            
+
         case EDlAttrNumMediaObjects:
             {
             aValue = 1;
@@ -1100,13 +1104,7 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
             aValue = iActivePlayedDownload;
             }
             break;
-            
-        case EDlAttrDestRemovable:
-            {
-            aValue = iStorage->RemovableDest();
-            }
-            break;            
-            
+
         default:
             {
             CLOG_WRITE_1( "Unknown int attrib: %d", aAttribute );
@@ -1118,23 +1116,23 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
             }
             break;
         }
-    
+
     iNoRealError = EFalse;
     }
-    
+
 // -----------------------------------------------------------------------------
 // CHttpDownload::GetIntAttributeL
 // ?implementation_description
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
 							                   TInt32& aMoIndex,
 							                   TInt32& aValue )
     {
     LOGGER_ENTERFN( "GetIntAttributeL" );
     CLOG_WRITE_1( "Attr(%d)", aAttribute );
-    
+
     if (!iCodDlData)
     	{
     	aValue = 0;
@@ -1144,7 +1142,7 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
     	{
     	User::Leave( KErrArgument );
     	}
-    
+
     CMediaDataBase* mediaData = (*iCodDlData)[aMoIndex];
     iNoRealError = ETrue;
 
@@ -1167,11 +1165,11 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
             	if ((moData->State() == ESucceeded) || (moData->State() == EInProgress))
             		dlSize -= moData->DownloadedSize();
             	}
-            
+
             aValue = dlSize;
             }
             break;
-            
+
         case EDlAttrLength:
 	        {
 	        aValue = iStorage->Length();
@@ -1201,12 +1199,6 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
             aValue = mediaData->Method();
             }
             break;
-            
-        case EDlAttrDestRemovable:
-            {
-            aValue = mediaData->DesRemovable();
-            }
-            break;
 
         default:
             {
@@ -1219,7 +1211,7 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
             }
             break;
         }
-    
+
     iNoRealError = EFalse;
     }
 
@@ -1229,7 +1221,7 @@ EXPORT_C void CHttpDownload::GetIntAttributeL( THttpDownloadAttrib aAttribute,
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
 								                TBool& aValue )
     {
     LOGGER_ENTERFN( "GetBoolAttributeL" );
@@ -1297,17 +1289,17 @@ EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
             {
             aValue = iCodDownload;
             }
-            break;            
-   
+            break;
+
         case EDlAttrProgressive:
             {
             aValue = iStorage->ProgressiveMode();
             }
             break;
-   
+
         case EDlAttrDestRemovable:
             {
-            aValue = (KDriveAttRemovable == iStorage->RemovableDest()) ? ETrue : EFalse ;
+            aValue = iStorage->RemovableDest();
             }
             break;
 
@@ -1328,7 +1320,7 @@ EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
             }
             break;
         }
-    
+
     iNoRealError = EFalse;
     }
 
@@ -1338,13 +1330,13 @@ EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
 								                TInt32& aMoIndex,
 								                TBool& aValue )
     {
     LOGGER_ENTERFN( "GetBoolAttributeL" );
     CLOG_WRITE_1( "Attr(%d): %d", aAttribute );
-    
+
     if (!iCodDlData)
     	{
     	aValue = 0;
@@ -1354,7 +1346,7 @@ EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
     	{
     	User::Leave( KErrArgument );
     	}
-    	
+
     CMediaDataBase* mediaData = (*iCodDlData)[aMoIndex];
     iNoRealError = ETrue;
 
@@ -1377,10 +1369,10 @@ EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
             aValue = mediaData->ProgressiveDownload();
             }
             break;
-   
+
         case EDlAttrDestRemovable:
             {
-            aValue = (KDriveAttRemovable == mediaData->DesRemovable()) ? ETrue : EFalse ;
+            aValue = mediaData->DesRemovable();
             }
             break;
 
@@ -1396,7 +1388,7 @@ EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
             }
             break;
         }
-    
+
     iNoRealError = EFalse;
     }
 
@@ -1406,7 +1398,7 @@ EXPORT_C void CHttpDownload::GetBoolAttributeL( THttpDownloadAttrib aAttribute,
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribute,
                                                     TBool& aDelete )
     {
     LOGGER_ENTERFN( "GetStringAttributeL" );
@@ -1448,7 +1440,7 @@ EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribu
             {
             attr8 = iDDType;
             }
-            break;            
+            break;
 
         case EDlAttrRealm:
             {
@@ -1507,7 +1499,7 @@ EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribu
             attr = iStorage->LocalFilename();
             }
             break;
-            
+
         case EDlAttrDdFileName:
         	{
         	attr = iStorage->DdFileName();
@@ -1617,7 +1609,7 @@ EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribu
                 }
             }
             break;
-        
+
         case EDlAttrAlbumName:
             {
             if (iCodDlData && (iCodDlData->Name().Compare(KNullDesC)))
@@ -1631,7 +1623,7 @@ EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribu
                 }
             }
             break;
-            
+
         default:
             {
                 {
@@ -1682,7 +1674,7 @@ EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribu
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribute,
                                                     TInt32& aMoIndex,
                                                     TBool& aDelete )
     {
@@ -1697,7 +1689,7 @@ EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribu
     	{
     	User::Leave( KErrArgument );
     	}
-    	
+
     CMediaDataBase* mediaData = (*iCodDlData)[aMoIndex];
     iNoRealError = ETrue;
     HBufC* attr = NULL;
@@ -1799,7 +1791,7 @@ EXPORT_C HBufC* CHttpDownload::GetStringAttributeL( THttpDownloadAttrib aAttribu
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttribute,
                                                       TBool& aDelete )
     {
     LOGGER_ENTERFN( "GetString8AttributeL" );
@@ -1859,7 +1851,7 @@ EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttri
             {
             attr = iDDType;
             }
-            break;            
+            break;
 
         case EDlAttrRequestHeaderAddon:
             {
@@ -1983,24 +1975,24 @@ EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttri
             break;
 
         case EDlAttrHashedMsgBody:
-            { 
+            {
             attr = iHashedMsgBody;
             }
             break;
-   
+
         case EDlAttrMediaType:
             {
             attr = iMediaType;
             }
             break;
-            
+
         case EDlAttrMediaTypeBoundary:
             {
             attr = GetParamFromMediaTypeL( KBoundary() ).AllocL();
             aDelete = ETrue;
             }
             break;
-            
+
         default:
             {
                 {
@@ -2050,7 +2042,7 @@ EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttri
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttribute,
                                                       TInt32& aMoIndex,
                                                       TBool& aDelete )
     {
@@ -2065,7 +2057,7 @@ EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttri
     	{
     	User::Leave( KErrArgument );
     	}
-    	
+
     CMediaDataBase* mediaData = (*iCodDlData)[aMoIndex];
     iNoRealError = ETrue;
     HBufC8* attr = NULL;
@@ -2095,7 +2087,7 @@ EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttri
             aDelete = ETrue;
             }
             break;
-            
+
         default:
             {
                 {
@@ -2148,7 +2140,7 @@ EXPORT_C HBufC8* CHttpDownload::GetString8AttributeL( THttpDownloadAttrib aAttri
 EXPORT_C RFile* CHttpDownload::GetFileHandleAttributeL()
     {
     LOGGER_ENTERFN( "GetFileHandleAttributeL" );
-    
+
     if( !iStorage->File() )
         // destination file is not opened
         {
@@ -2164,7 +2156,7 @@ EXPORT_C RFile* CHttpDownload::GetFileHandleAttributeL()
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
                                                const TInt32 aValue )
     {
     LOGGER_ENTERFN( "SetIntAttributeL" );
@@ -2184,9 +2176,9 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
         case EDlAttrAction:
         	{
             TBool PdSupported(EFalse);
-            
+
             iAction = (THttpDownloadMgrAction)aValue;
-            
+
             if(iClAppInstance)
             	{
             	TRAP_IGNORE(iClAppInstance->GetBoolAttributeL(EDlMgrProgressiveDownload, PdSupported));
@@ -2232,14 +2224,14 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
 
         case EDlAttrMultipleMOLength:
             {
-            iMoLength = aValue;            
+            iMoLength = aValue;
             }
             break;
-            
+
         case EDlAttrDownloadedSize:
             {
             if( (iCodDownload || iContinueDownload) && iDlState == EHttpDlInprogress )
-                {            
+                {
                 iStorage->SetDownloadedSize( aValue );
                 // Calculate downloaded size of current media object from
                 // album downloaded size.
@@ -2247,7 +2239,7 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
                 if( iCodDlData )
                     {
                     for (TInt index = 0; index < iCodDlData->Count() ; ++index)
-                    	{               	
+                    	{
                     	if( iActiveDownload - 1 == index )
                     	    {
                     	    //the size of active download has already been taken into account
@@ -2257,8 +2249,8 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
                     	if ((moData->State() == ESucceeded) || (moData->State() == EInProgress))
                     		dlSize += moData->DownloadedSize();
                     	}
-                    iStorage->SetMoDownloadedSize(dlSize);                    	                
-                    }                
+                    iStorage->SetMoDownloadedSize(dlSize);
+                    }
                 if( iStorage->Length() != KDefaultContentLength &&
                     iStorage->DownloadedSize() > iStorage->Length() )
                     // we don't know actually how many bytes will come down.
@@ -2266,10 +2258,10 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
                     CLOG_WRITE( "Length modified" );
                     iStorage->SetLength( KDefaultContentLength );
                     StoreDownloadInfoL();
-                    }                             
+                    }
                 TriggerEvent( EHttpDlInprogress, EHttpProgResponseBodyReceived );
                 }
-                
+
             store = EFalse;
             }
             break;
@@ -2279,8 +2271,8 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
             if(!aValue)
                 DownloadSucceededL();
             else
-                iMoDownloadCompleted = ETrue;//Download of MO has been Completed so change State ,But PD is on           
-                                         //So MOVE will be issued by PD Client 
+                iMoDownloadCompleted = ETrue;//Download of MO has been Completed so change State ,But PD is on
+                                         //So MOVE will be issued by PD Client
 
             store = EFalse;
             }
@@ -2299,7 +2291,7 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
             {
             }
             break;
-            
+
         case EDlAttrMethod:
             {
             if( iContinueDownload && iDlState == EHttpDlMultipleMOStarted &&
@@ -2317,7 +2309,7 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
             break;
 
         case EDlAttrFotaPckgId:
-            {     
+            {
             iFotaPckgId = aValue;
             store = EFalse;
             }
@@ -2325,34 +2317,17 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
         case EDlAttrActiveDownload:
             {
             iActiveDownload = aValue;
-            
+
             // Active MO changed. Notify clients.
            	TriggerEvent( EHttpDlCreated, EHttpProgNone );
             }
             break;
-            
+
         case EDlAttrActivePlayedDownload:
             {
             iActivePlayedDownload = aValue;
             }
-            
-            break;
-            
-        case EDlAttrDestRemovable:
-            {
-            if( iCodDownload )
-                {
-                iStorage->SetRemovableDest( aValue );
 
-                if (iCodDlData)                
-                    {
-                    // Update for Active media object.
-                    TInt active = iActiveDownload;
-                    CMediaDataBase* mediaData = (*iCodDlData)[active];
-                    mediaData->SetDesRemovable( aValue );
-                    }
-                }
-            }
             break;
         default:
             {
@@ -2368,7 +2343,7 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
     UpdatePausable();
 
     iNoRealError = EFalse;
-    
+
     if( store )
         {
         StoreDownloadInfoL();
@@ -2381,7 +2356,7 @@ EXPORT_C void CHttpDownload::SetIntAttributeL( THttpDownloadAttrib aAttribute,
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
 								                const TBool aValue )
     {
     LOGGER_ENTERFN( "SetBoolAttributeL" );
@@ -2420,7 +2395,7 @@ EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
                 {
                 User::Leave( KErrInUse );
                 }
-                
+
             store = EFalse;
             }
             break;
@@ -2442,11 +2417,11 @@ EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
             SetCodFlag( aValue );
             }
             break;
-            
+
         case EDlAttrProgressive:
             {
             TBool PdSupported(EFalse);
-            
+
             if(iClAppInstance)
             	{
             	TRAP_IGNORE(iClAppInstance->GetBoolAttributeL(EDlMgrProgressiveDownload, PdSupported));
@@ -2454,34 +2429,34 @@ EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
 
             if(PdSupported)
                 {
-                iStorage->SetProgressiveMode( aValue );	
-                
+                iStorage->SetProgressiveMode( aValue );
+
                 if(!aValue)
                     {
                     iActivePlayedDownload = 0;
                     }
 
-                if (iCodDlData)                
+                if (iCodDlData)
                 	{
                 	// Update for Active media object.
 	                TInt active = iActiveDownload;
 	                CMediaDataBase* mediaData = (*iCodDlData)[active];
 	                mediaData->SetProgressiveDownload( aValue );
                 	}
-                	
+
                 if( iProgState != EHttpProgMovingContentFile )
                     {
                     if (aValue && iDlState == EHttpDlMultipleMOCompleted )
                         {
-                        /* 
+                        /*
                         if the file size is small, by the time the music player is launched, DMgr already triggered EHttpDlCompleted.
                         So if the download state is EHttpDlMultipleMOCompleted, we need to trigger EHttpDlCompleted so that music player understands download is completed already
                         This is needed to ensure backward compatibility
                         */
                         TriggerEvent( EHttpDlCompleted, EHttpDlProgProgressive);
-                        }   
+                        }
                     else
-                        {    
+                        {
                         TriggerEvent( iDlState, aValue ? EHttpDlProgProgressive : EHttpDlProgNonProgressive);
                         }
                     }
@@ -2492,13 +2467,13 @@ EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
 				}
             }
             break;
-            
+
         case EDlAttrCodDescriptorAccepted:
             {
             TriggerEvent( EHttpDlInprogress, EHttpProgCodDescriptorAccepted );
             }
             break;
-            
+
         case EDlAttrCodLoadEnd:
             {
             SetDownloadStatus(EHttpProgCodLoadEnd,EHttpDlInprogress);
@@ -2511,21 +2486,19 @@ EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
             TriggerEvent( EHttpDlInprogress, EHttpProgCodPdAvailable );
             }
             break;
-            
+
         case EDlAttrDestRemovable:
             {
             if( iCodDownload )
                 {
-                TInt32 removableDestStatus = (aValue) ? KDriveAttRemovable : KDriveAttLocal ;
-                
-                iStorage->SetRemovableDest( removableDestStatus );
+                iStorage->SetRemovableDest( aValue );
 
-                if (iCodDlData)                
+                if (iCodDlData)
                 	{
 	                // Update for Active media object.
 	                TInt active = iActiveDownload;
 	                CMediaDataBase* mediaData = (*iCodDlData)[active];
-	                mediaData->SetDesRemovable( removableDestStatus );
+	                mediaData->SetDesRemovable( aValue );
                 	}
                 }
             }
@@ -2541,18 +2514,18 @@ EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
         case EDlAttrCodPausable:
             {
             iPausable = aValue;
-			
+
 			// Update for Active media object.
             TInt active = iActiveDownload;
             CMediaDataBase* mediaData = (*iCodDlData)[active];
             mediaData->SetPausable( aValue );
-			
+
             // inform client about change
             TriggerEvent( iPausable ? EHttpDlPausable : EHttpDlNonPausable );
 			}
             break;
-            
-                    
+
+
         default:
 #ifdef __WINS__
             DMPanic( KErrArgument );
@@ -2563,7 +2536,7 @@ EXPORT_C void CHttpDownload::SetBoolAttributeL( THttpDownloadAttrib aAttribute,
         }
 
     UpdatePausable();
-    
+
     iNoRealError = EFalse;
 
     if( store )
@@ -2595,11 +2568,11 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
         case EDlAttrDestFilename:
             {
             TBool updateFName = EFalse;
-            
+
             if( iDlState == EHttpDlMultipleMOStarted ||
                 iDlState == EHttpDlMultipleMOCompleted ||
                 iCodDownload )
-                // cannot set this attribute while 
+                // cannot set this attribute while
                 // download is in progress
                 {
                 if( !aValue.Length() )
@@ -2619,7 +2592,7 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
                         }
                     else
                         {
-                        User::Leave( KErrArgument ); 
+                        User::Leave( KErrArgument );
                         }
                     }
                 else
@@ -2632,11 +2605,11 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
                 {
                 User::Leave( KErrInUse );
                 }
-            
+
             if (updateFName)
             	{
                 iStorage->UpdateDestinationFilenameL( aValue, ETrue );
-                if (iCodDlData)                
+                if (iCodDlData)
                 	{
 	            	CMediaDataBase* mediaData = (*iCodDlData)[aMOIndex];
 	            	mediaData->SetDestFilenameL( aValue );
@@ -2646,15 +2619,15 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
             break;
         }
     }
-    
-    
+
+
 // -----------------------------------------------------------------------------
 // CHttpDownload::SetStringAttributeL
 // ?implementation_description
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute,
 								                  const TDesC16& aValue )
     {
     LOGGER_ENTERFN( "SetStringAttributeL" );
@@ -2686,12 +2659,12 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
                 CLOG_WRITE( "EDlAttrContentType updated" );
                 ReallocateStringL( iContentType, aValue, KMaxContentTypeLength );
                 TriggerEvent( EHttpDlInprogress, EHttpProgContentTypeChanged );
-                
+
                 // Update for Active media object.
                 HBufC8* type8 = HBufC8::NewLC( aValue.Length() );
                 type8->Des().Copy( aValue );
 
-                if (iCodDlData)                
+                if (iCodDlData)
                 	{
 	                TInt active = iActiveDownload;
 	                CMediaDataBase* mediaData = (*iCodDlData)[active];
@@ -2708,7 +2681,7 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
                 {
                 ReallocateStringL( iHttpRealm, aValue, KMaxRealmLength );
                 }
-                
+
             store = EFalse;
             }
             break;
@@ -2754,11 +2727,11 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
         case EDlAttrDestFilename:
             {
             TBool updateFName = EFalse;
-            
+
             if( iDlState == EHttpDlMultipleMOStarted ||
                 iDlState == EHttpDlMultipleMOCompleted ||
                 iCodDownload )
-                // cannot set this attribute while 
+                // cannot set this attribute while
                 // download is in progress
                 {
                 if( !aValue.Length() )
@@ -2778,7 +2751,7 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
                         }
                     else
                         {
-                        User::Leave( KErrArgument ); 
+                        User::Leave( KErrArgument );
                         }
                     }
                 else
@@ -2791,12 +2764,12 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
                 {
                 User::Leave( KErrInUse );
                 }
-            
+
             if (updateFName)
             	{
             	iStorage->UpdateDestinationFilenameL( aValue, ETrue );
-            	
-                if (iCodDlData)                
+
+                if (iCodDlData)
                 	{
                     TInt moIndex(0);
                     if( iActiveDownload != iActivePlayedDownload && iStorage->ProgressiveDownload() )
@@ -2807,7 +2780,7 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
                     else
                         {
                         // Update for Active media object.
-                    	moIndex = iActiveDownload;                        
+                    	moIndex = iActiveDownload;
                         }
 	            	CMediaDataBase* mediaData = (*iCodDlData)[moIndex];
 	            	mediaData->SetDestFilenameL( aValue );
@@ -2857,7 +2830,7 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
                 SetDownloadNameL( aValue );
 
                 if (iCodDlData)
-	                {                
+	                {
 	                // Update for Active media object.
 	            	TInt active = iActiveDownload;
 	            	CMediaDataBase* mediaData = (*iCodDlData)[active];
@@ -2925,7 +2898,7 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute, 
+EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute,
 								                  const TDesC8& aValue )
     {
     LOGGER_ENTERFN( "SetStringAttributeL(8)" );
@@ -2959,9 +2932,9 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
                 }
             else if (iDlState == EHttpDlMultipleMOCompleted )//Allow to change content type even if state is completed
                 {
-                ReallocateStringL( iContentType, aValue, KMaxContentTypeLength );                            
+                ReallocateStringL( iContentType, aValue, KMaxContentTypeLength );
                 //No need to trigger any event
-                }                
+                }
             }
             break;
 
@@ -3061,13 +3034,13 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
             ReallocateStringL( iHashedMsgBody, aValue, KHashLength );
             }
             break;
-   
+
         case EDlAttrRedirectedPermanently:
             {
             RedirectedPermanentlyL( aValue );
-            
+
             if (iCodDlData)
-	            {                
+	            {
 	            // Update for Active media object.
 	            TInt active = iActiveDownload;
 	            CMediaDataBase* mediaData = (*iCodDlData)[active];
@@ -3076,13 +3049,13 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
 	            }
             }
             break;
-            
+
         case EDlAttrRedirectedTemporary:
             {
             RedirectedTemporaryL( aValue );
-            
+
             if (iCodDlData)
-	            {                
+	            {
 	            // Update for Active media object.
 	            TInt active = iActiveDownload;
 	            CMediaDataBase* mediaData = (*iCodDlData)[active];
@@ -3090,7 +3063,7 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
 	            }
             }
             break;
- 
+
         case EDlAttrContinueBody:
             {
             iNoRealError = EFalse;
@@ -3113,9 +3086,9 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
 #endif
             break;
         }
-    
+
     UpdatePausable();
-    
+
     iNoRealError = EFalse;
 
     if( store )
@@ -3133,7 +3106,7 @@ EXPORT_C void CHttpDownload::SetStringAttributeL( THttpDownloadAttrib aAttribute
 EXPORT_C void CHttpDownload::SetFileHandleAttributeL( RFile* aFile )
     {
     LOGGER_ENTERFN( "SetFileHandleAttributeL" );
-    
+
     iStorage->AdoptFileHandleL( aFile );
     }
 
@@ -3146,17 +3119,17 @@ EXPORT_C void CHttpDownload::SetFileHandleAttributeL( RFile* aFile )
 EXPORT_C void CHttpDownload::SetDownloadDataAttributeL( HBufC8* dlData )
 	{
     LOGGER_ENTERFN( "SetDownloadDataAttributeL" );
-    
+
     if (iCodDlData)
         {
-    	delete iCodDlData;	
+    	delete iCodDlData;
         iCodDlData = NULL;
         }
-    	
+
     iCodDlData = CDownloadDataServ::NewL(*dlData);
     TInt downloadedSize = 0 ;
     TBool activeDownloadChanged = EFalse;
-    
+
     iMoLength = 0 ;
     for ( TInt i = 1; i <= iCodDlData->Count() ; ++i )
         {
@@ -3173,7 +3146,7 @@ EXPORT_C void CHttpDownload::SetDownloadDataAttributeL( HBufC8* dlData )
             activeDownloadChanged = ETrue;
             }
         }
-    iStorage->SetMoDownloadedSize( downloadedSize );                
+    iStorage->SetMoDownloadedSize( downloadedSize );
     }
 // -----------------------------------------------------------------------------
 // CHttpDownload::SetTrackDataAttributeL
@@ -3184,7 +3157,7 @@ EXPORT_C void CHttpDownload::SetDownloadDataAttributeL( HBufC8* dlData )
 EXPORT_C void CHttpDownload::SetTrackDataAttributeL( TInt aIndex, HBufC8* dlData )
     {
     LOGGER_ENTERFN( "SetTrackDataAttributeL" );
-    
+
 	if (iCodDlData)
     	{
     	CMediaDataServ* updatedMediaData = CMediaDataServ::NewL(*dlData);
@@ -3200,7 +3173,7 @@ EXPORT_C void CHttpDownload::SetTrackDataAttributeL( TInt aIndex, HBufC8* dlData
 	    mediaData->SetDownloadedSize( updatedMediaData->DownloadedSize() );
 	    mediaData->SetDestFilenameL( updatedMediaData->DestFilename() );
 	    mediaData->SetTempFilenameL( updatedMediaData->DestFilename() );
-	    	    
+
     	mediaData->ResetTypes();
     	for (TInt type = 0; type < updatedMediaData->TypesCount(); ++type)
         	mediaData->AddTypeL( updatedMediaData->Types().MdcaPoint(type) );
@@ -3233,10 +3206,10 @@ EXPORT_C void CHttpDownload::SetTrackDataAttributeL( TInt aIndex, HBufC8* dlData
 	        	    iLastError = EGeneral;
 	           	    }
                 }
-            
-            //if the client pauses the download, Codhandler sets error code to KErrCodHttpDownloadPaused. In that case, no need to trigger EHttpDlFailed Event     
+
+            //if the client pauses the download, Codhandler sets error code to KErrCodHttpDownloadPaused. In that case, no need to trigger EHttpDlFailed Event
             if ( !( result == KErrCodHttpDownloadPaused || ( pausable && statusCode == KHttp903LossOfService ) || ( pausable && statusCode == KHttp954LoaderError ) ) )
-                {    
+                {
     	        TriggerEvent( EHttpDlFailed, EHttpProgNone );
                 }
             }
@@ -3273,8 +3246,8 @@ EXPORT_C void CHttpDownload::OnError( TInt aError,
         iNoRealError = EFalse;
 
         return;
-        }    
-    
+        }
+
     if( iCodDlData && iCodDlData->Count() > 1 )
         {
         if( aDlError == KErrMultipeObjectDownloadFailed )
@@ -3284,17 +3257,17 @@ EXPORT_C void CHttpDownload::OnError( TInt aError,
             SetDownloadStatus( EHttpProgNone,
                    EHttpDlMultipleMOFailed,
                    aDlError,
-                   aError );            
-            return;                       
-            } 
+                   aError );
+            return;
+            }
         else
             {
             SetDownloadStatus( EHttpProgNone,
                                EHttpDlPaused,
                                aDlError,
                                aError );
-            return;                                           
-            
+            return;
+
             }
         }
 
@@ -3307,8 +3280,8 @@ EXPORT_C void CHttpDownload::OnError( TInt aError,
 
     //For COD Downloads, the error code may be set from COD handler
     //In that case if the download is paused just set the global and download error
-    
-    if( iCodDownload && iDlState == EHttpDlPaused )  
+
+    if( iCodDownload && iDlState == EHttpDlPaused )
         {
         iLastError = aDlError;
         iGlobalErrorId = aError;
@@ -3326,7 +3299,7 @@ EXPORT_C void CHttpDownload::OnError( TInt aError,
         {
         closeOp = CHttpStorage::EReplaceFile;
         }
-        
+
     iStorage->CloseDestinationFile( closeOp );
     CLOG_WRITE_1( "OnError1 : iDlState : %d ", iDlState );
 
@@ -3346,18 +3319,18 @@ EXPORT_C void CHttpDownload::OnError( TInt aError,
 
         if( aError == KErrHttpPartialResponseReceived )
             {
-            //Partial response has been received and connection has been disconnected. This error will be 
+            //Partial response has been received and connection has been disconnected. This error will be
             //propagated to the client only, if the HTTP:ENotifyOnDisconnect property is set with a value
             //HTTP::EEnableDisconnectNotification
-            
+
             //This error code was cancelling the pausable download. This error shud be ignored to keep the
             //paused download.
             //TSW Err ID : SXUU-77SRWL
-            
+
             SetDownloadStatus( EHttpProgNone,
                                EHttpDlPaused,
                                aDlError,
-                               aError );            
+                               aError );
 
             }
         else if( aDlError == EConnectionFailed && iPausable)
@@ -3367,7 +3340,7 @@ EXPORT_C void CHttpDownload::OnError( TInt aError,
             SetDownloadStatus( EHttpProgNone,
                                EHttpDlPaused,
                                aDlError,
-                               aError );               
+                               aError );
             }
         else if ( aDlError == EMMCRemoved )
             {
@@ -3415,11 +3388,11 @@ EXPORT_C TBool CHttpDownload::DetachClientInstance( CHttpClientAppInstance* aIns
         {
         iPDClAppInstance = NULL;
         }
-        
+
     return (iPDClAppInstance || iClAppInstance);
     }
-    
-    
+
+
 // -----------------------------------------------------------------------------
 // CHttpDownload::ClientApp
 // ?implementation_description
@@ -3506,9 +3479,9 @@ TBool CHttpDownload::NoMedia() const
 void CHttpDownload::MediaRemoved( TUint aUid, TBool aDontCheckMediaUid )
     {
     LOGGER_ENTERFN( "MediaRemoved" );
-    CLOG_WRITE_3( "Uid: %d, dontCheck: %d, iNoMedia: %d", 
-                        aUid, 
-                        aDontCheckMediaUid, 
+    CLOG_WRITE_3( "Uid: %d, dontCheck: %d, iNoMedia: %d",
+                        aUid,
+                        aDontCheckMediaUid,
                         iNoMedia );
 
     if( iNoMedia )
@@ -3530,14 +3503,14 @@ void CHttpDownload::MediaRemoved( TUint aUid, TBool aDontCheckMediaUid )
     TRAP_IGNORE( InternalPauseL() );
 
     TriggerEvent( EHttpDlMediaRemoved );
-    
+
     if( iDlState == EHttpDlInprogress )
         // it's happened during the download process
         // in case of e.g completed download it's not error
         {
         OnError( KErrGeneral, EMMCRemoved );
         }
-    
+
     TRAP_IGNORE( StoreDownloadInfoL() );
     }
 
@@ -3560,7 +3533,7 @@ void CHttpDownload::MediaInserted( TUint aUid )
     iNoMedia = EFalse;
     TriggerEvent( EHttpDlMediaInserted );
     }
-    
+
 // -----------------------------------------------------------------------------
 // CHttpDownload::GetDestinationDriveID
 // ?implementation_description
@@ -3571,7 +3544,7 @@ TInt CHttpDownload::GetDestinationDriveID() const
     {
     return (TInt)iStorage->GetDestinationDriveId();
     }
-    
+
 // -----------------------------------------------------------------------------
 // CHttpDownload::SetClientInstance
 // ?implementation_description
@@ -3634,11 +3607,11 @@ TBool CHttpDownload::Pausable() const
 void CHttpDownload::SetDownloadNameL( const TDesC& aNewName )
     {
     CLOG_WRITE_1( "New download name: [%S]", &aNewName );
-    
+
     ReallocateStringL( iDlName, aNewName, KDownloadNameMaxSize );
-    
+
     FixDownloadNameL();
-    
+
     TriggerEvent( EHttpDlInprogress, EHttpProgDlNameChanged );
     }
 
@@ -3648,7 +3621,7 @@ void CHttpDownload::SetDownloadNameL( const TDesC& aNewName )
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-void CHttpDownload::MHFRunL( RHTTPTransaction /*aTransaction*/, 
+void CHttpDownload::MHFRunL( RHTTPTransaction /*aTransaction*/,
                              const THTTPEvent& aEvent )
     {
     switch ( aEvent.iStatus )
@@ -3657,7 +3630,7 @@ void CHttpDownload::MHFRunL( RHTTPTransaction /*aTransaction*/,
             {
             CLOG_WRITE( "Response header received" );
             ResponseHeaderReceivedL();
-            } 
+            }
             break;
 
         case THTTPEvent::EGotResponseBodyData:
@@ -3670,21 +3643,21 @@ void CHttpDownload::MHFRunL( RHTTPTransaction /*aTransaction*/,
             ResponseBodyReceivedL( buf );
 
             respBody->ReleaseData();
-            } 
+            }
             break;
 
         case THTTPEvent::EResponseComplete:
             {
             CLOG_WRITE( "Response complete" );
-            } 
+            }
             break;
 
         case THTTPEvent::ESucceeded:
             {
             CLOG_WRITE( "Transaction succeeded" );
-            
+
             DownloadSucceededL();
-            } 
+            }
             break;
 
         case THTTPEvent::EFailed:
@@ -3699,19 +3672,19 @@ void CHttpDownload::MHFRunL( RHTTPTransaction /*aTransaction*/,
                 iTransValid = EFalse;
                 }
             iDlStartedByClient = EFalse;
-            } 
+            }
             break;
 
         case THTTPEvent::ERedirectedPermanently:
             {
             RedirectedPermanentlyL( iTrans.Request().URI().UriDes() );
-            } 
+            }
             break;
 
         case THTTPEvent::ERedirectedTemporarily:
             {
             RedirectedTemporaryL( iTrans.Request().URI().UriDes() );
-            } 
+            }
             break;
 
         default:
@@ -3722,7 +3695,7 @@ void CHttpDownload::MHFRunL( RHTTPTransaction /*aTransaction*/,
                 {
                 User::Leave( aEvent.iStatus );
                 }
-            } 
+            }
             break;
         }
     }
@@ -3733,8 +3706,8 @@ void CHttpDownload::MHFRunL( RHTTPTransaction /*aTransaction*/,
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-TInt CHttpDownload::MHFRunError( TInt aError, 
-                                 RHTTPTransaction /*aTransaction*/, 
+TInt CHttpDownload::MHFRunError( TInt aError,
+                                 RHTTPTransaction /*aTransaction*/,
                                  const THTTPEvent& /*aEvent*/ )
     {
     CLOG_WRITE_1( "MHFRunError: %d", aError );
@@ -3798,15 +3771,15 @@ void CHttpDownload::RunL()
                 else
                     {
                     RequestContentL();
-                    }                
+                    }
                 }
-                
+
             }
             break;
 
         case EHttpProgMovingContentFile:
             // Move completed
-            // State remains in completed 
+            // State remains in completed
             // and move result stored in error attribs
             {
             CLOG_WRITE_1( "Move result: %d", iStatus.Int() );
@@ -3814,7 +3787,7 @@ void CHttpDownload::RunL()
 			// So, the download status should be changed after that
 			//but we again send the progress state as EHttpProgContentFileMoved because we need to display
 			//where file is saved(saved to gallery)
-			//Change Dl State to Download Completed if not already           
+			//Change Dl State to Download Completed if not already
 
 		    if(_OMADLOTA2_MULTI_DOWNLOAD)
 				{
@@ -3830,20 +3803,20 @@ void CHttpDownload::RunL()
 					}
 				}
 
-            SetDownloadStatus( iDlNameChanged ? EHttpProgContentFileMovedAndDestFNChanged : EHttpProgContentFileMoved, 
-                               iDlState = EHttpDlMultipleMOCompleted, 
+            SetDownloadStatus( iDlNameChanged ? EHttpProgContentFileMovedAndDestFNChanged : EHttpProgContentFileMoved,
+                               iDlState = EHttpDlMultipleMOCompleted,
                                iStatus == KErrNone ? ENoError : EMoveFailed,
                                iStatus.Int() );
-            
+
             if(iStatus == KErrNone)
             	{
-            	iMoveInProgress = EFalse;	
+            	iMoveInProgress = EFalse;
             	CLOG_WRITE("setting iMoveInProgress false when move is completed");
             	}
-            
-            
+
+
             delete iFileMan; iFileMan = NULL;
-            
+
 			if( !_OMADLOTA2_MULTI_DOWNLOAD)
 				{
 				TPtr fileNamePtr(iStorage->DestFilename()->Des());
@@ -3927,10 +3900,10 @@ void CHttpDownload::Disconnected()
         {
         return;
         }
-        
-    //Set the errors 
+
+    //Set the errors
     TRAP_IGNORE( PauseL( ETrue ) );
-    
+
     iLastError = EConnectionFailed;
     iGlobalErrorId = KErrCommsLineFail;
     }
@@ -3987,7 +3960,7 @@ void CHttpDownload::DoReset( TBool aOnDelete )
 
     // content type is unknown -> download might be pausable again
     UpdatePausable();
-    
+
     if( !aOnDelete )
         {
         TRAP_IGNORE( StoreDownloadInfoL() );
@@ -4007,7 +3980,7 @@ void CHttpDownload::DoReset( TBool aOnDelete )
 void CHttpDownload::StoreDownloadInfoL()
     {
     LOGGER_ENTERFN( "StoreDownloadInfoL" );
-    TInt bufSz = KDownloadInfoIncrSize + 
+    TInt bufSz = KDownloadInfoIncrSize +
                  (iDownloadInfo ? iDownloadInfo->Length(): 0);
     HBufC8* newInfo = HBufC8::NewLC( bufSz );
     TPtr8 newInfoPtr = newInfo->Des();
@@ -4049,27 +4022,27 @@ void CHttpDownload::StoreDownloadInfoL()
 
     CLOG_WRITE("5");
 
-    
+
     TInt size = GetHttpHeadersSize(iResponseHeaders)+ GetHttpHeadersSize(iRequestHeaders)+
                 GetHttpHeadersSize(iEntityHeaders)+ GetHttpHeadersSize(iGeneralHeaders) + newInfoPtr.Size();
-    
-    
+
+
     if(size >= bufSz)
         {
     	User::LeaveIfError( KErrArgument );
         }
-    
+
     AppendHeadersL( newInfoPtr, iResponseHeaders );
     AppendHeadersL( newInfoPtr, iRequestHeaders );
     AppendHeadersL( newInfoPtr, iEntityHeaders );
     AppendHeadersL( newInfoPtr, iGeneralHeaders );
 
     CLOG_WRITE("6");
-    
+
     APPEND_BUF_INT( newInfoPtr, iFotaPckgId );
-    
+
     CLOG_WRITE("7");
-    
+
     // check if download info is unchanged from previous update
     if( iDownloadInfo && ( iDownloadInfo->Compare(*newInfo) == 0 ))
         {
@@ -4091,13 +4064,13 @@ void CHttpDownload::StoreDownloadInfoL()
         iClientApp->Engine()->DownloadInfoFolder( iClientApp, folder );
         fileName.Format( _L("%S%d"), &folder, iId );
         CLOG_WRITE_1( "info: %S", &fileName );
-    
+
         RFile outFile;
         CleanupClosePushL<RFile>( outFile );
-        User::LeaveIfError( outFile.Replace( iClientApp->Engine()->Fs(), 
-                                             fileName, 
-                                             EFileShareExclusive | 
-                                             EFileStream | 
+        User::LeaveIfError( outFile.Replace( iClientApp->Engine()->Fs(),
+                                             fileName,
+                                             EFileShareExclusive |
+                                             EFileStream |
                                              EFileWrite ) );
 
         outFile.Write( newInfoPtr );
@@ -4129,9 +4102,9 @@ void CHttpDownload::LoadDownloadInfoL()
     CLOG_WRITE_1( "info: %S", &fileName );
 
     RFile inFile;
-    User::LeaveIfError( inFile.Open( iClientApp->Engine()->Fs(), 
-                                     fileName, 
-                                     EFileShareReadersOnly | 
+    User::LeaveIfError( inFile.Open( iClientApp->Engine()->Fs(),
+                                     fileName,
+                                     EFileShareReadersOnly |
                                      EFileRead ) );
 
     CLOG_WRITE("1");
@@ -4180,7 +4153,7 @@ void CHttpDownload::LoadDownloadInfoL()
     ReadHBufCL( inFile, iHashedMsgBody );
     READ_INT_L( inFile, iCodDownload );
     READ_INT_L( inFile, iNoMedia );
-    
+
 
     CLOG_WRITE("3");
     READ_INT_L( inFile, iPreferencies );
@@ -4200,16 +4173,16 @@ void CHttpDownload::LoadDownloadInfoL()
     LoadHeadersL( inFile, iRequestHeaders );
     LoadHeadersL( inFile, iEntityHeaders );
     LoadHeadersL( inFile, iGeneralHeaders );
-    
+
     CLOG_WRITE("6");
-    
+
     READ_INT_L( inFile, iFotaPckgId );
 
     CleanupStack::PopAndDestroy(); // inFile
     CleanupStack::PopAndDestroy( 2, folderBuf ); // also fileNameBuf
 
     CLOG_WRITE("9");
-    
+
     UpdatePausable();
     }
 
@@ -4258,18 +4231,18 @@ TBool CHttpDownload::IsExpired()
 
 TBool CHttpDownload::IsContentFileStorageType()
     {
-    
-     
-     if( iCodDownload 
-         && iContentType->Compare( KRoapMimeType ) 
-         && iContentType->Compare( KRoapPduMimeType ) 
+
+
+     if( iCodDownload
+         && iContentType->Compare( KRoapMimeType )
+         && iContentType->Compare( KRoapPduMimeType )
          && iContentType->Compare( KFotaPackageDataType)  )
          {
      	 return ETrue;
          }
-            
+
      return EFalse;
-     
+
     }
 
 // -----------------------------------------------------------------------------
@@ -4296,7 +4269,7 @@ void CHttpDownload::OnCompletedL()
             TriggerEvent( EHttpDlInprogress, EHttpContTypeRecognitionAvail );
             iContTypeRecognitionAvailSent = ETrue;
             }
-        //for correct display of string in download list for COD download we set progress state to moved            
+        //for correct display of string in download list for COD download we set progress state to moved
         if(IsContentFileStorageType())
             {
            // Retrieve the file name from the whole paths
@@ -4312,19 +4285,19 @@ void CHttpDownload::OnCompletedL()
             TInt findDot = iDlName->LocateReverse( '.' );
             if( findDot == KErrNotFound )
                 {
-                //if Name displayed does not have Extension then 
+                //if Name displayed does not have Extension then
                 // Remove extention from retrieved name
                 TInt dotInd = namePtr.LocateReverse( '.' );
                  if( dotInd == KErrNotFound )
                     dotInd = namePtr.Length();
-                namePtr.Copy( namePtr.Left( dotInd ) );       
-            
+                namePtr.Copy( namePtr.Left( dotInd ) );
+
                 }
 
             //we never get file moved and Download complete for Cod download becuase move is inherent
             //to Install() state i.e  Download is in progress so display in download list is incorrect.
-            //related to bug  HCHA-753D6G  
-             
+            //related to bug  HCHA-753D6G
+
             if(namePtr.Compare(*iDlName))
                 {
                 ReallocateStringL( iDlName, namePtr, KDownloadNameMaxSize );
@@ -4334,10 +4307,10 @@ void CHttpDownload::OnCompletedL()
                 {
                 SetDownloadStatus( EHttpProgContentFileMoved, EHttpDlMultipleMOCompleted );
                 }
-           CleanupStack::PopAndDestroy( name );          
-           
+           CleanupStack::PopAndDestroy( name );
+
             }
-        else            
+        else
             {
             TriggerEvent( EHttpDlCompleted, EHttpProgNone );
             SetDownloadStatus( EHttpProgNone, EHttpDlMultipleMOCompleted );
@@ -4350,8 +4323,8 @@ void CHttpDownload::OnCompletedL()
     Disconnect();
 
     iStorage->OnComplete();
-    
-    // this is a special case because transaction don't need to be 
+
+    // this is a special case because transaction don't need to be
     // canceled, only deleted
     iContinueDownload = EFalse;
     if( iTransValid )
@@ -4385,7 +4358,7 @@ TPtrC8 CHttpDownload::GetParamFromMediaTypeL( const TDesC8& aAttribute )
     TInt end = iMediaType->Des().Mid( start, length-start ).Locate( KSemiColon );
     TInt boundaryLength = ( KErrNotFound == end ) ? length - start : end;
     TPtrC8 ptr = iMediaType->Des().Mid( start, boundaryLength );
-    return ptr;    
+    return ptr;
     }
 
 // -----------------------------------------------------------------------------
@@ -4430,7 +4403,7 @@ void CHttpDownload::CancelTransaction()
         {
         TriggerEvent( EHttpDlCancelTransaction );
         }
-        
+
     iContinueDownload = EFalse;
 
     iDlStartedByClient = EFalse;
@@ -4546,7 +4519,7 @@ void CHttpDownload::SetDownloadStatus( THttpProgressState aProgState,
             DMPanic( KErrArgument );
             }
         }
-        
+
     TRAP_IGNORE( StoreDownloadInfoL() ); //saving the state
 
     if( !eventTriggered )
@@ -4615,12 +4588,12 @@ void CHttpDownload::ResponseHeaderReceivedL()
                 OnError( KErrUnknown, EObjectNotFound );
                 }
                 break;
-                
+
             default:
                 {
-                SetDownloadStatus( EHttpProgNone, 
-                                   EHttpDlFailed, 
-                                   EHttpUnhandled, 
+                SetDownloadStatus( EHttpProgNone,
+                                   EHttpDlFailed,
+                                   EHttpUnhandled,
                                    GLOBAL_HTTP_ERROR( iStatusCode ) );
                 }
             }
@@ -4739,7 +4712,7 @@ void CHttpDownload::ResponseHeaderReceivedL()
 // -----------------------------------------------------------------------------
 //
 void CHttpDownload::ResponseBodyReceivedL( const TDesC8& aBuf )
-    {    
+    {
     if( iMultiPart && !iCodDownload )
         {
         TBool isSupportedMultiPart( EFalse );
@@ -4750,10 +4723,10 @@ void CHttpDownload::ResponseBodyReceivedL( const TDesC8& aBuf )
             SetCodFlag( ETrue );
             TriggerEvent( EHttpDlInprogress, EHttpProgSupportedMultiPart );
             }
-        }          
-      
+        }
+
     TBool ret(ETrue);
-    
+
     if( iStorage->BufferingEnabled() )
     	{
     	// Buffering is enabled, just pass on the data
@@ -4764,7 +4737,7 @@ void CHttpDownload::ResponseBodyReceivedL( const TDesC8& aBuf )
     	// Buffering not yet enabled, see how much data we still have to write without buffering
     	TInt bytesToWrite = aBuf.Length();
     	TInt downloadedSize = iStorage->DownloadedSize();
-    	
+
     	if(bytesToWrite + downloadedSize < KMinDataSizeToSend)
     		{
     		// Just dump non-buffered write
@@ -4773,28 +4746,28 @@ void CHttpDownload::ResponseBodyReceivedL( const TDesC8& aBuf )
     	else
     		{
     		// Necessary to switch to buffered writing
-    		
+
     		TInt leftPartSize = KMinDataSizeToSend - downloadedSize;
     		TInt rightPartSize = bytesToWrite - leftPartSize;
-    		
+
     		TBool ret1 = ETrue;
     		TBool ret2 = ETrue;
-    		
+
     		if(leftPartSize > 0)
     			{
     			// Write left side of the block to get alignment matched
     			ret1 = iStorage->WriteOutNextBodyDataL( aBuf.Left(leftPartSize) );
     			}
-    		
+
     		// Enable buffering
     		iStorage->EnableBufferingL();
-    		
+
     		// And push the rest of this data block
     		if(rightPartSize > 0)
     			{
     			ret2 = iStorage->WriteOutNextBodyDataL( aBuf.Right(rightPartSize) );
     			}
-    		
+
     		if(!ret1 || !ret2)
     			{
     			ret = EFalse;
@@ -4810,9 +4783,9 @@ void CHttpDownload::ResponseBodyReceivedL( const TDesC8& aBuf )
     if( !iContTypeRecognitionAvailSent && (iStorage->DownloadedSize() >= KRespSizeForRecognition) )
         {
         TriggerEvent( EHttpDlInprogress, EHttpContTypeRecognitionAvail );
-        iContTypeRecognitionAvailSent = ETrue;        
+        iContTypeRecognitionAvailSent = ETrue;
         }
-        
+
     TriggerEvent( EHttpDlInprogress, EHttpProgResponseBodyReceived );
     }
 
@@ -4825,7 +4798,7 @@ void CHttpDownload::ResponseBodyReceivedL( const TDesC8& aBuf )
 TBool CHttpDownload::IsMultipartSupportedL( const TDesC8& aBuf )
     {
     TBool ret( EFalse );
-    
+
     if( !iHeaderOfMultipart )
         {
         iHeaderOfMultipart = HBufC8::NewL( KMaxHeaderOfMultipart );
@@ -4840,16 +4813,16 @@ TBool CHttpDownload::IsMultipartSupportedL( const TDesC8& aBuf )
         ret = EFalse;
         return ret;
         }
-    
+
     TInt pos = iHeaderOfMultipart->Des().Find( KContentType() );
 
     User::LeaveIfError( pos );
 
-    pos = pos + KContentType().Length();    
+    pos = pos + KContentType().Length();
 
-    TPtrC8 p = iHeaderOfMultipart->Des().Mid( pos );    
+    TPtrC8 p = iHeaderOfMultipart->Des().Mid( pos );
     TInt temp = p.Find( KDoubleEOL() );
-    
+
     TInt posEol = pos + temp;
 
     TPtrC8 ptr = iHeaderOfMultipart->Des().Mid( pos, ( posEol - pos ) );
@@ -4860,10 +4833,10 @@ TBool CHttpDownload::IsMultipartSupportedL( const TDesC8& aBuf )
         ret = ETrue;
         delete iHeaderOfMultipart;
         iHeaderOfMultipart = NULL;
-        return ret;            
+        return ret;
         }
-        
-    return ret;  
+
+    return ret;
     }
 
 // -----------------------------------------------------------------------------
@@ -4945,7 +4918,7 @@ void CHttpDownload::SetRequestHeaderL( RStringPool& aStringPool,
     SetCredentialsInfoL( aStringPool );
 
     // Find ETag in response header
-    RStringF etag = aStringPool.StringF(HTTP::EETag, 
+    RStringF etag = aStringPool.StringF(HTTP::EETag,
                                         RHTTPSession::GetTable());
     TInt fieldInd = FindHeaderField( iResponseHeaders, etag.DesC() );
     if( fieldInd != KErrNotFound )
@@ -4953,11 +4926,11 @@ void CHttpDownload::SetRequestHeaderL( RStringPool& aStringPool,
         // that if it's changed, or a redirection goes to another url.
         // Server will respond with 412 on error.
         {
-        RStringF ifMatch = aStringPool.StringF(HTTP::EIfMatch, 
+        RStringF ifMatch = aStringPool.StringF(HTTP::EIfMatch,
                                         RHTTPSession::GetTable());
         aHeaders.RemoveField( ifMatch );
-        aHeaders.SetRawFieldL( ifMatch, 
-                               *(*iResponseHeaders)[fieldInd]->FieldRawData(), 
+        aHeaders.SetRawFieldL( ifMatch,
+                               *(*iResponseHeaders)[fieldInd]->FieldRawData(),
                                KHttpFieldSeparator );
         CLOG_WRITE8_1( "ETag: %S", (*iResponseHeaders)[fieldInd]->FieldRawData() );
         }
@@ -4982,7 +4955,7 @@ void CHttpDownload::SetRequestHeaderL( RStringPool& aStringPool,
         if( iStorage->DownloadedSize() != iStorage->Length() )
             // download from previous point only if the content is unmodified
             {
-            field = aStringPool.StringF(HTTP::EIfUnmodifiedSince, 
+            field = aStringPool.StringF(HTTP::EIfUnmodifiedSince,
                                         RHTTPSession::GetTable());
 
             SetExpireToFieldL( field, aStringPool, aHeaders );
@@ -5037,7 +5010,7 @@ void CHttpDownload::DisablePipeliningL( RStringPool& aStringPool )
 // -----------------------------------------------------------------------------
 //
 void CHttpDownload::SetPropertyL( RStringPool& aStringPool,
-                                  RStringF aPropertyName, 
+                                  RStringF aPropertyName,
                                   const TDesC8& aToken )
     {
     RString tokenStr = aStringPool.OpenStringL( aToken );
@@ -5056,7 +5029,7 @@ void CHttpDownload::SetPropertyL( RStringPool& aStringPool,
 // Set property of the transaction
 // -----------------------------------------------------------------------------
 //
-void CHttpDownload::SetPropertyL( RStringF aPropertyName, 
+void CHttpDownload::SetPropertyL( RStringF aPropertyName,
                                   const TInt aValue )
     {
     THTTPHdrVal tokenVal = aValue;
@@ -5127,7 +5100,7 @@ void CHttpDownload::SetCredentialsInfoL( RStringPool& aStringPool )
 
     if( iHttpUsername )
         {
-        RStringF username = aStringPool.StringF( HTTP::EUsername, 
+        RStringF username = aStringPool.StringF( HTTP::EUsername,
                                                     RHTTPSession::GetTable() );
 
         SetPropertyL( aStringPool, username, *iHttpUsername );
@@ -5135,7 +5108,7 @@ void CHttpDownload::SetCredentialsInfoL( RStringPool& aStringPool )
 
     if( iHttpPassword )
         {
-        RStringF password = aStringPool.StringF( HTTP::EPassword, 
+        RStringF password = aStringPool.StringF( HTTP::EPassword,
                                                     RHTTPSession::GetTable() );
 
         SetPropertyL( aStringPool, password, *iHttpPassword );
@@ -5143,38 +5116,38 @@ void CHttpDownload::SetCredentialsInfoL( RStringPool& aStringPool )
 
     if( iHttpRealm )
         {
-        RStringF realm = aStringPool.StringF( HTTP::ERealm, 
+        RStringF realm = aStringPool.StringF( HTTP::ERealm,
                                                     RHTTPSession::GetTable() );
         SetPropertyL( aStringPool, realm, *iHttpRealm );
         }
 
     if( iHttpProxyRealm )
         {
-        RStringF proxyRealmStr = aStringPool.StringF( 
-                                        HttpFilterCommonStringsExt::EProxyRealm, 
+        RStringF proxyRealmStr = aStringPool.StringF(
+                                        HttpFilterCommonStringsExt::EProxyRealm,
                                         HttpFilterCommonStringsExt::GetTable() );
         SetPropertyL( aStringPool, proxyRealmStr, *iHttpProxyRealm );
         }
 
     if( iHttpProxyUsername )
         {
-        RStringF proxyUsernameStr = aStringPool.StringF( 
-                                    HttpFilterCommonStringsExt::EProxyUsername, 
+        RStringF proxyUsernameStr = aStringPool.StringF(
+                                    HttpFilterCommonStringsExt::EProxyUsername,
                                     HttpFilterCommonStringsExt::GetTable() );
         SetPropertyL( aStringPool, proxyUsernameStr, *iHttpProxyUsername );
         }
 
     if( iHttpProxyPassword )
         {
-        RStringF proxyPasswordStr = aStringPool.StringF( 
-                                        HttpFilterCommonStringsExt::EProxyPassword, 
+        RStringF proxyPasswordStr = aStringPool.StringF(
+                                        HttpFilterCommonStringsExt::EProxyPassword,
                                         HttpFilterCommonStringsExt::GetTable() );
         SetPropertyL( aStringPool, proxyPasswordStr, *iHttpProxyPassword );
         }
 
     if( iHttpNonce )
         {
-        RStringF nonce = aStringPool.StringF( HTTP::ENonce, 
+        RStringF nonce = aStringPool.StringF( HTTP::ENonce,
                                                     RHTTPSession::GetTable() );
 
         SetPropertyL( aStringPool, nonce, *iHttpNonce );
@@ -5216,7 +5189,7 @@ void CHttpDownload::SetRangeFieldL( RStringPool& aStringPool,
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-void CHttpDownload::SetExpireToFieldL( RStringF& aField, 
+void CHttpDownload::SetExpireToFieldL( RStringF& aField,
                                        RStringPool& aStringPool,
                                        RHTTPHeaders& aHeaders )
     {
@@ -5229,7 +5202,7 @@ void CHttpDownload::SetExpireToFieldL( RStringF& aField,
     TInt modInd( KErrNotFound );
 
     for( TInt i = 0; i < iResponseHeaders->Count(); ++i )
-        // FindHeaderField, because this is double search for fieldnames 
+        // FindHeaderField, because this is double search for fieldnames
         {
         if( *(*iResponseHeaders)[i]->FieldName() == expires.DesC() )
             {
@@ -5248,8 +5221,8 @@ void CHttpDownload::SetExpireToFieldL( RStringF& aField,
         CLOG_WRITE8_1( "Expire: %S", (*iResponseHeaders)[expInd]->FieldRawData() );
 
         aHeaders.RemoveField( aField );
-        aHeaders.SetRawFieldL( aField, 
-                               *(*iResponseHeaders)[expInd]->FieldRawData(), 
+        aHeaders.SetRawFieldL( aField,
+                               *(*iResponseHeaders)[expInd]->FieldRawData(),
                                KHttpFieldSeparator );
         }
     else if( modInd != KErrNotFound )
@@ -5257,8 +5230,8 @@ void CHttpDownload::SetExpireToFieldL( RStringF& aField,
         CLOG_WRITE8_1( "LastMod: %S", (*iResponseHeaders)[modInd]->FieldRawData() );
 
         aHeaders.RemoveField( aField );
-        aHeaders.SetRawFieldL( aField, 
-                               *(*iResponseHeaders)[modInd]->FieldRawData(), 
+        aHeaders.SetRawFieldL( aField,
+                               *(*iResponseHeaders)[modInd]->FieldRawData(),
                                KHttpFieldSeparator );
         }
     }
@@ -5275,7 +5248,7 @@ void CHttpDownload::ParseRequestedUrlL()
 
     __ASSERT_DEBUG( iUrl->Length(), DMPanic( KErrArgument ) );
 
-    TUriParser8 uri; 
+    TUriParser8 uri;
     uri.Parse( *iUrl );
 
     TPtrC8 scheme( uri.Extract( EUriScheme ) );
@@ -5285,8 +5258,8 @@ void CHttpDownload::ParseRequestedUrlL()
         // unsupported or no scheme in url.
         // Insert 'http://' to the beginning of it.
         {
-        HBufC8* tempBuf = HBufC8::NewL( KHttpScheme().Length() + 
-                                        KSchemeAddon().Length() + 
+        HBufC8* tempBuf = HBufC8::NewL( KHttpScheme().Length() +
+                                        KSchemeAddon().Length() +
                                         iUrl->Length() );
 
         tempBuf->Des().Append( KHttpScheme );
@@ -5308,7 +5281,7 @@ void CHttpDownload::ParseRequestedUrlL()
     url->SetComponentL( uri.Extract( EUriUserinfo ), EUriUserinfo );
     url->SetComponentL( uri.Extract( EUriQuery ), EUriQuery );
     url->SetComponentL( uri.Extract( EUriFragment ), EUriFragment );
-    
+
     if( uri.IsPresent( EUriPort ) )
         {
         url->SetComponentL( uri.Extract( EUriPort ), EUriPort );
@@ -5347,8 +5320,8 @@ void CHttpDownload::ParseDownloadNameL()
     // Calculate the download name from the requested URL
     HBufC8* parsedUrl = EscapeUtils::EscapeDecodeL( *iCurrentUrl );
     CleanupStack::PushL( parsedUrl );
-    
-    TUriParser8 uri; 
+
+    TUriParser8 uri;
     uri.Parse( *parsedUrl );
 
     TPtrC8 path;
@@ -5369,7 +5342,7 @@ void CHttpDownload::ParseDownloadNameL()
             {
             slash = path.LocateReverse( '\\' );
             }
-            
+
         if( slash != KErrNotFound && slash != path.Length() )
             // from the last slash this is the filename
             {
@@ -5442,9 +5415,9 @@ void CHttpDownload::StoreResponseHeaderL()
 
         CLOG_WRITE8_2("%S:%S", &fieldNameStr.DesC(), &rawData);
         iResponseHeaders->AppendL( field );
-        
+
         CleanupStack::Pop( field );
-        
+
         CHeaderField* entityField = CHeaderField::NewL( &fieldNameStr.DesC(), &rawData );
         CleanupStack::PushL( entityField );
 
@@ -5454,10 +5427,10 @@ void CHttpDownload::StoreResponseHeaderL()
         CleanupStack::Pop( entityField );
 
         ++it;
-        }    
+        }
 
     ParseContentTypeL( strPool );
-    
+
     ParseContentDispositionL( strPool);
     if (!iCodDownload)
         {
@@ -5485,17 +5458,17 @@ void CHttpDownload::StoreResponseHeaderL()
             //This is a partial response as Length is already set so save this new length as partial Length that needs to be Downloaded.
             {
             iStorage->SetPartialContentLength( value );
-            }    
+            }
         }
-        
+
     CheckRealDRMContentType();
     if( !iDrmContentLengthValid )
         // Content was original encoded -> we don't know the actual content size.
         {
         iStorage->SetLength( KDefaultContentLength );
         }
-        
-        
+
+
     iMaxAge = 0;
     TInt parts( 0 );
     // this leave is trapped because we can still go on
@@ -5574,7 +5547,7 @@ void CHttpDownload::CheckRealDRMContentType()
 
     iPausableDRM = ETrue;
     iDrmContentLengthValid = ETrue;
-    
+
     TInt index = FindHeaderField( iResponseHeaders, KDRMOldContentType );
     if( index != KErrNotFound )
         // this is an old DRM protected content
@@ -5586,9 +5559,9 @@ void CHttpDownload::CheckRealDRMContentType()
 //            iDrmContentLengthValid = EFalse;
             }
         }
-        
+
     UpdatePausable();
-            
+
     CLOG_WRITE_2( "Pausable: [%d], Length: [%d]", iPausableDRM, iDrmContentLengthValid );
     }
 
@@ -5602,13 +5575,13 @@ void CHttpDownload::SaveCredentialsL( RStringPool aStringPool )
     {
     LOGGER_ENTERFN( "SaveCredentialsL" );
 
-    RStringF username = aStringPool.StringF( HTTP::EUsername, 
+    RStringF username = aStringPool.StringF( HTTP::EUsername,
                                                 RHTTPSession::GetTable() );
-    RStringF password = aStringPool.StringF( HTTP::EPassword, 
+    RStringF password = aStringPool.StringF( HTTP::EPassword,
                                                 RHTTPSession::GetTable() );
-    RStringF realm = aStringPool.StringF( HTTP::ERealm, 
+    RStringF realm = aStringPool.StringF( HTTP::ERealm,
                                                 RHTTPSession::GetTable() );
-    RStringF nonce = aStringPool.StringF( HTTP::ENonce, 
+    RStringF nonce = aStringPool.StringF( HTTP::ENonce,
                                                 RHTTPSession::GetTable() );
 
     THTTPHdrVal hdrValue;
@@ -5636,9 +5609,9 @@ void CHttpDownload::SaveCredentialsL( RStringPool aStringPool )
                 CLOG_WRITE8_1( "pwd: [%S]", iHttpPassword );
                 }
 
-            if( !iTrans.PropertySet().Property( 
-                                    aStringPool.StringF( HTTP::EBasic, 
-                                    RHTTPSession::GetTable() ), 
+            if( !iTrans.PropertySet().Property(
+                                    aStringPool.StringF( HTTP::EBasic,
+                                    RHTTPSession::GetTable() ),
                                     hdrValue ) )
                 // this is a digest authentication response
                 // store nonce value
@@ -5666,7 +5639,7 @@ void CHttpDownload::RequestContentL()
     RStringPool strPool = iConnHandler->Session().StringPool();
     RStringF method;
     TBool aHead = ETrue;
-    
+
     if( (iContentType && iContentType->Length()) ||
         iNoContentTypeCheck ||
         iSilentMode )
@@ -5682,7 +5655,7 @@ void CHttpDownload::RequestContentL()
         method = strPool.StringF( HTTP::EHEAD,RHTTPSession::GetTable() );
         }
 
-    TUriParser8 uri; 
+    TUriParser8 uri;
     uri.Parse( *iCurrentUrl );
 
     CLOG_WRITE8_1( "Req URL: %S", iCurrentUrl );
@@ -5744,8 +5717,8 @@ void CHttpDownload::HttpResponse401L()
     RStringPool strPool = iConnHandler->Session().StringPool();
 
     // Check authentication scheme
-    TBool basic = iTrans.PropertySet().Property( strPool.StringF( HTTP::EBasic, 
-                                                 RHTTPSession::GetTable() ), 
+    TBool basic = iTrans.PropertySet().Property( strPool.StringF( HTTP::EBasic,
+                                                 RHTTPSession::GetTable() ),
                                                  hdrValue );
 
     if( basic )
@@ -5792,8 +5765,8 @@ void CHttpDownload::HttpResponse407L()
     THTTPHdrVal hdrValue;
 
     RStringPool strPool = iConnHandler->Session().StringPool();
-    TInt err = iTrans.PropertySet().Property( strPool.StringF( HTTP::EBasic, 
-                                               RHTTPSession::GetTable() ), 
+    TInt err = iTrans.PropertySet().Property( strPool.StringF( HTTP::EBasic,
+                                               RHTTPSession::GetTable() ),
                                                hdrValue );
 
     if( !err )
@@ -5892,8 +5865,8 @@ void CHttpDownload::ConvertDownloadNameUniqueL()
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-void CHttpDownload::CreateIndexedNameL( HBufC* &aUniqueName, 
-                                        TDesC& aOrgName, 
+void CHttpDownload::CreateIndexedNameL( HBufC* &aUniqueName,
+                                        TDesC& aOrgName,
                                         TInt& aIndex )
     {
     LOGGER_ENTERFN( "CreateIndexedNameL" );
@@ -5932,7 +5905,7 @@ void CHttpDownload::CreateIndexedNameL( HBufC* &aUniqueName,
         }
 
     aUniqueName = HBufC::NewL( fullLength );
-    aUniqueName->Des().Format( _L("%S%S%S"), &left, 
+    aUniqueName->Des().Format( _L("%S%S%S"), &left,
                                              &indexStr,
                                              &extension );
 
@@ -5945,7 +5918,7 @@ void CHttpDownload::CreateIndexedNameL( HBufC* &aUniqueName,
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-void CHttpDownload::ContinueDownloadStoreResponseHeaderL( 
+void CHttpDownload::ContinueDownloadStoreResponseHeaderL(
                                                 const TDesC8& aResponseHeader )
     {
     LOGGER_ENTERFN( "ContinueDownloadStoreResponseHeaderL" );
@@ -5997,7 +5970,7 @@ void CHttpDownload::ContinueDownloadStoreResponseHeaderL(
             iResponseHeaders->AppendL( newField );
 
             CleanupStack::Pop( newField );
-            
+
             CHeaderField* newentField = CHeaderField::NewL( &fieldName, &fieldValue );
             CleanupStack::PushL( newentField );
 
@@ -6077,8 +6050,8 @@ void CHttpDownload::ParseContentTypeL( RStringPool& aStrPool )
         ReallocateStringL( iDDType, rawData, KMaxContentTypeLength );
         ReallocateStringL( iMediaType, mediaType, KMaxContentTypeLength );
         }
-        
-#ifdef __SYNCML_DM_FOTA        
+
+#ifdef __SYNCML_DM_FOTA
     if( !iContentType->Des().CompareF( KFotaMimeType ) )
         {
         iStorage->SetStorageMethod( CHttpStorage::EStoreFota );
@@ -6091,12 +6064,12 @@ void CHttpDownload::ParseContentTypeL( RStringPool& aStrPool )
         {
         SetCodFlag( ETrue );
         }
-        
+
     if( 0 == iContentType->Des().Compare( KMultiPartMimeType() ) )
         {
         iMultiPart = ETrue;
         }
-        
+
     }
 
 // -----------------------------------------------------------------------------
@@ -6193,7 +6166,7 @@ void CHttpDownload::ParseContentDispositionL( RStringPool& aStrPool )
 			ReallocateStringL( iAttachmentFileName, fileNameParm );
 			iUseInlineFileName = ETrue;
 			}
-        }                        
+        }
     }
 
 // -----------------------------------------------------------------------------
@@ -6254,7 +6227,7 @@ void CHttpDownload::UpdatePausable()
         {
         pausable = EFalse;
         }
-        
+
     if( iMethod == EMethodPOST )
         {
         pausable = EFalse;
@@ -6262,10 +6235,10 @@ void CHttpDownload::UpdatePausable()
 
     if( pausable != iPausable )
         {
-        if( !iCodDownload )	
+        if( !iCodDownload )
             {
         	iPausable = pausable;
-        	
+
         	// inform client about change
             TriggerEvent( iPausable ? EHttpDlPausable : EHttpDlNonPausable );
 
@@ -6362,7 +6335,7 @@ TBool CHttpDownload::CheckIfContentUnModified()
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-void CHttpDownload::CheckAttribMaxLengthL( THttpDownloadAttrib aAttribute, 
+void CHttpDownload::CheckAttribMaxLengthL( THttpDownloadAttrib aAttribute,
 	                                       const TDesC16& aValue )
     {
     for( TInt i = 0; KStringAttribMaxLengths[i][0]; ++i )
@@ -6371,7 +6344,7 @@ void CHttpDownload::CheckAttribMaxLengthL( THttpDownloadAttrib aAttribute,
             {
             if( aValue.Length() > KStringAttribMaxLengths[i][1] )
                 {
-                CLOG_WRITE_2( "Overflow length: %d, max-length: %d", aValue.Length(), 
+                CLOG_WRITE_2( "Overflow length: %d, max-length: %d", aValue.Length(),
                                                     KStringAttribMaxLengths[i][1] );
                 User::Leave( KErrOverflow );
                 }
@@ -6385,7 +6358,7 @@ void CHttpDownload::CheckAttribMaxLengthL( THttpDownloadAttrib aAttribute,
 // (other items were commented in a header).
 // -----------------------------------------------------------------------------
 //
-void CHttpDownload::CheckAttribMaxLengthL( THttpDownloadAttrib aAttribute, 
+void CHttpDownload::CheckAttribMaxLengthL( THttpDownloadAttrib aAttribute,
 	                                       const TDesC8& aValue )
     {
     for( TInt i = 0; KStringAttribMaxLengths[i][0]; ++i )
@@ -6394,7 +6367,7 @@ void CHttpDownload::CheckAttribMaxLengthL( THttpDownloadAttrib aAttribute,
             {
             if( aValue.Length() > KStringAttribMaxLengths[i][1] )
                 {
-                CLOG_WRITE_2( "Overflow length: %d, max-length: %d", aValue.Length(), 
+                CLOG_WRITE_2( "Overflow length: %d, max-length: %d", aValue.Length(),
                                                     KStringAttribMaxLengths[i][1] );
                 User::Leave( KErrOverflow );
                 }
@@ -6497,7 +6470,7 @@ void CHttpDownload::ParseRequestHeaderAddOnL( const TDesC8& aValue )
         // If not, fieldInd is KErrNotFound
         for( TInt i = 0; KRequestHeaderConvTable[i][0]; ++i )
             {
-            RStringF fieldNameStr = strPool.StringF( KRequestHeaderConvTable[i][1], 
+            RStringF fieldNameStr = strPool.StringF( KRequestHeaderConvTable[i][1],
                                                      RHTTPSession::GetTable() );
 
             if( !fieldName.CompareF( fieldNameStr.DesC() ) )
@@ -6522,7 +6495,7 @@ void CHttpDownload::ParseRequestHeaderAddOnL( const TDesC8& aValue )
 // CHttpDownload::LoadHeadersL
 // -----------------------------------------------------------------------------
 //
-void CHttpDownload::LoadHeadersL( RFile& aFile, 
+void CHttpDownload::LoadHeadersL( RFile& aFile,
                                   CArrayPtrFlat<CHeaderField>* aHeaders )
     {
     TInt headers;
@@ -6548,7 +6521,7 @@ void CHttpDownload::LoadHeadersL( RFile& aFile,
             {
             CLOG_WRITE8( "Empty field" );
             }
-*/    
+*/
         CleanupStack::Pop( field );
         }
     }
@@ -6588,36 +6561,36 @@ TInt CHttpDownload::GetHttpHeadersSize(CArrayPtrFlat<CHeaderField>* aHeaders )
 
     HBufC8* fieldName = NULL;
     HBufC8* fieldRawData = NULL;
-    
+
     TInt size  = 0;
 
     for( TInt i = 0; i < headers; ++i )
         {
         fieldName = (*aHeaders)[i]->FieldName();
         fieldRawData = (*aHeaders)[i]->FieldRawData();
-        
+
         size = size + fieldName->Size() +  fieldRawData->Size();
-        
+
         CLOG_WRITE8_1( "Size = %d:", size );
         }
 
     return size;
-    
+
     }
-    
-    
+
+
 // -----------------------------------------------------------------------------
 // CHttpDownload::AddHeaderL
 // -----------------------------------------------------------------------------
 //
-void CHttpDownload::AddHeaderL( THttpDownloadAttrib aAttribute, 
+void CHttpDownload::AddHeaderL( THttpDownloadAttrib aAttribute,
 								const TDesC8& aValue,
                                 const TInt aConversionTable[][2],
                                 CArrayPtrFlat<CHeaderField>* aHeaders )
     {
     TInt index( KErrNotFound );
 
-    // search for if this field is already in the 
+    // search for if this field is already in the
     for( index = 0; aConversionTable[index][0]; ++index )
         {
         if( aConversionTable[index][0] == aAttribute )
@@ -6629,7 +6602,7 @@ void CHttpDownload::AddHeaderL( THttpDownloadAttrib aAttribute,
     __ASSERT_DEBUG( index != KErrNotFound, DMPanic( KErrCorrupt ) );
 
     RStringPool strPool = iClAppInstance->ConnHandler()->Session().StringPool();
-    RStringF fieldName = strPool.StringF( aConversionTable[index][1], 
+    RStringF fieldName = strPool.StringF( aConversionTable[index][1],
                                           RHTTPSession::GetTable() );
     CleanupClosePushL( fieldName );
 
@@ -6646,7 +6619,7 @@ void CHttpDownload::AddHeaderL( THttpDownloadAttrib aAttribute,
 
     CleanupStack::Pop( 2 ); // newField, fieldName
     }
-    
+
 // -----------------------------------------------------------------------------
 // CHttpDownload::RedirectedPermanentlyL
 // -----------------------------------------------------------------------------
@@ -6662,7 +6635,7 @@ void CHttpDownload::RedirectedPermanentlyL( const TDesC8& aNewUrl )
         }
     else
         // there has already been a temporary redirection
-        // this permanent is not used on next submitted request 
+        // this permanent is not used on next submitted request
         {
         ReallocateStringL( iCurrentUrl, aNewUrl, KMaxUrlLength );
         }
@@ -6686,7 +6659,7 @@ void CHttpDownload::RedirectedTemporaryL( const TDesC8& aNewUrl )
 
     TriggerEvent( EHttpDlInprogress, EHttpProgRedirectedTemporarily );
     }
-    
+
 // -----------------------------------------------------------------------------
 // CHttpDownload::FixDownloadNameL
 // -----------------------------------------------------------------------------
@@ -6696,13 +6669,13 @@ void CHttpDownload::FixDownloadNameL()
     if( !iCodDownload )
         {
         TPtr name( iDlName->Des() );
-        
+
         for( TInt i = 0; i < name.Length(); ++i )
             {
             TChar currChar = (*iDlName)[i];
-            
+
             if( currChar.IsAlphaDigit() ||
-                currChar.IsGraph() || 
+                currChar.IsGraph() ||
                 currChar == 0x20 )  // space
                 {
                 continue;
@@ -6712,7 +6685,7 @@ void CHttpDownload::FixDownloadNameL()
                 name[i] = KUrlFixChar;
                 }
             }
-            
+
         ConvertDownloadNameUniqueL();
         }
     }
@@ -6725,7 +6698,7 @@ void CHttpDownload::SetCodFlag( TBool aValue )
     {
     if( aValue && iCodDownload )
         {
-        // this case we will not overwrite 
+        // this case we will not overwrite
         // the value of iCodDownload. iCodDownload might be > 1
         return;
         }
@@ -6773,7 +6746,7 @@ void CHttpDownload::UpdateDestFileNameL()
     CLOG_WRITE_1( " entering fileName: %S", fileName );
 #ifdef RD_MULTIPLE_DRIVE
     HBufC8* drivesDynList = iClientApp->Engine()->QueryDynDriveListLC();
-    TPtrC8 drives( *drivesDynList ); 
+    TPtrC8 drives( *drivesDynList );
 #else
     TPtrC drives( iClientApp->Engine()->iDriveLettersCenRep );
 #endif
@@ -6794,10 +6767,10 @@ void CHttpDownload::UpdateDestFileNameL()
             TInt bytesToWrite = downloadedSize;
             if (bytesToWrite < 0)
                 bytesToWrite = 0;
-            
+
             TRAP( err, criticalSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
                                                              &fs, bytesToWrite, drive ));
-            }             
+            }
         }
     if( needToUpdatePath )
         {
@@ -6819,7 +6792,7 @@ void CHttpDownload::UpdateDestFileNameL()
                 fileNamePtr.Delete( 0, lastSlashPos );
                 }
             }
-    
+
         // Setting RootPath for new Destination file
         fileNamePtr.Insert( 0, rootPath );
         // Setting KDownloadPath
@@ -6839,35 +6812,35 @@ void CHttpDownload::UpdateDestFileNameL()
         }
     CLOG_WRITE_1( " exiting fileName: %S", fileName );
 #ifdef RD_MULTIPLE_DRIVE
-    CleanupStack::PopAndDestroy( drivesDynList ); 
+    CleanupStack::PopAndDestroy( drivesDynList );
 #endif
     CleanupStack::PopAndDestroy( &fs );
-    }    
+    }
 
 // ---------------------------------------------------------
 // CHttpDownload::UpdateDCFRepositoryL()
-// Update saved file to DCFRepository  
+// Update saved file to DCFRepository
 // ---------------------------------------------------------
-// 
+//
 void CHttpDownload::UpdateDCFRepositoryL(
     const TDesC& aFileName )
     {
     LOGGER_ENTERFN( "UpdateDCFRepositoryL" );
     CLOG_WRITE_1( " :UpdateDCFRepositoryL() for: %S", &aFileName );
     CDcfEntry* dcfEntry = NULL;
-    dcfEntry = CDcfEntry::NewL();    
+    dcfEntry = CDcfEntry::NewL();
     CleanupStack::PushL( dcfEntry );
-    
+
     CDcfRep* dcfRep = NULL;
     dcfRep = CDcfRep::NewL();
     CleanupStack::PushL( dcfRep );
 
-    dcfEntry->SetLocationL( aFileName, 0 );    
+    dcfEntry->SetLocationL( aFileName, 0 );
     CLOG_WRITE(" : SetLocationL OK");
     dcfRep->UpdateL( dcfEntry );
     CLOG_WRITE(" :UpdateL OK");
     CleanupStack::PopAndDestroy(2); // dcfEntry, dcfRep
-    }                 
+    }
 
 // -----------------------------------------------------------------------------
 // CHttpDownload::MoveInDeleteL
@@ -6887,7 +6860,7 @@ TInt CHttpDownload::MoveInDelete(TInt mediaObjectIndex)
 		TPtrC filenamePtr = ((*iCodDlData)[mediaObjectIndex])->DestFilename();
 		if(filenamePtr.Length())
     		{
-    		TRAP_IGNORE(NotifyMediaGalleryL( filenamePtr ));    
+    		TRAP_IGNORE(NotifyMediaGalleryL( filenamePtr ));
     		}
 		}
 	return err;
@@ -6906,7 +6879,7 @@ void CHttpDownload::MoveDownloadedMediaObjectL(TInt mediaObjectIndex)
 
     if( iDlState != EHttpDlMultipleMOCompleted && !iMoDownloadCompleted )
         {
-        iStorage->SetProgressiveMode( EFalse );	
+        iStorage->SetProgressiveMode( EFalse );
         TriggerEvent( iDlState, EHttpDlProgNonProgressive);
         return;//Move will be Done by COD as MO Completed has not happened
         }
@@ -6915,16 +6888,16 @@ void CHttpDownload::MoveDownloadedMediaObjectL(TInt mediaObjectIndex)
     //__ASSERT_DEBUG( !iFileMan, DMPanic( KErrInUse ) );
 
 #if 0
-    
+
 #else
 
     HBufC* filename = HBufC::NewLC(KMaxFileName);
 	TPtr filenamePtr1 = filename->Des();
-	
+
     RFs &fs = iClientApp->Engine()->Fs();
 	if(!iFileMan)
 		{
-		iFileMan = CFileMan::NewL(fs);	
+		iFileMan = CFileMan::NewL(fs);
 		}
 
     TPtrC filenamePtr2 = ((*iCodDlData)[mediaObjectIndex])->DestFilename();
@@ -6933,18 +6906,18 @@ void CHttpDownload::MoveDownloadedMediaObjectL(TInt mediaObjectIndex)
         CleanupStack::PopAndDestroy(filename);
         return;
     	}
-    
+
     TInt firstSlashPos = filenamePtr2.Locate( '\\' );
 
     if(firstSlashPos < 0)
 	    {
 	    CleanupStack::PopAndDestroy(filename);
-	    return;	
+	    return;
 	    }
   	TPtrC dlName = filenamePtr2.Left(firstSlashPos);
 
     TInt drive;
-    
+
     User::LeaveIfError( fs.CharToDrive( dlName[0], drive ));
 
 
@@ -6961,24 +6934,24 @@ void CHttpDownload::MoveDownloadedMediaObjectL(TInt mediaObjectIndex)
     TInt error = fs.MkDirAll(filenamePtr1);
     if (error!=KErrNone && error!=KErrAlreadyExists)
        {
-        User::Leave(error);   
+        User::Leave(error);
        }
 	if( mediaObjectIndex == iActivePlayedDownload )
-	    {	    
-	           	
+	    {
+
 	    iFname = ((*iCodDlData)[mediaObjectIndex])->TempFilename();
 	    }
 
 	else
-		{	    
-	    
+		{
+
 	    iFname = ((*iCodDlData)[mediaObjectIndex])->DestFilename();
-		}   
+		}
     // Find a unique name to avoid any conflict.
     // Here iFname has full path of current location of file
     // and filename has destination path.
     FindUniqueDestinationFileNameL( iFname, filename );
-    
+
     filenamePtr1 = filename->Des();
 
     User::LeaveIfError( iFileMan->Move( iFname, filenamePtr1, CFileMan::EOverWrite, iStatus ) );
@@ -6988,7 +6961,7 @@ void CHttpDownload::MoveDownloadedMediaObjectL(TInt mediaObjectIndex)
     ((*iCodDlData)[mediaObjectIndex])->SetDestFilenameL(filenamePtr1);
 
     CleanupStack::PopAndDestroy(filename);
- 
+
 #endif
     }
 
@@ -7011,26 +6984,26 @@ void CHttpDownload::MoveDownloadedMediaObjectSyncL(TInt mediaObjectIndex)
     //__ASSERT_DEBUG( !iFileMan, DMPanic( KErrInUse ) );
 
 
-    
+
 	RFs &fs = iClientApp->Engine()->Fs();
 	if(!iFileMan)
 		{
-		iFileMan = CFileMan::NewL(fs);	
+		iFileMan = CFileMan::NewL(fs);
 		}
 
     HBufC* filename = HBufC::NewLC(KMaxFileName);
     TPtr filenamePtr = filename->Des();
-    
+
     TPtrC fileNamePtr = ((*iCodDlData)[mediaObjectIndex])->DestFilename();
     TInt firstSlashPos = fileNamePtr.Locate( '\\' );
     if(firstSlashPos < 0)
 	    {
 	    CleanupStack::PopAndDestroy(filename);
-	    return;	
+	    return;
 	    }
   	TPtrC dlName = fileNamePtr.Left(firstSlashPos);
     TInt drive;
-    
+
     User::LeaveIfError( fs.CharToDrive( dlName[0], drive ));
 
 
@@ -7043,19 +7016,19 @@ void CHttpDownload::MoveDownloadedMediaObjectSyncL(TInt mediaObjectIndex)
 
     filenamePtr.Copy(rootPath);
     filenamePtr.Append(_L("\\"));
-    
+
     TInt error = fs.MkDirAll(filenamePtr);
     if (error!=KErrNone && error!=KErrAlreadyExists)
        {
-        User::Leave(error);   
+        User::Leave(error);
        }
     iFname = ((*iCodDlData)[mediaObjectIndex])->DestFilename();
-    
+
     // Find a unique name to avoid any conflict.
     // Here iFname has full path of current location of file
     // and filename has destination path.
     FindUniqueDestinationFileNameL( iFname, filename );
-    
+
     filenamePtr = filename->Des();
 
     TInt err = iFileMan->Move(iFname, filenamePtr, CFileMan::EOverWrite);
@@ -7067,7 +7040,7 @@ void CHttpDownload::MoveDownloadedMediaObjectSyncL(TInt mediaObjectIndex)
     ((*iCodDlData)[mediaObjectIndex])->SetDestFilenameL(filenamePtr);
 
     CleanupStack::PopAndDestroy(filename);
- 
+
 
     }
 
@@ -7109,21 +7082,21 @@ void CHttpDownload::FindUniqueDestinationFileNameL( TDesC& srcFile, HBufC*& dest
         CleanupStack::PopAndDestroy( fileName );
         CleanupStack::PopAndDestroy( fileExtention );
     }
-    
- 
+
+
 // ---------------------------------------------------------
 // CHttpDownload::NotifyMediaGalleryL()
 // Notify media gallery about the new file.
 // ---------------------------------------------------------
-// 
+//
 void CHttpDownload::NotifyMediaGalleryL( const TDesC& aFileName )
     {
 
 	LOGGER_ENTERFN( "CHttpDownload::NotifyMediaGalleryL" );
     CLOG_WRITE_1(" notifying Gallery and DcfReposory about move for: %S",&aFileName);
 
-#ifdef BRDO_APP_GALLERY_SUPPORTED_FF    
-    
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
+
     //
     // Notify Media Gallery about new media file
     CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL(
@@ -7138,8 +7111,8 @@ void CHttpDownload::NotifyMediaGalleryL( const TDesC& aFileName )
         TRAP_IGNORE( mgFileManager->UpdateL() );
         }
     CleanupStack::PopAndDestroy( mgFileManager );
-    
-#endif    
+
+#endif
     //
     // Notify DCF repository
     TRAP_IGNORE( UpdateDCFRepositoryL( aFileName ) );
@@ -7183,7 +7156,7 @@ void CHttpDownload::ConvertDownloadNameUniqueL( HBufC*& filePath,
 
     CleanupStack::PopAndDestroy(&rFs);
     CleanupStack::PopAndDestroy(fullNameTemp);
-    
+
     // This is the unique name that we were looking for.
     CleanupStack::PopAndDestroy(fileName);
     fileName = uniqueName;

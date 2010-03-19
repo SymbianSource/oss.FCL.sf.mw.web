@@ -15,6 +15,7 @@
 *
 */
 
+
 #ifndef __TOOLBAR
 #define __TOOLBAR
 
@@ -26,7 +27,7 @@
 #include <AknsConstants.h>
 #include <AknsItemID.h>
 #include <AknsConstants.h>
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include <eikmobs.h>
 #include <webkitutils.rsg>
 // CONSTANTS

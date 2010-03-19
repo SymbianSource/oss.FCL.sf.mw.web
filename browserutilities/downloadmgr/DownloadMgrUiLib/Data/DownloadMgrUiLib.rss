@@ -20,9 +20,8 @@
 NAME    DMUL
 
 //  INCLUDES
-#include <browser_platform_variant.hrh>
 #include "DownloadMgrUiLib.hrh"
-#include <downloadmgruilib.loc>
+#include <DownloadMgrUiLib.loc>
 #include <avkon.loc>
 #include <badef.rh>
 #include <uikon.rh>
@@ -320,7 +319,7 @@ RESOURCE MENU_BAR r_dmul_downloadslist_menubar
         MENU_TITLE { menu_pane = r_dmul_downloadslist_menu; txt = ""; }
         };
     }
-#ifndef BRDO_SINGLE_CLICK_ENABLED_FF
+
 RESOURCE MENU_PANE r_dmul_downloadslist_menu
     {
     items =
@@ -340,25 +339,7 @@ RESOURCE MENU_PANE r_dmul_downloadslist_menu
         MENU_ITEM { command = EDownloadsListCmdCancelAll; txt = qtn_browser_downloads_cancel_all; }
         };
     }
-#else
-RESOURCE MENU_PANE r_dmul_downloadslist_menu
-    {
-    items =
-        {
-        MENU_ITEM { command = EDownloadsListCmdResumeAll; txt = qtn_browser_downloads_resume_all; },
-        MENU_ITEM { command = EDownloadsListCmdCancelAll; txt = qtn_browser_downloads_cancel_all; }
-        };
-    }
 
-RESOURCE MENU_PANE r_dmul_aiw_popup
-    {
-    items =
-        {
-        MENU_ITEM { command = EAiwCmdContact; txt = qtn_mg_options_assign_to_contact ;  },
-        MENU_ITEM {command = EAiwCmdRingtone;txt = qtn_mg_options_set_as_rt; }
-        };
-    }
-#endif
 STRUCT DMUL_AIW_INTEREST_MENUPANE_MAPPING_LIST
     {
     STRUCT pairs[];
@@ -382,22 +363,6 @@ RESOURCE AIW_INTEREST r_dmul_aiw_use_as_interest
     {
     items=
         {
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF                
-        AIW_CRITERIA_ITEM
-            {
-            id = EAiwCmdRingtone;
-            serviceCmd = KAiwCmdAssign;
-            contentType = "*";
-            serviceClass = KAiwClassMenu;
-            },
-        AIW_CRITERIA_ITEM
-           {
-           id = EAiwCmdContact;
-           serviceCmd = KAiwCmdAssign;
-           contentType = "*";
-           serviceClass = KAiwClassMenu;
-           }
-#else
         AIW_CRITERIA_ITEM
             {
             id = EDownloadsListCmdUseAs;
@@ -405,7 +370,6 @@ RESOURCE AIW_INTEREST r_dmul_aiw_use_as_interest
             contentType = "*";
             serviceClass = KAiwClassMenu;
             }
-#endif            
         };
     }
 
@@ -416,11 +380,7 @@ RESOURCE DMUL_AIW_INTEREST_MENUPANE_MAPPING_LIST r_dmul_aiw_interest_menupane_ma
         DMUL_AIW_INTEREST_MENUPANE_PAIR
             {
             interest = r_dmul_aiw_use_as_interest;
-#ifdef  BRDO_SINGLE_CLICK_ENABLED_FF       
-            menupane = r_dmul_aiw_popup;
-#else
             menupane = r_dmul_downloadslist_menu;
-#endif            
             }
         };
     }
@@ -530,20 +490,6 @@ RESOURCE AIW_INTEREST r_dmul_filemanager_aiw_interest
         };
     }
 
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-RESOURCE STYLUS_POPUP_MENU r_stylus_long_tap_popup_dl_menu
-    {       
-    items =     
-        {
-        STYLUS_POPUP_MENU_ITEM { txt = qtn_browser_downloads_delete; command = EDownloadsListCmdDelete;},
-        STYLUS_POPUP_MENU_ITEM {  txt = qtn_browser_downloads_set_as_rt; command = EAiwCmdRingtone; },
-        STYLUS_POPUP_MENU_ITEM {  txt =  qtn_browser_downloads_assign_to_contact ; command = EAiwCmdContact ; },
-        STYLUS_POPUP_MENU_ITEM { txt = qtn_browser_downloads_open_file_manager; command = EDownloadsListCmdFileManager;},
-        STYLUS_POPUP_MENU_ITEM { txt = qtn_browser_downloads_cancel_download; command = EDownloadsListCmdCancel;},
-        STYLUS_POPUP_MENU_ITEM { txt = qtn_browser_downloads_resume; command = EDownloadsListCmdResume;}
-        };
-    }
-#endif    
 // End of File
 
 

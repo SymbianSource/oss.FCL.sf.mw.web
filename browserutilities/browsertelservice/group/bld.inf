@@ -15,7 +15,7 @@
 *
 */
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
@@ -25,7 +25,7 @@ PRJ_EXPORTS
 ../inc/BrowserTelService.h    |../../../inc/BrowserTelService.h
 ../inc/BrowserTelServiceEtelWatcher.h    |../../../inc/BrowserTelServiceEtelWatcher.h
 ../rom/browsertelservice.iby CORE_MW_LAYER_IBY_EXPORT_PATH(browsertelservice.iby)
-../loc/browsertelservice.loc  MW_LAYER_LOC_EXPORT_PATH(browsertelservice.loc)
+../loc/BrowserTelService.loc  MW_LAYER_LOC_EXPORT_PATH(BrowserTelService.loc)
 
 PRJ_MMPFILES
 BrowserTelService.mmp

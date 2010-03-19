@@ -28,7 +28,7 @@
 
 #include "KimonoLocalizationStrings.h"
 #include "BrsrStatusCodes.h"
-#include <MemoryManager.h>
+#include "MemoryManager.h"
 
 /* ------------------------------------------------------------------------- *
    global data

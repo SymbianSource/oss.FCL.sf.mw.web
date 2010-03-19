@@ -15,7 +15,9 @@
 *
 */
 
-#include  "../webkitcommon.mmpi"
+
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          urlloader.lib
 TARGETTYPE      lib
@@ -26,9 +28,36 @@ VENDORID        VID_DEFAULT
 MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER
 
+
 SOURCEPATH      ../../src/urlloader/src
 SOURCE      urlloader_urlloaderint.cpp
 SOURCE			urlloader_curlloader.cpp
 SOURCE			urlloader_loaderutils.cpp
 SOURCE      urlloader_urlresponse.cpp
 SOURCE      nwx_http_content_type_strings.c
+
+#include  "../webkitcommon.mmpi"
+
+//USERINCLUDE     ../../src/httploader/include
+//USERINCLUDE     ../../src/httploader/src
+USERINCLUDE     ../../src/fileloader/include
+USERINCLUDE     ../../src/urlloader/include
+USERINCLUDE     ../../src/wml/src
+USERINCLUDE     ../../src/wml/include
+USERINCLUDE     ../../src/mvc/include
+USERINCLUDE     ../../src/utils/include
+USERINCLUDE     ../../src/wmlcontrol/include
+
+
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE   ../../src/utils/include
+SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
+MW_LAYER_LIBC_SYSTEMINCLUDE
+MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_HTTP_SYSTEMINCLUDE
+MW_LAYER_ECOM_SYSTEMINCLUDE
+
+
+
+
+

@@ -15,7 +15,8 @@
 *
 */
 
-#include <feedsserverrequesthandler.h>
+
+#include "FeedsServerRequestHandler.h"
 
 // -----------------------------------------------------------------------------
 // CRequestHandler::CRequestHandler

@@ -26,7 +26,7 @@
 #include <widgetregistryconstants.h>
 #include <wrtharvester.rsg>
 
-#include <ecom/implementationproxy.h>
+#include <implementationproxy.h>
 
 #include <LiwServiceHandler.h>
 #include <LiwVariant.h>
@@ -49,11 +49,6 @@
 // CONSTANTS
 _LIT( KResourceFileName, "\\resource\\wrtharvester.rsc" );
 _LIT( KResourceDir, "Z:wrtharvester.rsc" );
-_LIT( KUid, "uid");
-_LIT( K0x, "0x");
-_LIT( KOpenPar, "(");
-_LIT( KClosePar, ")");
-_LIT8( KWidgetIcon, "widget_icon");
 
 /**
 * Utility class to show the prompt for platform security access.
@@ -234,10 +229,6 @@ void CWrtHarvester::ConstructL()
     iWidgetUsbListener->Start();
     SetMSMode(0);
     
-    iCanAccessRegistry = ETrue;    
-	iReinstallingWidget = EFalse;
-	
-	    
     TFileName resourceFileName;  
     TParse parse;    
     Dll::FileName (resourceFileName);           
@@ -287,13 +278,6 @@ CWrtHarvester::~CWrtHarvester()
     delete iWidgetRegListener;
     delete iWidgetMMCListener;
     delete iWidgetUsbListener;
-    if(iAsyncCallBack)
-        {
-        iAsyncCallBack->Cancel();       
-        }
-    delete iAsyncCallBack;
-    iAsyncCallBack = NULL;
-    iUid.Close();
     iWidgetOperations.Close();
     iHSWidgets.ResetAndDestroy();
     iApaSession.Close();
@@ -401,11 +385,6 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
 //
 void CWrtHarvester::UpdatePublishersL() 
     {
-    if(iReinstallingWidget)
-        {        
-        iReinstallingWidget = EFalse;
-        return;
-        }
     iRegistryAccess.WidgetInfosL( iWidgetInfo );
     RemoveObsoletePublishersL();
     
@@ -524,17 +503,7 @@ TInt CWrtHarvester::RegisterPublisherL( CWrtInfo& wrtInfo )
     __UHEAP_MARK;
     TInt id( KErrNotFound );
     if( iCPSInterface )
-        {
-        TBuf<10> uid(wrtInfo.iUid.Name());  // [12345678]
-        uid.Delete(0,1);                    // 12345678]
-        uid.Delete( uid.Length()-1, 1);     // 12345678
-        TBuf<50> wrtuid;
-        wrtuid.Append(KUid);                // uid
-        wrtuid.Append(KOpenPar);            // uid(
-        wrtuid.Append(K0x);                 // uid(0x
-        wrtuid.Append(uid );			  // uid(0x12345678
-        wrtuid.Append(KClosePar);           // uid(0x12345678)
-   
+        {   
         CLiwGenericParamList* inparam( CLiwGenericParamList::NewLC() );
         CLiwGenericParamList* outparam( CLiwGenericParamList::NewLC() );
 
@@ -548,24 +517,21 @@ TInt CWrtHarvester::RegisterPublisherL( CWrtInfo& wrtInfo )
         cpdatamap->InsertL( KPublisherId, TLiwVariant( KWRTPublisher ));
         cpdatamap->InsertL( KContentType, TLiwVariant( KTemplatedWidget ));
         cpdatamap->InsertL( KContentId, TLiwVariant( wrtInfo.iBundleId ));
-        
         // Widget info map
-    	  CLiwDefaultMap* widgetInfo = CLiwDefaultMap::NewLC();
-		    widgetInfo->InsertL( KTemplateType, TLiwVariant( KTemplateName ));
-		    widgetInfo->InsertL( KWidgetName, TLiwVariant( wrtInfo.iDisplayName ));
-		    widgetInfo->InsertL( KWidgetIcon, TLiwVariant( wrtuid));  // uid(0x12345678) This is the expected format 
-
-		    datamap->InsertL( KWidgetInfo , TLiwVariant( widgetInfo ));
-		    CleanupStack::PopAndDestroy( widgetInfo );
+    	CLiwDefaultMap* widgetInfo = CLiwDefaultMap::NewLC();
+		widgetInfo->InsertL( KTemplateType, TLiwVariant( KTemplateName ));
+		widgetInfo->InsertL( KWidgetName, TLiwVariant( wrtInfo.iDisplayName ));
+		datamap->InsertL( KWidgetInfo , TLiwVariant( widgetInfo ));
+		CleanupStack::PopAndDestroy( widgetInfo );
         
-		    // Take dynamic menu items into use
-		    if (networkAccess)
-		        {
-		        CLiwDefaultMap* mapMenu = CLiwDefaultMap::NewLC();
-		        mapMenu->InsertL( KItemOnlineOffline, TLiwVariant( KMyActionName ));
-		        datamap->InsertL( KMenuItems, TLiwVariant( mapMenu ));
-		        CleanupStack::PopAndDestroy(mapMenu);
-		        }
+		// Take dynamic menu items into use
+		if (networkAccess)
+		    {
+		    CLiwDefaultMap* mapMenu = CLiwDefaultMap::NewLC();
+		    mapMenu->InsertL( KItemOnlineOffline, TLiwVariant( KMyActionName ));
+		    datamap->InsertL( KMenuItems, TLiwVariant( mapMenu ));
+		    CleanupStack::PopAndDestroy(mapMenu);
+		    }
 
         cpdatamap->InsertL( KDataMap, TLiwVariant(datamap) );
         
@@ -829,25 +795,12 @@ void CWrtHarvester::QueueResumeL( TUid& aUid )
     RWidgetRegistryClientSession session;
     CleanupClosePushL( session );
     User::LeaveIfError( session.Connect() );
-    TBool preInstalled = *(session.GetWidgetPropertyValueL( aUid, EPreInstalled ) );
-    
-    // Set blanket permission to true for pre-installed widgets
-    if ( preInstalled )
-        {
-        session.SetBlanketPermissionL( aUid, EBlanketTrue );
-        }
-    
-    if ( session.IsBlanketPermGranted ( aUid ) == EBlanketUnknown && !iDialogShown 
-         &&  iCanAccessRegistry  )
+    if ( session.IsBlanketPermGranted ( aUid ) == EBlanketUnknown && !iDialogShown )
         {
         iDialogShown = ETrue;            
         AllowPlatformAccessL( aUid );
         }
-    else if(session.IsBlanketPermGranted ( aUid ) == EBlanketUnknown)
-        {
-        iUid.Append(aUid);
-        }
-    else
+    else if(!iDialogShown)
         {
         QueueOperationL( WidgetResume, aUid );
         }        
@@ -925,33 +878,6 @@ TBool CWrtHarvester::CheckNetworkAccessL( TUid& aUid )
     CleanupStack::PopAndDestroy( &session );
     
     return networkAccess;
-    }
-// ----------------------------------------------------------------------------
-// 
-// ----------------------------------------------------------------------------
-//
-TInt CWrtHarvester::DeleteCallback(TAny* aPtr)
-    {
-    CWrtHarvester* self = (CWrtHarvester*)aPtr;    
-    self->QueueResumeL(self->iUid[0]);
-    self->iUid.Remove(0);    
-    delete self->iAsyncCallBack;
-    self->iAsyncCallBack = NULL;
-    return 0;
-    }
-
-// ----------------------------------------------------------------------------
-// 
-// ----------------------------------------------------------------------------
-//
-void CWrtHarvester::DialogShown()
-    {
-    iDialogShown = EFalse;
-    if(iUid.Count())
-        {
-        iAsyncCallBack = new (ELeave) CAsyncCallBack(TCallBack(DeleteCallback,this),CActive::EPriorityUserInput);
-        iAsyncCallBack->CallBack(); 
-        }
     }
 
 // ----------------------------------------------------------------------------

@@ -19,11 +19,11 @@
 // INCLUDE Files
 
 // User includes
-#include <browserdialogsprovider.h>	// Class header
+#include "BrowserDialogsProvider.h"	// Class header
 #include "BrowserDialogsProvider.hrh"
 #include "BrowserAuthenticationDialog.h"
 #include "BrowserDialogsProviderConstants.h"
-#include <browserdialogsproviderobserver.h> //obs
+#include "BrowserDialogsProviderObserver.h" //obs
 
 // Browser as a Plugin - own classes
 #include "BrowserViewImagesPopup.h"		// For DialogDisplayPageImagesL
@@ -61,14 +61,13 @@
 #include <BrowserDialogsProvider.rsg>
 
 // Data Caging
-#include <data_caging_path_literals.hrh>
+#include <data_caging_path_literals.hrh>    
 
 // CONSTANTS
 const TInt KBrCtlObjectElementMaxLength = 50;
 const TInt KBrCtlMBFormat = 4;
 const TInt KBrCtlGBFormat = 10;
 const TInt KBrCtlMegabyte = 1000;	// although 1MB=1024 kB, treat as 1000kb for user simplicity
-const TInt KBrowserFileNotFound  = -26003; // Defined in ErrorDefs.h but not exported so define here
 
 // DLL resource file name with path
 _LIT( KBrowserDialogsProviderDirAndFile, "z:BrowserDialogsProvider.rsc" );// resource
@@ -166,17 +165,8 @@ EXPORT_C void CBrowserDialogsProvider::DialogNotifyErrorL( TInt aErrCode )
             }
         default:
             {
-            // change error code to browser error code, when trying to open file
-            // that doesn't exist
-            if ( KErrNotFound == aErrCode )
-            	{
-            	iCoeEnv.HandleError( KBrowserFileNotFound );
-            	}
-            else
-            	{
-				// Handle all others as system error dialog
-            	iCoeEnv.HandleError( aErrCode );
-            	}
+            // Handle all others as system error dialog
+            CCoeEnv::Static()->HandleError( aErrCode );
         	break;
             }
         }   // end of switch
@@ -438,16 +428,17 @@ EXPORT_C TBool CBrowserDialogsProvider::DialogSelectOptionL(
 								TBrCtlSelectOptionType aBrCtlSelectOptionType,
 								CArrayFix<TBrCtlSelectOptionData>& aOptions )
 	{
-     iSelectDlg = CBrowserSelectElementDlg::NewL(	aTitle, 
+    CBrowserSelectElementDlg* dlg = CBrowserSelectElementDlg::NewL(	aTitle, 
 												aBrCtlSelectOptionType, 
 												aOptions );
 
+	
+    iDialogs.Append( dlg );     // Store a pointer to the dialog for CancelAll()
 
+	TInt result = dlg->ExecuteLD();
 
-	TInt result = iSelectDlg->ExecuteLD();
-
-
-    iSelectDlg = 0;
+    RemoveDialogFromArray();
+    
     if ( iObserver )
         {
         iObserver->ReportDialogEventL( 
@@ -980,11 +971,7 @@ EXPORT_C void CBrowserDialogsProvider::DialogDisplayPageImagesL(
 //-----------------------------------------------------------------------------
 //
 EXPORT_C void CBrowserDialogsProvider::CancelAll()
-    {
-	 if(iSelectDlg  )
-        iSelectDlg->CancelPopup();
-		
-    iDialogs.Close();
+	{
     // Empty the array
     iDialogs.ResetAndDestroy();
 	}

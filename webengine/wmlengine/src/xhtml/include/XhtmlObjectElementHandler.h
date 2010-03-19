@@ -25,7 +25,7 @@
 #include <e32base.h>
 
 #include "nwx_defs.h"
-#include <nw_dom_node.h>
+#include "nw_dom_node.h"
 
 #include "HedLoadObserver.h"
 #include "LMgrBoxDestructionListener.h"

@@ -23,13 +23,15 @@
  */
  
 #define MAX_DICTIONARIES 9
+
   
 /* Temporary methods for storing dictionary & dictionary size inside the context.
  */
 
-#include <cxml_proj.h>
-#include <nw_wbxml_dictionary.h>
+#include "cxml_proj.h"
+#include "nw_wbxml_dictionary.h"
 
+ 
 #ifdef __cplusplus
 extern "C"
 {

@@ -21,8 +21,8 @@
 #define CDOWNLOADMGRUIUSERINTERACTIONS_H
 
 //  INCLUDES
-#include <cdownloadmgruibase.h>
-#include <downloadmgrclient.h>
+#include <CDownloadMgrUiBase.h>
+#include <DownloadMgrClient.h>
 #include <vwsdef.h>
 
 // CONSTANTS

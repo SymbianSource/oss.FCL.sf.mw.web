@@ -15,9 +15,10 @@
 *
 */
 
+
 #include "cxml_internal.h"
-#include <nw_tinytree_treevector.h>
-#include <nw_tinytree.h>
+#include "nw_tinytree_treevector.h"
+#include "nw_tinytree.h"
 /* ------------------------------------------------------------------------- */
 
 NW_TinyTree_TreeVector_t*

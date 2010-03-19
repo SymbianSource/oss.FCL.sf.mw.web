@@ -15,6 +15,7 @@
 *
 */
 
+
 #ifndef WML_DECODER_H
 #define WML_DECODER_H
 
@@ -30,6 +31,7 @@
 #include "nw_wml_core.h"
 #include "nw_hed_context.h"
 #include "BrsrStatusCodes.h"
+
 
 #ifdef __cplusplus
 extern "C" {

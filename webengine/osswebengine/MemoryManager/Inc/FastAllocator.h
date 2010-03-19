@@ -92,7 +92,6 @@ private:
 #ifdef TRACK_ALLOCATIONS
     TUint32 iNextCellId;
 #endif
-    friend class MemoryManager;
   };
 
 #endif //!__FASTALLOCATOR_H__

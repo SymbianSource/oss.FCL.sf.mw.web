@@ -15,7 +15,8 @@
 *
 */
 
-#include  "../webkitcommon.mmpi"
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER 1
@@ -23,6 +24,7 @@ MACRO NOKIA_MOBILE_BROWSER
 TARGET          hed.lib
 TARGETTYPE      lib
 SOURCEPATH      ../../src/hed/src/
+
 
 SOURCE  ChildIterator.c
 SOURCE	HEDCompositeContentHandler.cpp
@@ -51,6 +53,41 @@ SOURCE  HEDTreeVisitor.cpp
 SOURCE	UrlRequest.c
 SOURCE	UrlResponse.c
 
+
 SOURCE  ContentLoader.cpp
 SOURCE  TextReverse.cpp
 SOURCE	urlloader_urlresponse.cpp
+
+#include  "../webkitcommon.mmpi"
+
+USERINCLUDE     .
+USERINCLUDE     ../../src/utils/include
+USERINCLUDE     ../../src/adt/include
+USERINCLUDE     ../../src/evt/include
+USERINCLUDE     ../../src/htmlp/include
+USERINCLUDE     ../../src/gdi/include
+USERINCLUDE     ../../src/hed/include
+USERINCLUDE     ../../src/msg/include
+USERINCLUDE     ../../src/markup/include
+USERINCLUDE     ../../src/image/include
+USERINCLUDE     ../../src/imagech/include
+USERINCLUDE     ../../src/lmgr/include
+USERINCLUDE     ../../src/object/include
+USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/text/include
+USERINCLUDE     ../../src/MVC/include
+USERINCLUDE     ../../src/wml1x/include
+USERINCLUDE     ../../src/wmlscriptch/include
+USERINCLUDE     ../../src/fbox/include
+USERINCLUDE     ../../src/wml/src
+USERINCLUDE     ../../src/wml/include
+USERINCLUDE     ../../src/wmlcontrol/include
+
+SYSTEMINCLUDE   ../../src/utils/include
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
+
+
+MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_LIBC_SYSTEMINCLUDE
+

@@ -15,8 +15,9 @@
 *
 */
 
+
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          WidgetRecognizer.DLL
 TARGETTYPE      PLUGIN
@@ -24,11 +25,13 @@ UID             0x10009D8D 0x10282820
 
 CAPABILITY CAP_ECOM_PLUGIN 
 
+
 SOURCEPATH      ../Data
 
 START RESOURCE  10282820.rss
 TARGET          WidgetRecognizer.rsc
 END
+
 
 VENDORID        VID_DEFAULT
 
@@ -36,8 +39,9 @@ SOURCEPATH      ../src
 SOURCE           WidgetRecognizer.cpp
 
 USERINCLUDE     ../inc
-
 MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_ECOM_SYSTEMINCLUDE
+
 
 LIBRARY         EUSER.LIB 
 LIBRARY         APMIME.LIB

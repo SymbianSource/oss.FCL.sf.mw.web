@@ -402,10 +402,4 @@
 //
 #define qtn_browser_downloads_files_saved "Files Saved"
 
-#define qtn_browser_downloads_set_as_rt               "Set as ringing tone"
-
-#define qtn_browser_downloads_assign_to_contact       "Assign to contact"
-
-
-
 // End of File

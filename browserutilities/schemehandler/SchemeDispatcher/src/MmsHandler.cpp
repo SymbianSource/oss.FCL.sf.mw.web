@@ -17,11 +17,12 @@
 *
 */
 
+
 // INCLUDE FILES
 
 #include "MmsHandler.h"
 #include "SchemeDispLogger.h"
-#include <ecom/ecom.h>		// For REComSession
+#include <ECom.h>		// For REComSession
 #include <eikenv.h>
 #include <DocumentHandler.h>
 #include <apgcli.h>

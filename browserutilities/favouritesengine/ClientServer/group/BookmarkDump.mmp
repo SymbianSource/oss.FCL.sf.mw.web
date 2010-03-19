@@ -19,7 +19,7 @@
 
 
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET      BookmarkDump.exe
 TARGETTYPE  exe

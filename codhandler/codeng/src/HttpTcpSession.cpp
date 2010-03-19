@@ -20,7 +20,7 @@
 
 // INCLUDE FILES
 
-#include <httpfiltercommonstringsext.h>
+#include <HttpFilterCommonStringsExt.h>
 #include "HttpTcpSession.h"
 #include "CodLogger.h"
 #include "CodPanic.h"

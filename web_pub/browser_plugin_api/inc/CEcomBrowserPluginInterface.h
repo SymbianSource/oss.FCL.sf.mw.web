@@ -23,8 +23,8 @@
 #include <ecom/ecom.h>
 
 // User includes
-#include <npupp.h>
-#include <browserplugininterface.h>
+#include "npupp.h"
+#include "BrowserPluginInterface.h"
 
 typedef struct
     {

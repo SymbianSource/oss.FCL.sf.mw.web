@@ -65,7 +65,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
-#include <stddef.h>
+#include <libc/stddef.h>
 
 /*
 ** If compiling for a processor that lacks floating point support,
@@ -1881,4 +1881,3 @@ FuncDef *sqlite3VtabOverloadFunction(FuncDef*, int nArg, Expr*);
 #endif
 
 #endif
-

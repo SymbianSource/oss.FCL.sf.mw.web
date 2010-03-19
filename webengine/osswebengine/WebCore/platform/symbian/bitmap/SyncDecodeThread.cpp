@@ -119,10 +119,6 @@ CSynDecoder::~CSynDecoder()
 // -----------------------------------------------------------------------------
 void CSynDecoder::Open(const TDesC8& aData, TRequestStatus *status)
 {
-    // FbsSession is needed for parent thread if it doesn't have already
-    if(!RFbsSession::GetSession())
-        RFbsSession::Connect();
-
     iElem.iRequestStatus = status;
     iElem.iData.Set(aData); 
     iElem.iParentThreadId = RThread().Id();

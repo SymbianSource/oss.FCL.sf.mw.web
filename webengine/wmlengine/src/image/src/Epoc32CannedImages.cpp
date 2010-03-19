@@ -15,14 +15,14 @@
 *
 */
 
-#include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
-#include <fbs.h>
 
+#include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 #include "nw_image_cannedimagesi.h"
 #include "nw_image_epoc32cannedimage.h"
 #include "nw_text_ascii.h"
 
-#include "nw_browser_browserimages.h"
+#include <fbs.h>
+#include <nw_browser_browserimages.h>
 #include "BrsrStatusCodes.h"
 
 static TBrowserStatusCode

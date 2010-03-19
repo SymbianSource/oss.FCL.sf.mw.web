@@ -21,7 +21,7 @@ NAME    WidU // 4 letter ID
 #include <bldvariant.hrh>
 #include <eikon.rh>
 #include "WidgetUi.hrh"
-#include <widgetui.loc>
+#include <WidgetUi.loc>
 #include <avkon.rsg>
 #include <avkon.rh>
 #include <avkon.mbg>

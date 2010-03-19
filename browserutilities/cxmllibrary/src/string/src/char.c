@@ -15,6 +15,7 @@
 *
 */
 
+
 /*****************************************************************
 **  File: character.c
 **  Description:
@@ -30,7 +31,7 @@
 * 
 *****************************************************************/
 #include "cxml_internal.h"
-#include <nw_string_char.h>
+#include "nw_string_char.h"
 
 /*  
 * TODO:  Note that there is some duplication between the Validate*

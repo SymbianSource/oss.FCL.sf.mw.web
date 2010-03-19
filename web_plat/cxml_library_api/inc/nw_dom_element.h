@@ -27,8 +27,8 @@
 #ifndef NW_DOM_ELEMENT_H
 #define NW_DOM_ELEMENT_H
 
-#include <nw_dom_node.h>
-#include <nw_dom_attribute.h>
+#include "nw_dom_node.h"
+#include "nw_dom_attribute.h"
 
 #ifdef __cplusplus
 extern "C" {

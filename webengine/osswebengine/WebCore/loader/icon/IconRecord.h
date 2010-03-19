@@ -63,43 +63,7 @@ public:
     int timestamp;
     RefPtr<SharedBuffer> data;
 };
-
-/* To avoid deletion of icon bitmaps in Symbian */    
-#if PLATFORM(SYMBIAN)
-class IconImagePtr : Noncopyable {
-        typedef Image* PtrType;
-public:
-        explicit IconImagePtr(PtrType ptr = 0) : m_ptr(ptr) { }
-        ~IconImagePtr() { /*deleteOwnedPtr(m_ptr);*/ }
-
-        PtrType get() const { return m_ptr; }
-        PtrType release() { PtrType ptr = m_ptr; m_ptr = 0; return ptr; }
-
-        void set(PtrType ptr) { ASSERT(!ptr || m_ptr != ptr); /*deleteOwnedPtr(m_ptr);*/ m_ptr = ptr; }
-        void clear() { /*deleteOwnedPtr(m_ptr);*/ m_ptr = 0; }
-
-        Image& operator*() const { ASSERT(m_ptr); return *m_ptr; }
-        PtrType operator->() const { ASSERT(m_ptr); return m_ptr; }
-
-        bool operator!() const { return !m_ptr; }
-
-        // This conversion operator allows implicit conversion to bool but not to other integer types.
-        typedef PtrType (IconImagePtr::*UnspecifiedBoolType)() const;
-        operator UnspecifiedBoolType() const { return m_ptr ? &IconImagePtr::get : 0; }
-
-        void swap(IconImagePtr& o) { std::swap(m_ptr, o.m_ptr); }
-
-    private:
-        PtrType m_ptr;
-         };
-
-    inline void swap(IconImagePtr& a, IconImagePtr& b) { a.swap(b); }
-    inline Image* getPtr(const IconImagePtr& p)
-    {
-        return p.get();
-    }
-#endif
-
+    
 class IconRecord : public Shared<IconRecord> {
     friend class PageURLRecord;
 public:
@@ -124,11 +88,7 @@ public:
 private:
     String m_iconURL;
     time_t m_stamp;
-#if PLATFORM(SYMBIAN)
-    IconImagePtr m_image;
-#else    
     OwnPtr<Image> m_image;
-#endif
     
     HashSet<String> m_retainingPageURLs;
         

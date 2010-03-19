@@ -25,7 +25,7 @@
 #include <stringpool.h>
 #include <flogger.h>
 #include "TInternetdate.h"
-#include "httpfiltercommonstringsext.h"
+#include "HttpFilterCommonStringsExt.h"
 #include "HttpCacheEntry.h"
 
 // EXTERNAL DATA STRUCTURES

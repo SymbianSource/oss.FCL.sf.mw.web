@@ -20,7 +20,7 @@
 #define NW_XHTML_ATTRIBUTEPROPERTYTABLE_H
 
 #include "nw_object_base.h"
-#include <nw_dom_node.h>
+#include "nw_dom_node.h"
 #include "nw_lmgr_cssproperties.h"
 #include "nw_text_coretextelementhandleri.h"
 #include "nw_xhtml_xhtml_1_0_tokens.h"

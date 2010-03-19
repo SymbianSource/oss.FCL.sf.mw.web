@@ -21,10 +21,10 @@
 
 #include "nw_text_ucs2.h"
 #include "nw_lmgr_cssproperties.h"
-#include <nw_string_char.h>
+#include "nw_string_char.h"
 #include "nw_lmgr_rootbox.h"
 #include "CSSPropVal.h"
-#include "nwx_string.h"
+#include <nwx_string.h>
 #include "CSSPropertyTable.h"
 #include "CSSDeclListHandle.h"
 #include "CSSPatternMatcher.h"

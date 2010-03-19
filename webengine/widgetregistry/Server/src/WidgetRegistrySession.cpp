@@ -15,13 +15,16 @@
 *
 */
 
+
 #include <S32MEM.H>
 
 // User includes
 #include "WidgetRegistry.h"
-#include <widgetregistryconstants.h>
+#include "WidgetRegistryConstants.h"
 #include "widgetregistryserver.h"
+#include "WidgetRegistryConstants.h"
 #include "WidgetRegistrySession.h"
+
 
 CWidgetRegistry* CWidgetRegistryServerSession::iWidgetRegistry = 0;
 

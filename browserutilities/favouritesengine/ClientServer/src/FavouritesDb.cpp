@@ -17,16 +17,17 @@
 *
 */
 
+
 // INCLUDE FILES
 
 #include <s32std.h>
-#include <favouritesdb.h>
+#include "FavouritesDb.h"
 #include "FavouritesMsg.h"
 #include "FavouritesBuf.h"
 #include "FavouritesFilter.h"
 #include "FavouritesItemImpl.h"
-#include <favouritesitemlist.h>
-#include <favouritesitemdata.h>
+#include "FavouritesItemList.h"
+#include "FavouritesItemData.h"
 #include "FavouritesUtil.h"
 #include "UidMap.h"
 #include "FavouritesLogger.h" 

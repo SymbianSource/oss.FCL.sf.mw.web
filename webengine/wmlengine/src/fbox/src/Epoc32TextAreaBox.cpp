@@ -15,9 +15,10 @@
 *
 */
 
+
 #include "nw_fbox_textareaboxi.h"
 #include "nw_lmgr_rootbox.h"
-#include "nwx_string.h"
+#include <nwx_string.h>
 #include "nw_fbox_textareaskin.h"
 #include "nw_fbox_inputinteractor.h"
 #include "BrsrStatusCodes.h"

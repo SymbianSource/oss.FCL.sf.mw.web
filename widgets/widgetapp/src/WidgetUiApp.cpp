@@ -15,12 +15,12 @@
 *
 */
 
-#include  "WidgetUiApp.h"
-#include  "WidgetUiDocument.h"
-#include  <MemoryManager.h>
-#include  "widgetappdefs.rh"
-#include  <eikstart.h>
-#include  <u32std.h>
+
+#include    "WidgetUiApp.h"
+#include    "WidgetUiDocument.h"
+#include    "MemoryManager.h"
+#include    "widgetappdefs.rh"
+#include    <eikstart.h>
 
 // EXTERNAL DATA STRUCTURES
 
@@ -88,48 +88,18 @@ LOCAL_C CApaApplication* NewApplication( )
     }
 
 // -----------------------------------------------------------------------------
-// SetupThreadHeap - Called for heap creation of thread in this process.
-// This approach used to keep correct heap for pointers held in static data objects
-// when they are destructed after E32Main() by OS.
-// -----------------------------------------------------------------------------
-//
-EXPORT_C TInt UserHeap::SetupThreadHeap(TBool aSubThread, SStdEpocThreadCreateInfo& aInfo)
-    {
-    TInt r = KErrNone;
-    if (!aInfo.iAllocator && aInfo.iHeapInitialSize>0)
-        {
-        // new heap required
-        RHeap* pH = NULL;
-        r = CreateThreadHeap(aInfo, pH);
-        if (r == KErrNone && !aSubThread)
-            {
-            // main thread - new allocator created and set as default heap      
-            MemoryManager::CreateFastAllocator();
-            }
-        }
-    else if (aInfo.iAllocator)
-        {
-        // sharing a heap
-        RAllocator* pA = aInfo.iAllocator;
-        pA->Open();
-        User::SwitchAllocator(pA);
-        }
-
-    return r;
-    }
-    
-    
-// -----------------------------------------------------------------------------
 // E32Main
 //
 // -----------------------------------------------------------------------------
 //
 GLDEF_C TInt E32Main()
     {
-        // initialize MemmoryManager
-        MemoryManager::InitFastAllocator();    
-        
-    	return EikStart::RunApplication(NewApplication); 
+    RAllocator* oldAllocator = MemoryManager::SwitchToFastAllocator();
+    __UHEAP_MARK;
+    TInt result = EikStart::RunApplication( NewApplication );
+    __UHEAP_MARKEND;
+    MemoryManager::CloseFastAllocator(oldAllocator);
+    return result;
     }
-        
+
 // End of File  

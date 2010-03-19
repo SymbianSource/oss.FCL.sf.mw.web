@@ -31,7 +31,7 @@
 #include "nw_lmgr_cssproperties.h"
 #include "nw_imagech_epoc32contenthandler.h"
 #include "nwx_string.h"
-#include <stdarg.h>
+#include "stdarg.h"
 #include "nw_lmgr_bidiflowbox.h"
 #include "nw_wml1x_wml1xdefaultstylesheet.h"
 #include "nw_image_cannedimages.h"
@@ -39,7 +39,7 @@
 #include "nwx_osu.h"
 #include "wml_url_utils.h"
 #include "wml_history.h"
-#include <nw_xmlp_xmlp2wbxml.h>
+#include "nw_xmlp_xmlp2wbxml.h"
 #include "nwx_settings.h"
 #include "nw_wml1x_wml_1_3_tokens.h"
 #include "wml_elm_attr.h"
@@ -62,6 +62,7 @@
 #include "GDIDeviceContext.h"
 #include "BrsrStatusCodes.h"
 #include "HEDDocumentListener.h"
+
 
 #include "wmlcontrol.h"
 

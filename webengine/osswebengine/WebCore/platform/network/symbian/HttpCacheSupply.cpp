@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include "HttpCacheSupply.h"
-#include "httpcachemanager.h"
+#include "HttpCacheManager.h"
 #include "HttpCacheDataSupplier.h"
 #include "HttpConnection.h"
 #include "ResourceLoaderDelegate.h"

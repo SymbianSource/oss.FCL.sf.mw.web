@@ -18,7 +18,8 @@
 
 
 // INCLUDE FILES
-#include    <browser_platform_variant.hrh>
+//#include <platform/mw/Browser_platform_variant.hrh>
+#include    <Browser_platform_variant.hrh>
 #include    "CDownloadsListArray.h"
 #include    "ProgressInfoCreator.h"
 #include    "DMgrUiLibPanic.h"
@@ -34,12 +35,15 @@
 #include    <AknsUtils.h>
 #include    <DocumentHandler.h>
 
+// following line is temporary: AVKON dependency removal
+#undef BRDO_APP_GALLERY_SUPPORTED_FF
+
 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MediaGalleryUid.h>
 #endif
 
 #include    "CDownloadUtils.h"
-#include    <httpdownloadmgrcommon.h>
+#include    <HttpDownloadMgrCommon.h>
 #include    "CUserInteractionsUtils.h"
 
 
@@ -66,7 +70,7 @@ TDownloadUiData::TDownloadUiData()
     iDownloadedSize( KErrNotFound ),
     iIconIndex( KErrNotFound ),
     iPausable( EFalse ),
-    iExternalMemoryStatus( KDriveAttLocal ),
+    iIsOnExternalMemory( EFalse ),
     iProgressState( KErrNotFound ),
     iNumMediaObjects( KErrNotFound )
     {
@@ -109,30 +113,30 @@ void CDownloadsListArray::ConstructL()
     CLOG_WRITE(" iSavedToGalleryString OK");
 	iSavedToDownloadsFolderString=  iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_CONTENT_SAVED_TO_DOWNLOADS_FOLDER);
 	CLOG_WRITE(" iSavedToGalleryDownload OK");
-	
+
 	#ifndef BRDO_APP_GALLERY_SUPPORTED_FF
 	    iFileSavedString = iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_FILE_SAVED );
 	    iFilesSavedString = iCoeEnv.AllocReadResourceL( R_DMUL_DOWNLOAD_FILES_SAVED );
 	#endif
 
-	
+
     iNullDesC = KNullDesC().AllocL();
     CLOG_WRITE(" iNullDesC OK");
     User::LeaveIfError( iApaLsSess.Connect() );
     CLOG_WRITE(" iApaLsSess OK");
-    
-        
+
+
     //whether the platform supports gallery app or not; defined in browser_platfrom_variant.hrh
     #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
     iPlatformSupportsGallery = ETrue;
     #endif
-    
+
 
     // Initialize the UiLib' mbm file name:
     TParse* fileParser = new (ELeave) TParse;
     CleanupStack::PushL( fileParser );
 
-    fileParser->Set( KDownloadMgrUiLibMbmFileNameAndDriveZ, &KDC_APP_BITMAP_DIR, NULL ); 
+    fileParser->Set( KDownloadMgrUiLibMbmFileNameAndDriveZ, &KDC_APP_BITMAP_DIR, NULL );
     TUint attValue(0);
     TInt fileErr = iCoeEnv.FsSession().Att( fileParser->FullName(), attValue );
     CLOG_WRITE_FORMAT(" fileErr Z: %d",fileErr);
@@ -141,7 +145,7 @@ void CDownloadsListArray::ConstructL()
     iMbmResourceFileName->Des().Copy( fileParser->FullName() );
     CLOG_WRITE_FORMAT(" iMbmResourceFileName: %S",iMbmResourceFileName);
 
-    CleanupStack::PopAndDestroy( fileParser ); // fileParser 
+    CleanupStack::PopAndDestroy( fileParser ); // fileParser
     fileParser = NULL;
 
     AddDefaultIconsL();
@@ -179,8 +183,8 @@ CDownloadsListArray::~CDownloadsListArray()
         delete iListBoxIconArray;
         iListBoxIconArray = 0;
     }
-    
-      
+
+
     delete iUiDataArray;
     iUiDataArray = 0;
     delete iDownloadArray;
@@ -191,14 +195,14 @@ CDownloadsListArray::~CDownloadsListArray()
 	iSavedToGalleryString = 0;
 	delete iSavedToDownloadsFolderString;
 	iSavedToDownloadsFolderString=0;
-	
+
 	#ifndef BRDO_APP_GALLERY_SUPPORTED_FF
 	    delete iFileSavedString;
 	    iFileSavedString = 0;
 	    delete iFilesSavedString;
 	    iFilesSavedString = 0;
 	#endif
-	
+
     delete iNullDesC;
     iNullDesC = 0;
     iApaLsSess.Close();
@@ -229,7 +233,7 @@ TInt CDownloadsListArray::AppendL
     {
     TInt itemIndex( KErrNotFound );
 
-    __ASSERT_DEBUG( Find( aDownload, itemIndex ) == KErrNotFound, 
+    __ASSERT_DEBUG( Find( aDownload, itemIndex ) == KErrNotFound,
                     Panic( EUiLibPanAlreadyExistWhenAppend ) );
 
     #ifdef _DEBUG
@@ -237,16 +241,16 @@ TInt CDownloadsListArray::AppendL
     CLOG_WRITE_FORMAT(" findErr: %d",findErr);
     CLOG_WRITE_FORMAT(" itemIndex: %d",itemIndex);
     #endif // _DEBUG
-    
+
     // Append at the end:
     // Reserve space in order that appending to all the arrays be atomic.
-    // Use iListBoxTextArray->Count() for SetReserveL, because thus we can 
-    // eliminate that subsequent SetReserveL reserve unnecessary 
+    // Use iListBoxTextArray->Count() for SetReserveL, because thus we can
+    // eliminate that subsequent SetReserveL reserve unnecessary
     // place if iListBoxTextArray->AppendL() LEAVEs.
     iDownloadArray->SetReserveL( iListBoxTextArray->Count() + 1 );
     iUiDataArray->SetReserveL( iListBoxTextArray->Count() + 1 );
     iListBoxTextArray->AppendL( LBTextFromUiData( aDownloadUiData ) );
-    // iListBoxTextArray->AppendL did not leave and the following 
+    // iListBoxTextArray->AppendL did not leave and the following
     // will not leave, because of SetReserveL()'s:
     iDownloadArray->AppendL( (RHttpDownload*)&aDownload );
     iUiDataArray->AppendL( aDownloadUiData );
@@ -262,8 +266,8 @@ TInt CDownloadsListArray::AppendL
 void CDownloadsListArray::UpdateL( TInt aIndex, const TDownloadUiData& aDownloadUiData )
     {
     // Two steps: update UI data and the list item text.
-    // Because updating the list text array can leave and the two 
-    // array must be consistent, this operation must be atomic, this is 
+    // Because updating the list text array can leave and the two
+    // array must be consistent, this operation must be atomic, this is
     // why we apply the operations in the following order:
     // Insert the new text, and when it succeeds, remove the old (which is shifted).
     // No need to modify iDownloadArray, because that does not change.
@@ -299,7 +303,7 @@ void CDownloadsListArray::UpdateIfNeededL
 void CDownloadsListArray::Delete( TInt aIndex )
     {
     // Delete the indicated record from all arrays:
-    
+
     iDownloadArray->Delete( aIndex );
     iUiDataArray->Delete( aIndex );
     iListBoxTextArray->Delete( aIndex );
@@ -353,8 +357,8 @@ TPtrC CDownloadsListArray::LBTextFromUiData( const TDownloadUiData& aDownloadUiD
     // Realloc a bigger buffer if needed
     if ( iNewItemText && ( spaceNeeded <= iNewItemText->Length() ) )
         {
-        // No need to reallocate a bigger buffer. 
-        // The existing iNewItemText will be good. 
+        // No need to reallocate a bigger buffer.
+        // The existing iNewItemText will be good.
         }
     else
         {
@@ -363,13 +367,13 @@ TPtrC CDownloadsListArray::LBTextFromUiData( const TDownloadUiData& aDownloadUiD
         iNewItemText = 0;
         iNewItemText = HBufC::New( spaceNeeded );
         }
-    
+
     // Non-leaving function - couldn't call NewL!
     if ( iNewItemText )
         {
         TPtr newItemTextPtr = iNewItemText->Des();
         newItemTextPtr.SetLength( 0 );
-        //        
+        //
         iTempBuf.Zero();
         iTempBuf.Num( aDownloadUiData.iIconIndex );
         newItemTextPtr.Append( iTempBuf ); // Add icon array index
@@ -384,36 +388,36 @@ TPtrC CDownloadsListArray::LBTextFromUiData( const TDownloadUiData& aDownloadUiD
             newItemTextPtr.Append( KNullDesC );
             }
         newItemTextPtr.Append( KCharTab );
-        
+
         // If its album download, format display string cur track/total tracks
-       
+
         if ((aDownloadUiData.iNumMediaObjects > 1) &&
             (EHttpDlMultipleMOCompleted != aDownloadUiData.iDownloadState))
             {
             TBuf<KMaxIndexStringLength> indexStr;
             indexStr.Format( KIndexString, aDownloadUiData.iActiveMoIndex, aDownloadUiData.iNumMediaObjects );
-            newItemTextPtr.Append( indexStr ); 
+            newItemTextPtr.Append( indexStr );
             }
-                    
+
         iProgressInfoRes.Zero();
 
-		if ( aDownloadUiData.iDownloadState == EHttpDlMultipleMOCompleted ) 
-		    { 
+		if ( aDownloadUiData.iDownloadState == EHttpDlMultipleMOCompleted )
+		    {
  		    if ( aDownloadUiData.iProgressState == EHttpProgContentFileMoved || aDownloadUiData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )
 			    {
 			    if ( iPlatformSupportsGallery )
 			        {
 			    	TBool supported( EFalse );
-                    TRAP_IGNORE(supported = IsSupportedL(aDownloadUiData)); 
+                    TRAP_IGNORE(supported = IsSupportedL(aDownloadUiData));
  				    if( supported )
 				        {
 				        iProgressInfoRes.Copy
-					                    ( iSavedToGalleryString->Left( KMaxDownloadItemTextPartLength ) );				    
+					                    ( iSavedToGalleryString->Left( KMaxDownloadItemTextPartLength ) );
 				        }
 				    else
                         {
                 	    iProgressInfoRes.Copy
-			                            ( iSavedToDownloadsFolderString->Left( KMaxDownloadItemTextPartLength ) );                      
+			                            ( iSavedToDownloadsFolderString->Left( KMaxDownloadItemTextPartLength ) );
                         }
 			        }
 			    else
@@ -421,32 +425,32 @@ TPtrC CDownloadsListArray::LBTextFromUiData( const TDownloadUiData& aDownloadUiD
 			        if (aDownloadUiData.iNumMediaObjects > 1)
 			            {
 			        	iProgressInfoRes.Copy
-			                            ( iFilesSavedString->Left( KMaxDownloadItemTextPartLength ) );                      
+			                            ( iFilesSavedString->Left( KMaxDownloadItemTextPartLength ) );
 			            }
 			        else
 			            {
 			        	iProgressInfoRes.Copy
-			                            ( iFileSavedString->Left( KMaxDownloadItemTextPartLength ) );                      
-			            }     
-                    }    
-			    }				
+			                            ( iFileSavedString->Left( KMaxDownloadItemTextPartLength ) );
+			            }
+                    }
+			    }
 	        else
     	        {
                 iProgressInfoRes.Copy
-		    	        ( iCompletedString->Left( KMaxDownloadItemTextPartLength ) );  	
+		    	        ( iCompletedString->Left( KMaxDownloadItemTextPartLength ) );
 				}
 			}
         else
             {
             if ( aDownloadUiData.iFullSize <= 0 )
                 {
-                iProgressInfoCreator->ProgressInfo( aDownloadUiData.iDownloadedSize, 
+                iProgressInfoCreator->ProgressInfo( aDownloadUiData.iDownloadedSize,
                                                     iProgressInfoRes );
                 }
             else
                 {
-                iProgressInfoCreator->ProgressInfo( aDownloadUiData.iDownloadedSize, 
-                                                    aDownloadUiData.iFullSize, 
+                iProgressInfoCreator->ProgressInfo( aDownloadUiData.iDownloadedSize,
+                                                    aDownloadUiData.iFullSize,
                                                     iProgressInfoRes );
                 }
             }
@@ -455,7 +459,7 @@ TPtrC CDownloadsListArray::LBTextFromUiData( const TDownloadUiData& aDownloadUiD
         newItemTextPtr.Append( KCharTab );
         //
         if ( aDownloadUiData.iDownloadState == EHttpDlCreated || // User must be able to start it via Resume.
-             aDownloadUiData.iDownloadState == EHttpDlPaused || 
+             aDownloadUiData.iDownloadState == EHttpDlPaused ||
              aDownloadUiData.iDownloadState == EHttpDlMultipleMOFailed ) // User must be able to restart it.
             {
             // Add a "Paused" icon.
@@ -465,14 +469,11 @@ TPtrC CDownloadsListArray::LBTextFromUiData( const TDownloadUiData& aDownloadUiD
             }
         newItemTextPtr.Append( KCharTab );
         //
-        if ( KDriveAttLocal != aDownloadUiData.iExternalMemoryStatus )	
+        if ( aDownloadUiData.iIsOnExternalMemory )
             {
             // Add an "External memory" icon.
             iTempBuf.Zero();
-            if ( KDriveAttRemovable == aDownloadUiData.iExternalMemoryStatus )
-                iTempBuf.Num( iExternalMemoryIconIndex );
-            else
-                iTempBuf.Num( iInternalMassMemoryIconIndex );
+            iTempBuf.Num( iExternalMemoryIconIndex );
             newItemTextPtr.Append( iTempBuf ); // iExternalMemoryIconIndex in literal form
             }
         }
@@ -487,30 +488,30 @@ TPtrC CDownloadsListArray::LBTextFromUiData( const TDownloadUiData& aDownloadUiD
 TInt CDownloadsListArray::LBTextLength( const TDownloadUiData& aDownloadUiData )
     {
     TInt ret(0);
-    
+
     iTempBuf.Zero();
     iTempBuf.Num( aDownloadUiData.iIconIndex );
     ret += iTempBuf.Length();
     ret += KCharTab().Length();
     ret += aDownloadUiData.iName.Length();
     ret += KCharTab().Length();
-    
+
     if( aDownloadUiData.iNumMediaObjects > 1 )
         {
         TBuf<KMaxIndexStringLength> indexStr;
         indexStr.Format( KIndexString, aDownloadUiData.iActiveMoIndex, aDownloadUiData.iNumMediaObjects );
         ret += indexStr.Length();
         }
-       
+
     iProgressInfoRes.Zero();
-	if ( aDownloadUiData.iDownloadState == EHttpDlMultipleMOCompleted ) 
-	    { 
+	if ( aDownloadUiData.iDownloadState == EHttpDlMultipleMOCompleted )
+	    {
 		if ( aDownloadUiData.iProgressState == EHttpProgContentFileMoved || aDownloadUiData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )
 		    {
 		    if ( iPlatformSupportsGallery )
 		        {
 		        TBool supported( EFalse );
-                TRAP_IGNORE(supported=IsSupportedL(aDownloadUiData));  
+                TRAP_IGNORE(supported=IsSupportedL(aDownloadUiData));
 		        if( supported )
 		            {
 		            iProgressInfoRes.Copy
@@ -519,7 +520,7 @@ TInt CDownloadsListArray::LBTextLength( const TDownloadUiData& aDownloadUiData )
 		        else
 		            {
             	    iProgressInfoRes.Copy
-			                        ( iSavedToDownloadsFolderString->Left( KMaxDownloadItemTextPartLength ) );  
+			                        ( iSavedToDownloadsFolderString->Left( KMaxDownloadItemTextPartLength ) );
 		            }
 		        }
 		    else
@@ -527,33 +528,33 @@ TInt CDownloadsListArray::LBTextLength( const TDownloadUiData& aDownloadUiData )
 		        if (aDownloadUiData.iNumMediaObjects > 1)
 			        {
 			        iProgressInfoRes.Copy
-			                        ( iFilesSavedString->Left( KMaxDownloadItemTextPartLength ) );                      
+			                        ( iFilesSavedString->Left( KMaxDownloadItemTextPartLength ) );
 			        }
 			    else
 			        {
 			       	iProgressInfoRes.Copy
-			                        ( iFileSavedString->Left( KMaxDownloadItemTextPartLength ) );                      
-			        }    
-		        }    
+			                        ( iFileSavedString->Left( KMaxDownloadItemTextPartLength ) );
+			        }
+		        }
 			}
 		else
 		    {
             iProgressInfoRes.Copy
-			                 ( iCompletedString->Left( KMaxDownloadItemTextPartLength ) );  	
+			                 ( iCompletedString->Left( KMaxDownloadItemTextPartLength ) );
 		    }
         }
-     //finished  here   
+     //finished  here
     else
         {
         if ( aDownloadUiData.iFullSize <= 0 )
             {
-            iProgressInfoCreator->ProgressInfo( aDownloadUiData.iDownloadedSize, 
+            iProgressInfoCreator->ProgressInfo( aDownloadUiData.iDownloadedSize,
                                                 iProgressInfoRes );
             }
         else
             {
-            iProgressInfoCreator->ProgressInfo( aDownloadUiData.iDownloadedSize, 
-                                                aDownloadUiData.iFullSize, 
+            iProgressInfoCreator->ProgressInfo( aDownloadUiData.iDownloadedSize,
+                                                aDownloadUiData.iFullSize,
                                                 iProgressInfoRes );
             }
         }
@@ -561,7 +562,7 @@ TInt CDownloadsListArray::LBTextLength( const TDownloadUiData& aDownloadUiData )
     ret += KCharTab().Length();
     //
     if ( aDownloadUiData.iDownloadState == EHttpDlCreated || // User must be able to start it via Resume.
-         aDownloadUiData.iDownloadState == EHttpDlPaused || 
+         aDownloadUiData.iDownloadState == EHttpDlPaused ||
          aDownloadUiData.iDownloadState == EHttpDlMultipleMOFailed ) // User must be able to restart it.
         {
         iTempBuf.Zero();
@@ -571,20 +572,17 @@ TInt CDownloadsListArray::LBTextLength( const TDownloadUiData& aDownloadUiData )
     //
     ret += KCharTab().Length();
     //
-    if ( KDriveAttLocal != aDownloadUiData.iExternalMemoryStatus )
+    if ( aDownloadUiData.iIsOnExternalMemory )
         {
         iTempBuf.Zero();
-        if ( KDriveAttRemovable == aDownloadUiData.iExternalMemoryStatus )
-            iTempBuf.Num( iExternalMemoryIconIndex );
-        else
-            iTempBuf.Num( iInternalMassMemoryIconIndex );
+        iTempBuf.Num( iExternalMemoryIconIndex );
         ret += iTempBuf.Length();
         }
 
 
     return ret;
     }
-    
+
 // -----------------------------------------------------------------------------
 // CDownloadsListArray::AddDefaultIconsL
 // -----------------------------------------------------------------------------
@@ -592,13 +590,13 @@ TInt CDownloadsListArray::LBTextLength( const TDownloadUiData& aDownloadUiData )
 void CDownloadsListArray::AddDefaultIconsL()
     {
     CLOG_ENTERFN("CDownloadsListArray::AddDefaultIconsL");
-    
+
     // iPausedIconIndex
     MAknsSkinInstance* skins = AknsUtils::SkinInstance();
     TAknsItemID id = KAknsIIDQgnIndiPaused;
-    CGulIcon* gulIcon = AknsUtils::CreateGulIconL( skins, id, 
-                                   *iMbmResourceFileName, 
-                                   EMbmDownloadmgruilibQgn_indi_paused, 
+    CGulIcon* gulIcon = AknsUtils::CreateGulIconL( skins, id,
+                                   *iMbmResourceFileName,
+                                   EMbmDownloadmgruilibQgn_indi_paused,
                                    EMbmDownloadmgruilibQgn_indi_paused_mask );
     CleanupStack::PushL( gulIcon );
 
@@ -609,9 +607,9 @@ void CDownloadsListArray::AddDefaultIconsL()
 
     // iExternalMemoryIconIndex
     TAknsItemID id2 = KAknsIIDQgnIndiBrowserMmcAdd;
-    CGulIcon* gulIcon2 = AknsUtils::CreateGulIconL( skins, id2, 
-                                   *iMbmResourceFileName, 
-                                   EMbmDownloadmgruilibQgn_indi_browser_mmc_add, 
+    CGulIcon* gulIcon2 = AknsUtils::CreateGulIconL( skins, id2,
+                                   *iMbmResourceFileName,
+                                   EMbmDownloadmgruilibQgn_indi_browser_mmc_add,
                                    EMbmDownloadmgruilibQgn_indi_browser_mmc_add_mask );
     CleanupStack::PushL( gulIcon2 );
 
@@ -619,20 +617,7 @@ void CDownloadsListArray::AddDefaultIconsL()
     CLOG_WRITE_FORMAT(" iExternalMemoryIconIndex: %d",iExternalMemoryIconIndex);
 
     CleanupStack::Pop( gulIcon2 ); // gulIcon2
-    
-    // iInternalMassMemoryIconIndex
-    TAknsItemID id3 = KAknsIIDQgnPropMemcMsTab;
-    CGulIcon* gulIcon3 = AknsUtils::CreateGulIconL( skins, id3, 
-                                   *iMbmResourceFileName, 
-                                   EMbmDownloadmgruilibQgn_prop_memc_ms_tab, 
-                                   EMbmDownloadmgruilibQgn_prop_memc_ms_tab_mask );
-    CleanupStack::PushL( gulIcon3 );
 
-    iInternalMassMemoryIconIndex = AppendL( gulIcon3 );
-    CLOG_WRITE_FORMAT(" iExternalMemoryIconIndex: %d",iInternalMassMemoryIconIndex);
-
-    CleanupStack::Pop( gulIcon3 ); // gulIcon3    
-    
     CLOG_LEAVEFN("CDownloadsListArray::AddDefaultIconsL");
     }
 
@@ -649,11 +634,11 @@ TInt CDownloadsListArray::AddHandlerAppIconL( const TDesC8& aContentType )
     TBool appFound = FindHandlerApp( aContentType, appUid );
     CLOG_WRITE_FORMAT(" appFound: %d",appFound);
 
-    // Use Media Gallery's icon instead of Image Viewer, because IV's icon 
+    // Use Media Gallery's icon instead of Image Viewer, because IV's icon
     // does not support skins, but MG's icon does support it.
-    
-  
-#ifdef BRDO_APP_GALLERY_SUPPORTED_FF    
+
+
+#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 
     if ( appFound && appUid == TUid::Uid(KImageViewerHandler) )
         {
@@ -702,8 +687,8 @@ TBool CDownloadsListArray::FindHandlerApp( const TDesC8& aContentType, TUid& aAp
 // CDownloadsListArray::LoadAppIconLC
 // -----------------------------------------------------------------------------
 //
-void CDownloadsListArray::LoadAppIconLC( TUid aAppUid, 
-                                         CFbsBitmap*& aBitmap, 
+void CDownloadsListArray::LoadAppIconLC( TUid aAppUid,
+                                         CFbsBitmap*& aBitmap,
                                          CFbsBitmap*& aMask )
     {
     CLOG_ENTERFN("CDownloadsListArray::LoadAppIconLC");
@@ -713,18 +698,18 @@ void CDownloadsListArray::LoadAppIconLC( TUid aAppUid,
 
     if ( aAppUid == TUid::Uid(0) )
         {
-        // Indicate that the content is unsupported, that is no 
+        // Indicate that the content is unsupported, that is no
         // viewer application that could handle the content.
         id = KAknsIIDQgnMenuUnknownLst;
-        AknsUtils::CreateIconLC( skins, id, aBitmap, aMask, 
-                                 *iMbmResourceFileName, 
-                                 EMbmDownloadmgruilibQgn_menu_unknown_lst, 
+        AknsUtils::CreateIconLC( skins, id, aBitmap, aMask,
+                                 *iMbmResourceFileName,
+                                 EMbmDownloadmgruilibQgn_menu_unknown_lst,
                                  EMbmDownloadmgruilibQgn_menu_unknown_lst_mask );
         }
     else
         {
         // Load the application's icon
-        AknsUtils::CreateAppIconLC( skins, aAppUid, 
+        AknsUtils::CreateAppIconLC( skins, aAppUid,
                                     EAknsAppIconTypeList,
                                     aBitmap, aMask );
         }
@@ -732,12 +717,12 @@ void CDownloadsListArray::LoadAppIconLC( TUid aAppUid,
     CLOG_LEAVEFN("CDownloadsListArray::LoadAppIconLC");
     }
 
-   
+
 
 TBool  CDownloadsListArray::IsSupportedL(const TDownloadUiData& aDownloadUiData)
     {
-   
-    TBool supported;  
+
+    TBool supported;
     HBufC* fullName = HBufC::NewLC(KMaxFileName); //TODO: change len
     TPtr fileName( fullName->Des() );
     fileName.Append(aDownloadUiData.iName);
@@ -748,7 +733,7 @@ TBool  CDownloadsListArray::IsSupportedL(const TDownloadUiData& aDownloadUiData)
         {
             mimeTypePtr.Copy(KOctetStreamMimeType);
         }
-    else if(!mimeTypePtr.Compare(KDrmMessageMimeType)) 
+    else if(!mimeTypePtr.Compare(KDrmMessageMimeType))
         {
             mimeTypePtr.Copy(KDrmMessageMimeTypeDrmDcf);
         }
@@ -759,20 +744,19 @@ TBool  CDownloadsListArray::IsSupportedL(const TDownloadUiData& aDownloadUiData)
     if(err == KMimeNotSupported || !(CDownloadUtils::IsGallerySupported(aDownloadUiData.iContentType)))
         {
             supported = EFalse;
-            
+
         }
     else
         {
             supported = ETrue;
-        }  
+        }
     CleanupStack::PopAndDestroy(docHandler);
-    CleanupStack::PopAndDestroy( contentType); 
+    CleanupStack::PopAndDestroy( contentType);
     CleanupStack::PopAndDestroy(fullName);
     return supported;
-        
+
     }
 
 
 // End of file.
-
 

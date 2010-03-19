@@ -18,10 +18,11 @@
 /*lint --e{767} macro was defined differently in another module */
 
 #include "nw_markup_xmlmodulei.h"
-#include <nw_dom_element.h>
+#include "nw_dom_element.h"
 
-#include "nwx_string.h"
+#include <nwx_string.h>
 #include "BrsrStatusCodes.h"
+
 
 /* ------------------------------------------------------------------------- *
    class definition

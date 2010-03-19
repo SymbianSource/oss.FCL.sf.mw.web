@@ -15,10 +15,11 @@
 *
 */
 
+
 #include "cxml_internal.h"
-#include <nw_xmlp_xmlreader.h>
-#include <nw_xmlp_xmlparser.h>
-#include <nw_string_string.h>
+#include "nw_xmlp_xmlreader.h"
+#include "nw_xmlp_xmlparser.h"
+#include "nw_string_string.h"
 #include "cxml_xmlp_entity.h"
 #include "cxml_xmlp_int_entity.h"
 

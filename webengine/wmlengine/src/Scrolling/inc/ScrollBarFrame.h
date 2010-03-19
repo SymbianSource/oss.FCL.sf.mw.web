@@ -27,7 +27,7 @@
 #include <coecntrl.h>
 
 // Browser as a Plugin includes
-#include <brctlinterface.h>
+#include <BrCtlInterface.h>
 
 //----------------------------------------------------------------------
 // CONSTANTS

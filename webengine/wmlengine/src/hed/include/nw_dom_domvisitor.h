@@ -20,7 +20,7 @@
 #define NW_CXML_DOM_DOMVISITOR_H
 
 #include "nw_object_dynamic.h"
-#include <nw_dom_node.h>
+#include "nw_dom_node.h"
 #include "BrsrStatusCodes.h"
 
 #ifdef __cplusplus

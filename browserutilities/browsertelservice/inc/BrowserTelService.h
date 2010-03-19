@@ -31,7 +31,7 @@
 #include <f32file.h>
 #include <AknProgressDialog.h>
 #include <AknWaitDialog.h>
-#include <connectionobservers.h>
+#include <ConnectionObservers.h>
 #include <ApEngineConsts.h>
 #include <errorui.h> 
 #include <bldvariant.hrh>

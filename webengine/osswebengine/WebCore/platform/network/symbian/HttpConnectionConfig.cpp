@@ -21,7 +21,7 @@
 #include "HttpConnection.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
-#include <httpfiltercommonstringsext.h>
+#include <HttpFilterCommonStringsExt.h>
 
 using namespace WebCore;
 

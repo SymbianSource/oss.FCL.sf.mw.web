@@ -27,8 +27,7 @@ NAME    TMST // for Tempest
 #include <AiwCommon.hrh>
 #include <AiwCommon.rh>
 #include <CommonDialogs.rh>
-#include <webkit.loc>
-#include <Avkon.loc>
+#include <Webkit.loc>
 
 RESOURCE RSS_SIGNATURE { }
 	
@@ -251,5 +250,3 @@ RESOURCE TBUF r_qtn_browser_choose_file_sym {buf=qtn_browser_choose_file_text;}
 RESOURCE TBUF r_qtn_browser_dialog_scriptlog_disable_msg { buf=qtn_browser_dialog_scriptlog_disable_msg; }     
 
 
-// Misc dialogs
-RESOURCE TBUF r_qtn_browser_dialog_oom { buf=qtn_memlo_ram_out_of_mem; } 

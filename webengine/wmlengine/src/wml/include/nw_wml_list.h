@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 #include "nwx_defs.h"
-#include <nwx_status.h>
+#include "nwx_status.h"
 #include "nwx_memseg.h"
 
 /* A single linked list with a dummy element first */

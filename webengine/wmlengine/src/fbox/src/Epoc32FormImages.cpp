@@ -15,6 +15,7 @@
 *
 */
 
+
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 #include "nw_fbox_epoc32formimagesi.h"
 
@@ -25,8 +26,8 @@
 
 #include <e32base.h>
 #include <fbs.h>
-#include "nwx_buffer.h"
-#include "nw_browser_browserimages.h"
+#include <nwx_buffer.h>
+#include <nw_browser_browserimages.h>
 
 /* ------------------------------------------------------------------------- */
 const

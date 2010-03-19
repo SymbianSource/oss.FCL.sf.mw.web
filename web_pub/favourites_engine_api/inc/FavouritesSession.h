@@ -134,6 +134,6 @@ class RFavouritesSession : public RSessionBase
 
 #endif
 
-#include <favouritessession.inl>
+#include <FavouritesSession.inl>
 
 // End of File

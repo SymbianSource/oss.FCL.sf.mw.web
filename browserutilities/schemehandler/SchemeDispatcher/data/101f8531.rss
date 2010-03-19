@@ -16,8 +16,8 @@
 */
 
 
-#include "schemedefs.hrh"
-#include <ecom/registryinfo.rh>
+#include "SchemeDefs.hrh"
+#include "RegistryInfo.rh"
 
 RESOURCE REGISTRY_INFO theInfo
 	{

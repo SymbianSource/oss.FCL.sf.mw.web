@@ -15,11 +15,13 @@
 *
 */
 
+
+
 #ifndef HTTPCLIENTAPPINSTANCE_H
 #define HTTPCLIENTAPPINSTANCE_H
 
 //  INCLUDES
-#include <httpdownloadmgrcommon.h>
+#include "HttpDownloadMgrCommon.h"
 
 #include <e32base.h>
 

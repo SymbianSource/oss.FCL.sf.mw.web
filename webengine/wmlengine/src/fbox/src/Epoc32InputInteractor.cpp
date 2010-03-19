@@ -32,8 +32,9 @@
 #include "nw_fbox_keymapper.h"
 #include "nw_fbox_textareabox.h"
 #include "nw_fbox_epoc32inputskin.h"
-#include "nwx_time.h"
+#include <nwx_time.h>
 #include "BrsrStatusCodes.h"
+
 
 /* ------------------------------------------------------------------------- *
    static data

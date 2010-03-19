@@ -21,7 +21,7 @@
 #define BRCTLBCTESTSTATECHANGEOBSERVER_H
 
 // INCLUDES
-#include <brctlinterface.h>
+#include <BrCtlInterface.h>
 
 // FORWARD DECLARATIONS
 class CBrCtlApiTestContainer;

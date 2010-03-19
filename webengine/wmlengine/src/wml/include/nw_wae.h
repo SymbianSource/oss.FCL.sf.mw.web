@@ -15,6 +15,7 @@
 *
 */
 
+
 /***************************************************************************
 **   File: nw_wae.h
 **   Subsystem Name: WAE User Agent
@@ -43,6 +44,7 @@ extern "C" {
 #include "nw_evlog_api.h"
 #include "wml_wae_transaction.h"
 #include "BrsrStatusCodes.h"
+
 
 /*                                                                          */
 /* Spectrum uses the new SIA/OTA Push application, which registers directly */

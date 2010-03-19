@@ -27,7 +27,7 @@
 #include "nw_css_tokentoint.h"
 #include "nw_lmgr_propertylist.h"
 #include "nwx_math.h"
-#include "nwx_string.h"
+#include <nwx_string.h>
 #include "BrsrStatusCodes.h"
 
 // EXTERNAL DATA STRUCTURES

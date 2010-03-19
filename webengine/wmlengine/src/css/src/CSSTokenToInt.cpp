@@ -18,10 +18,11 @@
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 
 #include "nw_css_tokentointi.h"
+
 #include "nw_lmgr_cssproperties.h"
 #include "nw_text_ucs2.h"
-#include "nwx_string.h"
-#include "nwx_math.h"
+#include <nwx_string.h>
+#include <nwx_math.h>
 #include "BrsrStatusCodes.h"
 #include "aknutils.h"
 

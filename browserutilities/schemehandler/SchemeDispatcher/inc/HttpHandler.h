@@ -27,7 +27,7 @@
 #include <e32base.h>
 #include <eikdoc.h>
 #include <apparc.h>
-#include <browserlauncher.h>
+#include <BrowserLauncher.h>
 // FORWARD DECLARATION
 
 // CLASS DECLARATION

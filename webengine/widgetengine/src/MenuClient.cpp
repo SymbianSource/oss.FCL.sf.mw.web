@@ -298,12 +298,7 @@ TBool CMenuClient::HandleCommandL( TInt aCommandId )
             m_jsmenu->leftKeyCallback()->InvokeCall();
             return ETrue;
     }
-    
-    if ( aCommandId == EAknSoftkeyOptions && m_jsmenu && m_jsmenu->onShowCallback() ) {
-            m_jsmenu->onShowCallback()->InvokeCall();
-            return ETrue;
-    }
-    
+
     return EFalse;
 }
 

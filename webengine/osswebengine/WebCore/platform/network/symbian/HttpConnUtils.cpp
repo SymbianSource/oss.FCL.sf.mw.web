@@ -17,10 +17,10 @@
 
 // INCLUDE FILES
 #include "HttpConnUtils.h"
-#include "httpfiltercommonstringsext.h"
+#include "HttpFilterCommonStringsExt.h"
 #include <httpstringconstants.h>
 #include <http/rhttpsession.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 #include <flogger.h>
 #include <sslerr.h>
 #include <httperr.h>

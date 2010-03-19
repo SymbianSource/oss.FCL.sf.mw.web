@@ -19,8 +19,7 @@
 
 
 // USER INCLUDES
-#include <browser_platform_variant.hrh>
-#include <browserdialogsprovider.h>
+#include "BrowserDialogsProvider.h"
 #include "BrowserDialogsProvider.hrh"
 #include "BrowserViewImagesPopup.h"
 #include "PhotoOperationWait.h"
@@ -141,11 +140,7 @@ void CBrowserViewImagesPopup::ConstructL( CEikListBox *aListBox,
 void CBrowserViewImagesPopup::HandleListBoxEventL( CEikListBox* aListBox, 
                                                     TListBoxEvent aEventType )
     {
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF      
-    if((aEventType==EEventEnterKeyPressed || aEventType==EEventItemDoubleClicked || aEventType==EEventItemSingleClicked) && aListBox==ListBox())
-#else
-    if((aEventType==EEventEnterKeyPressed || aEventType==EEventItemDoubleClicked ) && aListBox==ListBox())
-#endif        
+    if((aEventType==EEventEnterKeyPressed || aEventType==EEventItemDoubleClicked) && aListBox==ListBox())
         {
         ProcessCommandL( EDialogsProviderCmdViewImagesView );
         }

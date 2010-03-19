@@ -15,10 +15,10 @@
 *
 */
 #include "cxml_internal.h"
-#include <nw_tinydom.h>
-#include <nw_wbxml_parse.h>
-#include <nw_wbxml_reader.h>
-#include <nw_wbxml_event.h>
+#include "nw_tinydom.h"
+#include "nw_wbxml_parse.h"
+#include "nw_wbxml_reader.h"
+#include "nw_wbxml_event.h"
 #include "nw_wbxml_parsei.h"
 
 /*Parser flags */

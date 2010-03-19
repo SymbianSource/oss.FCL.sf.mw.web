@@ -15,6 +15,7 @@
 *
 */
 
+
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 #include "nw_image_epoc32simpleimagei.h"
 #include "Epoc32ImageDecoder.h"
@@ -32,13 +33,15 @@
 #include <bitdev.h>
 #include "BrsrStatusCodes.h"
 #include "nwx_logger.h"
-#include <MemoryManager.h>
+#include "MemoryManager.h"
+
 
 // Forward declaration which can't be put inside header file without breaking
 // compilation of OOC files.
 
 TBrowserStatusCode 
 scaleBitmap( CFbsBitmap* bitmap, CFbsBitmap** scaledBitmap, TRect* rect );
+
 
 void
 _NW_Image_Epoc32SimpleImage_ImageOpened( NW_Image_AbstractImage_t* aAbstractImage, NW_Bool aFailed,

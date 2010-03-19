@@ -15,7 +15,8 @@
 *
 */
 
-#include  "../webkitcommon.mmpi"
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          wml.lib
 TARGETTYPE      lib
@@ -27,6 +28,7 @@ MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER 1
 
 SOURCEPATH      ../../src/wml/src
+
 
 SOURCE	nw_evlog_api.c
 SOURCE	wml_bind.c
@@ -55,3 +57,39 @@ SOURCE	wml_url_utils.c
 SOURCE	wml_var.c
 SOURCE	WMLWae.cpp
 SOURCE	wml_wae_reader.c
+
+#include  "../webkitcommon.mmpi"
+
+USERINCLUDE   ../../src/wml/src
+USERINCLUDE   ../../src/Wml/include
+USERINCLUDE   ../../src/urlloader/include
+USERINCLUDE   ../../src/script/include
+USERINCLUDE   ../../src/utils/include
+USERINCLUDE   ../../src/image/include
+USERINCLUDE   ../../src/adt/include
+USERINCLUDE   ../../src/mvc/include
+USERINCLUDE   ../../src/htmlp/include
+USERINCLUDE   ../../src/evt/include
+USERINCLUDE   ../../src/fbox/include
+USERINCLUDE   ../../src/gdi/include
+
+USERINCLUDE   ../../src/hed/include
+USERINCLUDE   ../../src/lmgr/include
+USERINCLUDE   ../../src/markup/include
+USERINCLUDE   ../../src/msg/include
+USERINCLUDE   ../../src/object/include
+USERINCLUDE   ../../src/system/include
+USERINCLUDE   ../../src/text/include
+USERINCLUDE   ../../src/Unicode/include
+USERINCLUDE   ../../src/wml1x/include
+USERINCLUDE   ../../src/wmlscriptch/include
+USERINCLUDE   ../../src/wmlcontrol/include
+
+
+SYSTEMINCLUDE   ../../src/utils/include
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE   ../../src/Wml/include
+SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
+MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_LIBC_SYSTEMINCLUDE
+

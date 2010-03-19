@@ -83,7 +83,6 @@ private:
 
 	TRequestStatus* iExternalRequestStatus;
     RConnection& iConnection;
-    TBool iWait;
 	};
 
 

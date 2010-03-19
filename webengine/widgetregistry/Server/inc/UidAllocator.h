@@ -15,11 +15,12 @@
 *
 */
 
+
 #ifndef UIDALLOCATOR_H
 #define UIDALLOCATOR_H
 
 // INCLUDE FILES
-#include <widgetregistryconstants.h>
+#include "WidgetRegistryConstants.h"
 
 /**
  * This class allows clients to allocate a UID from a given range.
@@ -36,3 +37,4 @@ public:
     static TBool IsWidget( TUid aUid );
     };
 #endif
+

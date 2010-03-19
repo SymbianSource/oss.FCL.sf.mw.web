@@ -22,7 +22,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <httpdownloadmgrcommon.h>
+#include <HttpDownloadMgrCommon.h>
 #include <http.h>
 
 // CONSTANTS

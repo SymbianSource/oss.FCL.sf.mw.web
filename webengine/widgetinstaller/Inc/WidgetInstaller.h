@@ -23,7 +23,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <widgetregistryclient.h>
+#include <WidgetRegistryClient.h>
 #ifdef _DEBUG
 #include <flogger.h>
 #endif

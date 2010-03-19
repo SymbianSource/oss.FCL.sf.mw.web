@@ -28,9 +28,9 @@
 
 #include "WebFrame.h"
 #include "HttpDefs.h"
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "StaticObjectsContainer.h"
-#include <pluginadapterinterface.h>
+#include <PluginAdapterInterface.h>
 #include "PluginWin.h"
 #include "PluginSkin.h"
 #include "PluginHandler.h"
@@ -45,11 +45,8 @@
 #include "WebPageScrollHandler.h"
 #include "WebKitLogger.h"
 
-#include <rt_gestureif.h>
-
 using namespace WebCore;
 using namespace RT_GestureHelper;
-using namespace stmGesture; 
 // CONSTANTS
 const TInt KPluginGranularity = 3;
 _LIT(KPath,"c:\\system\\temp\\");
@@ -275,16 +272,12 @@ TKeyResponse PluginWin::OfferKeyEventL( const TKeyEvent& aKeyEvent,
         ret = m_control->OfferKeyEventL( aKeyEvent, aType );
     }
     else if (!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event) {
-        WebCursor* c = StaticObjectsContainer::instance()->webCursor();
-        TPoint pt = (c->position());
-        pt = m_pluginskin->frame()->frameView()->viewCoordsInFrameCoords(pt);
-        pt -= m_pluginskin->rect().iTl;
         NPEvent event;
         NPEventKey eventKey;
         event.event = ENppEventKey;
         eventKey.keyEvent = &aKeyEvent;
         eventKey.type = aType;
-        eventKey.reserved = static_cast<void*>(&pt);
+        eventKey.reserved = NULL;
         event.param = &eventKey;
         ret = (TKeyResponse)m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), static_cast<void*>(&event));
     }
@@ -719,74 +712,24 @@ void PluginWin::HandlePointerEventFromPluginL(const TPointerEvent& aEvent)
 {
     CBrCtl*   brCtl = control(m_pluginskin->frame());    
     WebView*  view = brCtl->webView();
-#ifdef BRDO_MULTITOUCH_ENABLED_FF	
-    if (aEvent.IsAdvancedPointerEvent()) {
-        TAdvancedPointerEvent tadvp = *(static_cast<const TAdvancedPointerEvent *>(&aEvent));
-        if (!StaticObjectsContainer::instance()->isPluginFullscreen()) {
-            tadvp.iPosition = aEvent.iPosition - view->PositionRelativeToScreen();
-        }
-        view->pointerEventHandler()->HandlePointerEventL(tadvp);
+    TPointerEvent event(aEvent);
+    
+    if (!StaticObjectsContainer::instance()->isPluginFullscreen()) {
+        event.iPosition = aEvent.iPosition - view->PositionRelativeToScreen();
     }
-    else {
-#endif 	
-        TPointerEvent event(aEvent);
-        if (!StaticObjectsContainer::instance()->isPluginFullscreen()) {
-            event.iPosition = aEvent.iPosition - view->PositionRelativeToScreen();
-        }
-        view->pointerEventHandler()->HandlePointerEventL(event);
-#ifdef BRDO_MULTITOUCH_ENABLED_FF			
-    }
-#endif 	
+    view->pointerEventHandler()->HandlePointerEventL(event);
 }
 
 
-TBool PluginWin::HandleGesture(const TStmGestureEvent& aEvent)
+TBool PluginWin::HandleGesture(const TGestureEvent& aEvent)
 {
     TBool ret = EFalse;
-    
-    TGestureEvent eventForPlugin; 
-    switch(aEvent.Code()) 
-        {
-        case EGestureUidUnknown :
-            eventForPlugin.SetCode(EGestureUnknown); 
-            break; 
-        case EGestureUidTouch :
-            eventForPlugin.SetCode(EGestureStart);
-            break; 
-        case EGestureUidTap : 
-            if(aEvent.Type() == ETapTypeSingle)
-                eventForPlugin.SetCode(EGestureTap); 
-            else 
-                eventForPlugin.SetCode(EGestureDoubleTap); 
-            break; 
-        case EGestureUidLongPress :
-            eventForPlugin.SetCode(EGestureLongTap); 
-            break; 
-        case EGestureUidPan :
-            eventForPlugin.SetCode(EGestureDrag);
-            break; 
-        case EGestureUidRelease :
-            eventForPlugin.SetCode(EGestureReleased); 
-            break; 
-        case EGestureUidFlick :
-            eventForPlugin.SetCode(EGestureFlick);
-            break; 
-        case EGestureUidPinch :
-            eventForPlugin.SetCode(EGesturePinch);
-            break; 
-        default : 
-            break; 
-
-        }
-    
-    
-    
     if (m_control) {
+        TGestureEvent gestEvent(aEvent);
         CBrCtl*   brCtl = control(m_pluginskin->frame());    
         WebView*  view = brCtl->webView();
         TPoint newPos = aEvent.CurrentPos();
-        // Not sure plugins need the start position of the gesture. Not inlcuded in the new struct
-        TPoint startPos = aEvent.CurrentPos();
+        TPoint startPos = aEvent.StartPos();
         TPoint viewPos = view->PositionRelativeToScreen();
         TPoint ctrlPos = m_control->PositionRelativeToScreen();
         
@@ -794,50 +737,35 @@ TBool PluginWin::HandleGesture(const TStmGestureEvent& aEvent)
         // adjust the position to make it relative to top left corner of 
             newPos += viewPos; 
             startPos += viewPos;
+            gestEvent.SetCurrentPos(newPos);
+            gestEvent.SetStartPos(startPos);
         }
-        eventForPlugin.SetCurrentPos(newPos);
-        eventForPlugin.SetStartPos(startPos);
-        if (StaticObjectsContainer::instance()->isPluginFullscreen() ||
+    
+        if (StaticObjectsContainer::instance()->isPluginFullscreen() || 
 	    m_control->Rect().Contains(newPos - ctrlPos)) {
             NPEvent event;
             NPEventPointer ev;
             event.event = ENppEventPointer;
-            ev.reserved = &eventForPlugin;
+            ev.reserved = &gestEvent;
             ev.pointerEvent = NULL;
             event.param = &ev;
             ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
                                                          static_cast<void*>(&event));
-            
-            if (eventForPlugin.Code(EAxisBoth) == EGestureTap) {
-                eventForPlugin.SetCode(EGestureReleased); 
-                ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
-                                                             static_cast<void*>(&event));
- 
-            }
         }
     }
     else if(!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event){
         TRect cliprect = m_pluginskin->getClipRect();
-        TPoint newPos = aEvent.CurrentPos();
-        eventForPlugin.SetCurrentPos(newPos);
-        eventForPlugin.SetCurrentPos(newPos);
-
-        if(cliprect.Contains(newPos)){
+        TPoint newpos = aEvent.CurrentPos();
+        if(cliprect.Contains(newpos)){
+           TGestureEvent gestEvent(aEvent);
            NPEvent event;
            NPEventPointer ev;
            event.event = ENppEventPointer;
-           ev.reserved = &eventForPlugin;
+           ev.reserved = &gestEvent;
            ev.pointerEvent = NULL;
            event.param = &ev;
            ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
                                                          static_cast<void*>(&event));
-           
-           if (eventForPlugin.Code(EAxisBoth) == EGestureTap) {
-               eventForPlugin.SetCode(EGestureReleased); 
-               ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
-                                                            static_cast<void*>(&event));
-
-           }
         }
     }    
     return ret;

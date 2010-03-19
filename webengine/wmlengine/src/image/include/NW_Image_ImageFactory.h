@@ -19,10 +19,13 @@
 #ifndef NW_Image_ImageFactory_h
 #define NW_Image_ImageFactory_h
 
+
+
+
 #include "nw_object_core.h"
 #include "nw_image_abstractimage.h"
-#include "nwx_buffer.h"
-#include "nwx_http_header.h"
+#include <nwx_buffer.h>
+#include <nwx_http_header.h>
 
 #ifdef __cplusplus
 extern "C" {

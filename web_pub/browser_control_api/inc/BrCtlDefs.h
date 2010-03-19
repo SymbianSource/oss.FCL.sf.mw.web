@@ -33,12 +33,12 @@
 * Usage:
 *
 * @code
-*  #include <brctldefs.h>
+*  #include <BrCtlDefs.h>
 *
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
 * @since 3.0
-* @file brctldefs.h
+* @file BrCtlDefs.h
 * @endcode     *
 */
 class TBrCtlDefs

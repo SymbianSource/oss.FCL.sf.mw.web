@@ -63,12 +63,12 @@ enum TBrCtlDownloadParam
 * Usage:
 *
 * @code
-*  #include <brctlspecialloadobserver.h>
+*  #include <BrCtlSpecialLoadObserver.h>
 *
 *  
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
-* @file brctlspecialloadobserver.h
+* @file BrCtlSpecialLoadObserver.h
 * @endcode     *
 */
 class MBrCtlSpecialLoadObserver

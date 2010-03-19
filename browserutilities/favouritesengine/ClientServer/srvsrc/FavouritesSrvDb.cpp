@@ -17,6 +17,7 @@
 *
 */
 
+
 // INCLUDE FILES
 
 #include <s32std.h>
@@ -28,12 +29,14 @@
 #include "FavouritesItemImpl.h"
 #include "FavouritesItemImplList.h"
 #include "FavouritesPanic.h"
-#include <favouriteslimits.h>
-#include <favouritesitemdata.h>
+#include "FavouritesLimits.h"
+#include "FavouritesItemData.h"
 #include "FavouritesFilter.h"
 #include "UidMap.h"
 #include "FavouritesLogger.h" 
 #include "FavouritesFolder.h"
+
+
 
 // CONSTANTS
 
@@ -48,6 +51,7 @@ LOCAL_D const TInt KFnameLength = 8;
 
 // Secure policy ID of the Faveng database files.
 LOCAL_D const TUint KUidFavengDbPolicy = 0x101FD685;
+
 
 // ==================== LOCAL FUNCTIONS ====================
 

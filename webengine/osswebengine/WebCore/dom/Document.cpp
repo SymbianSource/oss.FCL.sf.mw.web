@@ -25,9 +25,6 @@
 #include "Document.h"
 
 #include "AXObjectCache.h"
-#if PLATFORM(SYMBIAN)
-#include "Brctl.h"
-#endif
 #include "CDATASection.h"
 #include "CSSHelper.h"
 #include "CSSStyleSelector.h"
@@ -1840,13 +1837,7 @@ void Document::processHttpEquiv(const String &equiv, const String &content)
     } else if (equalIgnoringCase(equiv, "refresh")) {
         double delay;
         String url;
-        #if PLATFORM(SYMBIAN)
-        TUint autoRefresh = 1;
-        TRAP_IGNORE(autoRefresh = StaticObjectsContainer::instance()->brctl()->BrowserSettingL(TBrCtlDefs::ESettingsAutoRefresh));
-        if (frame && autoRefresh && parseHTTPRefresh(content, true, delay, url)) {
-        #else
         if (frame && parseHTTPRefresh(content, true, delay, url)) {
-        #endif
             if (url.isEmpty())
                 url = frame->loader()->url().url();
             else

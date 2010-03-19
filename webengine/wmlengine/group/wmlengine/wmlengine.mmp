@@ -15,7 +15,8 @@
 *
 */
 
-#include  "../webkitcommon.mmpi"
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          wmlEngine.dll
 TARGETTYPE      dll
@@ -27,6 +28,8 @@ UID	0x10000079 	0x1028190F
 VENDORID	VID_DEFAULT
 CAPABILITY	CAP_GENERAL_DLL
 EPOCALLOWDLLDATA
+
+
 
 #if defined(WINSCW)
 deffile ../Bwinscw/WmlEngine.def
@@ -49,9 +52,10 @@ MACRO INCLUDE_UTILS_MMP
 #define INCLUDE_UTILS_MMP
 #include "utils.mmp"
 
+
 SOURCEPATH      ../../src/wmlcontrol/src
 
-SOURCE			WmlControl.cpp
+SOURCE          WmlControl.cpp
 SOURCE			WmlContentInterface.cpp
 
 SOURCEPATH      ../../src/htmlp/src
@@ -68,6 +72,25 @@ SOURCE          CBrowserSettings.cpp
 SOURCEPATH      ../../src/lmgr/src
 SOURCE          LMgrBox.cpp
 //--
+
+USERINCLUDE     ../../src/utils/include
+USERINCLUDE     ../../src/scrolling/inc
+USERINCLUDE     ../../src/script/include
+USERINCLUDE     ../../src/script/src
+USERINCLUDE     ../../src/htmlp/include
+
+MW_LAYER_HTTP_SYSTEMINCLUDE
+
+SYSTEMINCLUDE   ../../src/utils/include
+SYSTEMINCLUDE		../../src/utils/src
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE		../../src/wml/include
+SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
+MW_LAYER_LIBC_SYSTEMINCLUDE
+MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_OSKERNEL_SYSTEMINCLUDE
+
+
 
 STATICLIBRARY    RbBrowser.lib
 // Rainbow tempest libraries
@@ -148,6 +171,7 @@ LIBRARY         DownloadMgr.lib
 LIBRARY         DownloadMgrUiLib.lib
 LIBRARY         imut.lib
 
+
 LIBRARY         eikctl.lib 
 LIBRARY         form.lib 
 LIBRARY         etext.lib 
@@ -165,3 +189,6 @@ LIBRARY 	featmgr.lib
 LIBRARY 	broaffpopup.lib
 #endif
 LIBRARY	   	aknicon.lib
+
+
+

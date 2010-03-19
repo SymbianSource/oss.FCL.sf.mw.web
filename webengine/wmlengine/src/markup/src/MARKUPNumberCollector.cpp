@@ -26,7 +26,7 @@
 #include "nw_lmgr_imgcontainerbox.h"
 #include "nw_fbox_optionbox.h"
 #include "BrsrStatusCodes.h"
-#include <MemoryManager.h>
+#include "MemoryManager.h"
 
 /* ------------------------------------------------------------------------- *
    private methods

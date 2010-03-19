@@ -17,6 +17,7 @@
 *
 */
 
+
 #ifndef __WEBTOOLBARINTERFACE
 #define __WEBTOOLBARINTERFACE
 
@@ -28,7 +29,7 @@
 #include <AknsConstants.h>
 #include <AknsItemID.h>
 #include <AknsConstants.h>
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "ToolBar.h"
 /*
 #include "Favicon.h"

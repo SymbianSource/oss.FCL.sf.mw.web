@@ -15,14 +15,16 @@
 *
 */
 
+
+
 #ifndef CDOWNLOADMGRUIDOWNLOADSLIST_H
 #define CDOWNLOADMGRUIDOWNLOADSLIST_H
 
 //  INCLUDES
-#include <cdownloadmgruibase.h>
-#include <downloadmgrclient.h>
-#include <httpdownloadmgrcommon.h>
-#include <downloadslistdlgobserver.h>
+#include <CDownloadMgrUiBase.h>
+#include <DownloadMgrClient.h>
+#include <HttpDownloadMgrCommon.h>
+#include <DownloadsListDlgObserver.h>
 
 #include <AiwServiceHandler.h>
 #include <AiwCommon.hrh>
@@ -149,12 +151,12 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
         * @return TBool 
         */
         inline TBool GetDownloadHide() { return iDownloadListHide; }
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
+
         /**
-        * Adding Aiw Commands to the given MenuPane
+        * Sets the value of downloadlist hide
+        * @return void 
         */
-        void AIWPlugInMenusL(TInt aResourceId,CEikMenuPane* aMenuPane);
-#endif        
+        virtual void SetDownloadListHide( TBool aHide );
 
     public: // Functions from CDownloadMgrUiBase
 
@@ -247,13 +249,6 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
                                       RHttpDownload& aDownload);
                                       
         void LaunchFileManagerApplication();
-
-    public:
-        /**
-        * Sets the value of downloadlist hide
-        * @return void 
-        */
-        void SetDownloadListHide( TBool aHide );
 
     private:  // Data
         

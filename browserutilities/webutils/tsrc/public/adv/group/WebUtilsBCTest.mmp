@@ -19,7 +19,7 @@
 #if defined(__S60_)
         // To get the MW_LAYER_SYSTEMINCLUDE-definition
         #include <platform_paths.hrh>
-        #include <platform/mw/browser_platform_variant.hrh>
+        #include <platform/mw/Browser_platform_variant.hrh>
 #endif
 
 TARGET          WebUtilsBCTest.dll
@@ -39,9 +39,17 @@ SOURCEPATH      ../src
 SOURCE          WebUtilsBCTest.cpp
 SOURCE          WebUtilsBCTestCases.cpp
 
+//RESOURCE        resource_file
+//RESOURCE        resource_file2
+
 USERINCLUDE     ../inc 
 
-MW_LAYER_SYSTEMINCLUDE
+#if defined(__S60_)
+    MW_LAYER_SYSTEMINCLUDE
+#else
+    MW_LAYER_SYSTEMINCLUDE 
+    SYSTEMINCLUDE   MW_LAYER_PUBLIC_EXPORT_PATH(internal)
+#endif
 
 LIBRARY         euser.lib
 LIBRARY         stiftestinterface.lib

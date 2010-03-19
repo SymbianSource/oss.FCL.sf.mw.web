@@ -15,8 +15,9 @@
 *
 */
 
+
 #include "nw_markup_wbxmlmodulei.h"
-#include <nw_dom_element.h>
+#include "nw_dom_element.h"
 #include "nw_hed_domhelper.h"
 
 /* ------------------------------------------------------------------------- *

@@ -25,7 +25,7 @@
 #include "nw_hed_documentnode.h"
 #include "nw_hed_domhelper.h"
 #include "nw_text_ucs2.h"
-#include <nw_dom_element.h>
+#include "nw_dom_element.h"
 #include "nw_lmgr_box.h"
 #include "nw_hed_iloadrecipient.h"
 #include "nw_image_iimageobserver.h"

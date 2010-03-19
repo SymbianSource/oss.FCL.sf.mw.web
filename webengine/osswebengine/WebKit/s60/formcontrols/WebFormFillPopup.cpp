@@ -16,21 +16,16 @@
 */
 
 // INCLUDE FILES
-#include <browser_platform_variant.hrh>
 #include <../bidi.h>
-#include <brctldialogsprovider.h>
-
 #include "WebFormFillPopup.h"
 #include "WebView.h"
 #include "WebFrame.h"
 #include "WebFrameView.h"
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "PopupSelectListBox.h"
-
+#include "BrCtlDialogsProvider.h"
 #include "WebFepTextEditor.h"
 #include "FormFillCallback.h"
-#include "Page.h"
-#include "WebChromeClient.h"
 
 #include <aknenv.h>
 #include <coemain.h>
@@ -39,6 +34,7 @@
 #include <AknUtils.h>
 
 #include "eikon.hrh"
+
 
 static const TInt KMaxNumToShow = 6; // max number of list items to show
 static const TInt KInitArraySize = 10; // initial array size
@@ -246,9 +242,6 @@ TKeyResponse WebFormFillPopup::HandleKeyEventL(const TKeyEvent& aKeyEvent, TEven
 
     }
 
-    if (response == EKeyWasConsumed) {
-      m_parent->page()->chrome()->client()->setElementVisibilityChanged(false);
-    }
     return response;
 }
 
@@ -272,11 +265,8 @@ void WebFormFillPopup::HandleListBoxEventL(CEikListBox* aListBox, TListBoxEvent 
 {
     if (aListBox != m_listBox)
         return;
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-    if (aEventType == EEventItemDoubleClicked || aEventType == EEventEnterKeyPressed || aEventType == EEventItemSingleClicked || aEventType == EEventEmptyAreaClicked)
-#else        
+
     if (aEventType == EEventItemDoubleClicked || aEventType == EEventEnterKeyPressed)
-#endif        
     {
         // get the selected item from listbox
         m_listBox->View()->UpdateSelectionL(CListBoxView::ESingleSelection);
@@ -284,8 +274,7 @@ void WebFormFillPopup::HandleListBoxEventL(CEikListBox* aListBox, TListBoxEvent 
         if (m_listBox->IsFocused())
         {
             MakeVisible(EFalse);
-            if(selected != NULL && m_data[selected->At(0)] )
-               m_callback->autoComplete(m_data[selected->At(0)]->Text());
+            m_callback->autoComplete(m_data[selected->At(0)]->Text());
         }
     }
     else if (aEventType == EEventPenDownOnItem) {
@@ -369,7 +358,6 @@ void WebFormFillPopup::HandlePointerEventL(const TPointerEvent& aPointerEvent)
     else {
         m_callback->cancelPopup();
     }
-    m_parent->page()->chrome()->client()->setElementVisibilityChanged(false);
 }
 
 //  End of File

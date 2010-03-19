@@ -26,7 +26,8 @@ NAME WTUI
 #include <avkon.rh>
 #include <avkon.mbg>
 #include <avkon.loc>
-#include <widgetinstallerui.loc>
+#include <swinstcommonui.rsg>
+#include <WidgetInstallerUI.loc>
 
 RESOURCE RSS_SIGNATURE { }
 

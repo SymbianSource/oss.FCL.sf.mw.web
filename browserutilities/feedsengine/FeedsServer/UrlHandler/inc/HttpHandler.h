@@ -15,8 +15,10 @@
 *
 */
 
+
 #ifndef HTTP_HANDLER_H
 #define HTTP_HANDLER_H
+
 
 // INCLUDES
 #include <e32base.h>
@@ -25,7 +27,7 @@
 #include <http/rhttptransaction.h>
 
 #include "HttpConnection.h"
-#include <leaktracker.h>
+#include "LeakTracker.h"
 #include "UrlHandler.h"
 
 // CONSTANTS
@@ -42,6 +44,7 @@ class RHTTPSession;
 class RStringPool;
 
 // CLASS DECLARATION
+
 
 /**
 *  A class that fetches resources via HTTP 1.1.

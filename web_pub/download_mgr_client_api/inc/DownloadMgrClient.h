@@ -22,7 +22,7 @@
 //  INCLUDES
 #include <e32base.h>
 #include <f32file.h>
-#include <httpdownloadmgrcommon.h>
+#include <HttpDownloadMgrCommon.h>
 #include <http.h>
 
 // FORWARD DECLARATIONS
@@ -116,7 +116,6 @@ class MHttpDownloadMgrNextUriObserver
 *  @lib -
 *  @since Series 60 2.8
 */
-
 NONSHARABLE_CLASS( RHttpDownloadMgr ) : public RSessionBase,
                                         public MHttpDownloadMgrObserver
 	{
@@ -365,13 +364,6 @@ NONSHARABLE_CLASS( RHttpDownloadMgr ) : public RSessionBase,
         * @return None.
 		*/        
         IMPORT_C void SetNextUriObserver( MHttpDownloadMgrNextUriObserver* aObserver );
-        
-    /**
-		* Checks for possibility of a new donload 
-		* @param None
-        * @return TBool,possibility of a new download.
-		*/
-        TBool IsNewDownloadPossible();
 
     protected: // from MHttpDownloadMgrObserver
 

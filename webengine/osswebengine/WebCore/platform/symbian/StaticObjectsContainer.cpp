@@ -37,7 +37,7 @@
 #include "FormFillController.h"
 #include "ResourceLoaderDelegate.h"
 #include "webkitLogger.h"
-#include <brctldefs.h>
+#include "brctldefs.h"
 #include "WebIconDatabase.h"
 #include "WebSurface.h"
 #include "WebCursor.h"
@@ -336,11 +336,6 @@ RenderTheme* StaticObjectsContainer::theme()
     if(!m_symbianTheme)
         m_symbianTheme = new RenderThemeSymbian();
     return m_symbianTheme;
-}
-
-void StaticObjectsContainer::setIconDatabaseEnabled(bool enabled)
-{    
-    m_icondatabase->setEnabled(enabled);
 }
 }
 // END OF FILE

@@ -40,13 +40,14 @@
 * ==============================================================================
 */
 
+
 #ifndef BRCTL_H
 #define BRCTL_H
 
 //  INCLUDES
-#include <brctlinterface.h>
+#include <BrCtlInterface.h>
 
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "HistoryInterface.h"
 
 #include "WmlInterface.h"

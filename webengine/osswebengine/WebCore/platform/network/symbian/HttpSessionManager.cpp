@@ -17,17 +17,17 @@
 
 #include "config.h"
 
-#include "httpfiltercommonstringsext.h"
-#include "httpfiltercommonstringsaddition.h"
-#include "httpfilterconnhandlerinterface.h"
-#include "httpfilteriopinterface.h"
-#include "httpfilterauthenticationinterface.h"
+#include "HttpFilterCommonStringsExt.h"
+#include "HttpFilterCommonStringsAddition.h"
+#include "HttpFilterConnHandlerInterface.h"
+#include "HttpFilterIopInterface.h"
+#include "HttpFilterAuthenticationInterface.h"
 #include "cookiefilterinterface.h"
 #include "uaproffilter_interface.h"
 #include "deflatefilterinterface.h"
 #include "HttpSessionManager.h"
 #include "HttpUiCallbacks.h"
-#include "httpcachemanager.h"
+#include "HttpCacheManager.h"
 #include "HttpConnection.h"
 #include "HttpRequestHeaderManager.h"
 #include "CookieHandler.h"
@@ -155,11 +155,7 @@ CHttpCacheManager* HttpSessionManager::cacheManager()
 HttpDownload* HttpSessionManager::httpDownload(bool aCreate)
 {
     if (!m_httpDownload && aCreate){
-        TRAPD(err, m_httpDownload = HttpDownload::NewL(this));
-        if(err != KErrNone)
-           {
-		   m_httpDownload = NULL;
-           }
+        m_httpDownload = new HttpDownload(this);
     }
     return m_httpDownload;
 }

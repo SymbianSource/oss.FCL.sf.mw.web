@@ -21,10 +21,10 @@
 #define CKUrlLoader_H
 
 //  INCLUDES
-#include <brctldefs.h>
-
 #include "urlloader_murlschemehandler.h"
 #include "BrsrStatusCodes.h"
+#include "BrCtlDefs.h"
+
 
 // CONSTANTS
 

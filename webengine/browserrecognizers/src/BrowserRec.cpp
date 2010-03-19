@@ -17,7 +17,7 @@
 
 #include "BrowserRec.h"
 
-#include <ecom/implementationproxy.h>
+#include "ImplementationProxy.h"
 
 //
 // CBrowserRecognizer

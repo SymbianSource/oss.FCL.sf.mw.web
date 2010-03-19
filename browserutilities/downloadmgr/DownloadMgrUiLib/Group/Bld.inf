@@ -16,7 +16,7 @@
 */
 
 #include <platform_paths.hrh>
-#include "../../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 
@@ -25,7 +25,7 @@ DEFAULT
 PRJ_EXPORTS
 ../rom/DownloadMgrUiLib.iby			  CORE_MW_LAYER_IBY_EXPORT_PATH(DownloadMgrUiLib.iby)
 ../rom/DownloadMgrUiLibResources.iby  LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(DownloadMgrUiLibResources.iby)
-../loc/downloadmgruilib.loc			  MW_LAYER_LOC_EXPORT_PATH(downloadmgruilib.loc)
+../loc/DownloadMgrUiLib.loc			  MW_LAYER_LOC_EXPORT_PATH(DownloadMgrUiLib.loc)
 
 #ifdef __SERIES60_32__
 
@@ -39,7 +39,7 @@ PRJ_EXTENSIONS
 START EXTENSION s60/mifconv
 OPTION TARGETFILE downloadmgruilib.mif
 OPTION HEADERFILE downloadmgruilib.mbg
-OPTION SOURCES 		-c8,1 qgn_menu_unknown_lst -c8,1 qgn_indi_paused -c8,1 qgn_indi_browser_mmc_add -c8,1 qgn_prop_memc_ms_tab
+OPTION SOURCES 		-c8,1 qgn_menu_unknown_lst -c8,1 qgn_indi_paused -c8,1 qgn_indi_browser_mmc_add
 END
 
 PRJ_MMPFILES

@@ -15,6 +15,7 @@
 *
 */
 
+
 #ifndef FEEDS_DATABASE_H
 #define FEEDS_DATABASE_H
 
@@ -23,7 +24,7 @@
 #include <e32base.h>
 #include <f32file.h>
 
-#include <leaktracker.h>
+#include "LeakTracker.h"
 
 // CONSTANTS
 const TInt KUnassignedId = -1;
@@ -40,6 +41,7 @@ class CFeedsServer;
 struct TAttribute;
 
 // CLASS DECLARATION
+
 
 /**
 *  The feeds server database.

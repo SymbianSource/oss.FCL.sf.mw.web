@@ -26,10 +26,10 @@
 #include <e32base.h>
 #include <d32dbms.h>
 #include <f32file.h>
-#include <favouriteslimits.h>
+#include <FavouritesLimits.h>
 #include "FavouritesSrvTable.h"
 #include "UnicodeFile.h"
-#include <favouritesdb.h>
+#include <FavouritesDb.h>
 
 
 // FORWARD DECLARATIONS

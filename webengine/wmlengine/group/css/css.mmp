@@ -15,7 +15,8 @@
 *
 */
 
-#include  "../webkitcommon.mmpi"
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          css.lib
 TARGETTYPE      lib
@@ -27,6 +28,7 @@ MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER 1
 
 SOURCEPATH      ../../src/css/src
+
 
 #ifdef _DEBUG
     #define _BROWSER_ENG_DEBUG
@@ -47,3 +49,32 @@ SOURCE	CSSImageList.cpp
 SOURCE  CSSHandler.cpp
 SOURCE  CSSVariableStyleSheet.cpp
 
+#include  "../webkitcommon.mmpi"
+
+USERINCLUDE     .
+USERINCLUDE     ../../src/adt/include
+USERINCLUDE     ../../src/css/include
+USERINCLUDE     ../../src/htmlp/include
+USERINCLUDE     ../../src/evt/include
+USERINCLUDE     ../../src/gdi/include
+USERINCLUDE     ../../src/hed/include
+USERINCLUDE     ../../src/markup/include
+USERINCLUDE     ../../src/fbox/include
+USERINCLUDE     ../../src/image/include
+USERINCLUDE     ../../src/lmgr/include
+USERINCLUDE     ../../src/object/include
+USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/text/include
+USERINCLUDE     ../../src/xhtml/include
+USERINCLUDE     ../../src/wml/src
+USERINCLUDE     ../../src/wml/include
+USERINCLUDE     ../../src/imagech/include
+USERINCLUDE     ../../src/mvc/include
+USERINCLUDE     ../../src/msg/include
+USERINCLUDE     ../../src/wmlcontrol/include
+
+MW_LAYER_SYSTEMINCLUDE
+SYSTEMINCLUDE   ../../src/urlloader/include
+SYSTEMINCLUDE   ../../src/utils/include
+SYSTEMINCLUDE		../../../osswebengine/MemoryManager/Inc
+MW_LAYER_LIBC_SYSTEMINCLUDE

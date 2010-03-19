@@ -15,13 +15,15 @@
 *
 */
 
-#include <feedsserverclient.h>
-#include <feedsserverfolderitem.h>
+
+#include "FeedsServerClient.h"
+#include "FeedsServerFolderItem.h"
 #include "FolderItemRequestHandlers.h"
 #include "FeedRequestHandlers.h"
 #include "ClientRequestHandlers.h"
 
 #include "Logger.h"
+
 
 // -----------------------------------------------------------------------------
 // RFolderItem::RFolderItem

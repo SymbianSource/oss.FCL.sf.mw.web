@@ -77,7 +77,7 @@ void CWrtHarvesterPSNotifier::ConstructL()
     	r = RProperty::Define( KPropertyCat, iKey, RProperty::EInt );
     	}
 
-    if ( r != KErrAlreadyExists && r != KErrNone )
+    if ( r != KErrAlreadyExists || r != KErrNone )
         {
         User::LeaveIfError( r );
         }
@@ -148,21 +148,9 @@ void CWrtHarvesterPSNotifier::RunL()
             iHarvester->ClearAllOperations();
             SetValue(1);
             }
-        else if( iKey == EWidgetUIState && value == 3 )
-            {            
-            iHarvester->SetReinstallWidget(ETrue);
-            }        
         else if( iKey == EWidgetRegAltered && value == 1 )
             {
-            if(iHarvester->IsInMSMode())
-                {
-                iHarvester->SetRegistryAccess(EFalse);
-                }
-            else
-            	{
-            	iHarvester->SetRegistryAccess(ETrue);
-                } 	
-            iHarvester->UpdateL();
+             iHarvester->UpdateL();
             }
         }
     }

@@ -23,11 +23,10 @@
 #include <e32std.h>
 #include <eikscrlb.h>
 #include "platform/Shared.h"
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "PageScaler.h"
 #include "Timer.h"
-#include <MemoryManager.h>
-#include <stmgesturelistener.h>
+#include "MemoryManager.h"
 
 namespace WebCore
 {
@@ -67,7 +66,6 @@ class WebPointerEventHandler;
 class WebPageFullScreenHandler;
 class WebFrameView;
 class WebFrameBridge;
-class WebPagePinchZoomHandler;
 
 
 const TUint KMouseEventFired = 0x00000001;
@@ -296,6 +294,13 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void closeToolBarL();
 
         /**
+        * HandlePointerBufferReadyL
+        * From CCoeControl
+        *
+        */
+        void HandlePointerBufferReadyL();
+
+        /**
         * HandlePointerEventL
         * From CCoeControl
         *
@@ -344,26 +349,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         * Collects offscreen bitmap 
         */ 
         void  collectOffscreenbitmapL(CFbsBitmap& snapshot); 
-        
-        /**
-        * To get the pinch zoom handler
-        */
-        WebPagePinchZoomHandler* pinchZoomHandler() { return m_pinchZoomHandler; }
-        
-        /**
-        * To set the Bitmap zooming for Pinch
-        */
-        void setPinchBitmapZoomLevel(int zoomLevel);
-        
-        /**
-        * To set the Bitmap zooming In for Pinch
-        */
-        void setPinchBitmapZoomIn(int zoomLevel);
-        
-        /**
-        * To set the Bitmap zooming Out for Pinch
-        */
-        void setPinchBitmapZoomOut(int zoomLevel);
 
     public: // from MPageScalerCallback
         /**
@@ -487,7 +472,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool handleMSK(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
 	    void sendMouseEventToEngineIfNeeded(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
 	    void setFocusedNodeUnderCursor(WebCore::Frame* frame);
-	    void waitTimerCB(WebCore::Timer<WebView>* t);
 	    
     public:
         void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
@@ -509,7 +493,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void clearKeyEventFired() { m_firedEvent &= ~KKeyEventFired; }
         void clearEventFired() { m_firedEvent = 0; }
         
-        void wait(double t); 
     private:
         WebCore::Page*          m_page;
         WebFrameView*           m_frameView;
@@ -593,14 +576,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool                m_allowRepaints;
         bool                m_prevEditMode;
         int                 m_firedEvent;
-        
-        CActiveSchedulerWait*    m_waiter; 
-        WebCore::Timer<WebView>* m_waitTimer;
-        
-		//Pinch Zoom Handler
-        WebPagePinchZoomHandler* m_pinchZoomHandler;
-        TBool                    m_isPinchZoom;
-        TRealPoint               m_pinchDocDelta;
     };
 
 #endif

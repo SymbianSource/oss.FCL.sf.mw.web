@@ -29,7 +29,7 @@ NAME FAET
 #include <avkon.rh>
 #include <avkon.mbg>
 #include <data_caging_paths_strings.hrh>
-#include <schemeapp.loc>
+#include <SchemeApp.loc>
 
 // RESOURCE DEFINITIONS 
 

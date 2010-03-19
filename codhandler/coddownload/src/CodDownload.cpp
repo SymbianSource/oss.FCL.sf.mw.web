@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 
-#include <coddownload.h>
+#include "CodDownload.h"
 #include "CodDownloadImpl.h"
 
 // ================= MEMBER FUNCTIONS =======================

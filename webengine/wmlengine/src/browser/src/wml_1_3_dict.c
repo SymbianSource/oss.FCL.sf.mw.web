@@ -39,7 +39,8 @@
 
 #include "nwx_defs.h"
 #include "nw_wml1x_wml_1_3_tokens.h"
-#include <nw_wbxml_dictionary.h>
+#include "nw_wbxml_dictionary.h"
+
 
 static const NW_Ucs2 NW_Wml_1_3_ElementTag_pre[] = {'p','r','e','\0'};
 static const NW_Ucs2 NW_Wml_1_3_ElementTag_a[] = {'a','\0'};

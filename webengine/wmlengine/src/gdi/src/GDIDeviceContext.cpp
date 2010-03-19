@@ -15,11 +15,19 @@
 *
 */
 
+
 // INCLUDE FILES
-
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
-#include <bldvariant.hrh>
-
+#include "GDIDeviceContext.h"
+#include "nw_object_dynamici.h"
+#include "GDIFont.h"
+#include "nw_gdi_utils.h"
+#include "nw_text_ucs2.h"
+#include <nwx_string.h>
+#include <nwx_settings.h>
+#include "nwx_logger.h"
+#include "nwx_http_defs.h"
+#include "MVCview.h"
 #include <AknUtils.h>
 #include <gdi.h>
 #include <w32std.h>
@@ -31,23 +39,13 @@
 #include <aknpictographinterface.h>
 #include <aknpictographdrawerinterface.h>
 #include <biditext.h>
-#include <AknFontAccess.h>
-#include <FeatMgr.h>
-#include <data_caging_path_literals.hrh>
-
-#include "GDIDeviceContext.h"
-#include "nw_object_dynamici.h"
-#include "GDIFont.h"
-#include "nw_gdi_utils.h"
-#include "nw_text_ucs2.h"
-#include "nwx_string.h"
-#include "nwx_settings.h"
-#include "nwx_logger.h"
-#include "nwx_http_defs.h"
-#include "MVCview.h"
 #include "BrsrStatusCodes.h"
+#include "FeatMgr.h"
+#include <AknFontAccess.h>
 
-#include <MemoryManager.h>
+#include <bldvariant.hrh>
+#include <data_caging_path_literals.hrh>
+#include "MemoryManager.h"
 
 // EXTERNAL DATA STRUCTURES
 

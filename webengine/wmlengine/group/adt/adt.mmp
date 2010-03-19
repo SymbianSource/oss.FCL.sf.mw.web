@@ -15,7 +15,8 @@
 *
 */
 
-#include  "../webkitcommon.mmpi"
+#include <platform_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          adt.lib
 TARGETTYPE      lib
@@ -45,3 +46,15 @@ SOURCE	TextMap.c
 SOURCE	ValueList.c
 SOURCE	Vector.c
 SOURCE	VectorIterator.c
+
+USERINCLUDE     .
+USERINCLUDE     ../../src/adt/include
+USERINCLUDE     ../../src/htmlp/include
+USERINCLUDE     ../../src/object/include
+USERINCLUDE     ../../src/text/include
+USERINCLUDE     ../../src/urlloader/include
+USERINCLUDE     ../../src/utils/include
+
+MW_LAYER_SYSTEMINCLUDE
+SYSTEMINCLUDE   ../../src/utils/include
+MW_LAYER_LIBC_SYSTEMINCLUDE

@@ -15,6 +15,8 @@
 *
 */
 
+
+
 #ifndef CXHTMLTABLEELEMENTHANDLER__H
 #define CXHTMLTABLEELEMENTHANDLER__H
 
@@ -23,7 +25,8 @@
 #include <e32base.h>
 
 #include "nwx_defs.h"
-#include <nw_dom_node.h>
+#include "nw_dom_node.h"
+
 
 // CONSTANTS
 

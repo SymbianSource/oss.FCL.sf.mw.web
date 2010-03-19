@@ -15,10 +15,12 @@
 *
 */
 
+
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
+
 
 TARGET          FeedsApp.exe
 TARGETTYPE      exe
@@ -56,13 +58,16 @@ SOURCE            TestHarness.cpp
 SOURCE            TestHarnessContainer.cpp
 SOURCE            TestHarnessView.cpp
 
+
 // Client UI Util sources
 SOURCEPATH        ../FeedsUI/Common/src
 SOURCE            StatusPane.cpp
 
+
 // Utils sources
 SOURCEPATH        ../FeedsServer/Common/src
 SOURCE            LeakTracker.cpp
+
 
 // Include paths
 USERINCLUDE       ../FeedsServer/Common/inc
@@ -72,6 +77,7 @@ USERINCLUDE       ../FeedsUI/Common/inc
 USERINCLUDE       ../../inc
 
 MW_LAYER_SYSTEMINCLUDE
+
 
 // Libraries
 DEBUGLIBRARY             flogger.lib
@@ -89,6 +95,7 @@ LIBRARY				eikctl.lib
 
 LIBRARY             FeedsServerClient.lib
 LIBRARY             connectionmanager.lib
+
 
 SOURCEPATH          ../
 

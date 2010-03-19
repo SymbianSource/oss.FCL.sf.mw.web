@@ -28,16 +28,15 @@
 #include <FeatMgr.h>
 #include <f32file.h>
 #include <flogger.h>
+#include <nwx_defs_symbian.h>
 #include <stddef.h>
 
 #include <CenRepNotifyHandler.h>
 #include <centralrepository.h>
-#include <httpcachemanagerinternalcrkeys.h>
+#include <HttpCacheManagerInternalCRKeys.h>
 
 #include <stringloader.h>
 #include <webkit.rsg>
-
-#include <brctlinterface.h>
 
 #include "BoxFormatHandler.h"
 #include "BoxRender.h"
@@ -58,7 +57,6 @@
 #include "nw_adt_resizablevector.h"
 #include "nwx_cleanup_epoc32.h"
 #include "nwx_ctx.h"
-#include "nwx_defs_symbian.h"
 #include "nw_evt_accesskeyevent.h"
 #include "nw_evt_activateevent.h"
 #include "nw_evt_clearfieldevent.h"
@@ -118,6 +116,8 @@
 
 #include "TEncodingMapping.h"
 #include "urlloader_urlloaderint.h"
+#include <BrCtlInterface.h>
+#include "BrCtlDialogsProvider.h"
 
 #include "HistoryController.h"
 #include "WmlInterface.h"
@@ -1804,7 +1804,6 @@ CView::CView (CBrCtl* aBrCtl) :
   iVScrollPosition(0), iFormatPriority( ((CActive::TPriority)( CActive::EPriorityLow + 2 )) )
 {
     iBrCtl = aBrCtl;
-    iDrag = EFalse;
 }
 
 // -----------------------------------------------------------------------------
@@ -4209,8 +4208,7 @@ void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
     {
     switch (aPointerEvent.iType) {
         case TPointerEvent::EButton1Down:
-        	iLastPosition = aPointerEvent.iPosition;
-            iDrag = EFalse;
+        	iLastPosition = aPointerEvent.iPosition;        	        	
 			break;
 		case TPointerEvent::EDrag:
 			TPoint  currPosition;
@@ -4223,21 +4221,8 @@ void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
 				currPosition.iX = iDeviceContext->Origin()->x;
 				currPosition.iY = iDeviceContext->Origin()->y;
 				ScrollTo(currPosition+nextPosition);
-
-                //This is for Drag event
-                //Introducing 10 pixel offset. This is introduced to tackle problem that occurs if user clicks
-                //link but still causes a very small pixel move. This gives a small difference in previous
-                //and next position. As a side effect iDrag will be true and request will not be sent even if
-                //there is very small pixel difference.
-                //Following logic tries to handle such scenario.
-                TInt nOffset = 10;
-                TBool bXOffset = ((nextPosition.iX > nOffset) || (nextPosition.iX < -nOffset));
-                TBool bYOffset = ((nextPosition.iY > nOffset) || (nextPosition.iY < -nOffset));
-                if(bXOffset || bYOffset)
-                {
-                    iDrag = ETrue;
-                }
-            } 
+			}
+            iDrag = ETrue;
             break;
     }
     
@@ -4316,13 +4301,20 @@ void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
                 NW_LMgr_RootBox_SetFocusBox(iRootBox, tempBox);
                 Draw (NW_TRUE /*DrawNow*/);
                 }
-            if ((aPointerEvent.iType == TPointerEvent::EButton1Up) && (iShouldActivate))
+            if (aPointerEvent.iType == TPointerEvent::EButton1Up)
                 {
-                    if((!iDrag))
+                if (iShouldActivate)
                     {
-                        NW_Evt_ActivateEvent_t actEvent;
-                        NW_Evt_ActivateEvent_Initialize (&actEvent);
-                        ProcessEvent (NW_Evt_EventOf(&actEvent));
+                      if(!iDrag)
+                        {
+                         NW_Evt_ActivateEvent_t actEvent;
+                         NW_Evt_ActivateEvent_Initialize (&actEvent);
+                         ProcessEvent (NW_Evt_EventOf(&actEvent));
+                        }
+                    else
+                        {
+                        iDrag = EFalse;
+                        }
                     }
                 }
             break;

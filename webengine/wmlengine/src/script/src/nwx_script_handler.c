@@ -15,6 +15,7 @@
 *
 */
 
+
 #include "nwx_defs.h"
 #include "nwx_mem.h"
 #include "nwx_string.h"
@@ -44,6 +45,8 @@ typedef struct {
   NW_Msg_Address_t loader;      /* URL Loader */
   NW_Msg_t         *finishMsg;  /* msg alloc'ed at start */
 } Script_Context_t; 
+
+
 
 /*************************** Global Data *****************************
       NOTES: For now we will create a single global variable to

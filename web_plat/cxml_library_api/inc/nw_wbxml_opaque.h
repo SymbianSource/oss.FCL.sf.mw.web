@@ -28,7 +28,7 @@
 #ifndef NW_PARSER_WBXML_OPAQUE_H
 #define NW_PARSER_WBXML_OPAQUE_H
 
-#include <cxml_proj.h>
+#include "cxml_proj.h"
 
 #ifdef __cplusplus
 extern "C" {

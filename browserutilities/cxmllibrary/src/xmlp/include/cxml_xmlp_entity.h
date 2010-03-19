@@ -20,7 +20,7 @@
 #ifndef _CXML_ENTITY_H_
 #define _CXML_ENTITY_H_
 
-#include <cxml_proj.h>
+#include "cxml_proj.h"
 
 #ifdef __cplusplus
 extern "C" {

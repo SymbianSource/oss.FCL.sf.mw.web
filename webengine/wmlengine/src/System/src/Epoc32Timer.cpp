@@ -25,7 +25,8 @@
 #include "nwx_ctx.h"
 #include "nwx_defs_symbian.h"
 #include "BrsrStatusCodes.h"
-#include <MemoryManager.h>
+#include "MemoryManager.h"
+
 
 /* ------------------------------------------------------------------------- *
    static data

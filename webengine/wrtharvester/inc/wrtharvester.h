@@ -113,18 +113,11 @@ class CWrtHarvester: public CContentHarvesterPlugin
     	*/
 		void QueueOperationL(  TWidgetOperations aOperation, TUid aUid );	
 		
+		void DialogShown(){ iDialogShown = EFalse; }
 		//to check if the device is in mass memory mode
 		TInt IsInMSMode() { return iMSMode; }
 		void  SetMSMode(TInt val)  { iMSMode = val; }
-		//To check if registry can be accessed
-		TInt CanAccessRegistry(){ return iCanAccessRegistry; }
-		void SetRegistryAccess(TBool aValue){ iCanAccessRegistry = aValue; }
-		
-		void SetReinstallWidget(TBool aValue){ iReinstallingWidget = aValue; }			
-
-        void DialogShown();
-
-        static TInt DeleteCallback(TAny* aPtr);		
+		 
 		
 	private:
         
@@ -336,25 +329,6 @@ class CWrtHarvester: public CContentHarvesterPlugin
          *
          */
          RPointerArray<HBufC> iHSWidgets;
-         /**
-          * 
-          */
-         TBool iCanAccessRegistry;
-         
-         /**
-          * 
-          */
-		 TBool iReinstallingWidget;
-		 
-        /**
-         * 
-         */
-		 RArray<TUid> iUid;
-		 
-        /**
-         * 
-         */
-		 CAsyncCallBack*  iAsyncCallBack;
     };
 
 #endif // C_WRTCONTENTHARVESTER_H 

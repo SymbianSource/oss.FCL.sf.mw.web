@@ -20,7 +20,7 @@ TARGETTYPE	    PLUGIN
 UID			    0x10009D8D 0x2001FE2C
 
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 CAPABILITY      CAP_ECOM_PLUGIN
 
@@ -32,7 +32,7 @@ SOURCE          wrtharvesterregistryaccess.cpp
 SOURCE          wrtusbhandler.cpp
 
 MW_LAYER_SYSTEMINCLUDE
-
+MW_LAYER_ECOM_SYSTEMINCLUDE
 USERINCLUDE     ../inc
 
 START RESOURCE  ../data/2001FE2C.rss

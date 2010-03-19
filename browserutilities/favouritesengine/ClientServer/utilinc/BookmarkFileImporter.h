@@ -25,7 +25,7 @@
 
 #include <e32base.h>
 #include <f32file.h>
-#include <favouritesdb.h>
+#include <FavouritesDb.h>
 #include "UnicodeFile.h"
 
 // FORWARD DECLARATIONS

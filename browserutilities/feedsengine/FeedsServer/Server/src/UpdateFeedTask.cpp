@@ -15,14 +15,16 @@
 *
 */
 
-#include <feedattributes.h>
+
+#include "FeedAttributes.h"
 #include "FeedHandler.h"
 #include "FeedsServer.h"
-#include <leaktracker.h>
+#include "LeakTracker.h"
 #include "Logger.h"
 #include "PackedFeed.h"
 #include "UpdateFeedTask.h"
 #include "UrlHandlerFactory.h"
+
 
 // -----------------------------------------------------------------------------
 // CUpdateFeedTask::NewL

@@ -21,7 +21,7 @@
 #include <data_caging_paths.hrh>
 #include <bldvariant.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET  ConnectionManager.dll
 TARGETTYPE  dll
@@ -78,12 +78,6 @@ LIBRARY     centralrepository.lib
 LIBRARY     featmgr.lib
 LIBRARY     cmmanager.lib
 DEBUGLIBRARY    flogger.lib
-
-//Below libs are required for One-Click-Connectivity feature
-#ifdef BRDO_OCC_ENABLED_FF
-LIBRARY    extendedconnpref.lib
-LIBRARY    netmeta.lib
-#endif
 
 #if defined(ARMCC)
     DEFFILE ../EABI/CONNECTIONMANAGERU_EKA2.def

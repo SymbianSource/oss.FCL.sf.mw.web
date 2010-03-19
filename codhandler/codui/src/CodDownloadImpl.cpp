@@ -15,6 +15,7 @@
 *
 */
 
+
 // INCLUDE FILES
 
 #include <bldvariant.hrh>
@@ -29,18 +30,18 @@
 #include <DRMCommon.h>
 #include <aknmessagequerydialog.h>
 #include <hlplch.h>             
-#include <multipartparser.h>
+#include <MultipartParser.h>
 #include <AknQueryDialog.h>
 #include "CodDownloadImpl.h"
 #include "CodUiPanic.h"
-#include "CodStatus.h"
-#include "CodDefs.h"
-#include "CodError.h"
-#include "CodEng.h"
-#include "CodData.h"
-#include "RoapData.h"
-#include "DdEng.h"
-#include "CodUtil.h"
+#include <CodStatus.h>
+#include <CodDefs.h>
+#include <CodError.h>
+#include <CodEng.h>
+#include <CodData.h>
+#include <RoapData.h>
+#include <DdEng.h>
+#include <CodUtil.h>
 #include "CodUiResource.h"
 #include <CodUi.rsg>
 #include "CodViewDialog.h"
@@ -51,7 +52,7 @@
 #include <Oma2Agent.h>
 #include <bldvariant.hrh>
 #include "CodConfirm.h" 
-#include <bautils.h>
+#include  <bautils.h>
 
 #ifdef RD_MULTIPLE_DRIVE
 #include <driveinfo.h>

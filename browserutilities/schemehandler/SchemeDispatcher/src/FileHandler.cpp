@@ -17,11 +17,12 @@
 *
 */
 
+
 // INCLUDE FILES
 
 #include "FileHandler.h"
 #include "SchemeDispLogger.h"
-#include <ecom/ecom.h>		// For REComSession
+#include <ECom.h>		// For REComSession
 #include <eikenv.h>
 #include <apmstd.h>
 #include <apparc.h>
@@ -141,10 +142,10 @@ void CFileHandler::HandleUrlEmbeddedL()
 	    buf16->Des().Copy( KBrowserPrefix );
 	    buf16->Des().Append( *buf );
 	            
-        iLauncher = CBrowserLauncher::NewL();
+/*        iLauncher = CBrowserLauncher::NewL();
         iLauncher->LaunchBrowserEmbeddedL( buf16->Des(), 
                                            NULL, 
-                                           this );
+                                           this );*/
         CleanupStack::PopAndDestroy();  // buf16        
         }
 	CleanupStack::PopAndDestroy(); //buf

@@ -15,6 +15,7 @@
  *
 */
 
+
 #ifndef FEED_INTERFACE_H
 #define FEED_INTERFACE_H
 
@@ -22,11 +23,10 @@
 #include <e32std.h>
 #include <e32base.h>
 #include <ApEngineconsts.h>
-//#include <transaction.h>
-#include <feedsentity.h>
-#include <feedattributes.h>
-#include <folderattributes.h>
-
+//#include "Transaction.h"
+#include "FeedsEntity.h"
+#include "FeedAttributes.h"
+#include "FolderAttributes.h"
 // CONSTANTS
 
 // MACROS

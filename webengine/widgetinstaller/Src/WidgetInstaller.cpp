@@ -28,7 +28,7 @@
 #include <libxml2_parser.h>
 #include <libxml2_tree.h>
 
-#include "browser_platform_variant.hrh"
+#include "Browser_platform_variant.hrh"
 
 #ifdef BRDO_SYMBIAN_LIBXML_FF
 #include <xmlengxestd.h>

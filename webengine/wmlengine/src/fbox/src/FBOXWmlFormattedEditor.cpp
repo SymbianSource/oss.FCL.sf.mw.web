@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description: 
+* Description:
 *
 */
 
@@ -24,12 +24,15 @@
 #include <eikedwin.h>
 #include <e32std.h>
 #include <PtiDefs.h>
+
 #ifndef SYMBIAN_ENABLE_SPLIT_HEADERS
 #include <txtrich.h>
 #else
 #include <txtrich.h>
 #include <txtclipboard.h>
 #endif
+
+
 #include <bautils.h>
 #include <webkit.rsg>
 #include <PUAcodes.hrh>
@@ -38,7 +41,7 @@
 #include <aknedsts.h>
 
 // User includes
-#include "nw_fbox_WmlFormattedEditor.h" 
+#include "nw_fbox_WmlFormattedEditor.h"
 // CONSTANTS
 
 static const TInt KWmlDefaultTextColor = 215; ///< black (plain text)
@@ -61,7 +64,7 @@ CWmlFormattedEditor::CWmlFormattedEditor( TBool aIsSecret ) : CEikRichTextEditor
     SetAknEditorPermittedCaseModes( EAknEditorAllCaseModes );
 
     UpdateInputModeState(EAknEditorTextInputMode, EAknEditorAllInputModes);
-    
+
     TUint flags( EAknEditorFlagDefault |
                        EAknEditorFlagUseSCTNumericCharmap |
                        EAknEditorFlagNoT9 | EAknEditorFlagMTAutoOverwrite );
@@ -74,7 +77,7 @@ CWmlFormattedEditor::CWmlFormattedEditor( TBool aIsSecret ) : CEikRichTextEditor
         UpdateFlagsState( flags | EAknEditorFlagLatinInputModesOnly );
         SetAknEditorCase( EAknEditorLowerCase );
         }
-    else 
+    else
         {
         UpdateFlagsState( flags );
         SetAknEditorCase( EAknEditorTextCase );
@@ -103,7 +106,7 @@ void CWmlFormattedEditor::InitializeL
     /*lint -e{40} Undeclared identifier 'KFeatureIdJapanese'*/
      if (!FeatureManager::FeatureSupported(KFeatureIdJapanese))
         {
-        iMode = EWmlModeNone; 
+        iMode = EWmlModeNone;
         }
     }
 
@@ -144,7 +147,7 @@ void CWmlFormattedEditor::EnableT9( TBool aEnable, TBool aIsSecret )
         {
         UpdateFlagsState( flags | EAknEditorFlagLatinInputModesOnly );
         }
-    else 
+    else
         {
         UpdateFlagsState( flags );
         }
@@ -168,7 +171,7 @@ HBufC* CWmlFormattedEditor::ReadableTextL() const
     HBufC* result = ReadableTextLC();
 
     CleanupStack::Pop(); // result
-	
+
     return result;
     }
 
@@ -298,7 +301,7 @@ TBool CWmlFormattedEditor::T9Enabled() const
 // multi-tap input.
 // ---------------------------------------------------------
 //
-void CWmlFormattedEditor::SetiCursorPos() 
+void CWmlFormattedEditor::SetiCursorPos()
     {
     iCursorPos = CursorPos();
     }
@@ -358,7 +361,7 @@ void CWmlFormattedEditor::SpecialHandlingPasswordL()
             iWmlEdNavigation = EWmlEditorNavigateRight;
             }
         else
-            {                    
+            {
             if ( iPassword )
                 {
                 TInt newLength( iPassword->Length() + length );
@@ -366,7 +369,7 @@ void CWmlFormattedEditor::SpecialHandlingPasswordL()
                     {
                     iPassword = iPassword->ReAllocL( newLength + 1);
                     }
-                iPassword->Des().Insert( iCursorPos, *newText );                               
+                iPassword->Des().Insert( iCursorPos, *newText );
                 iWmlEdNavigation = EWmlEditorNavigateRight;
                 }
             }
@@ -376,7 +379,7 @@ void CWmlFormattedEditor::SpecialHandlingPasswordL()
         {  // remove character from storage place
         if ( iHandler )
             {
-            iHandler->Delete( cursorPos, 1 );  // cursorPos already is actual cursor - 1 
+            iHandler->Delete( cursorPos, 1 );  // cursorPos already is actual cursor - 1
             SetCursorPosL( 0 );
             iText->Reset();
             CEikRichTextEditor::SetTextL( iHandler->TextLC() );
@@ -427,7 +430,7 @@ void CWmlFormattedEditor::SpecialStaticHandlingL()
     // If an input box with static text, prep the text to use
     // asking if we are doing an insertion
     if ( !IsEventKeyEntered() && iHandler && iHandler->NumberOfStatic())
-        { 
+        {
         HBufC* text = NULL;
         TInt length = pos - iCursorPos;
         if (length > 0)
@@ -469,7 +472,7 @@ void CWmlFormattedEditor::SpecialStaticHandlingL()
             ++ iNumberOfCharsInStaticInputBox;
             CleanupStack::PopAndDestroy();		// text
             }
-        
+
         iCursorPos = pos;
         }
     }
@@ -499,7 +502,7 @@ void CWmlFormattedEditor::SpecialCharHandlingL()
         {
         if (iHandler)
             {
-            HBufC* text; 
+            HBufC* text;
             text = GetTextInHBufL();
             if ( text )
                 {  // add the new char entry to locally held storage.  If there was a shift in input mode
@@ -514,7 +517,7 @@ void CWmlFormattedEditor::SpecialCharHandlingL()
                     }
                 CleanupStack::PushL( text );
                 //iHandler->SetTextL( *text, EFalse );  // removes static stuff and stores chars in iHandler.iDynamic
-                // For VKB we want all chars to show so we shut off validation.  
+                // For VKB we want all chars to show so we shut off validation.
                 //   Validation will still happen when you try to exit the input box.
                 iHandler->SetTextL( *text, iPenEnabled );  // removes static stuff and stores chars in iHandler.iDynamic
                 CleanupStack::PopAndDestroy();		// text
@@ -527,12 +530,12 @@ void CWmlFormattedEditor::SpecialCharHandlingL()
         }
     TInt tempPos = CursorPos();
     UpdateEditingParameters( tempPos );
-    
+
     if ( IsEventKeyEntered() && !iInputFormatProcess )
         {
         ResetFlagEventKeyEntered();
         }
-    
+
     }
 
 // ---------------------------------------------------------
@@ -546,7 +549,7 @@ void CWmlFormattedEditor::HandleEdwinEventL
         {
         case MEikEdwinObserver::EEventNavigation:  // navigation
           // Event navigation cannot be done before the text update .
-            {            
+            {
             // keep cursor away from invalid positions
             //SetCursorPosL(iCursorPos);
             //CEikEdwin::DrawContents();
@@ -610,12 +613,12 @@ TKeyResponse CWmlFormattedEditor::OfferKeyEventL
         // deletion of chars (and most nums, depending upon format) is now based upon receiving "EventKeyDown" event (see further down).
         // If a default format char/number, deletion of numbers is based upon KeyEvent.  Also, special handling
         // For cursorPos=0, this case is invoked.
-        case EKeyBackspace: 
+        case EKeyBackspace:
             {
              // When pointing to a static character to delete, adjust the cursor position to preserve the
              // static character.
             TBool doBackspace = ETrue;
-            if (iHandler && iHandler->NumberOfStatic()) 
+            if (iHandler && iHandler->NumberOfStatic())
                 {
                 doBackspace = HandleClearKeyL( pos );
                 }
@@ -644,7 +647,7 @@ TKeyResponse CWmlFormattedEditor::OfferKeyEventL
                 //else - positioned next to static chars from pos 0 - change cursor pos to end of input
                 else
                     {
-                    adjustedCursor = iHandler->FirstEmpty();  
+                    adjustedCursor = iHandler->FirstEmpty();
                     SetCursorPosL( adjustedCursor );
                     }
                 iCursorPos = adjustedCursor;
@@ -794,7 +797,7 @@ TBool CWmlFormattedEditor::HandleClearKeyL( const TInt aCursorPos )
               startDeletingFrom = pos - 1;
               charsToDelete = 1;
               }
-          iHandler->Delete( startDeletingFrom, charsToDelete );     
+          iHandler->Delete( startDeletingFrom, charsToDelete );
           }
       else
           {
@@ -846,7 +849,7 @@ void CWmlFormattedEditor::HandleTextPastedL( TInt aStartPos, TInt& aLength )
                 }
             }
             adjustedSelectedLength = iSelection.Length() - numberStatics;
-            iHandler->Delete( iSelection.LowerPos(), adjustedSelectedLength );              
+            iHandler->Delete( iSelection.LowerPos(), adjustedSelectedLength );
             // if clipboard is giving us more than selected text will allow, accounting for static chars,
             // adjust length
             if ( aLength > adjustedSelectedLength )
@@ -870,7 +873,7 @@ void CWmlFormattedEditor::HandleTextPastedL( TInt aStartPos, TInt& aLength )
             }
         }
     iCursorPos = aStartPos;         // save for possible use by UpdateState if eikedwin does not set up cursorpos correctly
-    CleanupStack::PopAndDestroy();  // copiedText 
+    CleanupStack::PopAndDestroy();  // copiedText
     }
 
 
@@ -967,7 +970,7 @@ TBool CWmlFormattedEditor::CcpuCanCopy() const
 
 // ---------------------------------------------------------
 // CWmlFormattedEditor::CcpuCanPaste
-// 
+//
 // "TRAPD" use adapted from EIKEDWIN.CPP function CcpuCanPaste
 // ---------------------------------------------------------
 //
@@ -1050,7 +1053,7 @@ TInt CWmlFormattedEditor::CheckPasteAllowedCharsL(CClipboard& aClipboard, TBool 
     --length;   // in the debugger, clipboard length seems to be 1 greater than it should be
     }
   TInt adjustedPosition = 0;
-  TInt err = KErrNone; 
+  TInt err = KErrNone;
   for ( TInt i = 0; i < length; i++ )
     {
     TChar ch = text[i];
@@ -1059,7 +1062,7 @@ TInt CWmlFormattedEditor::CheckPasteAllowedCharsL(CClipboard& aClipboard, TBool 
       {
       err = KErrNotFound;
       break;
-      }      
+      }
     else if ( ! iHandler->ValidateChar( ch, iHandler->GetFormat( adjustedPosition ) ) )
       {
       err = KErrNotFound;
@@ -1079,7 +1082,7 @@ TInt CWmlFormattedEditor::CheckPasteAllowedCharsL(CClipboard& aClipboard, TBool 
 // to see if it is a static character.  If it is, search for
 // the next NON-STATIC cursor position and return that pos.
 // If run out of format length, return KNotFound.
-// NOTE: The difference between this function and 
+// NOTE: The difference between this function and
 // CWmlFormatHandler::NextNonStatic is internal input box
 // content (iHandler->iDynamic) is not referenced.  At this
 // point, only interested in what the format mask directs.
@@ -1186,7 +1189,7 @@ void CWmlFormattedEditor::UpdateStateL( TWmlEdNavigation aNaviType,
         SetCursorPosL( 0 );
         iText->Reset();
         CEikRichTextEditor::SetTextL( iHandler->TextLC());
-        CleanupStack::PopAndDestroy(); // return value of iHandler->TextLC 
+        CleanupStack::PopAndDestroy(); // return value of iHandler->TextLC
         if ( iSecret && aNaviType == EWmlEditorNavigateRight )
             {
             SetCursorPosL( pos );
@@ -1245,7 +1248,7 @@ void CWmlFormattedEditor::UpdateStateL( TWmlEdNavigation aNaviType,
 
     SetCursorPosL(pos);
     CEikEdwin::ReportEdwinEventL(MEikEdwinObserver::EEventTextUpdate);
-    
+
     CEikEdwin::DrawContents();
     }
 
@@ -1270,11 +1273,11 @@ TBool CWmlFormattedEditor::UpdateEditingParameters( TInt aDocPos )
     TUint alphaInputModes;
     TUint numericInputModes;
     EVariantFlag variant = AknLayoutUtils::Variant();
-    if (variant == EApacVariant) 
+    if (variant == EApacVariant)
         {
         alphaInputModes = EAknEditorTextInputMode |
-          EAknEditorHalfWidthTextInputMode | EAknEditorFullWidthTextInputMode | 
-          EAknEditorKatakanaInputMode | EAknEditorFullWidthKatakanaInputMode | 
+          EAknEditorHalfWidthTextInputMode | EAknEditorFullWidthTextInputMode |
+          EAknEditorKatakanaInputMode | EAknEditorFullWidthKatakanaInputMode |
           EAknEditorHiraganaKanjiInputMode | EAknEditorHiraganaInputMode;
         numericInputModes = EAknEditorNumericInputMode | EAknEditorFullWidthNumericInputMode;
         }
@@ -1382,9 +1385,9 @@ TBool CWmlFormattedEditor::UpdateEditingParameters( TInt aDocPos )
                 default:
                     break;
 
-                } 
+                }
 
-            iPrevMode = iMode; 
+            iPrevMode = iMode;
             }
         }
     if (iSecret)
@@ -1396,7 +1399,7 @@ TBool CWmlFormattedEditor::UpdateEditingParameters( TInt aDocPos )
             }
         UpdateCaseState(fepCase, fepCase);
         }
-    else 
+    else
         {
         allowedInputModes &= ~EAknEditorSecretAlphaInputMode;
         }
@@ -1407,12 +1410,12 @@ TBool CWmlFormattedEditor::UpdateEditingParameters( TInt aDocPos )
     if (iHandler)
         {
         iOverwrite  = iHandler->PreviousStatic(iHandler->MaxLength()) > CursorPos();
-        } 
+        }
     if ( needsChange )
         {
-        UpdateInputModeState(inputMode, 
+        UpdateInputModeState(inputMode,
                       ( inputMode != EAknEditorNullInputMode ? allowedInputModes : EAknEditorAllInputModes ));
-        
+
         UpdateFlagsState( iOverwrite
                            ? flags | EAknEditorFlagMTAutoOverwrite
                            : flags &~ EAknEditorFlagMTAutoOverwrite );
@@ -1443,7 +1446,7 @@ void CWmlFormattedEditor::SetEditorCurentCase()
     TUint fepCase = EAknEditorTextCase;
     if (iHandler)
         {
-        TWmlFormatChar format = iHandler->GetFormat(CursorPos());	
+        TWmlFormatChar format = iHandler->GetFormat(CursorPos());
         TWmlFormatChar::TWmlCase caseFormat = format.SuggestedCase();
         switch( caseFormat )
             {
@@ -1491,34 +1494,34 @@ void CWmlFormattedEditor::DrawContents()
 
 // -----------------------------------------------------------------------------
 // UpdateFlagsState
-// 
-// 
+//
+//
 // -----------------------------------------------------------------------------
 void CWmlFormattedEditor::UpdateFlagsState(TUint flags)
 {
     SetAknEditorFlags( flags );
-    
+
     if (iVkbState)
         {
-        iVkbState->SetFlags(flags | EAknEditorFlagUseSCTNumericCharmap); 
+        iVkbState->SetFlags(flags | EAknEditorFlagUseSCTNumericCharmap);
         iVkbState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
         }
 }
 
 // -----------------------------------------------------------------------------
 // UpdateInputModeState
-// 
-// 
+//
+//
 // -----------------------------------------------------------------------------
 void CWmlFormattedEditor::UpdateInputModeState(TUint inputMode, TUint permittedInputModes)
-{  
+{
     SetAknEditorNumericKeymap( EAknEditorPlainNumberModeKeymap );
     SetAknEditorAllowedInputModes( permittedInputModes );
     SetAknEditorInputMode( inputMode );
 
     if (iVkbState)
         {
-    
+
         if (permittedInputModes != EAknEditorNumericInputMode) {
             EVariantFlag variant = AknLayoutUtils::Variant();
             if (variant == EApacVariant) {
@@ -1526,34 +1529,34 @@ void CWmlFormattedEditor::UpdateInputModeState(TUint inputMode, TUint permittedI
                   EAknEditorHalfWidthTextInputMode | EAknEditorFullWidthTextInputMode |
                   EAknEditorKatakanaInputMode | EAknEditorFullWidthKatakanaInputMode |
                   EAknEditorHiraganaKanjiInputMode | EAknEditorHiraganaInputMode;
-                
+
             }
         }
-        
-        iVkbState->SetDefaultInputMode(inputMode);             
-        iVkbState->SetCurrentInputMode(inputMode);    
-        iVkbState->SetPermittedInputModes(permittedInputModes);                 
+
+        iVkbState->SetDefaultInputMode(inputMode);
+        iVkbState->SetCurrentInputMode(inputMode);
+        iVkbState->SetPermittedInputModes(permittedInputModes);
         iVkbState->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(EAknEditorPlainNumberModeKeymap));
 
-        iVkbState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateInputModeUpdate);        
+        iVkbState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateInputModeUpdate);
         }
 }
 
 // -----------------------------------------------------------------------------
 // UpdateCaseState
-// 
-// 
+//
+//
 // -----------------------------------------------------------------------------
 void CWmlFormattedEditor::UpdateCaseState(TUint currentCase, TUint permittedCase)
-{    
+{
     SetAknEditorCurrentCase( currentCase );
-    
+
     if (iVkbState)
         {
         iVkbState->SetDefaultCase(currentCase);
         iVkbState->SetCurrentCase(currentCase);
-        iVkbState->SetPermittedCases(permittedCase);        
-        
+        iVkbState->SetPermittedCases(permittedCase);
+
         iVkbState->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateCaseModeUpdate);
         }
 }
@@ -1563,5 +1566,5 @@ void CWmlFormattedEditor::SetCursorPosL( TInt aPos )
     CEikRichTextEditor::SetCursorPosL( aPos, EFalse );
     TextView()->SetDocPosL(aPos);
     }
-        
+
 //  End of File

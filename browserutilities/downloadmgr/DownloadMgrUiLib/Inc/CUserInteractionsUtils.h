@@ -25,7 +25,7 @@
 #include <E32DEF.H>
 #include <e32std.h>
 #include <apparc.h>
-#include <httpdownloadmgrcommon.h>
+#include <HttpDownloadMgrCommon.h>
 #include <vwsdef.h>
 #include <AknServerApp.h>
 #include "CDownloadUtils.h"

@@ -21,7 +21,7 @@
 // INCLUDE FILES
 
 #include <SchemeDefs.hrh>
-#include <ecom/ecom.h>		// For REComSession
+#include <ECom.h>		// For REComSession
 
 // ================= CONSTANTS =======================
 

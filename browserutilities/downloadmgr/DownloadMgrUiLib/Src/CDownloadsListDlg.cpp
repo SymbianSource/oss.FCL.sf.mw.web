@@ -15,10 +15,12 @@
 *
 */
 
+
+
 // INCLUDE FILES
 #include    "CDownloadsListDlg.h"
 #include    "CDownloadUtils.h"
-#include    <downloadslistdlgobserver.h>
+#include    "DownloadsListDlgObserver.h"
 #include    "CDownloadsListArray.h"
 #include    "DownloadMgrUiLib.hrh"
 #include    "DMgrUiLibPanic.h"
@@ -33,11 +35,9 @@
 #include    <StringLoader.h>
 #include    <eikenv.h>
 #include    <DocumentHandler.h>
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-#include  "CDownloadsStylusPopupMenu.h"
-#define   pixelOffset   36
-#endif
+
 #include "eikon.hrh"
+
 
 // ============================ MEMBER FUNCTIONS ===============================
 
@@ -110,9 +110,6 @@ void CDownloadsListDlg::ConstructL()
 
     iDownloadUtils = CDownloadUtils::NewL();
 
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF      
-    iStylusMenu = CDlStylusPopupMenu::NewL();
-#endif    
     CLOG_LEAVEFN("CDownloadsListDlg::ConstructL");
     }
 
@@ -161,13 +158,7 @@ CDownloadsListDlg::~CDownloadsListDlg()
     iListBox = NULL;
     delete iDownloadUtils;
     iDownloadUtils = NULL;
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF    
-	 if (iStylusMenu)
-	 	{
-	 		delete iStylusMenu;
-	 		iStylusMenu = NULL;
-	 	}
-#endif    
+
     CLOG_LEAVEFN("CDownloadsListDlg::~CDownloadsListDlg");
     }
 
@@ -207,23 +198,6 @@ void CDownloadsListDlg::SetModelL( CDownloadsListArray& aModel )
         CLOG_WRITE(" aModel.Count() == 0");
         }
 
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF    
-    TInt Inprogress = iDownloadsListArray->DownloadsCount
-                      ( MASKED_DL_STATE(EHttpDlCreated) |
-                        MASKED_DL_STATE(EHttpDlPaused) |
-                        MASKED_DL_STATE(EHttpDlInprogress) |
-                        MASKED_DL_STATE(EHttpDlMultipleMOFailed));
-    
-    if (  Inprogress > 1   )
-        {
-        ButtonGroupContainer()->MakeCommandVisible( EAknSoftkeyOptions, ETrue );
-        } 
-    else
-        {
-        ButtonGroupContainer()->MakeCommandVisible( EAknSoftkeyOptions, EFalse );
-        }
-#endif       
-   
     CLOG_LEAVEFN("CDownloadsListDlg::SetModelL");
     }
 
@@ -643,9 +617,6 @@ void CDownloadsListDlg::HandleListBoxEventL(CEikListBox* aListBox, TListBoxEvent
                 break;
                 }
             case MEikListBoxObserver::EEventItemDoubleClicked:
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-            case MEikListBoxObserver::EEventItemSingleClicked:
-#endif			
                 {
                 // If EAknSoftkeyOpen is visible, then we can activate the selected download
                 if (ButtonGroupContainer()->IsCommandVisible(EAknSoftkeyOpen))
@@ -712,36 +683,6 @@ void CDownloadsListDlg::FocusChanged( TDrawNow aDrawNow )
 //
 void CDownloadsListDlg::HandlePointerEventL(const TPointerEvent& aPointerEvent)
     {
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF    	
-    if ( aPointerEvent.iType == TPointerEvent::EButton1Down)
-        {
-        iPointerEvent =  aPointerEvent;
-        iStylusMenu->HandlePointerEventL(aPointerEvent, this);
-        }
-    else if ( aPointerEvent.iType == TPointerEvent::EButton1Up )
-        {
-        iStylusMenu->cancelLongTapL();
-            if(iStylusMenu->islongtapRunning())
-                {
-                iStylusMenu->reSetLongTapFlag();
-                return;
-                }
-        }
-    else if ( aPointerEvent.iType == TPointerEvent::EDrag )
-        {
-        if((Abs(iPointerEvent.iPosition.iX - aPointerEvent.iPosition.iX) > pixelOffset ) ||
-        (Abs(iPointerEvent.iPosition.iY - aPointerEvent.iPosition.iY) > pixelOffset ))
-            {
-            iStylusMenu->cancelLongTapL();
-            if(iStylusMenu->islongtapRunning())
-                {
-                iStylusMenu->reSetLongTapFlag();
-                return;
-                }
-            }
-        }
-#endif    
-    
     CAknPopupList::HandlePointerEventL(aPointerEvent);
     }
 
@@ -977,21 +918,4 @@ TInt CDownloadsListDlg::RefreshTimerCallback( TAny* aPtr )
     return KErrNone;
     }
 
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-void CDownloadsListDlg::AddAiwItemsL()
-    {
-    iMenuBar->MenuPane()->AddMenuItemsL(R_DMUL_AIW_POPUP);
-    iDlgObserver.AIWPlugInMenusL(R_DMUL_AIW_POPUP,iMenuBar->MenuPane());
-    TInt pos(0);
-    if (iMenuBar->MenuPane()->MenuItemExists(EAiwCmdContact,pos))
-        {
-        iMenuBar->MenuPane()->DeleteMenuItem(EAiwCmdContact);
-        }
-    if (iMenuBar->MenuPane()->MenuItemExists(EAiwCmdRingtone,pos))
-        {
-        iMenuBar->MenuPane()->DeleteMenuItem(EAiwCmdRingtone);
-        }
-        
-    }
-#endif
 /* End of file. */

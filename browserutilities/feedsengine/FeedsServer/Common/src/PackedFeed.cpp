@@ -16,10 +16,12 @@
 *
 */
 
+
 #include "PackedAttributes.h"
-#include <feedattributes.h>
+#include "FeedAttributes.h"
 #include "PackedFeed.h"
 #include "Logger.h"
+
 
 const TInt KTokenArrayIncrementSize = 1000;
 const TInt KStringTableIncrementSize = 10240;

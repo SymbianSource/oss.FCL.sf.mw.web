@@ -32,7 +32,7 @@
 #include "WebFrameView.h"
 #include "WebView.h"
 #include "Brctl.h"
-#include <brctldialogsprovider.h>
+#include <BrCtlDialogsProvider.h>
 #include <CommonContentPolicy.h>
 #include <stringloader.h>
 #if defined(__BROWSER_SDK)

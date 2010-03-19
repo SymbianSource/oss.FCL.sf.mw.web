@@ -19,7 +19,7 @@
 
 // INCLUDES
 #include "Cookiehandler.h"
-#include <cookiemanagerclient.h>
+#include <CookieManagerClient.h>
 
 // EXTERNAL DATA STRUCTURES
 
@@ -148,22 +148,10 @@ void CookieHandler::addCookieL(const TDesC& aCookieData, const TDesC8& aUrl, con
         popAndDestroyCount ++;
     }
     
-    // if the path is not specified then extract the domain name from the Url
-    // Why do we duplicate this code here?  It already exists in Cookie's constructl's call to adddefaultpathl?
-    TPtrC8 requestPath;
+    // if the domain is not specified then extract the domain name from the Url
     if(!cookieRecord.m_pathName.Length()) {
         const TDesC8& pathName= uriParser.Extract(EUriPath);
-        const TUint8 KCookiePathSeparator = '/';
-        requestPath.Set(pathName);
-        TInt sepPos = requestPath.LocateReverse( KCookiePathSeparator );
-        // if / is not the last character
-        if ( 0 <= sepPos && ( ( sepPos + 1 != requestPath.Length() ) ) )
-            {
-            // then remove characters after the right-most /
-            requestPath.Set( requestPath.Left( sepPos + 1 ) );
-            }
-
-        cookieRecord.m_pathName.Set(TPtrC(asciiToUnicodeLC(requestPath)->Des()));
+        cookieRecord.m_pathName.Set(TPtrC(asciiToUnicodeLC(pathName)->Des()));
         popAndDestroyCount ++;
     }
     
@@ -174,7 +162,6 @@ void CookieHandler::addCookieL(const TDesC& aCookieData, const TDesC8& aUrl, con
         cookieRecord);
     popAndDestroyCount +=6;
     // create a cookie
-    // Why are we using the stringpool only constructor of cookie?
     CCookie* cookie = CCookie::NewL( (*m_stringPool) );
     
     CleanupStack::PushL( cookie );

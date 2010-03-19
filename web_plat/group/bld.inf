@@ -15,7 +15,7 @@
 *
 */
 
-#include "../browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../browser_platform_api/inc/Browser_platform_variant.hrh"
 
 
 #include "../aiw_browser_provider_api/group/bld.inf"
@@ -31,12 +31,12 @@
 #include "../multipart_parser_api/group/bld.inf"
 #endif
 #include "../recent_url_store_api/group/bld.inf"
+#include "../rt_gesturehelper_api/group/bld.inf"
 #include "../scheme_handler_plugin_api/group/bld.inf"
 #include "../scriptable_plugin_api/group/bld.inf"
 #include "../webutils_api/group/bld.inf"
 #include "../widget_registry_api/group/bld.inf"
 #include "../xml_parser_api/group/bld.inf"
-#include "../stmgesturefw_api/group/bld.inf"
 
 PRJ_PLATFORMS
 DEFAULT

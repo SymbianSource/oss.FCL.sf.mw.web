@@ -17,7 +17,7 @@
 */
 
 #include "WidgetEntry.h"
-#include <widgetregistryconstants.h>
+#include "WidgetRegistryConstants.h"
 #include <s32file.h>
 #include <f32file.h>
 #include <APGTASK.H>
@@ -174,10 +174,9 @@ void CWidgetEntry::InternalizeBinaryL( RReadStream& aReadStream )
         {
         User::Leave( KErrCorrupt );
         }
-    // Read only until the ENokiaWidget for the 3.2 widgets 
-    TInt propertyIdCount =  (*this)[EWidgetPropertyListVersion] == KWidgetPropertyListVersion32 ? ENokiaWidget+1 : EWidgetPropertyIdCount; 
+
     // fill property values array
-    for ( TInt i = 1; i < propertyIdCount; ++i )
+    for ( TInt i = 1; i < EWidgetPropertyIdCount; ++i )
         {
         (*this)[i].DeserializeL( aReadStream );
         }

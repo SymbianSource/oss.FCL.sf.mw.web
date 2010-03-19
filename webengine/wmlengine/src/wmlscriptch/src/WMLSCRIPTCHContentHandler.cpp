@@ -22,7 +22,7 @@
 #include "nw_wae.h"
 #include "nwx_ctx.h"
 #include "nwx_string.h"
-#include <stdarg.h>
+#include "stdarg.h"
 #include "BrsrStatusCodes.h"
 
 /*lint -restore */
