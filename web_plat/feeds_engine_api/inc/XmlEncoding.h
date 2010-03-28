@@ -180,7 +180,7 @@ class CXmlEncoding: public CBase
         * @param aValueEnd The end of the encoding's value
         * @return ETrue if the encoding was found.
         */
-        TBool CXmlEncoding::FindEncoding(const TDesC8& aBuffer, 
+        TBool FindEncoding(const TDesC8& aBuffer, 
                 TInt& aBegin, TInt& aEnd, TInt& aValueBegin, TInt& aValueEnd) const;
 
         /**
@@ -194,7 +194,7 @@ class CXmlEncoding: public CBase
         * @param aValueEnd The end of the encoding's value
         * @return ETrue if the encoding was found.
         */
-        TBool CXmlEncoding::FindEncoding(const TDesC& aBuffer, 
+        TBool FindEncoding(const TDesC& aBuffer, 
                 TInt& aBegin, TInt& aEnd, TInt& aValueBegin, TInt& aValueEnd) const;
 
 

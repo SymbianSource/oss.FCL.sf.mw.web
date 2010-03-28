@@ -230,14 +230,14 @@ public:
     *
     * @return void
     */
-    IMPORT_C void RFeedsInterface::DebugPrintTablesL();
+    IMPORT_C void DebugPrintTablesL();
 
     /**
     * Disconnect connection provided by client for manual update.
     *
     * @return void
     */
-    IMPORT_C void RFeedsInterface::DisconnectManualUpdateConnectionL();
+    IMPORT_C void DisconnectManualUpdateConnectionL();
 
      /**
      * Fetches feed (async)
@@ -295,7 +295,7 @@ public:
      * @return void.
      */
 
-     IMPORT_C void RFeedsInterface::WatchSettingsL();
+     IMPORT_C void WatchSettingsL();
 
      /**
      * Export passed folder in OPML file

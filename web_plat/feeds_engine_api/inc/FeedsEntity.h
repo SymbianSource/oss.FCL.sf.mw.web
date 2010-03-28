@@ -96,7 +96,7 @@ public:
     /**
      * Two-phased constructor.
      */
-     CFeedsEntity* CFeedsEntity::NewMiniItemL();
+     CFeedsEntity* NewMiniItemL();
     		
 
     /**
