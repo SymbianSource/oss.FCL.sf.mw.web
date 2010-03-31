@@ -245,7 +245,9 @@ int HttpUiCallbacks::aboutToLoadPageL(CBrCtl* brctl, int stateType)
         }
         // If the user selected "No" or "Cancel", we are cancelling the load
         if ( !result )
-        {
+        {   //Update history view Index also here...
+            if( brctl->historyHandler()->historyController()->historyViewEnabled() )
+                brctl->historyHandler()->historyController()->rollBackIndex();
             brctl->HandleBrowserLoadEventL(TBrCtlDefs::EEventContentFinished,0,0);
             return KErrCancel;
         }

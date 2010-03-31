@@ -96,9 +96,10 @@ WidgetEngineBridge::~WidgetEngineBridge()
 void WidgetEngineBridge::Clear()
 {    
 	// unprotect objects
-	HashSet<JSValue*>::iterator end = m_protectedObjects.end();
-	for (HashSet<JSValue*>::iterator it = m_protectedObjects.begin(); it != end; ++it) {
-		Collector::unprotect(*it);
+    HashCountedSet<JSValue*>::iterator end = m_protectedObjects.end();
+	for (HashCountedSet<JSValue*>::iterator it = m_protectedObjects.begin(); it != end; ++it) {
+		for(int count = it->second; count > 0; count--)
+            Collector::unprotect(it->first);
 	}
 	m_protectedObjects.clear();
 

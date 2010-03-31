@@ -414,6 +414,8 @@ class PluginSkin : public CBase,
         TInt handleNetworkAccess() const;
         WebCore::Element* getElement() {return m_element;}
         void setElement(WebCore::Element* aElement) {m_element = aElement;}
+        void reCreatePlugin();
+        TInt activeStreams() { return m_streams.size(); }
 
   public:  // from MMemoryCollector
         TUint Collect(unsigned int aRequired);

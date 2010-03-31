@@ -354,6 +354,7 @@ void CFeedsEntity::ConstructL(const CPackedFolder& aPackedFolder)
 
             case EFolderTokenItemEnd:
                 isMiniItem = EFalse;         
+                if(miniItem)         
                 miniItem->SetFeedInterface (iFeedInterface);       
             //    folderItem->AddMiniItem(miniItem);
                 User::LeaveIfError (currentFolder->iChildren.Append (miniItem));

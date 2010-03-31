@@ -162,7 +162,8 @@ void WebCoreFrameBridge::receivedData(const char* data, int length, String textE
     bool userChosen = !encoding.isNull() && !encoding.isEmpty();
     if (encoding.isNull()||encoding.isEmpty())
         encoding = textEncodingName;
-    m_frame->loader()->setEncoding(encoding, userChosen);
+    if (m_frame && m_frame->loader())
+        m_frame->loader()->setEncoding(encoding, userChosen);
     addData(data, length);
 }
 

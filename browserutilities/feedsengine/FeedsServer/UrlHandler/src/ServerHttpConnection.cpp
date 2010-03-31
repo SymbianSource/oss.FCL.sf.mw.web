@@ -16,6 +16,7 @@
 */
 
 
+#include "browser_platform_variant.hrh"
 #include <aputils.h> 
 #include <internetconnectionmanager.h>
 
@@ -98,9 +99,14 @@ TInt CServerHttpConnection::CreateConnection(TInt* aConnectionPtr, TInt* aSockSv
     // If need be establish the connection.
     if(!IsConnected())
         {
+#ifdef BRDO_OCC_ENABLED_FF
+        TUint32 snapId = 0; //Defaults connects to Internet snap
+        iConMgr->SetConnectionType(CMManager::EDestination);
+        iConMgr->SetRequestedSnap(snapId);
+#else
         // Set the default access point.
         iConMgr->SetRequestedAP( iDefaultAccessPoint );
-            
+#endif
         // Open a connection.
         TRAP(err, err = iConMgr->StartConnectionL(ETrue));                
         if (err != KErrNone)

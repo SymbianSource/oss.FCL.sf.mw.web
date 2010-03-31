@@ -353,6 +353,8 @@ NONSHARABLE_CLASS( CHttpConnHandler ) : public CActive,
         */
         void ShutDown( TBool aFromDestructor = EFalse );
         
+        void RetryNeeded(TBool aRetry) { iRetryNeeded = aRetry;}
+        
     protected:  // New functions
         
         /**
@@ -433,6 +435,7 @@ NONSHARABLE_CLASS( CHttpConnHandler ) : public CActive,
     private:    // Data
 
         TBool iNewConnection;
+        TBool iRetryNeeded;
         
         // Reserved pointer for future extension
         //TAny* iReserved;

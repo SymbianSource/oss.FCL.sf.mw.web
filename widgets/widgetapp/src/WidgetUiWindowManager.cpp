@@ -408,6 +408,12 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
                 }
             }
             break; 
+        case WidgetFullViewClose:
+        	{
+        	Exit( EEikCmdExit, aUid );
+        	needToNotify = EFalse ;
+        	}
+        	break;
         }
     if(needToNotify)
     // Widget is up and running, notify that next one can be launched    
@@ -643,6 +649,9 @@ TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWind
 
     if ( iClientSession.IsWidgetInFullView ( aWidgetWindow->Uid()))
         {
+#ifdef BRDO_WRT_HS_FF
+          iCpsPublisher->ClearScreenshotL(*(aWidgetWindow->WidgetBundleId()), aWidgetWindow->Uid().iUid);
+#endif
         HideWindow( aWidgetWindow );
         if (aWidgetWindow == iActiveFsWindow)
             iActiveFsWindow = NULL;
@@ -788,6 +797,10 @@ void CWidgetUiWindowManager::SendWidgetToBackground( const TUid& aUid )
     CWidgetUiWindow* window( GetWindow( aUid ) );
     if( !window )
         return;
+        
+#ifdef BRDO_WRT_HS_FF
+          iCpsPublisher->ClearScreenshotL(*(GetWindow(aUid )->WidgetBundleId()), aUid.iUid);
+#endif
 
     // make widgets act like separate applications by pushing to background
     // this way user is sent back to app shell or idle to run another widget
@@ -912,6 +925,18 @@ void CWidgetUiWindowManager::HandleForegroundEvent( TBool aForeground )
         {
         if(iDialogsProvider)
             iDialogsProvider->CancelAll();
+            
+#ifdef BRDO_WRT_HS_FF  
+        CFbsBitmap* bitmap( new CFbsBitmap() );
+        if ( bitmap && iCpsPublisher)
+            {
+            if(iActiveFsWindow)
+                {
+                TRAP_IGNORE(iActiveFsWindow->Engine()->TakeSnapshotL( *bitmap ));
+                TRAP_IGNORE(iCpsPublisher->PublishScreenshotL(*iActiveFsWindow->WidgetBundleId(),iActiveFsWindow->Uid().iUid, bitmap));
+                }
+             }
+#endif
         HideWindow( iActiveFsWindow );
         }
     }

@@ -1298,9 +1298,15 @@ void RenderLayer::paintOverflowControls(GraphicsContext* p, int tx, int ty, cons
         static Image* resizeCornerImage;
         if (!resizeCornerImage)
             resizeCornerImage = Image::loadPlatformResource("textAreaResizeCorner");
-        IntPoint imagePoint(scrollCorner.right() - resizeCornerImage->width(), scrollCorner.bottom() - resizeCornerImage->height());
-        p->drawImage(resizeCornerImage, imagePoint);
-
+#if PLATFORM(SYMBIAN)            	
+        if(resizeCornerImage){
+        	IntPoint imagePoint(scrollCorner.right() - resizeCornerImage->width(), scrollCorner.bottom() - resizeCornerImage->height());
+        	p->drawImage(resizeCornerImage, imagePoint);
+        }
+#else
+        	IntPoint imagePoint(scrollCorner.right() - resizeCornerImage->width(), scrollCorner.bottom() - resizeCornerImage->height());
+        	p->drawImage(resizeCornerImage, imagePoint);
+#endif
         // Draw a frame around the resizer (1px grey line) if there are any scrollbars present.
         // Clipping will exclude the right and bottom edges of this frame.
         if (m_hBar || m_vBar) {

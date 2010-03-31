@@ -502,8 +502,6 @@ void CBrCtl::ConstructL(
     // Set the rect for BrowserControl (a CCoeControl).
     SetRect(aRect);
     CCoeEnv::Static()->DisableExitChecks(true);
-    Window().AllocPointerMoveBuffer(256, 0);
-    Window().DisablePointerMoveBuffer();
     Window().PointerFilter(EPointerFilterMove | EPointerFilterDrag | EPointerFilterEnterExit, 0);
     ActivateL();
 }
@@ -962,6 +960,48 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
              break;
             }
 
+#ifdef BRDO_OCC_ENABLED_FF
+       case TBrCtlDefs::ECommandSetRetryConnectivityFlag:
+            {
+            StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->setRetryConnectivityFlag();
+            break;
+            }
+       case TBrCtlDefs::ECommandUnSetRetryConnectivityFlag:
+            {
+            StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->unSetRetryConnectivityFlag();
+            break;
+            }
+       case TBrCtlDefs::ECommandRetryTransactions:
+            {
+             StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->retryTransactions();
+             m_webView->reCreatePlugins(); 
+             break;
+            }
+       case TBrCtlDefs::ECommandClearQuedTransactions:
+           {
+           StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->handleError(KErrCancel);
+           break;
+           }
+       case TBrCtlDefs::ECommandConnToDownloadManager:
+           {
+           TInt connectionPtr = 0;
+           TInt sockSvrHandle = 0;
+           TBool newConn = ETrue;
+           TApBearerType bearerType;
+           TInt error = KErrNone;
+           
+           TRAP(error, m_brCtlSpecialLoadObserver->NetworkConnectionNeededL(&connectionPtr, &sockSvrHandle, &newConn, &bearerType));
+           if( error == KErrNone && connectionPtr ) 
+               {
+               RConnection* connPtr = REINTERPRET_CAST( RConnection*, connectionPtr );
+               TName name;
+               connPtr->Name( name );
+               StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->httpDownload()->connect(name);
+               }
+           break;
+           }
+#endif           
+
       default:
             {
             if ( m_wmlEngineInterface &&
@@ -1169,7 +1209,9 @@ EXPORT_C void CBrCtl::AddOptionMenuItemsL(CEikMenuPane& aMenuPane, TInt aResourc
     }
 
     int after = aAfter == -1 ? aAfter :0;
-    TBrCtlDefs::TBrCtlElementType focusedElementType = FocusedElementType();
+    TBrCtlDefs::TBrCtlElementType focusedElementType;
+    if(m_webView)
+       focusedElementType = FocusedElementType();
 
     int count = sizeof(commandsArray) / sizeof(TCommandsArray);
     bool found = false;
@@ -1803,7 +1845,7 @@ void CBrCtl::MakeVisible(TBool visible)
         m_webView->checkForZoomChange();
     }
 
-    if( m_webView->pageFullScreenHandler() && m_webView->pageFullScreenHandler()->isFullScreenMode() ) {
+    if(m_webView && m_webView->pageFullScreenHandler() && m_webView->pageFullScreenHandler()->isFullScreenMode() ) {
         if (visible)
             m_webView->pageFullScreenHandler()->showEscBtnL();
         else
@@ -2100,6 +2142,7 @@ CBrCtl* CBrCtl::getWindowL(TDesC& windowName, bool userGesture)
          if(StaticObjectsContainer::instance()->isPluginFullscreen())
          {
             PluginSkin* plugin=m_webView->mainFrame()->focusedPlugin();
+            if(plugin)
             plugin->deActivate();
          }
          newBrctl = m_brCtlWindowObserver->OpenWindowL(emptyUrl, &windowName, userGesture, 0);            

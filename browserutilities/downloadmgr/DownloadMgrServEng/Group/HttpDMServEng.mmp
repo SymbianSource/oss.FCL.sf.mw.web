@@ -48,6 +48,10 @@ APP_LAYER_SYSTEMINCLUDE
 
 USERINCLUDE ../inc
 
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+SYSTEMINCLUDE   /epoc32/include/ecom
+#endif
+
 SOURCE HttpDownloadManagerServerEngine.cpp
 SOURCE HttpClientApp.cpp
 SOURCE HttpClientAppInstance.cpp

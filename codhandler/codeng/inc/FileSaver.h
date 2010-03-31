@@ -33,6 +33,9 @@ class CDocumentHandler;
 class CDrmHandler;
 class CCodBuffStorage;
 class CCodData;
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+class CDownloadPathHandler;
+#endif
 
 // CLASS DECLARATION
 
@@ -210,7 +213,20 @@ NONSHARABLE_CLASS( CFileSaver ): public CCodSaver
         * Writes Buffer data to file
         */
         void FlushL();
-
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+    private:
+        /*
+         * Gets the instance of CDownloadPathHandler from the Plugin implementaion, if present 
+         */
+        CDownloadPathHandler* GetDownloadPathPluginInstanceL(TPtrC8& mimetype);
+        /*
+         * Get Updated path from the Plugin Implementation
+         * @param downloadPathPlugin instance of CDownloadPathHandler
+         * @param fname indicates filename 
+         * @param fileNamePtr 
+         */
+        void GetUpdatedPathFromPluginL(CDownloadPathHandler* downloadPathPlugin,TFileName& fname , TPtr& fileNamePtr);
+#endif
        
     protected:  // data
 

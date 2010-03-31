@@ -166,11 +166,21 @@ Default is WML support enabled
 //To provide WidgetSIDChecker support 
 #define APP_SID_CHECK_SUPPORT_FF
 
+//AT&T DownloadMgr path support flag
+#define DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
 // One Click Connectivity support flag
 #define BRDO_OCC_ENABLED_FF
 
 //Single click flag
 #define BRDO_SINGLE_CLICK_ENABLED_FF
+
+//Video player 2, surface aware controller, 
+#define BRDO_VIDEOPLAYER2_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#define BRDO_IAD_UPDATE_ENABLED_FF
+
 /*
 * ===================
 *        S60 3.23
@@ -178,11 +188,21 @@ Default is WML support enabled
 */ 
 #if defined(__PLATFORM_VERSION_32__)
 
+//Video player 2, surface aware controller, 
+#undef BRDO_VIDEOPLAYER2_ENABLED_FF
+
+
 //OCC support
 #undef BRDO_OCC_ENABLED_FF
 
+//AT&T DownloadMgr path support flag
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
 //Single click support
 #undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#undef BRDO_IAD_UPDATE_ENABLED_FF
 
 //To provide WidgetSIDChecker support 
 #undef APP_SID_CHECK_SUPPORT_FF 
@@ -257,10 +277,21 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_S60_50__)
 
+
+//Video player 2, surface aware controller, 
+#undef BRDO_VIDEOPLAYER2_ENABLED_FF
+
 //OCC support
 #undef BRDO_OCC_ENABLED_FF
+
+//AT&T DownloadMgr path support flag
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
 //Single click support
 #undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#undef BRDO_IAD_UPDATE_ENABLED_FF
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
@@ -326,10 +357,21 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_5250__)
 
+//Video player 2, surface aware controller, 
+#undef BRDO_VIDEOPLAYER2_ENABLED_FF
+
+//AT&T DownloadMgr path support flag
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
 //OCC support
 #undef BRDO_OCC_ENABLED_FF
+
 //Single click support
 #undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#define BRDO_IAD_UPDATE_ENABLED_FF
+
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
@@ -369,10 +411,19 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_51__)
 
+//Video player 2, surface aware controller, 
+#undef BRDO_VIDEOPLAYER2_ENABLED_FF
+
+//AT&T DownloadMgr path support flag
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
 //OCC support
 #undef BRDO_OCC_ENABLED_FF
 //Single click support
 #undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#undef BRDO_IAD_UPDATE_ENABLED_FF
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
@@ -405,14 +456,23 @@ Default is WML support enabled
 #undef BRDO_STATIC_DATA_CLEANUP_SUPPORT_FF
 #elif defined(__PLATFORM_VERSION_52_TB92__)
 
+//Video player 2, surface aware controller, 
+#define BRDO_VIDEOPLAYER2_ENABLED_FF
+
 // Defines whether SAPI Security Manager Prompt Enhancement is available
 #undef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
 
 //Defines One Click Connectivity support
 #define BRDO_OCC_ENABLED_FF
 
+//AT&T DownloadMgr path support flag
+#define DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
 //Single click support
 #define BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#define BRDO_IAD_UPDATE_ENABLED_FF
 
 #define BRDO_BROWSER_50_FF
 #define BRDO_BROWSER_51_FF

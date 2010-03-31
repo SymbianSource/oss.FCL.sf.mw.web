@@ -37,6 +37,7 @@
 #include "ResourceHandleManagerSymbian.h"
 #include "StaticObjectsContainer.h"
 #include "WebFrame.h"
+#include "ResourceHandleClient.h"
 
 // CONSTANTS
 _LIT8( KHttpProtString, "HTTP/TCP" );
@@ -58,6 +59,7 @@ HttpSessionManager::HttpSessionManager()
     m_httpDownload = NULL;
     m_SelfDownloadContentHandler = NULL;
     m_SelfDownloadContentTypes = KNullStr().Alloc();
+    retryConnectivityFlag = EFalse;
 }
 
 HttpSessionManager::~HttpSessionManager()
@@ -254,6 +256,28 @@ void HttpSessionManager::handleError(int error)
         {
             requests[i]->handleError(error);
         }
+}
+
+void HttpSessionManager::retryTransactions()
+{
+    Vector<HttpConnection *> requests;
+    
+    for(HashMap<HttpConnection *, ResourceHandle *>::iterator tmpit = m_pendingHttpRequests.begin();
+        tmpit != m_pendingHttpRequests.end(); ++tmpit)
+        {
+        	ResourceHandle *tmp = tmpit->second;
+        	ResourceHandleClient* client = tmp->client();
+            if(!client->isLoadingPlugins())
+                requests.append(tmpit->first);  
+        }
+    //Cancel all transactions first
+    //Submit them again
+    for (int i=0; i<requests.size(); ++i)
+        {
+            requests[i]->HttpTransaction()->Cancel();           
+            requests[i]->HttpTransaction()->SubmitL();
+        }
+
 }
 
 HttpConnection* HttpSessionManager::firstHttpConnection()

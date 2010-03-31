@@ -161,6 +161,8 @@ const AtomicString& PlatformFontCache::DeviceDefaultFontFamilies()
     return iDeviceDefaultFont;
     }
 
+const double KFontZoomStepSize = 0.05;
+const double KFontZoomBeginValue = 1.00;
 CFont* PlatformFontCache::CreateFont(const ZoomedSpec& spec)
 {    
     CFont* font = 0;
@@ -174,15 +176,26 @@ CFont* PlatformFontCache::CreateFont(const ZoomedSpec& spec)
         }
     }
     
-    
     if (spec.m_spec.iTypeface.iName == KPlatformDefaultFontFamily) { 
         // fall back to platform default fonts by using TAknFontFamily 
         font = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, spec.m_spec.iHeight * spec.m_zoom/100, (AknFontAccess::TAknFontFamily)0); 
     } 
     else { 
         font = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, spec.m_spec.iHeight * spec.m_zoom/100, spec.m_spec.iTypeface.iName); 
-    } 
         
+        if(spec.m_zoom != 100) {
+            CFont *fontAt100Zoom = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, spec.m_spec.iHeight, spec.m_spec.iTypeface.iName);
+        
+            double zoomout = KFontZoomBeginValue;
+            /* When width zoom ratio exceeds the expected zoom value, adjust it by reducing the font size*/
+            while((font->MaxCharWidthInPixels() * 100.0)/fontAt100Zoom->MaxCharWidthInPixels() > spec.m_zoom) {
+                    zoomout = zoomout - KFontZoomStepSize;
+                    ReleaseFont(font);
+                    font = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, (spec.m_spec.iHeight * spec.m_zoom * zoomout)/100, spec.m_spec.iTypeface.iName);
+                }
+            ReleaseFont(fontAt100Zoom);
+        }
+    } 
     
     if (font) {
         ZoomedSpec newSpec(spec);

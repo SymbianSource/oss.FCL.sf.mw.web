@@ -1149,13 +1149,16 @@ void CDeviceLiwBinding::SetAppName()
         }
 
     CWidgetPropertyValue* displayname = widgetregistry.GetWidgetPropertyValueL(m_Uid, EBundleDisplayName );
-    User::LeaveIfError(widgetregistry.Disconnect());
-    CleanupStack::PopAndDestroy(); //widgetregistry
-
-    if ( displayname && displayname->iType == EWidgetPropTypeString )
+    if(displayname)
         {
-        m_scriptSession->SetApplicationNameL(*displayname);
+        CleanupStack::PushL(displayname);
+        if(displayname->iType == EWidgetPropTypeString)
+            m_scriptSession->SetApplicationNameL(*displayname);
+        CleanupStack::PopAndDestroy(); // displayname
         }
+    
+    User::LeaveIfError(widgetregistry.Disconnect());
+    CleanupStack::PopAndDestroy(); // widgetregistry
     );
     }
 #endif

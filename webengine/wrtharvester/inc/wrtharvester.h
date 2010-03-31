@@ -24,7 +24,6 @@
 #include <contentharvesterplugin.h>
 #include <widgetappdefs.rh>
 #include "wrtharvesterregistryaccess.h"
-#include "wrtusbhandler.h"
 
 // FORWARD DECLARATIONS
 class CWrtHarvesterPSNotifier;
@@ -126,7 +125,7 @@ class CWrtHarvester: public CContentHarvesterPlugin
 
         static TInt DeleteCallback(TAny* aPtr);		
         
-        TBool SetSystemShutdown(TBool aState){ iSystemShutdown = aState; }
+        void SetSystemShutdown(TBool aState){ iSystemShutdown = aState; }
 		
 	private:
         
@@ -287,6 +286,12 @@ class CWrtHarvester: public CContentHarvesterPlugin
          * own
          */        
         CWrtHarvesterPSNotifier* iWidgetSystemShutdownListener;
+        
+        /**
+         * Publish & Subscribe listener
+         * own
+         */          
+        CWrtHarvesterPSNotifier* iMsModeListener;
         
 		/**
     	* 

@@ -223,6 +223,7 @@ void PluginWin::processEventL( TPluginEventType eventType,
             cursor->cursorUpdate(EFalse);
             consumed = ETrue;
             setPluginFocusL( ETrue );
+            m_pluginskin->pluginFocusChanged(ETrue);
             }
 
             else

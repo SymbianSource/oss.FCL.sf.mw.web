@@ -25,6 +25,9 @@
 #include "../connection_manager_api/group/bld.inf"
 #include "../cxml_library_api/group/bld.inf"
 #include "../download_mgr_client_api_extn/group/bld.inf"
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+#include "../download_path_plugin_api/group/bld.inf"
+#endif
 #include "../feeds_engine_api/group/bld.inf"
 #include "../launcher_api/group/bld.inf"
 #ifdef BRDO_MULTIPART_PARSER_FF

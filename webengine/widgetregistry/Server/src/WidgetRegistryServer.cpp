@@ -127,6 +127,12 @@ void CWidgetRegistryServer::RunServerL()
             apparcSession.RegisterNonNativeApplicationTypeL(
                 KUidWidgetLauncher, KLauncherApp()));
 
+
+       TRAP_IGNORE(
+            apparcSession.RegisterNonNativeApplicationTypeL(
+                KUidWgtWidgetLauncher, KWgtLauncherApp()));
+                
+                
 		    apparcSession.PrepareNonNativeApplicationsUpdatesL();
             apparcSession.ForceCommitNonNativeApplicationsUpdatesL();
         apparcSession.Close();

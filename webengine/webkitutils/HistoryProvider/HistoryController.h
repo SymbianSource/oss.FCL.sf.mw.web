@@ -274,6 +274,7 @@ class HistoryController : public HistoryControllerInterface
 
         void performTransition(int direction);
 
+        virtual void rollBackIndex();
         
     private:
 

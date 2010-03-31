@@ -480,7 +480,9 @@ void RenderThemeSymbian::scaleImageL(int type, int scalingFactor)
         image = m_selectArrow;
         break;
     }
-    CMaskedBitmap* maskedBitmap = image->getMaskedBitmap();
+    CMaskedBitmap* maskedBitmap = NULL;
+    if(image)
+      maskedBitmap  = image->getMaskedBitmap();
     if (!maskedBitmap) User::Leave(KErrGeneral); // should not really happen
     TSize size = maskedBitmap->SizeInPixels();
     size.iWidth = (size.iWidth * scalingFactor) / 100;

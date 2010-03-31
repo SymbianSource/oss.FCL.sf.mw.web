@@ -197,7 +197,6 @@ m_brctl(brctl)
 , m_defaultZoomLevel(KZoomLevelDefaultValue)
 , m_pageFullScreenHandler(NULL)
 , m_viewIsScrolling(false)
-, m_ptrbuffer(0)
 , m_showCursor(false)
 , m_allowRepaints(true)
 , m_prevEditMode(false)
@@ -231,7 +230,6 @@ WebView::~WebView()
         m_fastScrollTimer->Cancel();
     delete m_fastScrollTimer;
 
-    delete [] m_ptrbuffer;
 	delete m_pinchZoomHandler;
     delete m_repainttimer;
     delete m_webfeptexteditor;
@@ -351,7 +349,6 @@ void WebView::ConstructL( CCoeControl& parent )
     m_pinchZoomHandler = WebPagePinchZoomHandler::NewL(this);
     
     // Create the PointerEventHandler
-    m_ptrbuffer = new TPoint[256];
     m_webpointerEventHandler = WebPointerEventHandler::NewL(this);
 
     // Create the ScrollHandler
@@ -372,10 +369,12 @@ void WebView::ConstructL( CCoeControl& parent )
     MakeViewVisible(ETrue);
     m_isPluginsVisible=ETrue;
     CCoeControl::SetFocus(ETrue);
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-    //To enable advance pointer info for multi-touch
+
+#if defined(BRDO_MULTITOUCH_ENABLED_FF) && !defined (__WINSCW__)   
+    //Enable advance pointer info for multi-touch.
     Window().EnableAdvancedPointers();
 #endif 
+    
     cache()->setCapacities(0, 0, defaultCacheCapacity);
     
     m_waiter = new(ELeave) CActiveSchedulerWait();
@@ -712,13 +711,12 @@ void WebView::doRepaint()
 //-------------------------------------------------------------------------------
 void WebView::collectOffscreenbitmapL(CFbsBitmap& snapshot)
 {
-    if(   m_widgetextension && m_widgetextension->IsWidgetPublising()) {
-        if ( snapshot.Handle() == 0) {
-            // Create bitmap only once
-            (snapshot).Create(m_brctl->Size(), StaticObjectsContainer::instance()->webSurface()->displayMode());
-        }
-        CFbsBitmapDevice* device = CFbsBitmapDevice::NewL( &snapshot);
-        CleanupStack::PushL(device);
+    if ( snapshot.Handle() == 0) {
+        // Create bitmap only once
+        (snapshot).Create(m_brctl->Size(), StaticObjectsContainer::instance()->webSurface()->displayMode());
+    }
+    CFbsBitmapDevice* device = CFbsBitmapDevice::NewL( &snapshot);
+    CleanupStack::PushL(device);
 
         WebCoreGraphicsContext* gc = WebCoreGraphicsContext::NewL( device, &snapshot, mainFrame()->frameView());
         CleanupStack::PushL(gc);
@@ -733,8 +731,7 @@ void WebView::collectOffscreenbitmapL(CFbsBitmap& snapshot)
         }
         mainFrame()->frameView()->draw( *gc, mainFrame()->frameView()->visibleRect() );
 
-       CleanupStack::PopAndDestroy(2);
-    }
+   CleanupStack::PopAndDestroy(2);
 
 }
 
@@ -2042,7 +2039,7 @@ int WebView::search(TPtrC keyword, bool forward, bool wrapFlag)
     // some content that we already searched on the first pass. In the worst case, we could search the entire contents of this frame twice.
     // To fix this, we'd need to add a mechanism to specify a range in which to search.
     if (wrapFlag && lastFrame) {
-        if (frame->bridge()->searchFor(keyword, forward, false, true, false))
+        if (frame && frame->bridge() && frame->bridge()->searchFor(keyword, forward, false, true, false))
             return TBrCtlDefs::EFindMatch;
     }
 
@@ -2334,9 +2331,9 @@ void WebView::updateMinZoomLevel(TSize size)
     else {
         newMinZoomLevel = KZoomLevelDefaultValue;
     }
-
+#ifndef  BRDO_MULTITOUCH_ENABLED_FF
     newMinZoomLevel = (newMinZoomLevel/m_pageZoomHandler->stepSize())*m_pageZoomHandler->stepSize();
-
+#endif     
   TBool needsUpdateArray = EFalse;
   //Update the new array
   if ( m_minZoomLevel!= newMinZoomLevel)
@@ -2374,8 +2371,10 @@ void WebView::UpdateZoomArray()
     }
 
     m_zoomLevelArray.Reset();
-
+#ifndef  BRDO_MULTITOUCH_ENABLED_FF
     m_minZoomLevel = TInt(m_minZoomLevel/10) * 10;
+#endif 
+    
     m_zoomLevelArray.Append(KZoomLevelDefaultValue);
 
     //construct the zoom array from the default level
@@ -2609,11 +2608,13 @@ CWidgetExtension* WebView::createWidgetExtension(MWidgetCallback &aWidgetCallbac
 #if USE(LOW_BANDWIDTH_DISPLAY)
         m_page->mainFrame()->loader()->setUseLowBandwidthDisplay(false);
 #endif
-    StaticObjectsContainer::instance()->setIconDatabaseEnabled(false);
+    if (!(m_brctl->capabilities() & TBrCtlDefs::ECapabilityAutoFormFill))    
+        StaticObjectsContainer::instance()->setIconDatabaseEnabled(false);
     }
 
     //Widgets dont need memory cache for dead objects. hence set it to 0
     cache()->setCapacities(0, 0, 0);
+    cache()->setDisabled(true);
     return m_widgetextension;
 }
 
@@ -3082,6 +3083,33 @@ void WebView::setPinchBitmapZoomOut(int zoomLevel)
     //get the shift in the document so that during the next engine re-draw, the origin needs to be updated based on that
     m_pinchDocDelta.iX = (float)shiftInView.iX * 100 / zoomLevel;   
     m_pinchDocDelta.iY = (float)shiftInView.iY * 100 / zoomLevel;
+}
+
+void WebView::reCreatePlugins()
+{
+      Frame* coreFrame = core(mainFrame());
+      MWebCoreObjectWidget* view = NULL;
+      for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) {
+           PassRefPtr<HTMLCollection> objects = frame->document()->objects();
+           for (Node* n = objects->firstItem(); n; n = objects->nextItem()) {
+               view = widget(n);
+               if (view) {
+                   PluginSkin* plg = static_cast<PluginSkin*>(view);
+                   if(plg->activeStreams() > 0)
+                      plg->reCreatePlugin();
+               }
+           }
+
+           PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();
+           for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) {
+               view = widget(n);
+               if (view) {
+                   PluginSkin* plg = static_cast<PluginSkin*>(view);
+                   if(plg->activeStreams() > 0)
+                      plg->reCreatePlugin();
+               }
+           }
+      }
 }
 
 // END OF FILE

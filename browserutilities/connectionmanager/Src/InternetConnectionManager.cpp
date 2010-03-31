@@ -75,7 +75,10 @@ using namespace CMManager;
 
 // CONSTANTS
 _LIT(KConnectionResourceFile, "\\resource\\ConnectionManager.rsc");
-
+#ifdef BRDO_OCC_ENABLED_FF
+//As per OCC, number of Connection observer states
+const TInt KMaxOccStages = 1;
+#endif
 // ============================ MEMBER FUNCTIONS ===============================
 //--------------------------------------------------------------------------
 //CInternetConnectionManager::ConnectL( TUint32 aIAPId1, TUint32 aIAPId2 )
@@ -652,7 +655,7 @@ EXPORT_C void CInternetConnectionManager::StopConnectionL()
     if( iConnected )
         {
         CLOG_WRITE( "StopConnectionL() Stop the Connection" );
-        iConnection.Stop(RConnection::EStopAuthoritative);
+        iConnection.Close();
         }
     
 //    iServ.Close();
@@ -1336,12 +1339,17 @@ void CInternetConnectionManager::StartConnectionObservingL()
     TName* name = ConnectionNameL();
     __ASSERT_DEBUG( name, User::Panic( KNullDesC, KErrCorrupt ) );
     CleanupStack::PushL( name );
-    
+
+#ifdef BRDO_OCC_ENABLED_FF
+    iSatges[0] = KLinkLayerClosed;
+    iStageNotifier->StartNotificationL( name,iSatges,KMaxOccStages,this, ETrue );
+#else
     iSatges[0] = KConnectionUninitialised;
     iSatges[1] = KConnectionClosed;
     iSatges[2] = KLinkLayerClosed;
 
     iStageNotifier->StartNotificationL( name,iSatges,KMaxStages,this, ETrue );
+#endif
 
     CleanupStack::PopAndDestroy( name );
     }
@@ -1371,7 +1379,7 @@ void CInternetConnectionManager::ConnectionStageAchievedL(TInt /*aStage*/)
      {
      	// this is a connection closed event
         CLOG_WRITE( "ConnectionStageAchievedL() Stoping the connection instead of closing" );
-        iConnection.Stop();
+        iConnection.Close();
     	iConnected = EFalse;
 
     	if( !iSilentMode )
@@ -1701,7 +1709,6 @@ EXPORT_C void CInternetConnectionManager::SetConnectionType( TCmSettingSelection
 	CLOG_WRITE_1( "CInternetConnectionManager::SetConnectionType - %d", aConnectionType );
 	iConnectionType = aConnectionType;
 	}
-    
 //-------------------------------------------------------------------
 //CInternetConnectionManager::SetRequestedSnap
 //-------------------------------------------------------------------
@@ -2016,7 +2023,6 @@ void CInternetConnectionManager::InitializeL()
         {
         User::LeaveIfError( iServ.Connect() );
         }
-
     CLOG_WRITE( "Fully initialized" );
     iInitialized = ETrue;    
     }
@@ -2039,16 +2045,37 @@ TInt CInternetConnectionManager::ConnectWithSnapIdL(TUint32 aRequestedSnapId)
 #ifndef __WINS__
     if( KErrNone == connErr )
         {
-        TUint32 iIapID;
-        TBuf<20> query;
-        query.Format( _L("%s\\%s"), IAP, COMMDB_ID );
-        if( iConnection.GetIntSetting( query, iIapID ) == KErrNone )
-            {
-            CLOG_WRITE_1( "ConnectWithSnapId::AccessPoint - %d", iIapID );
-            CApAccessPointItem* ap = APItemFromIAPIdLC( iIapID );
-            UpdateCurrentAPL( *ap, EFalse );
-            CleanupStack::PopAndDestroy();  // ap
-            }
+        if( iSilentMode )
+        // Temp fix for CDMA
+           {
+           TUint32 iapId;
+           TBuf<20> query;
+           TBuf<40> val;
+        
+           query.Format( _L("%s\\%s"), IAP, COMMDB_ID );
+           User::LeaveIfError( iConnection.GetIntSetting( query, iapId ) );
+           iCurrentAP = (CApAccessPointItem*)iapId;
+        
+           query.Format(_L("%s\\%s"), IAP, COMMDB_NAME);
+           User::LeaveIfError( iConnection.GetDesSetting( query, val ) );
+        
+           iConnName = val.AllocL();
+           CLOG_WRITE_1( "Iap id used : %d", iapId );
+           CLOG_WRITE_1( "Conn name   : %S", iConnName);
+           }
+        else
+           {
+           TUint32 iIapID;
+           TBuf<20> query;
+           query.Format( _L("%s\\%s"), IAP, COMMDB_ID );
+           if( iConnection.GetIntSetting( query, iIapID ) == KErrNone )
+               {
+               CLOG_WRITE_1( "ConnectWithSnapId::AccessPoint - %d", iIapID );
+               CApAccessPointItem* ap = APItemFromIAPIdLC( iIapID );
+               UpdateCurrentAPL( *ap, EFalse );
+               CleanupStack::PopAndDestroy();  // ap
+               }
+           }
         }
             
 #endif

@@ -49,7 +49,7 @@ public:
 private:    
     bool checkForEventListener(WebCore::Node* node);
     bool canDehighlight(const TPoint &aPoint);
-    void dehighlight(const TPoint &aPoint = TPoint(-1,-1));
+    void dehighlight();
 
     bool isHighlitableElement(TBrCtlDefs::TBrCtlElementType& elType);
     TBrCtlDefs::TBrCtlElementType highlitableElement();
@@ -61,7 +61,6 @@ private:
     void handleMove(const TStmGestureEvent& aGesture);
     void doTapL();
     void updateCursor(const TPoint& pos);
-    void setFocusRing();
     void handlePinchZoomL(const TStmGestureEvent& aGesture);
 private:
     WebPointerEventHandler(WebView* view);            

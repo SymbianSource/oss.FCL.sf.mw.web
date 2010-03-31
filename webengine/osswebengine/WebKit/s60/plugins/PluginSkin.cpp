@@ -44,6 +44,8 @@
 #include "ResourceRequest.h"
 #include "Widget.h"
 #include "PlatformScrollBar.h"
+#include "Page.h"
+#include "FocusController.h"
 
 #include <ApEngineConsts.h>
 #include <Uri8.h>
@@ -51,6 +53,7 @@
 #include <es_enum.h>
 #include "WidgetExtension.h"
 #include <widgetregistryclient.h>
+
 
 // CONSTANTS
 using namespace WebCore;
@@ -195,8 +198,11 @@ void PluginSkin::addWidgetAttributesL()
 #endif
 
         TInt uid = wdgtExt->GetWidgetId();         
+        
         CWidgetPropertyValue* AccessValue = widgetregistry.GetWidgetPropertyValueL(TUid::Uid(uid), EAllowNetworkAccess ); 
-        TInt networkAccess = *AccessValue;
+        TInt networkAccess = AccessValue && *AccessValue;
+        delete AccessValue;
+        
         const TDesC& allowNetworkAccess = KAllowNetworkAccess();
         NPN_GenericElement NetworkAccess(allowNetworkAccess,networkAccess);
         iGenericElementArray->AppendL(NetworkAccess);
@@ -566,6 +572,7 @@ void PluginSkin::activate()
                 {
                 m_active = ETrue;
                 m_frame->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
+                control(m_frame)->webView()->page()->focusController()->setFocusedNode(getElement(), control(m_frame)->webView()->page()->focusController()->focusedOrMainFrame());                        
                 pluginHandler->setActivePlugin(this);
                 pluginHandler->setPluginToActivate(NULL);
                 }
@@ -805,7 +812,7 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
     if (url.Ptr() == NULL ) {                        
         return KErrArgument;
     }
-    _LIT8(KSwfExtn, ".swf");
+    
     _LIT8(KJs, "javascript:");
     if ((url.Length() > KJs().Length() ) &&(url.Left(KJs().Length()).FindF(KJs) == 0)) {
         HBufC* pBuffer = HBufC::NewL(url.Length());
@@ -827,8 +834,8 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
     HBufC8* absoluteUrl = makeAbsoluteUrlL(m_url, docUrl, url); 
     CleanupStack::PushL(absoluteUrl);
 
-    if( (loadmode == ELoadModePlugin ) || (url.FindF(KSwfExtn)!= KErrNotFound) ){    
-        
+    PluginHandler* pluginHandler = StaticObjectsContainer::instance()->pluginHandler();
+    if( (loadmode == ELoadModePlugin ) || (loadmode == ELoadModeTop && (pluginHandler->pluginMimeByExtention(url) != NULL)) ){        
         if (m_instance && m_pluginfuncs) {
         
             NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(url, this, core(m_frame), notifydata, notify);
@@ -1197,4 +1204,41 @@ TWindowType PluginSkin::GetWindowType(const TDesC* aWindowType)
     }
 
     return EWindowTypeUnknown;
+}
+
+void PluginSkin::reCreatePlugin()
+{
+    //destroy the plugin
+    
+    Vector<PluginStream*> streams;
+    for (HashSet<PluginStream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it) {
+        streams.append(*it);
+    }    
+    for (int i=0; i<streams.size(); ++i) {
+        streams[i]->close();
+    }
+    m_streams.clear();
+
+    if (m_instance && m_pluginfuncs && m_pluginfuncs->destroy) {        
+        m_pluginfuncs->destroy(m_instance, NULL);
+    }
+    User::Free(m_instance); m_instance = 0;
+    delete m_pluginwin; m_pluginwin = 0;
+    delete iJavascriptTimer; iJavascriptTimer = 0;
+    
+    RFs& rfs = StaticObjectsContainer::instance()->fsSession();
+    for(TInt i=0; i < m_tempFilesArray.Count(); i++)
+        {
+          rfs.Delete(m_tempFilesArray[i]->Des());
+        }
+    
+    m_tempFilesArray.ResetAndDestroy();
+    
+    
+    //create/load the destroyed plugin again
+    
+    NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(m_url->Des(), this, core(m_frame));
+    if (pluginloader) {
+        pluginloader->start();                            
+    }    
 }

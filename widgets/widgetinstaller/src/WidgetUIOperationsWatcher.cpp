@@ -479,9 +479,15 @@ TBool CWidgetUIOperationsWatcher::PreprocessWidgetBundleL()
         iWidgetInHS = iRegistry.IsWidgetInMiniView( aUid );
         // get original install dir from registry in case user
         // decides to "overrite" to another memory location
-        iOriginalDir = *( iRegistry.GetWidgetPropertyValueL(
+        CWidgetPropertyValue *propValue = iRegistry.GetWidgetPropertyValueL(
                               TUid::Uid( *(iPropertyValues[EUid]) ),
-                              EBasePath ) );
+                              EBasePath );
+                              
+        iOriginalDir.Zero();
+        if(propValue)
+            iOriginalDir = *propValue;
+            
+        delete propValue;
         }
     // uid for a new widget will be gotten once install location (c: or
     // e:) is selected
@@ -997,8 +1003,10 @@ void CWidgetUIOperationsWatcher::UninstallL(
         if ( !iSilent ) { iUIHandler->DisplayUninstallInProgressL(); }
         TBuf<KWidgetRegistryVal> widgetPath;
         iRegistry.GetWidgetPath( aUid, widgetPath );
-        TBool aVendor = *(iRegistry.GetWidgetPropertyValueL(aUid, ENokiaWidget));
-
+        
+        CWidgetPropertyValue* propValue = iRegistry.GetWidgetPropertyValueL(aUid, ENokiaWidget);
+        TBool aVendor = propValue && *(propValue);
+        delete propValue;
 
         // TODO if any of next steps leave does state become inconsistent?
 

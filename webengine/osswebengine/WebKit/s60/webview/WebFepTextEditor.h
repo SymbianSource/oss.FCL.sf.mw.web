@@ -131,7 +131,6 @@ public:
     void HandleMaskedInsertText(WebCore::Frame* frame, const String& text);
     void HandleMaskedDeleteText(WebCore::Frame* frame);
     bool IsWapMaskedModeInput(WebCore::Frame* frame);
-    void FocusChanging();
     void EnableCcpuL();
     
 private:

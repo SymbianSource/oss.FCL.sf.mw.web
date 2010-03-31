@@ -582,7 +582,7 @@ Node* WebFrame::getClosestAnchorElement(const TPoint& viewPt, TPoint& newPos)
 	}
 	
     // check if we are close enough and calcualte with zoom factor. 
-    if (dist< (400/m_view->topView()->scalingFactor() * 100)) {
+    if (result && dist< (400/m_view->topView()->scalingFactor() * 100)) {
         IntRect r = result->getRect();
         r.inflate(-2);
         TPoint docPos(xInRect(r, pt.x()), yInRect(r, pt.y()));

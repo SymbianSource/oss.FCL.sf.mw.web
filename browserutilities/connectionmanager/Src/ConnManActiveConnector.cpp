@@ -87,8 +87,9 @@ void CConnManActiveConnector::StartConnection( TCommDbConnPref* aSettings, TRequ
     }
     else
     {
-       CLOG_WRITE( "CConnManActiveConnector:StartConnection Using Internet Snap");
-       extPref.SetSnapPurpose(CMManager::ESnapPurposeInternet);
+       CLOG_WRITE( "CConnManActiveConnector:StartConnection Popup ap dialog");
+       extPref.SetSnapPurpose(CMManager::ESnapPurposeUnknown);
+       extPref.SetConnSelectionDialog(ETrue);
     }
 
 #endif //__WINS__   
@@ -140,8 +141,16 @@ void CConnManActiveConnector::StartConnection( TConnSnapPref* aSettings, TReques
 #else
     
     //For hardware
-    CLOG_WRITE( "CConnManActiveConnector:StartConnection Using Internet Snap");
-    extPref.SetSnapPurpose(CMManager::ESnapPurposeInternet);
+    if( aSettings->Snap() == 0 )
+        {
+        CLOG_WRITE( "CConnManActiveConnector:StartConnection Using Internet Snap");
+        extPref.SetSnapPurpose(CMManager::ESnapPurposeInternet);
+        }
+    else
+        {
+        CLOG_WRITE( "CConnManActiveConnector:StartConnection Using given Snap");
+        extPref.SetSnapId(aSettings->Snap());
+        }
 
 #endif //__WINS__
 

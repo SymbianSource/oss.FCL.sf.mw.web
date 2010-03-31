@@ -709,7 +709,12 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                 const TDesC8& fragment = uriParser.Extract( EUriFragment );
                 delete m_frag;
                 m_frag = NULL;
-                m_frag = fragment.AllocL();
+                //Browser does not allow fragment size of greater than 2083 bytes
+                TInt32 maxbyte = fragment.Length(); 
+                if ( maxbyte <= 2083)
+                    {
+                     m_frag = fragment.AllocL();
+                    }
                 }
             HandleSpecialEvent(aEvent.iStatus);
             break;
@@ -721,7 +726,10 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
         default:
             {
             // error handling
-            handleError(aEvent.iStatus);
+            if(aEvent.iStatus == KErrNotReady || aEvent.iStatus == KErrDisconnected   )
+                StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->setRetryConnectivityFlag();                 
+            else
+                handleError(aEvent.iStatus);               
             break;
             }
         }
@@ -779,6 +787,13 @@ int HttpConnection::HandleSpecialEvent(int event)
 
 void HttpConnection::complete(int error)
 {
+    TBool retryFlag = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->getRetryConnectivityFlag();
+    if( retryFlag )
+        {
+        //m_cancelled = false; //for flash
+        return;
+        }
+    
     if (m_defersData) {
         m_defersData->m_done = true;
         m_defersData->m_error = error;
@@ -814,6 +829,7 @@ void HttpConnection::complete(int error)
                 m_MultipartContentHandler->MarkupContent(), m_maxSize, this);
         }
         delete m_MultipartContentHandler;
+        m_IsMultipart = false;
     }
     if (!error) {
         // Spawn active object for call to return immediately, to avoid blocking

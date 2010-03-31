@@ -97,7 +97,7 @@ public:
      bool spellingUIIsShowing();
      void getGuessesForWord(const WebCore::String&, Vector<WebCore::String>& guesses);     
      void setInputMethodState(bool enabled);
-     void preFocusChange(WebCore::Node* oldNode, WebCore::Node* newNode);
+     
      
 private:
     void handleInsertText(WebCore::Frame* frame, const WebCore::String& text);

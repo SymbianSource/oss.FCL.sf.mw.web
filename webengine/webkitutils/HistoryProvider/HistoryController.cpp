@@ -152,7 +152,10 @@ HBufC* HistoryController::pageInfoLC( TBrCtlDefs::TBrCtlPageInfo brCtlPageInfo )
     CleanupStack::PushL( pageInfo );
     return pageInfo;
 }
-
+void HistoryController::rollBackIndex()
+    {
+    m_currentIndex = m_tempCurrentIndex;
+    }
 /**
 */
 void HistoryController::handleHistoryCommandL(int command)
@@ -518,8 +521,11 @@ void HistoryController::showHistoryListL()
     SelectArray* historyList = new( ELeave ) CArrayFixFlat<TBrCtlSelectOptionData>(10);
     CleanupStack::PushL( historyList );
     for( int i = m_historyStack.Count() - 1; i >= 0; i-- ) {
-        TBrCtlSelectOptionData t( TBrCtlSelectOptionData(entryByIndex(i)->pageTitle(), i == m_currentIndex, false, false) );
-        historyList->AppendL(t);
+    if(entryByIndex(i))
+    {
+      TBrCtlSelectOptionData t( TBrCtlSelectOptionData(entryByIndex(i)->pageTitle(), i == m_currentIndex, false, false) );
+      historyList->AppendL(t);
+     }
     }
     // Display history dialog
     bool ret = m_historyCallback->dialogSelectOption(historyList);

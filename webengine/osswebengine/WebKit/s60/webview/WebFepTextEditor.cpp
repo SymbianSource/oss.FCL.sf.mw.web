@@ -154,7 +154,7 @@ void CWebFepTextEditor::UpdateEditingMode()
                     state->SetPermittedInputModes(EAknEditorSecretAlphaInputMode | EAknEditorNumericInputMode);
                     state->SetDefaultCase(EAknEditorLowerCase);
                     state->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG_LATIN_ONLY);
-                    state->SetNumericKeymap(EAknEditorPlainNumberModeKeymap);
+                    state->SetNumericKeymap(EAknEditorStandardNumberModeKeymap);
                 }
             }
             else {
@@ -1468,21 +1468,6 @@ void CWebFepTextEditor::setSCTAvailability(bool aAvailable)
         m_ExtendedInputCapabilities->SetCapabilities(capabilities);
     }
 }
-
-// -----------------------------------------------------------------------------
-// FocusChanging
-//
-// Called when the focus of the node changes, to commit the text 
-// -----------------------------------------------------------------------------
-void CWebFepTextEditor::FocusChanging()
-    { 
-    CAknEdwinState* state = static_cast<CAknEdwinState*>(State(KNullUid));
-    if ( state ) {
-        TRAP_IGNORE( state->ReportAknEdStateEventL(MAknEdStateObserver::EAknSyncEdwinState ) );
-    }
-    CommitFepInlineEditL(*CEikonEnv::Static());
-    CancelEditingMode();    
-    } 
 
 // -----------------------------------------------------------------------------
 // IsLongKeyPress

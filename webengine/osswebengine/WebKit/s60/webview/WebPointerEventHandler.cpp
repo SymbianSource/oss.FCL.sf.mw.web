@@ -44,7 +44,6 @@
 #include "EventHandler.h"
 #include "EventNames.h"
 #include "HitTestResult.h"
-#include "HitTestRequest.h"
 #include "MouseEvent.h"
 #include "WebPageFullScreenHandler.h"
 #include "PluginSkin.h"
@@ -57,13 +56,6 @@
 #include "WebTabbedNavigation.h"
 #include "SettingsContainer.h"
 #include "PluginHandler.h"
-#include "WebCoreGraphicsContext.h"
-#include "GraphicsContext.h"
-#include "RenderStyle.h"
-#include "RenderObject.h"
-#include "CSSStyleSelector.h"
-#include "CSSValueKeywords.h"
-#include "Settings.h"
 #include "WebGestureInterface.h"
 #include "WebPagePinchZoomHandler.h"
 #include "WebScrollingDeceleratorGH.h"
@@ -142,9 +134,15 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
     PluginSkin* plugin = m_webview->mainFrame()->focusedPlugin();
     if (plugin && plugin->pluginWin()) {
         if (plugin->pluginWin()->HandleGesture(aGesture)) {
-         if(!plugin->isActive())
+         if(!plugin->isActive()) {
             plugin->activate();
-            return;
+         }
+         else {
+            m_webview->mainFrame()->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
+            m_webview->page()->focusController()->setFocusedNode(plugin->getElement(), m_webview->page()->focusController()->focusedOrMainFrame());                        
+            m_webview->brCtl()->updateDefaultSoftkeys();
+         }
+         return;
         }
     }
 
@@ -209,7 +207,10 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
 
         case stmGesture::EGestureUidPinch:
         {
+        if(!m_webview->inPageViewMode())
+            {
             handlePinchZoomL(aGesture);
+            }
             break;
         }
         default:
@@ -415,10 +416,6 @@ TBrCtlDefs::TBrCtlElementType WebPointerEventHandler::highlitableElement()
 
     Element* eventNode = frm->document()->elementFromPoint(pt.iX, pt.iY);
 
-    if (m_isHighlighted){
-        dehighlight(pos);
-    }
-
     m_highlightedNode = NULL;
 
     Node* retNode = 0;
@@ -487,11 +484,7 @@ void WebPointerEventHandler::doTapL()
            }
     }
 #endif // BRDO_TOUCH_ENABLED_FF
-
-    if (!IS_NAVIGATION_NONE) {
-         m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, coreFrame);
-     }
-
+    
      /*
       * We assume that if element visibility has been changed
       * between "up" and "down" that means that some node event
@@ -538,15 +531,15 @@ void WebPointerEventHandler::doTapL()
 //-----------------------------------------------------------------------------
 // WebPointerEventHandler::deHighlight
 //-----------------------------------------------------------------------------
-void  WebPointerEventHandler::dehighlight(const TPoint &aPoint)
+void  WebPointerEventHandler::dehighlight()
 {
-    // m_highlightPos should be (-1, -1). 
+    // send dehighlight event to engine by passing -1, -1
+    // sending any other pointer value may result in highligh of other links
     m_highlightPos = TPoint(-1, -1);
     m_isHighlighted = EFalse;
 
     Frame* frm = m_webview->page()->focusController()->focusedOrMainFrame();
-    m_webview->sendMouseEventToEngine(TPointerEvent::EMove, aPoint, frm);
-
+    m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, frm);
 
     m_highlightedNode = NULL;
 
@@ -597,10 +590,6 @@ void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
 
     Frame* coreFrame = core(m_webview->mainFrame());
     TPointerEvent event;
-
-    if (!IS_NAVIGATION_NONE) {
-        m_webview->page()->chrome()->client()->setElementVisibilityChanged(false);
-    }
     
     TBrCtlDefs::TBrCtlElementType elType = highlitableElement();
 
@@ -608,7 +597,8 @@ void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
         elType = TBrCtlDefs::EElementNone;
     }
     m_isHighlighted = (m_highlightedNode != NULL) && (elType != TBrCtlDefs::EElementNone) ;
-
+    m_webview->page()->chrome()->client()->setElementVisibilityChanged(false);
+    
     /*
      * Tabbed navigation might already set the focused node.
      * If it's the same as m_highlightedNode FocuseController::setFocusedNode()
@@ -623,12 +613,8 @@ void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
     }
 
     if (!IS_NAVIGATION_NONE) {
-        //to initiate hover
-        if (m_isHighlighted) {
-            setFocusRing();
-        }
-
-    }
+		m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, coreFrame);
+    } 
     else {
         m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
     }
@@ -657,25 +643,6 @@ void WebPointerEventHandler::updateCursor(const TPoint& pos)
     }
 }
 
-//-----------------------------------------------------------------------------
-// WebPointerEventHandler::setFocusRing
-//----------------------------------------------------------------------------
-void WebPointerEventHandler::setFocusRing()
-{
-    Element* e = static_cast<Element*>(m_highlightedNode);
-    RenderStyle* rs = e->renderStyle();
-    RenderStyle* style = new (e->document()->renderArena()) RenderStyle(*rs);
-    Color col(0xffaaaaff);
-
-    style->ref();
-    style->setOutlineColor(col);
-    style->setOutlineStyle(DOTTED, true);
-    style->setOutlineWidth(4);
-    style->setOutlineOffset(2);
-    e->setRenderStyle(style);
-    style->deref(e->document()->renderArena());
-    e->setChanged();
-}
 
 //-----------------------------------------------------------------------------
 // WebPointerEventHandler::handlePinchZoom

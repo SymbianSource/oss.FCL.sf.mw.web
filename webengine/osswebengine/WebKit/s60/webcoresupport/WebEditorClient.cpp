@@ -317,7 +317,7 @@ void WebEditorClient::toggleGrammarChecking()
 //-----------------------------------------------------------------------------
 void WebEditorClient::handleKeypress(KeyboardEvent* event)
 {
-    if (!m_webView && !m_webView->page()) {
+    if (!(m_webView && m_webView->page())) {
         return;
     }
 
@@ -691,12 +691,6 @@ void WebEditorClient::handleDeleteText(Frame* frame)
     }
 }
 
-void WebEditorClient::preFocusChange(Node* oldNode, Node* newNode)
-    {      
-    TBool contentEditable = m_webView->page()->focusController()->focusedOrMainFrame()->selectionController()->isContentEditable();    
-    if ( oldNode && newNode && contentEditable ) {       
-        m_webView->fepTextEditor()->FocusChanging();
-       }
-    }
+
 
 

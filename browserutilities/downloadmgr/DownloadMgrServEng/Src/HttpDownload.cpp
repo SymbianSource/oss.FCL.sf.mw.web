@@ -46,6 +46,9 @@
 
 #include    <pathinfo.h>
 
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+#include <DownloadPathHandler.h>
+#endif
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;
 
@@ -6771,6 +6774,14 @@ void CHttpDownload::UpdateDestFileNameL()
     TBool needToUpdatePath( ETrue );
 
     CLOG_WRITE_1( " entering fileName: %S", fileName );
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+    CDownloadPathHandler* downloadPathPlugin = NULL;
+    downloadPathPlugin = GetDownloadPathPluginInstanceL();
+    if( downloadPathPlugin )
+       {
+        CleanupStack::PushL( downloadPathPlugin );
+       }
+#endif
 #ifdef RD_MULTIPLE_DRIVE
     HBufC8* drivesDynList = iClientApp->Engine()->QueryDynDriveListLC();
     TPtrC8 drives( *drivesDynList ); 
@@ -6786,7 +6797,14 @@ void CHttpDownload::UpdateDestFileNameL()
             }
         if( drive == currentDrive )//if the current path is same as the path in cenrep then no need to update.The diff is because we must have not known size before hand
             {
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+            if( !downloadPathPlugin )
+                {
+                needToUpdatePath = EFalse;
+                }
+#else
             needToUpdatePath = EFalse;
+#endif 
             break;
             }
         else
@@ -6822,8 +6840,23 @@ void CHttpDownload::UpdateDestFileNameL()
     
         // Setting RootPath for new Destination file
         fileNamePtr.Insert( 0, rootPath );
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+        if( downloadPathPlugin )
+            {
+             GetUpdatedPathFromPluginL(downloadPathPlugin,rootPath,fileNamePtr);
+             CleanupStack::PopAndDestroy( downloadPathPlugin );
+            }
+         else 
+           {
+           // Setting KDownloadPath
+           fileNamePtr.Insert( rootPath.Length(), KDownloadPath );
+           }   
+#else
         // Setting KDownloadPath
         fileNamePtr.Insert( rootPath.Length(), KDownloadPath );
+          
+#endif
+        
 #else
         TChar driveChar;
         fs.DriveToChar(drive, driveChar);
@@ -7190,4 +7223,43 @@ void CHttpDownload::ConvertDownloadNameUniqueL( HBufC*& filePath,
     CleanupStack::PushL(fileName);
     }
 
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+
+// -----------------------------------------------------------------------------
+// CHttpDownload::GetDownloadPathPluginInstanceL
+// -----------------------------------------------------------------------------
+//
+CDownloadPathHandler* CHttpDownload::GetDownloadPathPluginInstanceL()
+    {
+    CDownloadPathHandler* downloadPathPlugin = NULL;
+    if ( iContentType )
+        {
+        TRAPD( kErr, downloadPathPlugin = CDownloadPathHandler::NewL( *iContentType ) );
+        if( kErr != KErrNone )
+            {
+            downloadPathPlugin = NULL;
+            }
+        }
+    return downloadPathPlugin;    
+
+    }
+
+// -----------------------------------------------------------------------------
+// CHttpDownload::GetUpdatedPathFromPluginL
+// -----------------------------------------------------------------------------
+//
+void CHttpDownload::GetUpdatedPathFromPluginL(CDownloadPathHandler* downloadPathPlugin,TFileName& rootPath, TPtr& fileNamePtr)
+    {
+    HBufC16* locFileName ;
+    locFileName = iStorage->LocalFilename();
+    
+    // Gets the updated path for the music content from Plugin
+    TRAPD( kErr, downloadPathPlugin->GetUpdatedPathL( *locFileName, fileNamePtr ) );
+    if( kErr != KErrNone )
+        {
+        // Setting to KDownloadPath
+        fileNamePtr.Insert( rootPath.Length(), KDownloadPath );
+        }
+    }
+#endif
 //  End of File

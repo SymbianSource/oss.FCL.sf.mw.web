@@ -104,7 +104,6 @@ CTransaction::~CTransaction()
 
     delete iRequestBuff;
     delete iAutoDelete;
-    delete iFeedsEntity;
     delete iSettingsResponseBuffer;
     }
 

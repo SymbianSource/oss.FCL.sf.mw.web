@@ -364,6 +364,11 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         * To set the Bitmap zooming Out for Pinch
         */
         void setPinchBitmapZoomOut(int zoomLevel);
+        
+        /**
+        * Recreate Plugins in case of Retry Connection
+        */
+        void reCreatePlugins();
 
     public: // from MPageScalerCallback
         /**
@@ -584,7 +589,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         WebPageFullScreenHandler* m_pageFullScreenHandler;  // owned
         bool m_viewIsScrolling;
         bool m_viewIsFastScrolling;
-        TPoint* m_ptrbuffer;
 
         // synchronous requests
         bool                m_synchRequestPending;

@@ -18,7 +18,7 @@
 
 #ifndef BRCTLDEFS_H
 #define BRCTLDEFS_H
-
+#include <browser_platform_variant.hrh>
 //  INCLUDES
 
 // DATA TYPES
@@ -207,6 +207,14 @@ class TBrCtlDefs
              ECommandLeaveFullscreenBrowsing,
              ECommandZoomIn,
              ECommandZoomOut
+#ifdef BRDO_OCC_ENABLED_FF
+             ,
+             ECommandRetryTransactions,
+             ECommandSetRetryConnectivityFlag,
+             ECommandUnSetRetryConnectivityFlag,
+             ECommandClearQuedTransactions,
+             ECommandConnToDownloadManager
+#endif
             };
         /**
         * The load event that occurred.

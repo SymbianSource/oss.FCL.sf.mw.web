@@ -19,8 +19,9 @@
 #include "wrtharvesterpsnotifier.h"
 #include "wrtharvester.h"
 #include <UikonInternalPSKeys.h>//For MMC Observing
-#include <usbmsshared.h>//For USB monitor
 #include <startupdomainpskeys.h> // For shutdown observer
+#include <UsbWatcherInternalPSKeys.h>// for Mass storage mode observing
+#include <usbpersonalityids.h>
 
 // ============================ MEMBER FUNCTIONS =============================
 
@@ -72,7 +73,7 @@ void CWrtHarvesterPSNotifier::ConstructL()
     {
     CActiveScheduler::Add( this );
     TInt r(KErrNone);
-    if( iKey != EWidgetMMCAltered  )
+    if( iKey != EWidgetMassStorageMode  )
     	{	
     	// define property to be integer type
     	r = RProperty::Define( KPropertyCat, iKey, RProperty::EInt );
@@ -83,13 +84,9 @@ void CWrtHarvesterPSNotifier::ConstructL()
         User::LeaveIfError( r );
         }
     // Attach the key
-    if( iKey == EWidgetMMCAltered )
-		{
-		User::LeaveIfError( iProperty.Attach( KPSUidUikon,KUikMMCInserted ));
-		}
-    else if( iKey == EWidgetMassStorageMode )
+    if( iKey == EWidgetMassStorageMode )
         {
-        User::LeaveIfError( iProperty.Attach( KUsbMsDriveState_Category,EUsbMsDriveState_DriveStatus ));
+        User::LeaveIfError( iProperty.Attach( KPSUidUsbWatcher,KUsbWatcherSelectedPersonality));
         }    	
     else if( iKey == EWidgetSystemShutdown )
         {
@@ -133,8 +130,8 @@ void CWrtHarvesterPSNotifier::RunL()
     
     TInt value( 0 );
     TInt r (KErrNone);
-    TUsbMsDrivesStatus allDrivesStatus;
-    if( iKey != EWidgetMMCAltered && iKey != EWidgetMassStorageMode )
+    
+    if( iKey != EWidgetMassStorageMode )
     	{
     		if (iKey == EWidgetSystemShutdown)
     	        GetValue( value);
@@ -143,8 +140,13 @@ void CWrtHarvesterPSNotifier::RunL()
     	}    
     else
         {        
-        r = iProperty.Get( allDrivesStatus );
+        r = iProperty.Get( value );
         }
+
+#ifdef _DEBUG    
+    RDebug::Print(_L("KEY %d   VALUE %d "),iKey,value);        
+#endif
+        
     if( r == KErrNone )
         {
         if( iKey == EWidgetUIState && value == 1 )
@@ -159,7 +161,24 @@ void CWrtHarvesterPSNotifier::RunL()
         else if( iKey == EWidgetUIState && value == 3 )
             {            
             iHarvester->SetReinstallWidget(ETrue);
-            }        
+            }    
+        else if( iKey == EWidgetMassStorageMode  )
+            {
+            if( value == KUsbPersonalityIdMS )
+                {
+#ifdef _DEBUG                    
+                RDebug::Print(_L("WE are in mass storage mode"));
+#endif                    
+                iHarvester->SetMSMode(1);    
+                }
+                else
+                {
+#ifdef _DEBUG                    
+                RDebug::Print(_L("NO LONGER in mass storage mode"));
+#endif                    
+                iHarvester->SetMSMode(0);
+                }
+            }
         else if( iKey == EWidgetRegAltered && value == 1 )
             {
             if(iHarvester->IsInMSMode())

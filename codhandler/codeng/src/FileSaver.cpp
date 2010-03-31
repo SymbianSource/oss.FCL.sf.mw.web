@@ -42,6 +42,9 @@
 
 #include <DcfEntry.h>
 #include <DcfRep.h>
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+#include <DownloadPathHandler.h>
+#endif
 
 const TInt KDefaultStorageBufferSize = 128 * 1024;
 const TInt KDefaultStorageBufferSizePD = 16 * 1024;
@@ -350,15 +353,42 @@ void CFileSaver::BulkInstallL( TRequestStatus* aStatus, const CCodData &aData, c
         CleanupClosePushL(fs);
         CFileMan* file=CFileMan::NewL(fs);
         CleanupStack::PushL(file);
-        
-        
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+        CDownloadPathHandler* downloadPathPlugin = NULL;
+
+        if ( aData.Count() )
+            {
+            // Get the mime type of the first media object
+            TPtrC8 mimeType = (*aData[1]).Type();
+            downloadPathPlugin = GetDownloadPathPluginInstanceL( mimeType );
+
+            if( downloadPathPlugin )
+                {
+                CleanupStack::PushL( downloadPathPlugin );
+                }
+            }
+#endif
         for( TInt i = 1; i <= aData.Count() ; ++i )
             {
             HBufC* filename = HBufC::NewLC(KMaxFileName);
             TPtr filenamePtr = filename->Des();
             filenamePtr = (*aData[i]).iRootPath;
-
-            filenamePtr.Append(_L("download\\"));
+            
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+            if( downloadPathPlugin )
+                {
+                TFileName iTempFlName = (*aData[i]).iFullName->Des();
+                GetUpdatedPathFromPluginL( downloadPathPlugin,iTempFlName, filenamePtr );
+                }
+            else
+                {
+                filenamePtr.Append( _L( "download\\" ) );
+                }
+#else
+            filenamePtr.Append( _L( "download\\" ) );
+                
+#endif
+            
             TInt error = fs.MkDirAll(filenamePtr);
             if (error!=KErrNone && error!=KErrAlreadyExists)
                {
@@ -384,6 +414,12 @@ void CFileSaver::BulkInstallL( TRequestStatus* aStatus, const CCodData &aData, c
             (*aData[i]).iFullName = NameL();
             CleanupStack::PopAndDestroy(filename);
             }
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+        if( downloadPathPlugin )
+            {
+            CleanupStack::PopAndDestroy( downloadPathPlugin );
+            }
+#endif
         CleanupStack::PopAndDestroy(file);
         CleanupStack::PopAndDestroy(&fs);
 
@@ -425,7 +461,26 @@ void CFileSaver::InstallL( TRequestStatus* aStatus, const TDesC& /* aName */, co
         HBufC* filename = HBufC::NewLC(KMaxFileName);
         TPtr filenamePtr = filename->Des();
         filenamePtr = iRootPath;
-        filenamePtr.Append(_L("download\\"));
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+        // Get the mime type of the content
+        TPtrC8 mimeType( iType.Des8() );
+        CDownloadPathHandler* downloadPathPlugin = NULL;
+        downloadPathPlugin = GetDownloadPathPluginInstanceL( mimeType );
+
+        if( downloadPathPlugin )
+            {
+            CleanupStack::PushL( downloadPathPlugin );
+            GetUpdatedPathFromPluginL( downloadPathPlugin,iFname, filenamePtr );
+            CleanupStack::PopAndDestroy( downloadPathPlugin );
+            }
+        else
+            {
+            filenamePtr.Append( _L( "download\\" ) );
+            }
+#else
+            filenamePtr.Append( _L( "download\\" ) );
+            
+#endif
         User::LeaveIfError( fs.Connect() );
         CleanupClosePushL(fs);
         CFileMan* file=CFileMan::NewL(fs);
@@ -752,3 +807,37 @@ HBufC* CFileSaver::NameL() const
     {
     return iFname.AllocL();
     }
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+
+// ---------------------------------------------------------
+// CFileSaver::GetDownloadPathPluginInstanceL
+// ---------------------------------------------------------
+CDownloadPathHandler* CFileSaver::GetDownloadPathPluginInstanceL(TPtrC8& mimetype )
+    {
+    CDownloadPathHandler* downloadPathPlugin = NULL;
+    TRAPD( kErr, downloadPathPlugin = CDownloadPathHandler::NewL( mimetype ) );
+    if( kErr != KErrNone )
+        {
+        downloadPathPlugin = NULL;
+        }
+    return downloadPathPlugin;
+    }
+
+// ---------------------------------------------------------
+// CFileSaver::GetUpdatedPathFromPluginL
+// ---------------------------------------------------------
+void CFileSaver::GetUpdatedPathFromPluginL(CDownloadPathHandler* downloadPathPlugin,TFileName& fname, TPtr& fileNamePtr)
+    {
+    TRAPD( kErr, downloadPathPlugin->GetUpdatedPathL( fname, fileNamePtr ) );
+    if( kErr == KErrNone )
+        {
+        fileNamePtr.Append( _L( "\\" ) );
+        }
+    else
+        {
+        fileNamePtr.Append( _L( "download\\" ) );
+        }
+    }
+#endif
+
+//EOF 

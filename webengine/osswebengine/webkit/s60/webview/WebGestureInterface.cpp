@@ -146,7 +146,9 @@ void WebGestureInterface::ConstructL()
     gestureParams[stmGesture::EEnableFiltering    ] = ETrue;
 #ifdef BRDO_MULTITOUCH_ENABLED_FF
     gestureParams[stmGesture::ECapacitiveUpUsed   ] = ETrue;
+#ifndef __WINSCW__    
     gestureParams[stmGesture::EAdjustYPos         ] = ETrue;
+#endif    
 #else
     gestureParams[stmGesture::ECapacitiveUpUsed   ] = EFalse;
     gestureParams[stmGesture::EAdjustYPos         ] = EFalse;

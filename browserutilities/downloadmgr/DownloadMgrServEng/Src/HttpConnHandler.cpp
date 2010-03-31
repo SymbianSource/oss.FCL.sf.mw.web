@@ -248,10 +248,12 @@ void CHttpConnStageNotifier::RunL()
     if( iStatus == KErrNone )
         {
         TInt stage = iProgressBuf().iStage;
-
+        if ( iProgressBuf().iStage == KLinkLayerClosed && iProgressBuf().iError == KErrDisconnected )
+            iConnHandler->RetryNeeded(ETrue);
+        
         iConnHandler->ConnectionStageChanged( stage );
 
-        if( stage > KConnectionUninitialised )
+        if( stage != KLinkLayerClosed )
             // connection is still alive
             {
             iConnHandler->Connection().ProgressNotification( iProgressBuf, iStatus );
@@ -300,6 +302,7 @@ void CHttpConnHandler::ConstructL()
 
 	//Set it to zero
 	iIapId = 0;
+	iRetryNeeded = EFalse;
     }
 
 // -----------------------------------------------------------------------------
@@ -764,7 +767,7 @@ void CHttpConnHandler::ConnectionStageChanged( TInt aStage )
 
     iConnStage = aStage;
 
-    if( iConnStage == KConnectionUninitialised || 
+   if( iConnStage == KLinkLayerClosed || 
         iConnStage == KDataTransferTemporarilyBlocked
         )
         {
@@ -772,24 +775,33 @@ void CHttpConnHandler::ConnectionStageChanged( TInt aStage )
         CArrayPtrFlat<CHttpDownload>* downloads = 
                                     iClientApp->Downloads();
         for( TInt i = 0; i < downloads->Count(); ++i )
-            {
+            {            
+            if(iRetryNeeded  && ((*downloads)[i]->State() == EHttpDlMultipleMOFailed || 
+               (*downloads)[i]->State() == EHttpDlInprogress ))
+                {
+                (*downloads)[i]->SetRetryFlag(ETrue);                
+                }
+            }        
+        
+        for( TInt i = 0; i < downloads->Count(); ++i )
+            {               
             if( (*downloads)[i]->ConnHandler() == this )
                 {
-                if( iConnStage == KConnectionUninitialised )
+                if( iConnStage == KLinkLayerClosed )
                     {
                     // from now on this name is invalid -> forget it!
-                    delete iConnName; iConnName = NULL;
-
-                    (*downloads)[i]->Disconnected();
+                     delete iConnName; iConnName = NULL;                     
+                     (*downloads)[i]->Disconnected();                  
+                                        
                     }
                 else
-                    {
+                    {                    
                     (*downloads)[i]->Suspended();
                     }
                 }
             }
 
-        if( iConnStage == KConnectionUninitialised )
+        if( iConnStage == KLinkLayerClosed )
             {
             ShutDown();
             }
@@ -803,6 +815,7 @@ void CHttpConnHandler::ConnectionStageChanged( TInt aStage )
         {
         Connected();
         }
+    iRetryNeeded = EFalse;
     }
 
 // -----------------------------------------------------------------------------

@@ -34,7 +34,7 @@
 #include "WebScrollbarDrawer.h"
 #include "RenderObject.h"
 #include "WebScrollingDeceleratorGH.h"
-
+#include "pluginskin.h"
 #include "WebKitLogger.h"
 using namespace WebCore;
 // constants
@@ -649,6 +649,9 @@ void WebPageScrollHandler::handleTouchUpGH(const TStmGestureEvent& aGesture)
             m_pageOverviewScrollPeriodic->Cancel();
         }
         m_webView->closePageView();
+        PluginSkin* plugin = m_webView->mainFrame()->focusedPlugin();
+        if(plugin)
+            plugin->setPluginWinClipedRect();
         scrollPageOverviewGH();
         m_webView->setViewIsScrolling(false);
         m_webView->toggleRepaintTimer(true);

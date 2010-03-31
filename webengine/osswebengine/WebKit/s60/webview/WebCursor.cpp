@@ -791,6 +791,9 @@ void WebCursor::updatePositionAndElemType(const TPoint& pt)
 {
     m_pos = pt;
     m_sprite->SetPos(pt);
+#ifdef BRDO_TOUCH_ENABLED_FF
+    m_sprite->Hide();
+#endif
     WebFrame* frame = getFrameAtPoint(pt);
     TBrCtlDefs::TBrCtlElementType elType;
     TRect r;

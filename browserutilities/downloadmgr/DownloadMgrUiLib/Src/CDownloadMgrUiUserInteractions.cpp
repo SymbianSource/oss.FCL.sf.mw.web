@@ -1044,8 +1044,8 @@ void CDownloadMgrUiUserInteractions::DeleteEventHandlerShowingDlConfirmation
             // found one.
             if ( handlerI->DownloadConfirmationShown() )
                 {
-                delete handlerI;
                 iEventHandlerArray->Remove( handlerI );
+                delete handlerI;
                 --i;
                 --handlerCount;
                 }

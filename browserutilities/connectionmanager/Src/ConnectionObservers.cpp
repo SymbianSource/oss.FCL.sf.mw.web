@@ -21,7 +21,7 @@
 #include <nifman.h>
 #include <nifvar.h>
 #include <in_sock.h>
-
+#include <browser_platform_variant.hrh>
 #include <connectionobservers.h>
 #include "ConnectionManagerLogger.h"
 
@@ -110,7 +110,12 @@ void CConnectionStageNotifierWCB::RunL()
 
     if( !iMultiObserver )
         {
-	    if ( iProgressBuf().iStage == iStageToObserve )
+        CLOG_WRITE( "CConnectionStageNotifierWCB Browser UI" );
+        #ifdef BRDO_OCC_ENABLED_FF //This is only for emulator testing. It should be #ifdef
+          if ( iProgressBuf().iStage == iStageToObserve  && (iProgressBuf().iError == KErrDisconnected || iProgressBuf().iError == KErrTimedOut) )
+        #else
+	      if ( iProgressBuf().iStage == iStageToObserve )
+        #endif
 		    {
             CLOG_WRITE( "Stage achived" );
 		    DoCloseAgent();
@@ -125,6 +130,7 @@ void CConnectionStageNotifierWCB::RunL()
         }
     else
         {
+        CLOG_WRITE( "CConnectionStageNotifierWCB Connection Manager" );
         if( IsAnyStageReached( iProgressBuf().iStage ) )
             {
             iMultiObserver->ConnectionStageAchievedL( iProgressBuf().iStage );

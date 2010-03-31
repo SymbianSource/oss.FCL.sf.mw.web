@@ -861,6 +861,8 @@ void CToolBarButton::ShowToolTip(TBool aVisible)
             }
         else
             {
+            if(iToolTipMaskContext)
+            {
             iToolTipMaskContext->SetPenColor(KRgbBlack);
             iToolTipMaskContext->SetBrushColor(KRgbBlack);
             iToolTipMaskContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
@@ -918,6 +920,7 @@ void CToolBarButton::ShowToolTip(TBool aVisible)
                 iToolTipSprite.AppendMember(spriteMem);
                 iToolTipSprite.Activate();
                 delete visualText;//visual text
+                }
                 }
             }
         }

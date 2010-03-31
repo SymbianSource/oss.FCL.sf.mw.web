@@ -720,6 +720,7 @@ TBool CWidgetUiWindow::CheckNetworkAccessL()
     CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL(iUid, EAllowNetworkAccess );
     TInt networkAccess = *propValue;
     delete propValue;
+
     propValue = widgetRegistry.GetWidgetPropertyValueL(iUid, EAllowFullAccess );
     TInt fullAccess = *propValue;
     delete propValue;
@@ -844,6 +845,11 @@ void CWidgetUiWindow::ConnectionManagement()
               //Always ask case
               TUint32 ap( 0 );
               iWindowManager.GetConnection()->SetRequestedAP( ap );
+#ifdef BRDO_OCC_ENABLED_FF
+              TUint32 snapId = 0; //Defaults connects to Internet snap
+              iWindowManager.GetConnection()->SetConnectionType(CMManager::EDestination);
+              iWindowManager.GetConnection()->SetRequestedSnap(snapId);
+#endif
             }
         }
     }
@@ -1172,7 +1178,8 @@ void CWidgetUiWindow::DetermineNetworkState()
     RWidgetRegistryClientSession& widgetRegistry = iWindowManager.WidgetUIClientSession();
     TInt inMiniView = !(WidgetMiniViewState()==EMiniViewEnabled || WidgetMiniViewState()==EMiniViewNotEnabled);//widgetRegistry.IsWidgetInMiniView( iUid);
     CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowNetworkAccess );
-    TInt netAccessWdgtProp = *propValue;    // AllowNetworkAccess in the info.plist file
+    TInt netAccessWdgtProp = propValue && *propValue;    // AllowNetworkAccess in the info.plist file
+    delete propValue;
 
     if ( netAccessWdgtProp && ((inMiniView && (iWindowManager.GetNetworkMode() == (TInt)EOnlineMode))
                                     || (!inMiniView && iUserPermission)) )

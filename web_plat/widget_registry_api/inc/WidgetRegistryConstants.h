@@ -29,6 +29,8 @@ class CWidgetInfo;
 const TUid KWidgetRegistryServerUid = { 0x10282F06 };
 const TUid KUidWidgetUi = { 0x10282822 };
 const TUid KUidWidgetLauncher = { 0x10282821 };
+const TUid KUidWgtWidgetLauncher = { 0x200267DC };
+
 
 #define WIDGETPROPERTYLISTVERSION 4
 
@@ -73,6 +75,7 @@ _LIT( KWidgetRegistryName, "!WidgetRegistry" ); // name to connect to
 _LIT( KWidgetRegistryImage, "WidgetRegistry" ); // DLL/EXE name
 _LIT8( KWidgetMime, "application/x-nokia-widget");
 _LIT( KLauncherApp, "widgetlauncher.exe" );
+_LIT( KWgtLauncherApp, "wgtwidgetlauncher.exe" );
 
 
 // Enumerations

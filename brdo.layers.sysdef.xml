@@ -18,6 +18,7 @@
         <unit unitID="launcher_api" name="launcher_api" bldFile="&layer_real_source_path;/web_plat/launcher_api/group" mrp=""/>
         <unit unitID="recent_url_store_api" name="recent_url_store_api" bldFile="&layer_real_source_path;/web_plat/recent_url_store_api/group" mrp=""/>
         <unit unitID="stmgesturefw_api" name="stmgesturefw_api" bldFile="&layer_real_source_path;/web_plat/stmgesturefw_api/group" mrp=""/>
+        <unit unitID="download_path_plugin_api" name="download_path_plugin_api" bldFile="&layer_real_source_path;/web_plat/download_path_plugin_api/group" mrp=""/>
         <unit unitID="scriptable_plugin_api" name="scriptable_plugin_api" bldFile="&layer_real_source_path;/web_plat/scriptable_plugin_api/group" mrp=""/>
         <unit unitID="webutils_api" name="webutils_api" bldFile="&layer_real_source_path;/web_plat/webutils_api/group" mrp=""/>
         <unit unitID="widget_registry_api" name="widget_registry_api" bldFile="&layer_real_source_path;/web_plat/widget_registry_api/group" mrp=""/>

@@ -690,11 +690,14 @@ EXPORT_C TBool CBrowserDialogsProvider::DialogPromptLC( const TDesC& aTitle,
 												HBufC*& aReturnedInput )
 	{
     TBool retVal;
-
-	// defInput is not modified by the dialog.
-    TPtr defInput( (TUint16*) aDefaultInput.Ptr(), aDefaultInput.Length(), 
-													    KMaxAltTextLength );
-
+    TInt length = aDefaultInput.Length();
+    if ( aDefaultInput.Length() > KMaxAltTextLength )
+        {
+        length = KMaxAltTextLength;
+        }
+    // defInput is not modified by the dialog.Truncate if length is greater than KMaxAltTextLength 
+    TPtr defInput( (TUint16*) aDefaultInput.Ptr(), length, KMaxAltTextLength );
+    
     CBrowserScriptPromptDialog* dialog = 
 		new (ELeave) CBrowserScriptPromptDialog( defInput, aReturnedInput );
 

@@ -230,11 +230,10 @@ void CWrtHarvester::ConstructL()
     iWidgetUIListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetUIState );
     iWidgetRegListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetRegAltered );
     iWidgetSystemShutdownListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetSystemShutdown );
+    iMsModeListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetMassStorageMode );
     
     User::LeaveIfError( iFs.Connect() );
-    iWidgetUsbListener = CWrtUsbHandler::NewL( this, iFs );
     
-    iWidgetUsbListener->Start();
     SetMSMode(0);
     
     iCanAccessRegistry = ETrue;    
@@ -286,11 +285,12 @@ CWrtHarvester::~CWrtHarvester()
     iObservers.ResetAll();
     iWidgetInfo.ResetAll();
     iWidgetStateArray.ResetAll();
+    
     delete iWidgetUIListener;
-    delete iWidgetRegListener;
-    delete iWidgetMMCListener;
-    delete iWidgetUsbListener;
+    delete iWidgetRegListener;    
+    delete iMsModeListener;    
     delete iWidgetSystemShutdownListener;
+    
     if(iAsyncCallBack)
         {
         iAsyncCallBack->Cancel();       
@@ -327,12 +327,11 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
     	{
     	return ;
     	}
-    if( IsInMSMode() == 1 && aTrigger == KDeActive)
+    if( IsInMSMode() == 1 )
       {
-      RemovePublisherAndObserverL(aContentId);
-      
-      if(!iSystemShutdown)
+      if( aTrigger == KDeActive && !iSystemShutdown )
           {
+          RemovePublisherAndObserverL(aContentId);
           RWidgetRegistryClientSession session;
           CleanupClosePushL( session );
           User::LeaveIfError( session.Connect() );
@@ -890,8 +889,11 @@ void CWrtHarvester::QueueResumeL( TUid& aUid )
     RWidgetRegistryClientSession session;
     CleanupClosePushL( session );
     User::LeaveIfError( session.Connect() );
-    TBool preInstalled = *(session.GetWidgetPropertyValueL( aUid, EPreInstalled ) );
-    
+
+    CWidgetPropertyValue* property = session.GetWidgetPropertyValueL( aUid, EPreInstalled );
+    TBool preInstalled = property && *(property);
+    delete property;
+
     // Set blanket permission to true for pre-installed widgets
     if ( preInstalled )
         {
@@ -982,7 +984,11 @@ TBool CWrtHarvester::CheckNetworkAccessL( TUid& aUid )
     RWidgetRegistryClientSession session;
     CleanupClosePushL( session );
     User::LeaveIfError( session.Connect() );
-    TBool networkAccess = *(session.GetWidgetPropertyValueL( aUid, EAllowNetworkAccess ) );
+
+    CWidgetPropertyValue* value = session.GetWidgetPropertyValueL( aUid, EAllowNetworkAccess );
+    TBool networkAccess = value && *(value);
+    delete value;
+
     CleanupStack::PopAndDestroy( &session );
     
     return networkAccess;
