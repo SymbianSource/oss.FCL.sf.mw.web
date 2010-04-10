@@ -42,5 +42,5 @@
 #define MobileBrowserBuild (_L("0516"))
 
 
-#endif BROWSERVERSION_H
+#endif // BROWSERVERSION_H
 //end of file

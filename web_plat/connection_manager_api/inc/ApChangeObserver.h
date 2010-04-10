@@ -29,4 +29,4 @@ class MApChangeObserver
 	virtual void ApChangedL( TUint32 aNewAPId ) = 0;
 	};
 
-#endif;//AP_CHANGE_OBSERVER_H// End of File
+#endif //AP_CHANGE_OBSERVER_H// End of File
