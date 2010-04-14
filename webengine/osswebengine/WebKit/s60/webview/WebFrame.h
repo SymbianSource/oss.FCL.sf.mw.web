@@ -97,6 +97,7 @@ public:
     void notifyPluginOfScrolling(WebCore::RenderObject* renderer);
     PluginSkin* focusedPlugin();
     WebFrame* frameAtPoint(const TPoint& pt_);
+    void PlayPausePlugins(bool pause);
     
     // utility functions
     int imageCount(bool visibleOnly_);
@@ -108,8 +109,6 @@ public:
     bool executeScript(const WebCore::String& script);
     WebCore::Node* getClosestAnchorElement(const TPoint& pt, TPoint& newPos);
     
-    void setpluginToScroll(bool pluginScroll){m_pluginToScroll=pluginScroll;}
-    bool pluginToScroll(){return m_pluginToScroll;}
     
 private:
     WebFrame(const WebFrame&);                    // not implemented

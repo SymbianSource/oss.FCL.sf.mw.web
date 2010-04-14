@@ -118,11 +118,13 @@ private:
     bool                         m_shouldCreateRenderers;
     Vector<WebCore::IntRect>     m_focusableNodeList;
 
+
 };
 
 #endif // __WEBCOREFRAMEBRIDGE_H__
 
 // END OF FILE
+
 
 
 

@@ -152,7 +152,6 @@ void PluginWin::windowChanged()
 void PluginWin::windowChangedL()
 {
     if (m_fullscreen) return;
-    PlayPausePluginL();
     if (m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->setwindow ){
         NPWindow  window;
     TRect rect( m_pluginskin->getPluginWinRect() );
@@ -700,19 +699,15 @@ void PluginWin::NotifyPluginVisible (TBool visible)
       }	
     }
 }
-void PluginWin::PlayPausePluginL ()
+void PluginWin::PlayPausePluginL (bool pause)
 {
-    if(m_notifier) 
-    {
-        CBrCtl*   brCtl = control(m_pluginskin->frame());    
-        WebView*  view = brCtl->webView();
-        TBool scrolling = view->viewIsScrolling();
-        if (scrolling) {
-            m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)1 );
-        }
-        else {
-            m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)0 );
-        }
+    if(m_notifier) {        
+      if (pause) {
+          m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)1 );
+      }
+      else {
+          m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)0 );
+      }
     }
 }
 

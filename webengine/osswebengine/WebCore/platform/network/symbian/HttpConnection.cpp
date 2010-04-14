@@ -1174,15 +1174,17 @@ int HttpConnection::CheckForSecurityStatusChange()
         //When submitting the request iSecurePage was set based on the request url
         //Check the redirect url and see if the scheme has changed
         HttpSessionManager* httpSessionMgr = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager();
-        if(requestedSecScheme && !redirectedSecScheme) //redirection from a secure page to an unsecure one
+        if(httpSessionMgr->isInSecureConnection() && requestedSecScheme && !redirectedSecScheme) //redirection from a secure page to an unsecure one
             {
             error = httpSessionMgr->uiCallback()->aboutToLoadPage(control(m_frame), HttpUiCallbacks::EExitingSecurePage);
+            httpSessionMgr->setInSecureConnection(EFalse);
             }
-        else if(redirectedSecScheme && !requestedSecScheme) //redirection to unsecurepage when secure page was requested
+        else if(!httpSessionMgr->isInSecureConnection() && redirectedSecScheme && !requestedSecScheme) //redirection to unsecurepage when secure page was requested
             {
             error = httpSessionMgr->uiCallback()->aboutToLoadPage(control(m_frame), HttpUiCallbacks::EEnteringSecurePage );
+            httpSessionMgr->setInSecureConnection(ETrue);
             }
-        }
+        }      
     return error;
     }
 

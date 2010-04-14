@@ -45,6 +45,7 @@
 #include "WebFormFillPopup.h"
 #include "WebPageFullScreenHandler.h"
 #include "PageScaler.h"
+#include "ThumbnailGenerator.h"
 #include "HistoryController.h"
 #include "HistoryEntry.h"
 #include "HistoryInterface.h"
@@ -662,7 +663,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
             }
         case TBrCtlDefs::ECommandCancelFetch:
             {
-                m_webView->mainFrame()->stopLoading();
+                m_webView->Stop();
                 break;
             }
 
@@ -2088,8 +2089,14 @@ EXPORT_C CGulIcon* CBrCtl::GetBitmapData(const TDesC& aUrl, TBrCtlDefs::TBrCtlBi
                 if ( entry ) {
                     CFbsBitmap* bitmap = entry->thumbnail();
                     if(!bitmap) {
-                        // get scaled page from PageScaler;
-                        bitmap = m_webView->pageScaler()->ScaledPage();
+                        if(m_webView->pageThumbnailGenerator()) {
+                            //get the page thumbnail  
+                            bitmap = m_webView->pageThumbnailGenerator()->PageThumbnail();
+                        }
+                        else {
+                           // get scaled page from PageScaler;
+                           bitmap = m_webView->pageScaler()->ScaledPage();
+                        }
                     }
                     if(bitmap) {
                         // update the history with new bitmap
@@ -2515,6 +2522,7 @@ MBrCtlDownloadObserver* CBrCtl::brCtlDownloadObserver()
     }
     return m_brCtlDownloadObserver;
 }
+
 
 
 

@@ -128,10 +128,6 @@ void CWidgetRegistrationManager::RegisterWidgetL(
     RApaLsSession apparcSession;
     CleanupClosePushL( apparcSession );
     User::LeaveIfError( apparcSession.Connect() );
-    apparcSession.PrepareNonNativeApplicationsUpdatesL();
-    apparcSession.DeregisterNonNativeApplicationL( KUidWidgetLauncher );
-    apparcSession.DeregisterNonNativeApplicationTypeL( KUidWidgetLauncher );
-    apparcSession.CommitNonNativeApplicationsUpdatesL();
 
     // reasonably like an acceptable file name
     TBuf<KWidgetRegistryVal> appName;

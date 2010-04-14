@@ -487,6 +487,7 @@ CStateEngine::CStateEngine(CStateEngineConfiguration* aConfig, MTimerInterface* 
     m_timerif = atimerif ;
     m_currentState = EInit ;
     m_index = aIndex ;
+    isStatemachineBlocked = false;
 }
 
 CStateEngine::~CStateEngine()
@@ -941,9 +942,11 @@ bool CStateEngine::handleStateEvent()
 {
     // We get an event into m_hwe by this moment, lets kick the state machine
     m_wasFiltered = ETrue ;
+    if (isStatemachineBlocked)
+        return m_wasFiltered;
 
     CalculateDelta() ;
-    turnStateMachine() ;
+    turnStateMachine();
 
     m_previousPointerEventPosition = m_hwe.iPosition ;
     return m_wasFiltered ;
@@ -1085,6 +1088,7 @@ void CStateEngine::turnStateMachine()
     m_eventConsumed = false ;   // run the loop until the event has been consumed
     // Now run trough the motions of the state elements, and prepare to change to next state while doing so.
     // If the state elements set the m_eventConsumed then all is done
+    isStatemachineBlocked = true;
     while (!m_eventConsumed)
     {
         int i = 0 ;
@@ -1131,6 +1135,7 @@ void CStateEngine::turnStateMachine()
         if (m_config->m_enableLogging) DebugPrintState(nextState) ;
         m_currentState = nextState ;    // Change to the next state
     }
+    isStatemachineBlocked = false;
 }
 TTimeIntervalMicroSeconds CStateEngine::getInterval()
 {

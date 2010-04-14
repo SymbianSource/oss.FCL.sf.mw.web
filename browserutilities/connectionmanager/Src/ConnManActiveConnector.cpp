@@ -22,7 +22,7 @@
 #include <browser_platform_variant.hrh>
 #include "ConnManActiveConnector.h"
 #include "ConnectionManagerLogger.h"
-
+#include <mconnection.h>
 #include <nifvar.h>
 #include <CommDbConnPref.h>
 
@@ -41,6 +41,7 @@ CConnManActiveConnector::CConnManActiveConnector( RConnection& aConnection,
     
 	CLOG_CREATE;
 	CActiveScheduler::Add( this );//inserting this into the queue
+	occPrefs = EDefault;
 	}
 
 //--------------------------------------------------------------------------
@@ -155,6 +156,15 @@ void CConnManActiveConnector::StartConnection( TConnSnapPref* aSettings, TReques
 #endif //__WINS__
 
     extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourDefault);
+    if ( occPrefs == ESilient )
+        {
+        CLOG_WRITE( "CConnManActiveConnector:StartConnection Setting OCC Silent behaviour");
+        extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourConnSilent);
+        }
+    else
+        {
+        CLOG_WRITE( "CConnManActiveConnector:StartConnection Setting OCC Default behaviour");
+        }
     TConnPrefList prefList;
     TRAP_IGNORE(prefList.AppendL(&extPref));
 
@@ -200,6 +210,12 @@ void CConnManActiveConnector::RunL()
     CLOG_WRITE_1( "CConnManAct::RunL(): %d", iStatus.Int() );
 	User::RequestComplete( iExternalRequestStatus, iStatus.Int() );
 	}
+
+void CConnManActiveConnector::SetOccPreferences(TSetOCCPreferences aOCCPreferences)
+    {
+    CLOG_WRITE_1( "CConnManActiveConnector::SetOccPreferences : %d", aOCCPreferences );
+    occPrefs = aOCCPreferences;
+    }
 
 //------------------------------------------------------ CActiveConnectorSyncWrapper -------------------------
 
@@ -307,5 +323,9 @@ CActiveConnectorSyncWrapper::CActiveConnectorSyncWrapper( TInt aPriority ): CAct
 	CActiveScheduler::Add( this );
 	}
 
-
+void CActiveConnectorSyncWrapper::SetOccPreferences(TSetOCCPreferences aOCCPreferences)
+    {
+    if ( iActiveConnector )
+        iActiveConnector->SetOccPreferences(aOCCPreferences);
+    }
 //EOF

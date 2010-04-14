@@ -258,6 +258,9 @@ void HistoryController::updateHistoryEntryThumbnailL(const CFbsBitmap* bitmap)
         HistoryEntry* entry = entryByIndex(m_currentIndex);
         if (entry) {
             TSize bmsize = bitmap->SizeInPixels();
+#ifdef BRDO_MULTITOUCH_ENABLED_FF            
+            entry->storeThumbnail(bitmap, TRect(0,0,bmsize.iWidth, bmsize.iHeight));
+#else
             TRect parentControlRect = m_historyCallback->parent()->Rect();
             int historyViewWidth = parentControlRect.Width();
             int historyViewHeight( parentControlRect.Height());
@@ -265,7 +268,8 @@ void HistoryController::updateHistoryEntryThumbnailL(const CFbsBitmap* bitmap)
             int maxDimension = (historyViewWidth > historyViewHeight)? historyViewWidth:historyViewHeight;
             int thumbnailHeight = Min(bmsize.iHeight, maxDimension*KCenterThumbnailHeightPercent/100);
             int thumbnailWidth = Min(bmsize.iWidth, maxDimension*KCenterThumbnailWidthPercent/100);
-            entry->storeThumbnail(bitmap, TRect(0,0,thumbnailWidth, thumbnailHeight));
+            entry->storeThumbnail(bitmap, TRect(0,0,thumbnailWidth, thumbnailHeight));            
+#endif
         }
     }
 }

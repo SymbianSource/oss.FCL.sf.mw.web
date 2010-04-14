@@ -53,6 +53,8 @@ SOURCE          WebScrollingDecelerator.cpp
 SOURCE          WebScrollingDeceleratorGH.cpp
 SOURCE          WebScrollbarDrawer.cpp
 SOURCE          WebSprite.cpp
+SOURCE          ThumbnailGenerator.cpp
+
 
 SOURCEPATH      ../../FormControls
 SOURCE          WebFormFill.cpp

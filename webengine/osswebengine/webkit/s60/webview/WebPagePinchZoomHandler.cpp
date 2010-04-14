@@ -63,6 +63,7 @@ WebPagePinchZoomHandler::WebPagePinchZoomHandler(WebView* webView)
 , m_zoomStepSize(0)
 , m_pinchActive(false)
 , m_pinchCenter(0,0)
+, m_isPluginsVisible(true)
 {
 }
 
@@ -186,6 +187,10 @@ void WebPagePinchZoomHandler::handlePinchGestureExitL(const TStmGestureEvent& aG
 // -----------------------------------------------------------------------------
 void WebPagePinchZoomHandler::setZoomLevel(int zoomLevel)
 {
+    if (m_isPluginsVisible) {
+        m_webView->mainFrame()->makeVisiblePlugins(false);
+        m_isPluginsVisible = false;
+    }
     m_webView->setPinchBitmapZoomLevel(zoomLevel);
 }
 
@@ -207,6 +212,7 @@ TBool WebPagePinchZoomHandler::isPinchActive()
 // -----------------------------------------------------------------------------
 void WebPagePinchZoomHandler::updateBitmap(void)
 {
+    m_isPluginsVisible = true;
     m_bitmapUpdateTimer->Cancel();
     m_webView->restoreZoomLevel(m_webView->scalingFactor());
     //update the plugin rect after pinch zoom exit

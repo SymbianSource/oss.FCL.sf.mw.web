@@ -132,7 +132,7 @@ public:
     void HandleMaskedDeleteText(WebCore::Frame* frame);
     bool IsWapMaskedModeInput(WebCore::Frame* frame);
     void EnableCcpuL();
-    
+    TBool IsInputElementFocused() const;
 private:
     void  findPrevSiblingTextLen(Node*, TInt&) const;
     Node* findTextNodeForCurPos(Node* aNode, TInt& aPos) const;

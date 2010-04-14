@@ -385,7 +385,7 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     event->setDefaultHandled();
                 }
                 else {
-                    m_shouldEndEditing = !m_webView->fepTextEditor()->IsTextAreaFocused();
+                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
                 }
                 break;
 
@@ -408,7 +408,7 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     event->setDefaultHandled();
                 }
                 else {
-                    m_shouldEndEditing = !m_webView->fepTextEditor()->IsTextAreaFocused();
+                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
                 }
                 break;
 
@@ -559,12 +559,9 @@ void WebEditorClient::textDidChangeInTextField(Element* inputElement)
 //-----------------------------------------------------------------------------
 bool WebEditorClient::doTextFieldCommandFromEvent(Element*, KeyboardEvent*)
 {
-    /*
-     * Check here from WAP css property. Returning true will cause
-     * HTMLInputElement::defaultEventHandler(Event* evt) stop handling
-     * keyboard event end set it as default handled.
-     */
-    return !m_webView->fepTextEditor()->validateTextFormat();    
+     
+   notImplemented();
+   return false;
 }
 
 //-----------------------------------------------------------------------------

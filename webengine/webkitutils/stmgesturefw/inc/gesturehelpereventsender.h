@@ -22,30 +22,20 @@
 #include <coemain.h>
 #include "stmgestureinterface.h"
 
-NONSHARABLE_CLASS(CGestureEventSender) : public CActive
+NONSHARABLE_CLASS(CGestureEventSender) : public CBase
     {
 public:
-    enum TEventSenderState
-        {
-        ENoEvents,
-        EEventsReady,
-        EBusy
-        };
+
     static CGestureEventSender* NewL(  MStmGestureListener& aObserver );
     ~CGestureEventSender();
-    TInt AddEvent(TStmGestureUid aUid, const MStmGesture* aGestureEvent);
-protected:    
-    void RunL();
-    void DoCancel();
-    TInt RunError(TInt aError);
+    void AddEvent(TStmGestureUid aUid, const MStmGesture* aGestureEvent);
+
 private:
     CGestureEventSender(MStmGestureListener& aObserver);
-    void Complete();
     void EmitEventL( const TStmGestureEvent& aGestureEvent );
     
+private:    
     MStmGestureListener& iObserver;
-    RArray< TStmGestureEvent >  iEvents;
-    TEventSenderState iState;
     };
 
 #endif /* GESTUREHELPEREVENTSENDER_H_ */

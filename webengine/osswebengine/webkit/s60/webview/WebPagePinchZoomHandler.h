@@ -117,6 +117,7 @@ private:
     TInt             m_zoomStepSize;
     bool             m_pinchActive;
     TPoint           m_pinchCenter;
+    bool             m_isPluginsVisible;
 
 };
 

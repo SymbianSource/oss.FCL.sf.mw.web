@@ -233,6 +233,10 @@ TFontSpec PlatformFontCache::fontSpecInTwips(const FontDescription& fontDescript
         fPtr.Set(fPtr.Left(comma));
     }
      
+    if(fPtr.Length() >KMaxTypefaceNameLength) {
+        fPtr.Set(fPtr.Left(KMaxTypefaceNameLength));
+    }
+    
     TFontSpec fontSpec(fPtr, twipSize);
     fontSpec.iFontStyle.SetStrokeWeight(fontDescription.bold() ? EStrokeWeightBold : EStrokeWeightNormal);
     fontSpec.iFontStyle.SetPosture(fontDescription.italic() ? EPostureItalic : EPostureUpright);

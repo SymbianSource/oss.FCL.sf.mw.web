@@ -46,8 +46,9 @@ const int KMaxAnimFactor = 100;
 const int KMinAnimFactor = 0;
 const int KMinimumScroll = 20;
 
-#define KCenterImageBorderColor KRgbRed
+#define KCenterImageBorderColor TRgb(179,179,181)
 #define KSideImageBorderColor KRgbBlack
+#define KSideImageMaskColor TRgb( 170, 170, 170, 150 )
 
 // ============================= LOCAL FUNCTIONS ===============================
 
@@ -265,6 +266,15 @@ void HistoryView::updateDisplay()
 {
     m_bitmapContext->Clear();
     m_bitmapContext->Reset();
+    
+    m_bitmapContext->SetPenColor(TRgb(45,44,50));
+    m_bitmapContext->SetPenStyle(CGraphicsContext::ESolidPen);
+    m_bitmapContext->SetBrushColor(KRgbDarkGray);
+    m_bitmapContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
+    m_bitmapContext->DrawRect(Rect());
+	m_bitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
+    m_bitmapContext->SetPenStyle(CGraphicsContext::ENullPen);
+	
 
     // updateDisplay something to the bitmap
     m_centerEntry = m_historyController->entryByIndex( m_centerPageIndex );
@@ -277,8 +287,11 @@ void HistoryView::updateDisplay()
         if (leftEntry->thumbnail()) {
             m_bitmapContext->BitBlt( m_leftPlaceHolderRect.iTl, leftEntry->thumbnail(), TRect(TPoint(0,0), m_leftPlaceHolderRect.Size()) );
         }
-        m_bitmapContext->SetPenColor( KSideImageBorderColor );
+        
+        m_bitmapContext->SetBrushColor ( KSideImageMaskColor );
+        m_bitmapContext->SetBrushStyle ( CWindowGc::ESolidBrush );
         m_bitmapContext->DrawRect(m_leftPlaceHolderRect);
+        m_bitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
     }
     // updateDisplay the next thumbnail
     if (rightEntry) {
@@ -288,8 +301,11 @@ void HistoryView::updateDisplay()
         if (rightEntry->thumbnail()) {
             m_bitmapContext->BitBlt( m_rightPlaceHolderRect.iTl, rightEntry->thumbnail(), TRect(TPoint(0,0), m_rightPlaceHolderRect.Size()) );
         }
-        m_bitmapContext->SetPenColor( KSideImageBorderColor );
+        
+        m_bitmapContext->SetBrushColor ( KSideImageMaskColor );
+        m_bitmapContext->SetBrushStyle ( CWindowGc::ESolidBrush );
         m_bitmapContext->DrawRect(m_rightPlaceHolderRect);
+        m_bitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
     }
     // updateDisplay the center thumbnail
     if (m_centerEntry ) {
@@ -297,16 +313,24 @@ void HistoryView::updateDisplay()
             TRAP_IGNORE(m_centerEntry->constructThumbnailL());
         }
         if (m_centerEntry->thumbnail()) {
+            m_bitmapContext->SetBrushColor(KRgbWhite);
+            m_bitmapContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
+            m_bitmapContext->DrawRect(m_centerPlaceHolderRect);    
+            m_bitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
+            TSize bitSize = m_centerEntry->thumbnail()->SizeInPixels();
             m_bitmapContext->BitBlt( m_centerPlaceHolderRect.iTl, m_centerEntry->thumbnail(), TRect(TPoint(0,0), m_centerPlaceHolderRect.Size()) );
         }
     }
+    
+    //Draw border for center thumbnail
+    m_bitmapContext->SetPenStyle( CGraphicsContext:: ESolidPen );
     m_bitmapContext->SetPenColor( KCenterImageBorderColor );
-
     m_bitmapContext->DrawRect( m_centerPlaceHolderRect );
 
     // Reset Brush
     m_bitmapContext->SetBrushColor(TRgb(255,255,255));
     m_bitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
+    m_bitmapContext->SetPenStyle(CGraphicsContext::ENullPen);
   // updateState(-1);
 }
 

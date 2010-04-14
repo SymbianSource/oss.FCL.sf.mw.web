@@ -22,7 +22,7 @@
 
 // INCLUDES
 #include "httpconnection.h"
-
+#include "browser_platform_variant.hrh"
 // CONSTANTS
 
 // MACROS
@@ -100,7 +100,9 @@ class CServerHttpConnection: public CHttpConnection
         * @return Void
         */
         void SetAccessPointL( TUint32 aAccessPoint );
-
+#ifdef BRDO_OCC_ENABLED_FF
+        TBool IsPhoneOfflineL();
+#endif
 
     private:
         /**

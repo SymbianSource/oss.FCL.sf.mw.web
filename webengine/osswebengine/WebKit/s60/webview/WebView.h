@@ -68,6 +68,7 @@ class WebPageFullScreenHandler;
 class WebFrameView;
 class WebFrameBridge;
 class WebPagePinchZoomHandler;
+class CThumbnailGenerator;
 
 
 const TUint KMouseEventFired = 0x00000001;
@@ -160,6 +161,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void scrollBuffer(TPoint aTo, TPoint aFrom, TBool aMayUseCopyScroll);
         TRect offscreenRect() const {return m_offscreenrect;}
         CPageScaler* pageScaler() const{ return m_pageScaler; }
+        CThumbnailGenerator* pageThumbnailGenerator()const { return m_thumbnailGenerator;}
         //void updateScrollBarsL(CEikScrollBar::TOrientation aOrientation, const TInt aThumbPos, const int aScrollSpan);
         int scalingFactor() const;
         void openUrl(const TDesC& url);
@@ -369,6 +371,12 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         * Recreate Plugins in case of Retry Connection
         */
         void reCreatePlugins();
+        
+        TBool isPinchZoom() {return m_isPinchZoom; }
+        
+        void setScrolling(bool scroll);
+         
+        bool isScrolling() { return m_scroll; }
 
     public: // from MPageScalerCallback
         /**
@@ -589,6 +597,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         WebPageFullScreenHandler* m_pageFullScreenHandler;  // owned
         bool m_viewIsScrolling;
         bool m_viewIsFastScrolling;
+        bool m_scroll;
 
         // synchronous requests
         bool                m_synchRequestPending;
@@ -606,6 +615,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         TBool                    m_isPinchZoom;
         TRealPoint               m_pinchDocDelta;
         int                      m_drawsMissed;
+        CThumbnailGenerator* m_thumbnailGenerator;
     };
 
 #endif

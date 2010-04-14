@@ -181,6 +181,9 @@ Default is WML support enabled
 //To enable for IAD Update (For add-on Browser)
 #define BRDO_IAD_UPDATE_ENABLED_FF
 
+//To enable performance improvements done in TB9.2
+#define BRDO_PERF_IMPROVEMENTS_ENABLED_FF
+
 /*
 * ===================
 *        S60 3.23
@@ -212,6 +215,9 @@ Default is WML support enabled
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
+
+//Flag for performance improvements in TB9.2
+#undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
 
 // Defines touch screen capability
 #undef BRDO_TOUCH_ENABLED_FF
@@ -295,6 +301,10 @@ Default is WML support enabled
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
+
+//Flag for performance improvements in TB9.2
+#undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
+
 //To provide WidgetSIDChecker support 
 #undef APP_SID_CHECK_SUPPORT_FF 
 
@@ -376,6 +386,10 @@ Default is WML support enabled
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
 
+//Flag for performance improvements in TB9.2
+#undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
+
+
 //To provide WidgetSIDChecker support 
 #undef APP_SID_CHECK_SUPPORT_FF 
 
@@ -427,6 +441,9 @@ Default is WML support enabled
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
+
+//Flag for performance improvements in TB9.2
+#undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
 
 //To provide WidgetSIDChecker support 
 #undef APP_SID_CHECK_SUPPORT_FF 

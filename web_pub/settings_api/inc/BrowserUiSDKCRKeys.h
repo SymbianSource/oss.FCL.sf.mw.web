@@ -409,5 +409,7 @@ const TUint32 KBrowserCursorShowMode =          0x00000082;
 
 // Controls whether enter key can activate a link, ot just has a default behavior. 
 const TUint32 KBrowserEnterKeyMode = 0x00000083;
-
+//OCC related
+const TUint32 KBrowserOccAccessPointSelectionMode = 0x00000084;
+const TUint32 KBrowserOccNGDefaultSnapId = 0x00000085;
 #endif      // BROWSERUISDKCRKEYS_H

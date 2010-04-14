@@ -50,6 +50,7 @@
 #include "ImageObserver.h"
 #include "SyncDecodeThread.h"
 #include <Oma2Agent.h>
+#include <Browser_Platform_Variant.hrh>
 using namespace ContentAccess;
 
 namespace TBidirectionalState {
@@ -629,9 +630,10 @@ void CAnimationDecoderWrapped::CompleteLoadL()
         //Compress non-animated images via FBServ (losslessly, idle priority) 
         //the 1x1 image is directly fetched before decompressing it which results in a crash in fbsserv and therefore a white background is displayed.
         //If the Image is of pixel (1,1) do not compress.
+#ifndef BRDO_PERF_IMPROVEMENTS_ENABLED_FF        
         if( frameSize != TSize(1,1) )
            iDestination->CompressInBackground();
-
+#endif
         // Normal image ready
         //iDestination = NULL;
         iImageState = EInactive;

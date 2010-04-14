@@ -102,7 +102,7 @@ CBrowserSettings::CBrowserSettings()
     iIsEmbedded = NW_FALSE;
     iIMEINotifyEnabled = NW_UINT8_CAST( GetIntValue( KBrowserIMEINotification ));
     iSendReferrerHeader = NW_UINT8_CAST( GetIntValue( KBrowserSendReferrerHeader ));
-    //iHttpSecurityWarnings = GetBooleanValue( KWmlBrowserHttpSecurityWarnings );
+    iHttpSecurityWarnings = GetBooleanValue( KBrowserNGShowSecurityWarnings );
     iSecUI = GetBooleanValue( KBrowserSecurityUI );
 
     iIapId = 0;
@@ -377,11 +377,11 @@ NW_Bool
 CBrowserSettings::GetHttpSecurityWarnings(void)
 {
   // iSecUI = 1 means "supressing security UI"
-  if( iSecUI )
+  /*if( iSecUI )
     {
     return NW_FALSE;
     }
-
+ */
   return iHttpSecurityWarnings;
 }
 
@@ -460,5 +460,6 @@ NW_Ucs2* CBrowserSettings::GetStringValue( const TUint32 aKey )
     }
 return retVal;
 }
+
 
 

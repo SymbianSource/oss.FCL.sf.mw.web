@@ -37,10 +37,10 @@ enum THistoryViewComponent
 
 
 // CONSTANTS
-const int KCenterThumbnailWidthPercent = 50;
-const int KCenterThumbnailHeightPercent = 90;
-const int KSideThumbnailWidthPercent = 25;
-const int KSideThumbnailHeightPercent = 70;
+const int KCenterThumbnailWidthPercent = 60;
+const int KCenterThumbnailHeightPercent = 75;
+const int KSideThumbnailWidthPercent = 20;
+const int KSideThumbnailHeightPercent = 60;
 
 // FORWARD DECLARATIONS
 class HistoryController;

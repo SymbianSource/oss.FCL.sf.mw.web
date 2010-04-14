@@ -477,7 +477,7 @@ public: // Functions from MPluginAdapter
     
     
     void ToggleScreenMode(bool aFullScreen);
-    void PlayPausePluginL ();
+    void PlayPausePluginL (bool pause);
     void HandlePointerEventFromPluginL(const TPointerEvent& aEvent);
     TBool HandleGesture(const TStmGestureEvent& aEvent);    
 	TBool Windowed() { return m_windowedPlugin;}

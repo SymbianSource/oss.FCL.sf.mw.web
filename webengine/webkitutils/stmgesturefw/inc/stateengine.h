@@ -173,6 +173,7 @@ private:
     TTime m_lastFilteredMessageTime ;
 
 	CStateEngineConfiguration* m_config ;
+	bool isStatemachineBlocked;
 
 };
 }   // namespace

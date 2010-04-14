@@ -243,7 +243,7 @@ bool WebTabbedNavigation::navigate(int horizontalDir, int verticalDir)
         m_selectedElementRect = selectedRect;
         m_focusPosition = selectedPoint;
         m_node = selectedNode;
-        selectedNode->document()->setFocusedNode(selectedNode);
+        m_webView->page()->focusController()->setFocusedNode(selectedNode, selectedNode->document()->frame());
         m_webView->page()->focusController()->setFocusedFrame(selectedNode->document()->frame());
         
         // And scroll to the selected element

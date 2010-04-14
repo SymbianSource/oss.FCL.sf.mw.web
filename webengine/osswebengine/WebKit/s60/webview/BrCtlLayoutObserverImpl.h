@@ -71,6 +71,7 @@ class CBrCtlLayoutObserver : public CBase, public MBrCtlLayoutObserver
         * @return void
         */
         virtual void UpdateTitleL( const TDesC& /*aTitle*/ ) {}        
+
     };
 
 #endif      // BRCTLLAYOUTOBSERVERIMPL_H

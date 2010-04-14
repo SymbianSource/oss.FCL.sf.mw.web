@@ -100,6 +100,8 @@ public:
     TBool getRetryConnectivityFlag(){ return retryConnectivityFlag; }
     void unSetRetryConnectivityFlag(){ retryConnectivityFlag = EFalse; }    
     TUint pendingTransactionsCount(){ return m_pendingHttpRequests.size(); }
+    TBool isInSecureConnection() {return m_inSecConnection;}
+    void setInSecureConnection(TBool inSecCon) {m_inSecConnection = inSecCon;}    
 
 private:
     void updateFilters(bool initializing = false);
@@ -134,6 +136,7 @@ private:
 	bool m_OutstandingSelfDl;
 	RPointerArray<HBufC8> m_ClientAcceptHeaders;
 	TBool retryConnectivityFlag;
+	TBool m_inSecConnection;
 
 };
 #endif // __HTTPSESSIONMANAGER_H__

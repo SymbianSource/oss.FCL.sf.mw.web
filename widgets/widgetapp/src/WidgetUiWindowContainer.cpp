@@ -280,7 +280,7 @@ TKeyResponse CWidgetUiWindowContainer::OfferKeyEventL(
     if (aKeyEvent.iCode == EKeyNo)
         {
         // Close the current active widget
-        iWindowManager.CloseWindowsAsync(EFalse);
+        //iWindowManager.CloseWindowsAsync(EFalse);
         return EKeyWasConsumed;
         }
 

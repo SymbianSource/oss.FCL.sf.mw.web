@@ -60,6 +60,7 @@ HttpSessionManager::HttpSessionManager()
     m_SelfDownloadContentHandler = NULL;
     m_SelfDownloadContentTypes = KNullStr().Alloc();
     retryConnectivityFlag = EFalse;
+    m_inSecConnection = EFalse;
 }
 
 HttpSessionManager::~HttpSessionManager()

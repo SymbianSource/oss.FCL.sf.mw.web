@@ -99,6 +99,7 @@ using namespace HTMLNames;
 #include "WebScrollbarDrawer.h"
 #include "EventNames.h"
 #include "Editor.h"
+#include "ThumbnailGenerator.h"
 
 using namespace WebCore;
 using namespace EventNames;
@@ -205,6 +206,8 @@ m_brctl(brctl)
 , m_pinchZoomHandler(NULL)
 , m_isPinchZoom(false)
 , m_drawsMissed(0)
+, m_scroll(false)
+, m_thumbnailGenerator(NULL)
 {
 }
 
@@ -257,6 +260,7 @@ WebView::~WebView()
     delete m_pageFullScreenHandler;
     delete m_bridge;
     delete m_frameView;
+    delete m_thumbnailGenerator;    
 }
 
 // -----------------------------------------------------------------------------
@@ -338,8 +342,15 @@ void WebView::ConstructL( CCoeControl& parent )
         m_pageScalerEnabled = false;
     }
     else  {
-        initializePageScalerL();
-        m_pageScalerEnabled = true;
+        if(m_brctl->capabilities() & TBrCtlDefs::ECapabilityGraphicalPage)
+            {
+            initializePageScalerL();
+            m_pageScalerEnabled = true;
+            }
+        else if(m_brctl->capabilities() & TBrCtlDefs::ECapabilityGraphicalHistory)
+            {
+            m_thumbnailGenerator = CThumbnailGenerator::NewL(*this);
+            }        
     }
     if (m_brctl->capabilities() & TBrCtlDefs::ECapabilityAutoFormFill) {
         m_webFormFill = new WebFormFill(this);
@@ -813,6 +824,9 @@ void WebView::pageLoadFinished()
         m_pageScaler->DocumentCompleted();
         TRAP_IGNORE(m_pageScaler->DocumentChangedL());
     }
+    else if(m_thumbnailGenerator) {
+        TRAP_IGNORE(m_thumbnailGenerator->CreatePageThumbnailL());    
+    }    
 
     Node* focusedNode = NULL;
     Frame* focusedFrame = page()->focusController()->focusedFrame();
@@ -1730,8 +1744,16 @@ void WebView::ScaledPageChanged(
 
     if ( !aScroll && aFullScreen )
     {
-        // update the history with new bitmap
-        CFbsBitmap* scaledPage = m_pageScaler->ScaledPage();
+    	  // update the history with new bitmap
+        CFbsBitmap* scaledPage = NULL;
+        if(m_thumbnailGenerator)
+            {
+            scaledPage = m_thumbnailGenerator->PageThumbnail();
+            }
+        else if(m_pageScaler)
+            {
+            scaledPage = m_pageScaler->ScaledPage();
+            }
         if (scaledPage) {
             // Get the browser control rect
             TRAP_IGNORE( m_brctl->historyHandler()->historyController()->updateHistoryEntryThumbnailL(scaledPage));
@@ -2777,6 +2799,11 @@ void WebView::activateVirtualKeyboard()
 
 void WebView::Stop()
 {
+	  if (m_thumbnailGenerator)
+        {
+        //Create a thumbnail for page history
+        TRAP_IGNORE(m_thumbnailGenerator->CreatePageThumbnailL());
+        }
     mainFrame()->stopLoading();
 }
 void WebView::synchRequestPending(bool flag)
@@ -2996,7 +3023,6 @@ void WebView::setPinchBitmapZoomLevel(int zoomLevel)
     m_zoomLevelChangedByUser = true;
     m_dirtyZoomMode = true;
     m_isPluginsVisible = false;
-    mainFrame()->makeVisiblePlugins(false);
     m_isPinchZoom = true;
 
     if (zoomLevel > m_startZoomLevel) {
@@ -3110,6 +3136,13 @@ void WebView::reCreatePlugins()
                }
            }
       }
+}
+
+
+void WebView::setScrolling(bool scroll)
+{
+    m_scroll = scroll;
+    mainFrame()->PlayPausePlugins(m_scroll);
 }
 
 // END OF FILE

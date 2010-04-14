@@ -47,13 +47,12 @@ public:
     void HandleGestureEventL(const TStmGestureEvent& aGesture);
     
 private:    
-    bool checkForEventListener(WebCore::Node* node);
     bool canDehighlight(const TPoint &aPoint);
     void dehighlight();
 
     bool isHighlitableElement(TBrCtlDefs::TBrCtlElementType& elType);
     TBrCtlDefs::TBrCtlElementType highlitableElement();
-    void buttonDownTimerCB(WebCore::Timer<WebPointerEventHandler>* t);
+    void doTouchDownL();
     void handleTouchDownL(const TStmGestureEvent& aGesture);
     void handleTouchUp(const TStmGestureEvent& aGesture);
     void handleTapL(const TStmGestureEvent& aGesture);
@@ -76,11 +75,7 @@ private:
     TPoint m_highlightPos;
     WebCore::Node* m_highlightedNode;
     TPointerEvent m_currentEvent;
-    WebCore::Timer<WebPointerEventHandler> m_buttonDownTimer; 
-    
-    TPointerEvent m_lastPointerEvent;
     bool   m_ignoreTap; 
-    CActiveSchedulerWait*    m_waiter; 
     WebGestureInterface*  m_gestureInterface; 
     
 };

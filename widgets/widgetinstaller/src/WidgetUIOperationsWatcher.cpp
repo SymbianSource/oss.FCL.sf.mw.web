@@ -801,8 +801,8 @@ void CWidgetUIOperationsWatcher::FinishInstallL()
             iUIHandler->CloseFinalizeDialogL();
             iUIHandler->DisplayCompleteL();
             }
-
-        HandleLogsL(*(iPropertyValues[EBundleDisplayName]), TUid::Uid( *(iPropertyValues[EUid]) ), *(iPropertyValues[ENokiaWidget]), SwiUI::ELogTaskActionInstall);
+        
+        HandleLogsL(*(iPropertyValues[EBundleDisplayName]), TUid::Uid( *(iPropertyValues[EUid]) ), *(iPropertyValues[ENokiaWidget]), *(iPropertyValues[EBundleVersion]), SwiUI::ELogTaskActionInstall);
         }
     else // cancelled
         {
@@ -1007,6 +1007,12 @@ void CWidgetUIOperationsWatcher::UninstallL(
         CWidgetPropertyValue* propValue = iRegistry.GetWidgetPropertyValueL(aUid, ENokiaWidget);
         TBool aVendor = propValue && *(propValue);
         delete propValue;
+        propValue = NULL; 
+        propValue = iRegistry.GetWidgetPropertyValueL(aUid,EBundleVersion);
+        TBuf<KWidgetRegistryVal> version;
+        if(propValue)
+            version = (const TDesC& )*propValue;
+        delete propValue;
 
         // TODO if any of next steps leave does state become inconsistent?
 
@@ -1034,7 +1040,7 @@ void CWidgetUIOperationsWatcher::UninstallL(
         TRAP(err, FinishUninstallL( KErrNone ));
         if(err == KErrNone)
            {
-           HandleLogsL(bundleName, aUid, aVendor, SwiUI::ELogTaskActionUninstall);
+           HandleLogsL(bundleName, aUid, aVendor, version, SwiUI::ELogTaskActionUninstall);
            }
         }
     else
@@ -1323,7 +1329,7 @@ void CWidgetUIOperationsWatcher::RestoreL()
 // CWidgetUIOperationsWatcher::HandleLogsL
 //
 // ============================================================================
-void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUid &aUid, TBool aVender, SwiUI::TLogTaskAction aAction)
+void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUid &aUid, TBool aVender, const TDesC& aVersion, SwiUI::TLogTaskAction aAction)
     {
     CTask* task = CTask::NewL( KLogTaskImplUid, EFalse );
     CleanupStack::PushL(task);
@@ -1337,7 +1343,24 @@ void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUi
     TTime time;
     time.UniversalTime();
     params.iTime = time;
-
+    
+    TLex lex(aVersion);
+    TInt i[] = {0,0,0}, j = 0;
+    while((lex.Get()) != 0 )
+        {
+        TInt num = 0; 
+        while ( lex.Peek() && (lex.Peek()) != '.')
+            lex.Inc();
+        TLex toNum(lex.MarkedToken());
+        toNum.Val(num);
+        i[j++] = num;
+        lex.Inc();
+        lex.Mark();
+        }
+    params.iVersion.iMajor = i[0];
+    params.iVersion.iMinor = i[1];
+    params.iVersion.iBuild = i[2];
+    
     TLogTaskParamPckg pckg( params );
     task->SetParameterL( pckg, 0 );
     iTaskManager->AddTaskL( task );

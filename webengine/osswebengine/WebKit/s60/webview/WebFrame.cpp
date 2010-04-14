@@ -282,7 +282,6 @@ DocumentLoader* WebFrame::documentLoader()
 
 void WebFrame::notifyPluginsOfScrolling()
 {
-    setpluginToScroll(true);
     Frame* coreFrame = core(this);
     for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) {
         PassRefPtr<HTMLCollection> objects = frame->document()->objects();       
@@ -294,7 +293,6 @@ void WebFrame::notifyPluginsOfScrolling()
             notifyPluginOfScrolling(n->renderer()); 
 
         }
-    setpluginToScroll(false);
 }
 
 void WebFrame::notifyPluginOfScrolling(RenderObject* renderer)
@@ -592,5 +590,15 @@ Node* WebFrame::getClosestAnchorElement(const TPoint& viewPt, TPoint& newPos)
     
     return 0;
 }
+
+void WebFrame::PlayPausePlugins(bool pause)
+{
+    PluginHandler* plghandler = StaticObjectsContainer::instance()->pluginHandler();
+    WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
+    for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it ) {
+        static_cast<PluginSkin*> (*it)->PlayPauseNotify(pause);
+    }
+}
+
 
 // END OF FILE

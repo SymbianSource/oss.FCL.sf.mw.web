@@ -129,3 +129,7 @@ LIBRARY				etel3rdparty.lib
 LIBRARY				webutils.lib
 LIBRARY       sysutil.lib
 
+#ifdef BRDO_OCC_ENABLED_FF
+LIBRARY    featmgr.lib
+#endif
+

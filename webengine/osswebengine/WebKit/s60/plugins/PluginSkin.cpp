@@ -509,10 +509,37 @@ TSize PluginSkin::sizeHint() const
 // ----------------------------------------------------------------------------
 void PluginSkin::makeVisible( TBool visible )
     {
+    // if visible is true for a plugin, make sure that the plugin is actually visible in the window before proceeding 
+    TBool visibility = EFalse;
+    if (visible) {
+        TRect fullRect(getPluginWinRect());
+        TRect clipRect(getClipRect());
+        TRect frameRect(m_frame->frameView()->rect());
+        TRect viewRect = control(m_frame)->webView()->Rect();
+        TBool isPageViewMode = control(m_frame)->webView()->inPageViewMode();
+        WebFrame* pf = m_frame;
+        TPoint p = frameRect.iTl;
+
+        if (m_frame->parentFrame()) {
+            pf = m_frame->parentFrame();
+            p = pf->frameView()->frameCoordsInViewCoords(frameRect.iTl); 
+        }
+        TSize  sz = pf->frameView()->toViewCoords(frameRect.Size());
+        TRect frameRectInViewCoord = TRect(p, sz);
+        TBool isPluginVisible = frameRectInViewCoord.Intersects(fullRect); 
+        TBool isFrameVisible = m_frame->frameView()->isVisible() && 
+                                frameRectInViewCoord.Intersects(viewRect);
+        
+        visibility = isFrameVisible && !isPageViewMode && isPluginVisible;
+      
+    }
     if ( m_pluginwin )
         {
+        if (visible && !visibility)
+            visible = EFalse;
+        
         m_visible = visible;
-        if(m_active)
+        if(m_active && !visible)
             deActivate();
         m_pluginwin->makeVisible(visible);
         }
@@ -1241,4 +1268,10 @@ void PluginSkin::reCreatePlugin()
     if (pluginloader) {
         pluginloader->start();                            
     }    
+}
+
+void PluginSkin::PlayPauseNotify(bool pause)
+{
+    if(m_pluginwin)
+        m_pluginwin->PlayPausePluginL(pause);
 }

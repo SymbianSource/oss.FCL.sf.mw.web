@@ -11,13 +11,11 @@
 *
 * Contributors:
 *
-* Description:  Gesture helper implementation
+* Description:  Gesture event sender implementation
 *
 */
 
 #include "gesturehelpereventsender.h"
-
-const TInt KEventsQueueGranularity = 4;
 
 CGestureEventSender* CGestureEventSender::NewL( MStmGestureListener& aObserver )
     {
@@ -26,25 +24,17 @@ CGestureEventSender* CGestureEventSender::NewL( MStmGestureListener& aObserver )
     return self;
     }
 
-CGestureEventSender::CGestureEventSender( MStmGestureListener& aObserver ) : 
-                                          CActive(EPriorityUserInput - 1),
-                                          iObserver(aObserver), iEvents(KEventsQueueGranularity)
+CGestureEventSender::CGestureEventSender( MStmGestureListener& aObserver ) 
+    :iObserver(aObserver)
     { 
-    CActiveScheduler::Add(this);
     }
 
 CGestureEventSender::~CGestureEventSender()
     {
-    if (IsActive()) 
-        {
-        Cancel();
-        }
-
-    iEvents.Close();
     }
 
-TInt CGestureEventSender::AddEvent(TStmGestureUid aUid, const MStmGesture* aGestureEvent)
-    {
+void CGestureEventSender::AddEvent(TStmGestureUid aUid, const MStmGesture* aGestureEvent)
+{
     TStmGestureEvent event;
     if (aGestureEvent) {
         event.SetCode(aGestureEvent->gestureUid());
@@ -58,75 +48,20 @@ TInt CGestureEventSender::AddEvent(TStmGestureUid aUid, const MStmGesture* aGest
     }
     else {
         if (aUid != stmGesture::EGestureUidPinch) {
-            return iEvents.Count();
+            return;
         }    
         event.SetCode(aUid);
         event.SetGestureState(EGestureExit);
     }
         
-    iEvents.Append(event);
-    
+    EmitEventL(event);
     if (event.Code() == stmGesture::EGestureUidTap) {
         event.SetCode(stmGesture::EGestureUidRelease);
-        iEvents.Append(event);
+        EmitEventL(event);
     }
-
-    if (iState != EBusy)
-        {
-        iState = EEventsReady;
-        }
-    
-    if (!IsActive()) 
-        {
-        Complete();
-        }
-    return iEvents.Count();
-    }
-
-void CGestureEventSender::Complete()
-    {
-    TRequestStatus* status = &iStatus;
-    User::RequestComplete(status, KErrNone);
-    SetActive();
-    }
-
-void CGestureEventSender::RunL()
-    {
-    switch (iState)
-        {
-        case EEventsReady:
-            {
-            if (iEvents.Count() > 0)
-                {
-                TInt count = iEvents.Count();
-                for (int i = 0;  i < count; i++)
-                    {
-                    TStmGestureEvent& gst = iEvents[i];
-                    EmitEventL(gst);
-                    }
-                }
-            iEvents.Reset();
-            iState = ENoEvents;
-            break;
-            }
-        }
-    }
+}
 
 void CGestureEventSender::EmitEventL( const TStmGestureEvent& aGesture )
-    {
-    iState = EBusy;
+{
     iObserver.HandleGestureEventL(aGesture);
-    iState = EEventsReady;
-    }
-
-TInt CGestureEventSender::RunError(TInt aError)
-    {
-    iEvents.Reset();
-    return aError;
-    }
-
-void CGestureEventSender::DoCancel()
-    {
-    iEvents.Reset();
-    iState = ENoEvents;
-    }
+}

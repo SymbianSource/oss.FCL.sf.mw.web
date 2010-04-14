@@ -2203,5 +2203,15 @@ void CInternetConnectionManager::StartWaitDialogL( HBufC* aLabel, TWaitIconType 
         }
     iWaitDialog->RunLD();
     }
+
+//-------------------------------------------------------------------
+//CInternetConnectionManager::SetOccPreferences
+//-------------------------------------------------------------------
+
+void CInternetConnectionManager::SetOccPreferences( TSetOCCPreferences aOCCPreferences)
+    {
+    if( iSyncConnector )
+       iSyncConnector->SetOccPreferences(aOCCPreferences);
+    }
     
 // End of File

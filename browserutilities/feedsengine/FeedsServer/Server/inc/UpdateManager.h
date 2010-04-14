@@ -250,12 +250,19 @@ public:  // From CActive
 public:
 
    /**
-    * Check for roaming.
-    *
-    * @since 7.1
+    * Issue request for notification.    *
+    * @since 7.2
     * @return void.
     */
-	void CheckForRoaming();
+    void IssueRequestL();
+    /**
+    * Check if currently in roaming
+    *
+    * @since 7.2
+    * @return boolean.
+    */
+    TBool Roaming();
+
 
 private:
    /**
@@ -274,10 +281,11 @@ private:
 
 private:
 
-	CTelephony							*iTelephony;
-	CTelephony::TNetworkRegistrationV1	iRegStatus;
-	CUpdateManager					    *iUpdateManager;
-	
+    CTelephony  *iTelephony;
+    CTelephony::TNetworkRegistrationV1 iNetworkRegistrationV1;	
+    CTelephony::TNetworkRegistrationV1Pckg iNetworkRegistrationV1Pckg;
+    CUpdateManager  *iUpdateManager;
+    
     };
 
 

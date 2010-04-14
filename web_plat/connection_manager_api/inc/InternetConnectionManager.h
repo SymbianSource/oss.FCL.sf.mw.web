@@ -634,6 +634,8 @@ NONSHARABLE_CLASS(  CInternetConnectionManager ): public CBase,
         * @return none.
         */         
          virtual void CancelConnection();
+         
+         void SetOccPreferences(TSetOCCPreferences aOCCPreferences);
     
 	private:
 

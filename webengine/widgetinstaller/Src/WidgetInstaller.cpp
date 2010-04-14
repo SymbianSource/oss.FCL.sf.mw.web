@@ -64,7 +64,7 @@ _LIT( KXmlDataTypeUid, "uid" );
 _LIT( KWidgetAppDir, "\\private\\10282822\\" );
 _LIT( KBackSlash, "\\" );
 // todo: other keystring.dat for preference
-_LIT(KWidgetPref, "prefs.dat");
+_LIT(KWidgetPref, "prefs.dat*");
 
 
 // =========================== MEMBER FUNCTIONS ===============================
@@ -776,9 +776,14 @@ void CWidgetInstaller::ProcessRestoreDirL( TDesC& aRestoreDir )
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // delete "\private\[WidgetUIUid]\bundleID\prefs.dat"
+    CFileMan* fileManager = CFileMan::NewL( iRfs );
+    CleanupStack::PushL( fileManager );
+    	 
     TFileName   widgetPref( *newDir );
     widgetPref.Append(KWidgetPref);
-    err = iRfs.Delete( widgetPref );
+    
+	err = fileManager->Delete(widgetPref);
+    CleanupStack::PopAndDestroy( fileManager );  // fileMananger       	
     // it's ok not to have pref.dat
     if( err != KErrNone && err != KErrNotFound )
         {

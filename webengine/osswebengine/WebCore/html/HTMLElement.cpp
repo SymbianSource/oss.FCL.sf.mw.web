@@ -314,7 +314,8 @@ static void replaceChildrenWithFragment(HTMLElement* element, PassRefPtr<Documen
     }
 
     #if PLATFORM(SYMBIAN) 
-         element->document()->page()->chrome()->setElementVisibilityChanged(true); 
+    if(element->document()->page())
+        element->document()->page()->chrome()->setElementVisibilityChanged(true); 
      #endif 
     element->removeChildren();
     element->appendChild(fragment, ec);

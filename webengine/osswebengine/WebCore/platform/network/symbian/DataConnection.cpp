@@ -175,7 +175,11 @@ void DataConnection::download(WebCore::ResourceHandle* handle,
                               const WebCore::ResourceRequest& request,
                               const WebCore::ResourceResponse& response)
 {
-    __ASSERT_ALWAYS(EFalse, User::Panic(_L("Resource Loader"), KErrArgument));
+// This routine would implement the handling of a sisx file in   
+   //  <iframe src="data:x-epoc/x-sis-x;base64, ...."> type element    
+        // This is not yet implemented so the ASSERT below is commented out to prevent   
+        //   an assert crash.  
+        //  __ASSERT_ALWAYS(EFalse, User::Panic(_L("Resource Loader"), KErrArgument));  
 }
 
 TInt DataConnection::sendResponseCb(TAny* aPtr)

@@ -24,7 +24,7 @@
 
 #include <e32base.h>
 #include <nifman.h>
-
+#include <mconnection.h>
 
 class TCommDbConnPref;
 class TConnSnapPref;
@@ -66,6 +66,7 @@ public:
 	*@param aStatus the status of the observer Active object
 	*/
     void StartConnection( TConnSnapPref* aSettings, TRequestStatus& aStatus);
+    void SetOccPreferences(TSetOCCPreferences aOCCPreferences);
 
 private://from CActive	
 
@@ -84,6 +85,7 @@ private:
 	TRequestStatus* iExternalRequestStatus;
     RConnection& iConnection;
     TBool iWait;
+    TSetOCCPreferences occPrefs;
 	};
 
 
@@ -128,13 +130,13 @@ public:
 	*@return the error code
 	*/    
     TInt ConnectSnap( TConnSnapPref* aSettings );
-
 public:
 	
     /**
 	*Destructor
 	*/
 	virtual ~CActiveConnectorSyncWrapper();
+	void SetOccPreferences(TSetOCCPreferences aOCCPreferences);
 
 private://from CActive
 

@@ -125,12 +125,6 @@ void CWidgetRegistrationManager::RegisterWidgetL(
     RApaLsSession apparcSession;
     CleanupClosePushL( apparcSession );
     User::LeaveIfError( apparcSession.Connect() );
-    // TODO move this where it is only done once
-    apparcSession.PrepareNonNativeApplicationsUpdatesL();
-    apparcSession.DeregisterNonNativeApplicationL( KUidWidgetLauncher );
-    apparcSession.DeregisterNonNativeApplicationTypeL( KUidWidgetLauncher );
-    apparcSession.CommitNonNativeApplicationsUpdatesL();
-    // TODO end
 
     // reasonably like an acceptable file name
     TBuf<KWidgetRegistryVal> appName;

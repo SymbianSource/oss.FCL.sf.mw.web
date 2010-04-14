@@ -416,6 +416,7 @@ class PluginSkin : public CBase,
         void setElement(WebCore::Element* aElement) {m_element = aElement;}
         void reCreatePlugin();
         TInt activeStreams() { return m_streams.size(); }
+        void PlayPauseNotify(bool pause);
 
   public:  // from MMemoryCollector
         TUint Collect(unsigned int aRequired);

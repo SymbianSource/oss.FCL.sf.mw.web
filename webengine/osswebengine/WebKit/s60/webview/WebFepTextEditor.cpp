@@ -163,7 +163,11 @@ void CWebFepTextEditor::UpdateEditingMode()
                     TUint permittedCase ( EAknEditorAllCaseModes ) ;
                     TUint inputMode( EAknEditorNullInputMode );
                     TUint permittedInputModes( EAknEditorAllInputModes );
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+                    TUint flags( EAknEditorFlagDefault | EAknEditorFlagSelectionVisible );
+#else
                     TUint flags( EAknEditorFlagDefault );
+#endif
                     TUint numericKeyMap( EAknEditorStandardNumberModeKeymap );
     
                     if (GetStateFromFormatMask(currentCase, permittedCase, inputMode, permittedInputModes, flags, numericKeyMap)) {
@@ -723,12 +727,21 @@ void CWebFepTextEditor::UpdateFlagsState(TUint flags)
     CAknEdwinState* state = static_cast<CAknEdwinState*>(State(KNullUid));
 
     if ( IsTextAreaFocused() ) {
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
     	// If in a TextArea, allow "enter" key presses to be newline/paragraph
     	state->SetFlags( flags | EAknEditorFlagUseSCTNumericCharmap
-    					 | EAknEditorFlagAllowEntersWithScrollDown );
+     | EAknEditorFlagAllowEntersWithScrollDown | EAknEditorFlagSelectionVisible );
+#else
+      state->SetFlags( flags | EAknEditorFlagUseSCTNumericCharmap
+            | EAknEditorFlagAllowEntersWithScrollDown );
+#endif
     	}
     else {
-        state->SetFlags(flags | EAknEditorFlagUseSCTNumericCharmap);
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+        state->SetFlags(flags | EAknEditorFlagUseSCTNumericCharmap | EAknEditorFlagSelectionVisible);
+#else
+        state->SetFlags(flags | EAknEditorFlagUseSCTNumericCharmap );
+#endif
     	}
 
     state->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
@@ -834,6 +847,7 @@ bool CWebFepTextEditor::GetStateFromFormatMask(TUint& currentCase,
             }
         }
         setSCTAvailability(true);
+        CAknEdwinState* state = static_cast<CAknEdwinState*>(State(KNullUid));
         switch( fm ) {
             case ELeUpSymPuc:       //A any upper case letter or symbolic
                 flags = EAknEditorFlagNoT9 | EAknEditorFlagFixedCase;
@@ -853,14 +867,14 @@ bool CWebFepTextEditor::GetStateFromFormatMask(TUint& currentCase,
                 flags = EAknEditorFlagNoT9 | EAknEditorFlagFixedCase;
                 currentCase = EAknEditorUpperCase;
                 permittedCase= EAknEditorUpperCase;
-                inputMode = EAknEditorTextInputMode;
+                inputMode = state->CurrentInputMode();
                 permittedInputModes= EAknEditorTextInputMode;
             break;
             case ELeLoNumSymPuc:    //x any lower case, number or symbolic
                 flags = EAknEditorFlagNoT9 | EAknEditorFlagFixedCase;
                 currentCase = EAknEditorLowerCase;
                 permittedCase= EAknEditorLowerCase;
-                inputMode = EAknEditorTextInputMode;
+                inputMode = state->CurrentInputMode();
                 permittedInputModes= EAknEditorTextInputMode | EAknEditorNumericInputMode;
             break;
             case EAnyLow:           //m any lower character can be changed to upper
@@ -1479,3 +1493,9 @@ TBool CWebFepTextEditor::IsLongKeyPress() const
     return m_longKeyPress ;	
     }
 
+TBool CWebFepTextEditor::IsInputElementFocused() const
+    {
+    Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
+    return ( frame && frame->document()->focusedNode() &&
+             frame->document()->focusedNode()->hasTagName(HTMLNames::inputTag));
+    }

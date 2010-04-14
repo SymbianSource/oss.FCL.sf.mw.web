@@ -473,7 +473,7 @@ void CDownloadUtils::FindContentTypeFromFileL( RHttpDownload& aDownload, TUint8*
     
     if (ret == KErrNone &&
         (dataType.iConfidence == CApaDataRecognizerType::ECertain) ||
-        (dataType.iConfidence == CApaDataRecognizerType::EProbable))
+        (dataType.iConfidence == CApaDataRecognizerType::EProbable) ||(dataType.iConfidence == CApaDataRecognizerType::EPossible))
         {
         // If the file type was found, try to match it to a known file type
         TPtrC8 mimeTypePtr = dataType.iDataType.Des8();

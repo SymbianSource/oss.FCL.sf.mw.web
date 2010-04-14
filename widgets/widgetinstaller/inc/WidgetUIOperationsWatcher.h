@@ -127,7 +127,7 @@ public: // New functions
     /**
      * Called when install or uninstallation is finished, to update installer log
      */    
-    void HandleLogsL(const TDesC& aWidgetName, const TUid &aUid,TBool aVendor, SwiUI::TLogTaskAction aAction);
+    void HandleLogsL(const TDesC& aWidgetName, const TUid &aUid,TBool aVendor,const TDesC& version,SwiUI::TLogTaskAction aAction);
 
 
 public: // Functions from base classes
