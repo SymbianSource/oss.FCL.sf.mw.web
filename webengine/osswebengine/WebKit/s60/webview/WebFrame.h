@@ -93,11 +93,12 @@ public:
 
     void paintRect(WebCoreGraphicsContext& gc, const TRect& r);
 
-    void notifyPluginsOfScrolling();
-    void notifyPluginOfScrolling(WebCore::RenderObject* renderer);
+    void notifyPluginsOfPositionChange();
+    void notifyPluginOfPositionChange(PluginSkin* plg);
     PluginSkin* focusedPlugin();
     WebFrame* frameAtPoint(const TPoint& pt_);
     void PlayPausePlugins(bool pause);
+    void reCreatePlugins();
     
     // utility functions
     int imageCount(bool visibleOnly_);

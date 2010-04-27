@@ -133,10 +133,14 @@ const int KZoomDefaultLevel = 8; //100%
 const int defaultCacheCapacity = 256 * 1024;
 
 const int KMaxMissedDrawsAllowed = 5;//Max missed repaint allowed before paint happens
+const int KCheckerSize = 10;
+const int KZoomFgRectColor = 150;
+const int KCheckerBoardDestroyTimeout = 2*1000*1000;
 
 // LOCAL FUNCTION PROTOTYPES
 TInt doRepaintCb( TAny* ptr );
 TInt doFepCb( TAny* ptr );
+TInt doDestroyCheckerBoardCb(TAny *ptr);
 
 static WebFrame* incrementFrame(WebFrame* curr, bool forward, bool wrapFlag)
 {
@@ -208,6 +212,11 @@ m_brctl(brctl)
 , m_drawsMissed(0)
 , m_scroll(false)
 , m_thumbnailGenerator(NULL)
+, m_checkerBoardBitmap(NULL)
+, m_checkerBoardDevice(NULL)
+, m_checkerBoardGc(NULL)
+, m_checkerBoardDestroyTimer(NULL)
+, m_isPinchZoomOut(false)
 {
 }
 
@@ -261,6 +270,10 @@ WebView::~WebView()
     delete m_bridge;
     delete m_frameView;
     delete m_thumbnailGenerator;    
+    
+    destroyCheckerBoard();
+    delete m_checkerBoardDestroyTimer;
+    
 }
 
 // -----------------------------------------------------------------------------
@@ -380,15 +393,13 @@ void WebView::ConstructL( CCoeControl& parent )
     MakeViewVisible(ETrue);
     m_isPluginsVisible=ETrue;
     CCoeControl::SetFocus(ETrue);
-
-#if defined(BRDO_MULTITOUCH_ENABLED_FF) && !defined (__WINSCW__)   
-    //Enable advance pointer info for multi-touch.
-    Window().EnableAdvancedPointers();
-#endif 
     
     cache()->setCapacities(0, 0, defaultCacheCapacity);
     
     m_waiter = new(ELeave) CActiveSchedulerWait();
+    
+    m_checkerBoardDestroyTimer = CPeriodic::NewL(CActive::EPriorityIdle);
+    
 }
 
 void WebView::initializePageScalerL()
@@ -426,30 +437,17 @@ void WebView::Draw( const TRect& rect ) const
         }
     }
     else {
+#ifndef BRDO_MULTITOUCH_ENABLED_FF
         gc.DrawBitmap( m_destRectForZooming, StaticObjectsContainer::instance()->webSurface()->offscreenBitmap(), m_srcRectForZooming );
 
         if ( m_startZoomLevel > m_currentZoomLevel) {
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-            TInt destRectWidth = m_destRectForZooming.Width();
-            TInt destRectHeight = m_destRectForZooming.Height();
-            TRect rectLeft(TPoint(rect.iTl),
-                            TPoint(rect.iTl.iX + m_destRectForZooming.iTl.iX, rect.iBr.iY));
-            
-            TRect rectRight(TPoint(rect.iTl.iX + destRectWidth + m_destRectForZooming.iTl.iX, rect.iTl.iY),
-                            TPoint(rect.iBr));
-            
-            TRect rectTop(TPoint(rect.iTl.iX + m_destRectForZooming.iTl.iX, rect.iTl.iY),
-                              TPoint(rect.iTl.iX + m_destRectForZooming.iTl.iX + destRectWidth, rect.iTl.iY + m_destRectForZooming.iTl.iY));
 
-            TRect rectBottom(TPoint(rect.iTl.iX + m_destRectForZooming.iTl.iX, rect.iTl.iY + m_destRectForZooming.iTl.iY + destRectHeight),
-                              TPoint(rect.iTl.iX + destRectWidth + m_destRectForZooming.iTl.iX, rect.iBr.iY));
-#else 
             TRect rectLeft( TPoint( rect.iTl.iX + m_destRectForZooming.Width() - 2, rect.iTl.iY ),
-                            TPoint( rect.iBr ));
+                    TPoint( rect.iBr ));
 
             TRect rectBottom( TPoint( rect.iTl.iX, rect.iTl.iY + m_destRectForZooming.Height() - 2 ),
-                              TPoint( rect.iBr.iX + m_destRectForZooming.Width(), rect.iBr.iY ));
-#endif 
+                    TPoint( rect.iBr.iX + m_destRectForZooming.Width(), rect.iBr.iY ));
+
 
             const TRgb colorTest(KZoomBgRectColor,KZoomBgRectColor,KZoomBgRectColor);
             gc.SetPenColor(colorTest);
@@ -457,13 +455,13 @@ void WebView::Draw( const TRect& rect ) const
             gc.SetBrushColor(colorTest);
             gc.DrawRect( rectLeft );
             gc.DrawRect( rectBottom );
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-            gc.DrawRect( rectRight );
-            gc.DrawRect( rectTop );
-#endif 
-
         }
-
+#else                   
+        if ( m_startZoomLevel > m_currentZoomLevel) {
+            gc.BitBlt(rect.iTl,m_checkerBoardBitmap);
+        }
+        gc.DrawBitmap( m_destRectForZooming, StaticObjectsContainer::instance()->webSurface()->offscreenBitmap(), m_srcRectForZooming );
+#endif        
     }
 
     if (m_pageScalerEnabled && m_pageScaler->Visible()) {
@@ -582,6 +580,21 @@ void WebView::doLayout()
     if(m_widgetextension && !(m_widgetextension->IsWidgetPublising())) {
         zoomLevelChanged( KZoomLevelDefaultValue );
     }
+    else {
+        //Layout the content based on Default zoom level (100) and zoom it back to existing zoom
+        //level after the layout is complete
+        WebFrameView* view = mainFrame()->frameView();
+        if(view) { 
+            m_startZoomLevel = KZoomLevelDefaultValue;
+            mainFrame()->scalingFactorChanged(KZoomLevelDefaultValue);
+            TRect currentZoomedRect = view->rect();
+            TRect rectWithDefaultZoom; 
+            calculateZoomRect(currentZoomedRect, rectWithDefaultZoom, m_currentZoomLevel, KZoomLevelDefaultValue); 
+            view->setRect(rectWithDefaultZoom);
+            m_currentZoomLevel = KZoomLevelDefaultValue;
+        } 
+    }
+    
     Frame* f = m_page->mainFrame();
 
     while ( f ) {
@@ -604,7 +617,20 @@ void WebView::doLayout()
         mainFrame()->frameView()->draw( *m_webcorecontext, rect );
         if ( zoomLevel < m_minZoomLevel ) zoomLevel = m_minZoomLevel;
         zoomLevelChanged( zoomLevel );
+        
+#ifndef  BRDO_MULTITOUCH_ENABLED_FF
+        if(m_pageZoomHandler) {
+            //Slider value will change if the content size is changed when layout is done
+            //hide the slider, so that user will get new min and max zoom level 
+            if (m_pageZoomHandler->isActive()) {
+                      TRAP_IGNORE(
+                      m_pageZoomHandler->hideZoomSliderL();
+                      );
+                  }
+            }
+#endif         
     }
+    mainFrame()->notifyPluginsOfPositionChange();
 }
 //-------------------------------------------------------------------------------
 // WebView::syncRepaint
@@ -792,7 +818,10 @@ void WebView::pageLoadFinished()
                 TPoint ptCurr = mainFrame()->frameView()->contentPos();
 
                 if ( ptCurr != ptFromHistory ) {
-                    if ( ptInit == ptCurr ) {
+                    if((mainFrame()->bridge()->m_rtl) && (ptInit != ptFromHistory)) {
+                          mainFrame()->frameView()->scrollTo(ptFromHistory);
+                          }
+                    else if ( ptInit == ptCurr ) {
                         mainFrame()->frameView()->scrollTo(ptFromHistory);
                     }
                     else {
@@ -2281,7 +2310,7 @@ void WebView::restoreZoomLevel(int zoomLevel)
     m_dirtyZoomMode = false;
     clearOffScreenBitmap();
     zoomLevelChanged(zoomLevel);
-    mainFrame()->notifyPluginsOfScrolling();
+    mainFrame()->notifyPluginsOfPositionChange();
     m_isPluginsVisible = false;
     mainFrame()->makeVisiblePlugins(true);
     m_isPluginsVisible = true;
@@ -2354,6 +2383,12 @@ void WebView::updateMinZoomLevel(TSize size)
         newMinZoomLevel = KZoomLevelDefaultValue;
     }
 #ifndef  BRDO_MULTITOUCH_ENABLED_FF
+    //if the min zoom is in fraction (like 86.33) this will give us 6 pixel white patch 
+    //to reduce the patch, always min zoom factor incremented in one step of zoom step 
+    if(newMinZoomLevel % KZoomLevelMinValue)
+        { 
+        newMinZoomLevel += KZoomLevelMinValue;
+        }
     newMinZoomLevel = (newMinZoomLevel/m_pageZoomHandler->stepSize())*m_pageZoomHandler->stepSize();
 #endif     
   TBool needsUpdateArray = EFalse;
@@ -2467,31 +2502,13 @@ void WebView::zoomLevelChanged(int newZoomLevel)
             mainFrame()->frameView()->setContentPos(cpos);
         }
         m_isPinchZoom = false;
+        m_isPinchZoomOut = false;
     }
    
     TRect rect = view->rect();
-
-    TInt tlx = (rect.iTl.iX * currZoomLevel) / m_currentZoomLevel;
-    TInt tly = (rect.iTl.iY * currZoomLevel) / m_currentZoomLevel;
-    TInt brx = (rect.iBr.iX * currZoomLevel) / m_currentZoomLevel;
-    TInt bry = (rect.iBr.iY * currZoomLevel) / m_currentZoomLevel;
-
-    // rounding
-
-    if (( rect.iTl.iX * currZoomLevel) % m_currentZoomLevel ){
-        tlx -= 1;
-    }
-    if (( rect.iTl.iY * currZoomLevel) % m_currentZoomLevel ){
-        tly -= 1;
-    }
-    if ((rect.iBr.iX * currZoomLevel) % m_currentZoomLevel ){
-        brx += 1;
-    }
-    if ((rect.iBr.iY * currZoomLevel) % m_currentZoomLevel ){
-        bry += 1;
-    }
-
-    view->setRect(TRect(tlx, tly, brx, bry));
+    TRect rectToZoom; 
+    calculateZoomRect(rect, rectToZoom, currZoomLevel, m_currentZoomLevel);
+    view->setRect(rectToZoom);
 
     // now just do a repaint, should be very fast
     if ( currZoomLevel > newZoomLevel ) {
@@ -2566,7 +2583,7 @@ void WebView::setZoomLevelAdaptively()
     m_lastZoomLevel = m_currentZoomLevel;
 
     setZoomLevel(zoomLevel);
-    mainFrame()->notifyPluginsOfScrolling();
+    mainFrame()->notifyPluginsOfPositionChange();
     
     if (zoomLevel == KZoomLevelDefaultValue)
         {
@@ -2848,7 +2865,7 @@ void WebView::setFastScrollingMode(bool fastScrolling)
   m_isPluginsVisible = !m_viewIsFastScrolling;
 
   if (!m_viewIsFastScrolling) {
-    mainFrame()->notifyPluginsOfScrolling();
+    mainFrame()->notifyPluginsOfPositionChange();
   }
   toggleRepaintTimer(!m_viewIsFastScrolling);
 }
@@ -2908,7 +2925,7 @@ void WebView::setZoomCursorPosition(TBool isZoomIn)
         view->setContentPos(cp);
     }
     //setZoomLevel(zoomLevel);
-    mainFrame()->notifyPluginsOfScrolling();
+    mainFrame()->notifyPluginsOfPositionChange();
 }
 
 
@@ -3016,9 +3033,9 @@ void WebView::waitTimerCB(WebCore::Timer<WebView>* t)
 }
 
 //-------------------------------------------------------------------------------
-// WebView::setPinchBitmapZoomLevel
+// WebView::setPinchBitmapZoomLevelL
 //-------------------------------------------------------------------------------
-void WebView::setPinchBitmapZoomLevel(int zoomLevel)
+void WebView::setPinchBitmapZoomLevelL(int zoomLevel)
 {
     m_zoomLevelChangedByUser = true;
     m_dirtyZoomMode = true;
@@ -3029,7 +3046,8 @@ void WebView::setPinchBitmapZoomLevel(int zoomLevel)
         setPinchBitmapZoomIn(zoomLevel);
     }
     else {
-        setPinchBitmapZoomOut(zoomLevel);
+        setPinchBitmapZoomOutL(zoomLevel);
+        m_isPinchZoomOut = true;
     }
     m_currentZoomLevel = zoomLevel;
     DrawNow();
@@ -3077,9 +3095,9 @@ void WebView::setPinchBitmapZoomIn(int zoomLevel)
 
 
 //-------------------------------------------------------------------------------
-// WebView::setPinchBitmapZoomOut
+// WebView::setPinchBitmapZoomOutL
 //-------------------------------------------------------------------------------
-void WebView::setPinchBitmapZoomOut(int zoomLevel)
+void WebView::setPinchBitmapZoomOutL(int zoomLevel)
 {
     TPoint pinchCenter = m_pinchZoomHandler->pinchCenter();
 
@@ -3109,40 +3127,127 @@ void WebView::setPinchBitmapZoomOut(int zoomLevel)
     //get the shift in the document so that during the next engine re-draw, the origin needs to be updated based on that
     m_pinchDocDelta.iX = (float)shiftInView.iX * 100 / zoomLevel;   
     m_pinchDocDelta.iY = (float)shiftInView.iY * 100 / zoomLevel;
+    
+    if(!m_isPinchZoomOut)
+        createCheckerBoardL();
 }
-
-void WebView::reCreatePlugins()
-{
-      Frame* coreFrame = core(mainFrame());
-      MWebCoreObjectWidget* view = NULL;
-      for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) {
-           PassRefPtr<HTMLCollection> objects = frame->document()->objects();
-           for (Node* n = objects->firstItem(); n; n = objects->nextItem()) {
-               view = widget(n);
-               if (view) {
-                   PluginSkin* plg = static_cast<PluginSkin*>(view);
-                   if(plg->activeStreams() > 0)
-                      plg->reCreatePlugin();
-               }
-           }
-
-           PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();
-           for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) {
-               view = widget(n);
-               if (view) {
-                   PluginSkin* plg = static_cast<PluginSkin*>(view);
-                   if(plg->activeStreams() > 0)
-                      plg->reCreatePlugin();
-               }
-           }
-      }
-}
-
 
 void WebView::setScrolling(bool scroll)
 {
     m_scroll = scroll;
     mainFrame()->PlayPausePlugins(m_scroll);
 }
+
+void drawCheckerBoard(CBitmapContext *gc,const TRect &rect)
+{
+    for(int i = rect.iTl.iX; i <= (rect.iTl.iX + rect.Width()); i = i + (2 * KCheckerSize)) {
+        for(int j = rect.iTl.iY; j <= (rect.iTl.iY + rect.Height()); j = j + (2 * KCheckerSize)) {
+             const TRgb lightGrey(KZoomBgRectColor, KZoomBgRectColor, KZoomBgRectColor);
+             gc->SetPenColor(lightGrey);
+             gc->SetBrushColor(lightGrey);
+             
+             TRect topLeft(TPoint(i, j),TPoint(i + KCheckerSize, j + KCheckerSize));
+             gc->DrawRect(topLeft);
+             
+             TRect bottomRight(TPoint(i + KCheckerSize, j + KCheckerSize),TPoint(i + (2 * KCheckerSize), j + (2 * KCheckerSize)));
+             gc->DrawRect(bottomRight);
+             
+             const TRgb darkGrey(KZoomFgRectColor, KZoomFgRectColor, KZoomFgRectColor);
+             gc->SetPenColor(darkGrey);
+             gc->SetBrushColor(darkGrey);
+             
+             TRect topRight(TPoint(i + KCheckerSize, j),TPoint(i + (2 * KCheckerSize), j + KCheckerSize));
+             gc->DrawRect(topRight);
+             
+             TRect bottomLeft(TPoint(i, j + KCheckerSize),TPoint(i + KCheckerSize, j + (2 * KCheckerSize)));
+             gc->DrawRect(bottomLeft);
+        }
+    }
+}
+
+void WebView::createCheckerBoardL() 
+{
+    //Cancel the destroy timer, if it is already scheduled.
+    //Otherwise it will destroy the checkerboard created now.
+    if(m_checkerBoardDestroyTimer 
+                && m_checkerBoardDestroyTimer->IsActive())
+            m_checkerBoardDestroyTimer->Cancel();
+    
+    if(m_checkerBoardBitmap && m_checkerBoardBitmap->SizeInPixels()!=Rect().Size())  {
+        destroyCheckerBoard();
+    }
+    
+    if(!m_checkerBoardBitmap) {
+        m_checkerBoardBitmap =new(ELeave) CFbsBitmap;             
+        TInt err= m_checkerBoardBitmap->Create(Rect().Size(),StaticObjectsContainer::instance()->webSurface()->displayMode());
+        User::LeaveIfError(err);
+
+        m_checkerBoardDevice = CFbsBitmapDevice::NewL(m_checkerBoardBitmap);
+    
+        err = m_checkerBoardDevice->CreateContext(m_checkerBoardGc);
+        User::LeaveIfError(err);
+        
+        m_checkerBoardGc->SetBrushStyle( CGraphicsContext::EForwardDiagonalHatchBrush );
+        drawCheckerBoard(m_checkerBoardGc,Rect());
+    }
+}
+
+void WebView::destroyCheckerBoard()
+{
+    if(m_checkerBoardBitmap) {
+         delete m_checkerBoardGc;
+         delete m_checkerBoardDevice;
+         delete m_checkerBoardBitmap;    
+          
+         m_checkerBoardBitmap = NULL;
+         m_checkerBoardDevice = NULL;
+         m_checkerBoardGc     = NULL;
+    }
+    if(m_checkerBoardDestroyTimer 
+            && m_checkerBoardDestroyTimer->IsActive())
+        m_checkerBoardDestroyTimer->Cancel();
+}
+
+TInt doDestroyCheckerBoardCb(TAny *ptr)
+{
+    static_cast<WebView*>(ptr)->destroyCheckerBoard();
+    return ETrue;  
+}
+
+void WebView::startCheckerBoardDestroyTimer()
+{
+    if(!m_checkerBoardDestroyTimer || !m_checkerBoardBitmap) {
+        return;
+    }
+    if(m_checkerBoardDestroyTimer->IsActive())  {
+        m_checkerBoardDestroyTimer->Cancel();
+    }
+    m_checkerBoardDestroyTimer->Start(KCheckerBoardDestroyTimeout,0,TCallBack(doDestroyCheckerBoardCb,this));
+}
+
+//-------------------------------------------------------------------------------
+// WebView::calculateZoomRect
+//-------------------------------------------------------------------------------
+void WebView::calculateZoomRect(TRect &aOldRect, TRect &aNewRect, TInt aOldZoom, TInt aNewZoom)
+    { 
+    aNewRect.iTl.iX = (aOldRect.iTl.iX * aOldZoom) / aNewZoom;
+    aNewRect.iTl.iY = (aOldRect.iTl.iY * aOldZoom) / aNewZoom;
+    aNewRect.iBr.iX = (aOldRect.iBr.iX * aOldZoom) / aNewZoom;
+    aNewRect.iBr.iY = (aOldRect.iBr.iY * aOldZoom) / aNewZoom;
+
+    // rounding
+    if (( aOldRect.iTl.iX * aNewZoom) % aOldZoom ) {
+        aNewRect.iTl.iX -= 1;
+        }
+    if (( aOldRect.iTl.iY * aNewZoom) % aOldZoom ) {
+        aNewRect.iTl.iY -= 1;
+        }
+    if ((aOldRect.iBr.iX * aNewZoom) % aOldZoom ) {
+        aNewRect.iBr.iX += 1;
+        }
+    if ((aOldRect.iBr.iY * aNewZoom) % aOldZoom ) {
+        aNewRect.iBr.iY += 1;
+        }
+    }
 
 // END OF FILE

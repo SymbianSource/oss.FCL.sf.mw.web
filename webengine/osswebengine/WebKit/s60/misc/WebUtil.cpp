@@ -119,7 +119,7 @@ TBrCtlDefs::TBrCtlElementType nodeTypeB(Node* node, Frame* frame)
             elType = ((HTMLInputElement*)ie)->checked() ? TBrCtlDefs::EElementRadioButtonSelected : TBrCtlDefs::EElementRadioButtonUnSelected;
         else if (ie->type() == "checkbox")
             elType = ((HTMLInputElement*)ie)->checked() ? TBrCtlDefs::EElementCheckBoxChecked : TBrCtlDefs::EElementCheckBoxUnChecked;
-        else if (ie->type() == "button" || ie->type() == "reset" || ie->type() == "submit")
+        else if (ie->hasLocalName( buttonTag )||ie->type() == "button" || ie->type() == "reset" || ie->type() == "submit")
             elType = TBrCtlDefs::EElementButton;
         else if (ie->type() == "file") {
             if (((HTMLInputElement*)ie)->value() == String())

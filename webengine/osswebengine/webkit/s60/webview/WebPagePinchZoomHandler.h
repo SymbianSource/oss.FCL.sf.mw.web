@@ -78,7 +78,7 @@ public: // New functions
     /**
      * to set the zoom level for bitmap zooming
      **/
-    void setZoomLevel(TInt zoomLevel);
+    void setZoomLevelL(TInt zoomLevel);
 
     /**
      * to update the bitmap

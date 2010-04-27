@@ -208,6 +208,11 @@ void RenderPartObject::updateWidget(bool onlyCreateNonNetscapePlugins)
       // If we still don't have a type, try to map from a specific CLASSID to a type.
       if (serviceType.isEmpty() && !o->m_classId.isEmpty())
           mapClassIdToServiceType(o->m_classId, serviceType);
+#if PLATFORM(SYMBIAN) 
+      //If there is no Type and Classid then return.
+      else if (serviceType.isEmpty() && o->m_classId.isEmpty())
+          return;
+#endif
       
       // If no URL and type, abort.
       if (url.isEmpty() && serviceType.isEmpty())

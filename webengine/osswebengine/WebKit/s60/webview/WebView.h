@@ -355,7 +355,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         /**
         * To set the Bitmap zooming for Pinch
         */
-        void setPinchBitmapZoomLevel(int zoomLevel);
+        void setPinchBitmapZoomLevelL(int zoomLevel);
         
         /**
         * To set the Bitmap zooming In for Pinch
@@ -365,14 +365,24 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         /**
         * To set the Bitmap zooming Out for Pinch
         */
-        void setPinchBitmapZoomOut(int zoomLevel);
-        
-        /**
-        * Recreate Plugins in case of Retry Connection
-        */
-        void reCreatePlugins();
+        void setPinchBitmapZoomOutL(int zoomLevel);
         
         TBool isPinchZoom() {return m_isPinchZoom; }
+        
+        /**
+         * Creates the checkerboard
+         */
+        void createCheckerBoardL();
+        
+        /**
+         * Destroys the checkerboard
+         */
+        void destroyCheckerBoard();
+        
+        /**
+         * Starts the checkerboard timer. End of this timer, checkerboard will be destroyed.
+         */
+        void startCheckerBoardDestroyTimer();
         
         void setScrolling(bool scroll);
          
@@ -501,7 +511,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
 	    void sendMouseEventToEngineIfNeeded(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
 	    void setFocusedNodeUnderCursor(WebCore::Frame* frame);
 	    void waitTimerCB(WebCore::Timer<WebView>* t);
-	    
+	    void calculateZoomRect(TRect &aOldRect, TRect &aNewRect, TInt aOldZoom, TInt aNewZoom);
     public:
         void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
         void fepTimerFired(WebCore::Timer<WebView>*);
@@ -597,7 +607,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         WebPageFullScreenHandler* m_pageFullScreenHandler;  // owned
         bool m_viewIsScrolling;
         bool m_viewIsFastScrolling;
-        bool m_scroll;
 
         // synchronous requests
         bool                m_synchRequestPending;
@@ -615,7 +624,16 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         TBool                    m_isPinchZoom;
         TRealPoint               m_pinchDocDelta;
         int                      m_drawsMissed;
+        bool m_scroll;
         CThumbnailGenerator* m_thumbnailGenerator;
+        
+        CFbsBitmap              *m_checkerBoardBitmap;
+        CFbsBitmapDevice        *m_checkerBoardDevice;
+        CFbsBitGc               *m_checkerBoardGc;
+        
+        CPeriodic               *m_checkerBoardDestroyTimer;
+        
+        TBool                    m_isPinchZoomOut;
     };
 
 #endif

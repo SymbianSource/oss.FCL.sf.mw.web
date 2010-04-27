@@ -75,3 +75,4 @@ NONSHARABLE_CLASS( MDownloadsListDlgObserver )
 
 #endif /* DOWNLOADSLISTDLGOBSERVER_H */
 
+

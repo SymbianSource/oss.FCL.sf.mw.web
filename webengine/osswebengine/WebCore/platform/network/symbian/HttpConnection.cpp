@@ -790,6 +790,7 @@ void HttpConnection::complete(int error)
     TBool retryFlag = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->getRetryConnectivityFlag();
     if( retryFlag )
         {
+        m_transaction->Cancel();
         //m_cancelled = false; //for flash
         return;
         }

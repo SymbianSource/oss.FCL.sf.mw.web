@@ -235,6 +235,7 @@ void CConnectionStageNotifierWCB::DoOpenAgentL( TName* aConnName )
     if( (err = iServer.Connect()) == KErrNone )
         {
         err = iConnection.Open( iServer, *aConnName );
+#ifndef BRDO_OCC_ENABLED_FF
         if( !err )
             {
             TBuf<64> query;
@@ -262,8 +263,9 @@ void CConnectionStageNotifierWCB::DoOpenAgentL( TName* aConnName )
                     }
                 }
             }
+#endif
         }
-
+    CLOG_WRITE_1( "CConnectionStageNotifierWCB::DoOpenAgentL Any error: %d", err );
     if( err )
         {
         iConnection.Close();

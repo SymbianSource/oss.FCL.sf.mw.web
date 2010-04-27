@@ -35,7 +35,7 @@ using namespace WebCore;
 // CONSTANTS
 // The post is transmitted in parts. A buffer is allocated of max size to
 // contain the next part to be transmitted. 
-const TInt KPartMaxSize = 10240;
+const TInt KPartMaxSize = 24576;
 
 // MACROS
 

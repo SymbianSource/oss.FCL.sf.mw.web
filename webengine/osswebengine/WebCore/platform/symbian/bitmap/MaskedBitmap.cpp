@@ -22,7 +22,6 @@
 #include <fbs.h>
 #include <bitstd.h>
 #include <bitdev.h>
-#include <Browser_Platform_Variant.hrh>
 
 
 // ======================== STATIC FACTORY FUNCTIONS ===========================
@@ -474,44 +473,6 @@ void CMaskedBitmap::TileInBitmapRect( CFbsBitGc& gc, const TRect& bmpRect, const
         gc.SetBrushStyle(CGraphicsContext::ENullBrush);
         TPoint off(srcPt.iX, srcPt.iY);
 
-#ifdef BRDO_PERF_IMPROVEMENTS_ENABLED_FF        
-        while ((bmpRect.iBr.iX - off.iX)> 2*SizeInPixels().iWidth)
-            {
-            TInt w = SizeInPixels().iWidth;
-            TInt h = SizeInPixels().iHeight;
-            TInt new_width = 2*w;
-
-            CFbsBitmap* bitmap = new (ELeave) CFbsBitmap;
-            bitmap->Create( TSize(new_width,h), iBitmap->DisplayMode() );
-
-            CBitmapContext* bitmapContext=NULL;
-            CFbsBitmapDevice* bitmapDevice = CFbsBitmapDevice::NewL(bitmap);
-            CleanupStack::PushL(bitmapDevice);
-            User::LeaveIfError(bitmapDevice->CreateBitmapContext(bitmapContext));
-            CleanupStack::PushL(bitmapContext);
-            bitmapContext->BitBlt(TPoint(0,0),iBitmap);
-            bitmapContext->BitBlt(TPoint(w,0),iBitmap);
-            CleanupStack::PopAndDestroy(2);
-            delete iBitmap;
-            iBitmap = bitmap;
-
-            if (HasMask())
-                {
-                CFbsBitmap* mask = new (ELeave) CFbsBitmap;
-                mask->Create( TSize(new_width,h), iMask->DisplayMode() );
-                CBitmapContext* bitmapContext=NULL;
-                CFbsBitmapDevice* bitmapDevice = CFbsBitmapDevice::NewL(mask);
-                CleanupStack::PushL(bitmapDevice);
-                User::LeaveIfError(bitmapDevice->CreateBitmapContext(bitmapContext));
-                CleanupStack::PushL(bitmapContext);
-                bitmapContext->BitBlt(TPoint(0,0),iMask);
-                bitmapContext->BitBlt(TPoint(w,0),iMask);
-                CleanupStack::PopAndDestroy(2);
-                delete iMask;
-                iMask = mask;
-                }
-            }
-#endif
         for (TInt x = off.iX; x<bmpRect.iBr.iX; x+=SizeInPixels().iWidth) 
             {
             for (TInt y = off.iY; y<bmpRect.iBr.iY; y+=SizeInPixels().iHeight) 

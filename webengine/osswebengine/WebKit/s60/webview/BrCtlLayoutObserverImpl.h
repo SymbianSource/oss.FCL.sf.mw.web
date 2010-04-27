@@ -22,6 +22,9 @@
 //  INCLUDES
 #include <brctllayoutobserver.h>
 
+//  Forward Declaration
+class WebView;
+
 /**
 *  This observer is notified of scrolling and tabbing events
 *
@@ -62,7 +65,7 @@ class CBrCtlLayoutObserver : public CBase, public MBrCtlLayoutObserver
         * @param aNewLayout RTL or LTR
         * @return void
         */
-        virtual void NotifyLayoutChange( TBrCtlLayout /*aNewLayout*/ ) {}
+        virtual void NotifyLayoutChange( TBrCtlLayout  aNewLayout );
         
         /**
         * Update the title of the page in history view
@@ -71,6 +74,16 @@ class CBrCtlLayoutObserver : public CBase, public MBrCtlLayoutObserver
         * @return void
         */
         virtual void UpdateTitleL( const TDesC& /*aTitle*/ ) {}        
+
+    public:
+        /**
+        * C++ default constructor.
+        */
+        CBrCtlLayoutObserver( WebView* aWebView );
+
+    private:
+       WebView*     m_webView;
+
 
     };
 

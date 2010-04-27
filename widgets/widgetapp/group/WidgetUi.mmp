@@ -112,6 +112,11 @@ LIBRARY AknSkins.lib
 LIBRARY ImageConversion.lib
 LIBRARY ecom.lib  // for schemeHandler
 LIBRARY MemMan.lib
+LIBRARY centralrepository.lib
+
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+LIBRARY gfxtrans.lib
+#endif
 
 #ifdef BRDO_WRT_HS_FF
 LIBRARY	liwservicehandler.lib

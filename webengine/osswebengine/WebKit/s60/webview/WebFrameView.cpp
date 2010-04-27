@@ -291,7 +291,7 @@ void WebFrameView::scrollTo(const TPoint& aPoint)
             if (aPoint != m_contentPos) {
                 TPoint p(nearestPointInFrame(aPoint));
                 m_contentPos = p;
-                m_frame->notifyPluginsOfScrolling();
+                m_frame->notifyPluginsOfPositionChange();
                 m_topView->syncRepaint( TRect(0,0,KMaxTInt/2,KMaxTInt/2) );
             }
         }
@@ -326,7 +326,7 @@ void WebFrameView::scrollTo(const TPoint& aPoint)
             m_contentPos = p;
 
             
-            m_frame->notifyPluginsOfScrolling();
+            m_frame->notifyPluginsOfPositionChange();
             
             
             if( m_topView->pageScaler() && m_topView->pageScaler()->Visible())

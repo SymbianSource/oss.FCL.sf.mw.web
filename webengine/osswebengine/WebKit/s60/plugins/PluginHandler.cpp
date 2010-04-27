@@ -477,6 +477,15 @@ TBool PluginHandler::initialize(TAny* pluginHandler)
 // Loads all the plugins and query them for details.
 // -----------------------------------------------------------------------------
 //
+static void CleanupPluginInfoArray( TAny* aObj )
+    {
+    if ( aObj )
+        {
+        static_cast<RImplInfoPtrArray*>( aObj )->ResetAndDestroy();
+        static_cast<RImplInfoPtrArray*>( aObj )->Close();
+        }
+    }
+ 
 TBool PluginHandler::loadPluginsL()
 {
     
@@ -489,6 +498,7 @@ TBool PluginHandler::loadPluginsL()
 
     // Create the ECom info array, contains the plugin information
     RImplInfoPtrArray ecomPluginInfoArray;
+    CleanupStack::PushL(TCleanupItem(CleanupPluginInfoArray, &ecomPluginInfoArray ) );
 
     // Get list of ECOM plugins that match the KNBrowserPluginInterfaceUid
     REComSession::ListImplementationsL(KBrowserPluginInterfaceUid, ecomPluginInfoArray);
@@ -519,8 +529,7 @@ TBool PluginHandler::loadPluginsL()
     }
 
     // Clean up the ECom info array
-    ecomPluginInfoArray.ResetAndDestroy();
-    ecomPluginInfoArray.Close();
+    CleanupStack::PopAndDestroy( &ecomPluginInfoArray );
     
     m_pluginsLoaded = ETrue;
     return EFalse;

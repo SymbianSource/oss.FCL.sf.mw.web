@@ -184,16 +184,16 @@ CFont* PlatformFontCache::CreateFont(const ZoomedSpec& spec)
         font = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, spec.m_spec.iHeight * spec.m_zoom/100, spec.m_spec.iTypeface.iName); 
         
         if(spec.m_zoom != 100) {
-            CFont *fontAt100Zoom = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, spec.m_spec.iHeight, spec.m_spec.iTypeface.iName);
+            CFont *fontWithoutZoom = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, spec.m_spec.iHeight, spec.m_spec.iTypeface.iName);
         
             double zoomout = KFontZoomBeginValue;
             /* When width zoom ratio exceeds the expected zoom value, adjust it by reducing the font size*/
-            while((font->MaxCharWidthInPixels() * 100.0)/fontAt100Zoom->MaxCharWidthInPixels() > spec.m_zoom) {
+            while((font->MaxCharWidthInPixels() * 100.0)/fontWithoutZoom->MaxCharWidthInPixels() > spec.m_zoom) {
                     zoomout = zoomout - KFontZoomStepSize;
                     ReleaseFont(font);
                     font = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, (spec.m_spec.iHeight * spec.m_zoom * zoomout)/100, spec.m_spec.iTypeface.iName);
                 }
-            ReleaseFont(fontAt100Zoom);
+            ReleaseFont(fontWithoutZoom);
         }
     } 
     

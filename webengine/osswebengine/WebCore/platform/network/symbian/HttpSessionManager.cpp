@@ -271,12 +271,10 @@ void HttpSessionManager::retryTransactions()
             if(!client->isLoadingPlugins())
                 requests.append(tmpit->first);  
         }
-    //Cancel all transactions first
     //Submit them again
     for (int i=0; i<requests.size(); ++i)
         {
-            requests[i]->HttpTransaction()->Cancel();           
-            requests[i]->HttpTransaction()->SubmitL();
+             requests[i]->HttpTransaction()->SubmitL();
         }
 
 }

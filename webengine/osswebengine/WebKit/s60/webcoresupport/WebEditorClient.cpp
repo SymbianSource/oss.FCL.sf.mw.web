@@ -380,12 +380,12 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                  frame->editor()->execCommand("MoveLeft");
                 }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
-                if (frame->selectionController()->start() != startPos &&
-                    frame->selectionController()->end() != endPos) {
-                    event->setDefaultHandled();
+                if (frame->selectionController()->start() == startPos &&
+                    frame->selectionController()->end() == endPos && !select) {
+                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
                 }
                 else {
-                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
+                    event->setDefaultHandled();
                 }
                 break;
 
@@ -403,12 +403,12 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                  frame->editor()->execCommand("MoveRight");
                 }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
-                if (frame->selectionController()->start() != startPos &&
-                    frame->selectionController()->end() != endPos) {
-                    event->setDefaultHandled();
+                if (frame->selectionController()->start() == startPos &&
+                    frame->selectionController()->end() == endPos && !select) {
+                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
                 }
                 else {
-                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
+                    event->setDefaultHandled();
                 }
                 break;
 
@@ -422,12 +422,12 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     frame->editor()->execCommand("MoveUp");
                 }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
-                if (frame->selectionController()->start() != startPos &&
-                    frame->selectionController()->end() != endPos) {
-                    event->setDefaultHandled();
+                if (frame->selectionController()->start() == startPos &&
+                    frame->selectionController()->end() == endPos && !select) {
+                    m_shouldEndEditing = true;
                 }
                 else {
-                    m_shouldEndEditing = true;
+                    event->setDefaultHandled();
                 }
                 break;
 
@@ -441,12 +441,12 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     frame->editor()->execCommand("MoveDown");
                 }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
-                if (frame->selectionController()->start() != startPos &&
-                    frame->selectionController()->end() != endPos) {
-                    event->setDefaultHandled();
+                if (frame->selectionController()->start() == startPos &&
+                    frame->selectionController()->end() == endPos && !select) {
+                    m_shouldEndEditing = true;
                 }
                 else {
-                    m_shouldEndEditing = true;
+                    event->setDefaultHandled();
                 }
                 break;
                 

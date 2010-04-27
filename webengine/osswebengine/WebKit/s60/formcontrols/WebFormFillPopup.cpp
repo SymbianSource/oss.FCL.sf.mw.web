@@ -46,7 +46,9 @@ static const TInt KBorderSize = 1; // List Box Border size
 static const TInt KListBoxPadding = 12;
 static const TInt KListBoxMinWidth = 100;
 static const TInt KListBoxMargin = 6;
+// CONSTANTS
 
+const static TInt KItemSpacerInPixels = 2;
 WebFormFillPopup* WebFormFillPopup::NewL(WebView* parent, CFont* font, MFormFillCallback* callback)
 {
     WebFormFillPopup* self = new (ELeave) WebFormFillPopup(parent, font, callback);
@@ -374,4 +376,11 @@ void WebFormFillPopup::HandlePointerEventL(const TPointerEvent& aPointerEvent)
     m_parent->page()->chrome()->client()->setElementVisibilityChanged(false);
 }
 
+void WebFormFillPopup::setFont(CFont* font)
+{
+    m_font = font;
+    CTextListItemDrawer* itemDrawer = (CTextListItemDrawer*) m_listBox->View()->ItemDrawer();
+    itemDrawer->SetFont(font); 
+    m_listBox->SetItemHeightL(m_font->HeightInPixels()+ KItemSpacerInPixels);
+}
 //  End of File

@@ -161,7 +161,7 @@ void WebPagePinchZoomHandler::handlePinchGestureL(const TStmGestureEvent& aGestu
             if (zoomStepSize < 0)   m_zoomOutBaseLevel = currentZoom / 2;  
         }
         if (!(zoomStepSize < 0 && zoomValue < m_zoomOutBaseLevel))
-            setZoomLevel(zoomValue);
+            setZoomLevelL(zoomValue);
 
     }
 }
@@ -183,15 +183,15 @@ void WebPagePinchZoomHandler::handlePinchGestureExitL(const TStmGestureEvent& aG
 }
 
 // -----------------------------------------------------------------------------
-// setZoomLevel
+// setZoomLevelL
 // -----------------------------------------------------------------------------
-void WebPagePinchZoomHandler::setZoomLevel(int zoomLevel)
+void WebPagePinchZoomHandler::setZoomLevelL(int zoomLevel)
 {
     if (m_isPluginsVisible) {
         m_webView->mainFrame()->makeVisiblePlugins(false);
         m_isPluginsVisible = false;
     }
-    m_webView->setPinchBitmapZoomLevel(zoomLevel);
+    m_webView->setPinchBitmapZoomLevelL(zoomLevel);
 }
 
 // -----------------------------------------------------------------------------
@@ -221,7 +221,7 @@ void WebPagePinchZoomHandler::updateBitmap(void)
      {
         pluginskin->setPluginWinClipedRect(); 
      }
-
+    m_webView->startCheckerBoardDestroyTimer();
 }
 
 // -----------------------------------------------------------------------------

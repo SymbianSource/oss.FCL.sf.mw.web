@@ -46,6 +46,11 @@
 #include <oommonitorsession.h>
 #include <aknglobalnote.h>
 
+#ifdef BRDO_MULTITOUCH_ENABLED_FF  
+#include<akntranseffect.h>
+#include<gfxtranseffect/GfxTransEffect.h>
+#endif
+
 #ifdef BRDO_OCC_ENABLED_FF
 #include <extendedconnpref.h>
 #endif
@@ -346,6 +351,9 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
             {            	
             // If we don't have window we know that WidgetUI has died
             // We must enable miniview state
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+            GfxTransEffect::BeginFullScreen(AknTransEffect::EApplicationStart,TRect(0,0,0,0),AknTransEffect::EParameterType,AknTransEffect::GfxTransParam(TUid::Uid(KWidgetAppUid)));
+#endif
             if( !GetWindow(aUid))
                 {        
                 needToNotify = EFalse;
@@ -355,6 +363,9 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
             //WidgetLauncher modified to bring app to foreground
             GetWindow( aUid)->IncrementClickCount();
             OpenOrCreateWindowL( aUid, LaunchFullscreen );            
+#ifdef BRDO_MULTITOUCH_ENABLED_FF            
+            GfxTransEffect::EndFullScreen();
+#endif            
             }
             break;
         case WidgetOnline:
@@ -801,7 +812,9 @@ void CWidgetUiWindowManager::SendWidgetToBackground( const TUid& aUid )
 #ifdef BRDO_WRT_HS_FF
           iCpsPublisher->ClearScreenshotL(*(GetWindow(aUid )->WidgetBundleId()), aUid.iUid);
 #endif
-
+#ifdef BRDO_MULTITOUCH_ENABLED_FF      
+    GfxTransEffect::BeginFullScreen(AknTransEffect::EApplicationExit,TRect(0,0,0,0),AknTransEffect::EParameterType,AknTransEffect::GfxTransParam(TUid::Uid(KWidgetAppUid)));
+#endif    
     // make widgets act like separate applications by pushing to background
     // this way user is sent back to app shell or idle to run another widget
     iAppUi.SendAppToBackground();

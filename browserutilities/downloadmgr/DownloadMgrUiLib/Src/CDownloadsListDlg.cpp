@@ -306,6 +306,18 @@ void CDownloadsListDlg::HandleModelChangeL( TDownloadsListDlgEvent aEvent, TInt 
             }
         }
 
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF    
+    TInt inProgressCount = iDownloadsListArray->DownloadsCount
+                      ( MASKED_DL_STATE(EHttpDlCreated) |
+                        MASKED_DL_STATE(EHttpDlPaused) |
+                        MASKED_DL_STATE(EHttpDlInprogress) |
+                        MASKED_DL_STATE(EHttpDlMultipleMOFailed));
+    
+    if ( inProgressCount <= 1 )
+        {
+        ButtonGroupContainer()->MakeCommandVisible( EAknSoftkeyOptions, EFalse );
+        }
+#endif
     // Close the dialog, if necessary
     if ( iListBox->Model()->NumberOfItems() == 0 )
         {

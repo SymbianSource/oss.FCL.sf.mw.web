@@ -771,7 +771,7 @@ NW_Image_Epoc32Simple_SetBitmapL(NW_Image_Epoc32Simple_t* image,
     {
         // The new bitmap and mask have no dependancy on the old; just replace the old
         // with the new.
-        if(image->bitmap){
+        if(image->bitmap && bitmap){
           TInt bitmapHandle = bitmap->Handle();
           CFbsBitmap* pBitmap = (CFbsBitmap*)image->bitmap;
           pBitmap->Duplicate(bitmapHandle);
@@ -780,7 +780,7 @@ NW_Image_Epoc32Simple_SetBitmapL(NW_Image_Epoc32Simple_t* image,
             image->bitmap = bitmap;
         } 
         
-        if(image->mask){
+        if(image->mask && mask){
            TInt bitmapHandle = mask->Handle();
            CFbsBitmap* pBitmask = (CFbsBitmap*)image->mask;
            pBitmask->Duplicate(bitmapHandle);

@@ -324,8 +324,7 @@ void WebPointerEventHandler::HandlePointerEventL(const TPointerEvent& aPointerEv
     if (aPointerEvent.iType == TPointerEvent::EButton1Down && m_webview->viewIsScrolling()) {
         WebScrollingDeceleratorGH* scrollDecelGH = m_webview->pageScrollHandler()->ScrollingDeceleratorGH();
         if(scrollDecelGH) {
-            scrollDecelGH->cancelDecel();
-            m_webview->setViewIsScrolling(false);
+            scrollDecelGH->cancelDecel();            
         }
     }
     

@@ -27,6 +27,7 @@
 #include "FormFillController.h"
 #include "FormState.h"
 #include "HtmlInputElement.h"
+#include "HTMLFormElement.h"
 #include <webkit.rsg>
 
 #include <StringLoader.h>
@@ -68,7 +69,7 @@ WebFormFill::~WebFormFill()
 void WebFormFill::willSubmitForm(FormState* formState)
 {
     int formDataType = m_webView->brCtl()->settings()->brctlSetting(TBrCtlDefs::ESettingsAutoFormFillEnabled);
-    if (formDataType != TBrCtlDefs::EFormDataOff) {
+    if (formDataType != TBrCtlDefs::EFormDataOff && formState->form()->isDoingSubmit()) {        
         StaticObjectsContainer::instance()->formFillController()->saveFormData(formState->form(), this, formDataType ==  TBrCtlDefs::EFormDataPlusPassword);
     }
 }

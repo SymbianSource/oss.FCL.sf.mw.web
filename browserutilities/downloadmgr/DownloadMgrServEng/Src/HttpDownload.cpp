@@ -6795,7 +6795,7 @@ void CHttpDownload::UpdateDestFileNameL()
             {
             continue;
             }
-        if( drive == currentDrive )//if the current path is same as the path in cenrep then no need to update.The diff is because we must have not known size before hand
+        if( drive == currentDrive || iStorage->DestFNameSet())//if the current path is same as the path in cenrep then no need to update.The diff is because we must have not known size before hand
             {
 #ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
             if( !downloadPathPlugin )

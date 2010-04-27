@@ -288,7 +288,7 @@ void CWidgetUiAppUi::HandleResourceChangeL( TInt aType )
     CAknViewAppUi::HandleResourceChangeL( aType );
     if ( aType == KEikDynamicLayoutVariantSwitch && iWindowManager && iWindowManager->ActiveWindow())
         {
-        iWindowManager->ActiveWindow()->Relayout();
+        iWindowManager->ActiveWindow()->RelayoutL( aType );
         }
     }
 

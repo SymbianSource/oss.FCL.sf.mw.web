@@ -206,15 +206,12 @@ class TBrCtlDefs
              ECommandEnterFullscreenBrowsing,
              ECommandLeaveFullscreenBrowsing,
              ECommandZoomIn,
-             ECommandZoomOut
-#ifdef BRDO_OCC_ENABLED_FF
-             ,
+             ECommandZoomOut,
              ECommandRetryTransactions,
              ECommandSetRetryConnectivityFlag,
              ECommandUnSetRetryConnectivityFlag,
              ECommandClearQuedTransactions,
              ECommandConnToDownloadManager
-#endif
             };
         /**
         * The load event that occurred.

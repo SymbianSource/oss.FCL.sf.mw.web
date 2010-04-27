@@ -1095,7 +1095,9 @@ void PluginSkin::setPluginWinClipedRect()
       
     if (m_pluginwin) {
         TBool visibility = isFrameVisible && !isPageViewMode && isPluginVisible;
-        m_pluginwin->makeVisible(visibility);
+        if(fullRect.Size() != TSize(0,0)) {
+            m_pluginwin->makeVisible(visibility);
+        }
         if (!m_pluginwin->isPluginInFullscreen() && visibility) {
             clipRect.Intersection(fullRect);
             m_pluginwin->SetRect(clipRect);

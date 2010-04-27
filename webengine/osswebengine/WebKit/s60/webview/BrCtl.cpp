@@ -80,6 +80,7 @@
 #include "httpDownload.h"
 #include "BrCtlSoftkeysObserverImpl.h"
 #include "BrCtlSpecialLoadObserverImpl.h"
+#include "WebFrameBridge.h"
 #include "BrCtlLayoutObserverImpl.h"
 #include "BrCtlWindowObserverImpl.h"
 #include "WidgetExtension.h"
@@ -479,7 +480,7 @@ void CBrCtl::ConstructL(
     // Create and initialize the Layout Observer
     if (m_brCtlLayoutObserver == NULL)
         {
-        m_brCtlLayoutObserver = new (ELeave) CBrCtlLayoutObserver();
+        m_brCtlLayoutObserver = new (ELeave) CBrCtlLayoutObserver(m_webView);
         m_ownsLayoutObserver = true;
         }
     // Create and initialize the Dialog Provider
@@ -591,6 +592,10 @@ void CBrCtl::HandleBrowserLoadEventL( TBrCtlDefs::TBrCtlLoadEvent aLoadEvent, TU
                 m_webView->pageScaler()->DocumentStarted();
             if (m_webView->formFillPopup() && m_webView->formFillPopup()->IsVisible()) 
                 m_webView->formFillPopup()->handleCommandL(TBrCtlDefs::ECommandCancel);            
+            break;
+        case TBrCtlDefs::EEventNewContentDisplayed:
+            if(m_brCtlLayoutObserver && m_webView)
+                m_brCtlLayoutObserver->NotifyLayoutChange( (webView()->mainFrame()->bridge()->m_rtl ? EOriginTopRight : EOriginTopLeft));
             break;
         case TBrCtlDefs::EEventContentFinished:
         case TBrCtlDefs::EEventUploadFinished:
@@ -961,7 +966,6 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
              break;
             }
 
-#ifdef BRDO_OCC_ENABLED_FF
        case TBrCtlDefs::ECommandSetRetryConnectivityFlag:
             {
             StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->setRetryConnectivityFlag();
@@ -975,7 +979,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
        case TBrCtlDefs::ECommandRetryTransactions:
             {
              StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->retryTransactions();
-             m_webView->reCreatePlugins(); 
+             m_webView->mainFrame()->reCreatePlugins(); 
              break;
             }
        case TBrCtlDefs::ECommandClearQuedTransactions:
@@ -1001,8 +1005,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
                }
            break;
            }
-#endif           
-
+       
       default:
             {
             if ( m_wmlEngineInterface &&
@@ -2522,6 +2525,7 @@ MBrCtlDownloadObserver* CBrCtl::brCtlDownloadObserver()
     }
     return m_brCtlDownloadObserver;
 }
+
 
 
 

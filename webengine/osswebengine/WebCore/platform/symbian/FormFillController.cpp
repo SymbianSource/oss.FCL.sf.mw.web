@@ -79,18 +79,22 @@ void FormFillController::updatePopupView()
         // lazily create the popup view
         PlatformFontCache* cache = StaticObjectsContainer::instance()->fontCache();
         float zoomFactor =  (float)cache->fontZoomFactor();
-        if(!m_popup) {
-            // system font to be used by popup
+        // system font to be used by popup
 
-            float newFont = 12.0f * zoomFactor /100.0f;
-            FontDescription fd;
-            fd.setComputedSize(newFont);
-            //If zoom factor is greater than 120 and less than or equals 200, then make it 125 by default. This
-            //will make it selectable not too big.
-            FontPlatformData* font = new FontPlatformData(cache->zoomedFont(fd, (zoomFactor > 120)? KMaxZoomFactorForPopup : zoomFactor));;
+        float newFont = 12.0f * zoomFactor /100.0f;
+        FontDescription fd; 
+        fd.setComputedSize(newFont);
+        //If zoom factor is greater than 120 and less than or equals 200, then make it 125 by default. This
+        //will make it selectable not too big.
+        FontPlatformData* font = new FontPlatformData(cache->zoomedFont(fd, (zoomFactor > 120)? KMaxZoomFactorForPopup : zoomFactor));;
+        if(!m_popup) {
             m_popup = m_callback->createFormFillPopup(font->Font());
-            delete font; 
         }
+        else
+        {
+            m_popup->setFont(font->Font());
+        }
+        delete font; 
         if (!m_popup) {
             return;
         }

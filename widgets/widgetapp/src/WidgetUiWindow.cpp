@@ -42,6 +42,11 @@
 #include <aknsdrawutils.h>
 #include "SWInstWidgetUid.h"
 
+#ifdef RD_SCALABLE_UI_V2
+#include <centralrepository.h>
+#include <SensorPluginDomainCrKeys.h>
+#endif //RD_SCALABLE_UI_V2
+
 // EXTERNAL DATA STRUCTURES
 
 // EXTERNAL FUNCTION PROTOTYPES
@@ -51,6 +56,7 @@ static const TUint32 KDummyCommand = 0;
 
 const TUint KWmlNoDefaultAccessPoint = KMaxTUint; // see cenrep setting default -1 as int, here as uint
 const TUint KWmlNoDefaultSnapId = KMaxTUint; // see cenrep setting default -1 as int, here as uint
+const TInt KRetryConnectivityTimeout( 2*1000*1000 ); // 2 seconds
 
 // MACROS
 
@@ -197,6 +203,12 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
     // determine initial widget online/offline network state
     DetermineNetworkState();
     iAsyncCallBack = new (ELeave) CAsyncCallBack(TCallBack(DeleteItself,this),CActive::EPriorityUserInput);
+#ifdef BRDO_OCC_ENABLED_FF
+    iConnStageNotifier = CConnectionStageNotifierWCB::NewL();
+    //this is required, browser's connection oberver should be hit first. (incase of netscape plgins, transactions will be closed.)
+    iConnStageNotifier->SetPriority(CActive::EPriorityHigh);
+    iRetryConnectivity = CPeriodic::NewL(CActive::EPriorityStandard);
+#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -497,15 +509,33 @@ void CWidgetUiWindow::SetSoftKeyImageL(const TInt aCommand, const TDesC& aFilena
     }
 
 // -----------------------------------------------------------------------------
-// CWidgetUiWindow::Relayout()
+// CWidgetUiWindow::RelayoutL( TInt aType )
 // switch the display orientation based on preferred setting
 //
 // -----------------------------------------------------------------------------
 //
-void CWidgetUiWindow::Relayout( )
+void CWidgetUiWindow::RelayoutL( TInt aType )
     {
     if (iIsCurrent)
         {
+#ifdef RD_SCALABLE_UI_V2
+        if(aType == KEikDynamicLayoutVariantSwitch)
+            {
+            CRepository* iSensor = CRepository::NewLC(KCRUidSensorSettings);
+            TInt sensorOn = 0;
+            //get sensor is on/off from general settings
+            iSensor->Get(KSenSettingsSensorsOn, sensorOn);
+            if(sensorOn == 0)
+                {    
+                TRect rec = iWindowManager.View()->Container()->Rect();
+                if( rec.Height() < rec.Width())
+                    iPreferredOrientation = TBrCtlDefs::EOrientationLandscape;
+                else
+                    iPreferredOrientation = TBrCtlDefs::EOrientationPortrait;
+                }
+            CleanupStack::PopAndDestroy();
+            }
+#endif // RD_SCALABLE_UI_V2
         SetDisplayMode(iPreferredOrientation);
         SetSoftkeysVisible(iShowSoftkeys);
         //iWindowManager.View()->Container()->SizeChanged();
@@ -531,7 +561,7 @@ void CWidgetUiWindow::SetCurrentWindow( TBool aCurrent )
             UpdateCba();
             Engine()->MakeVisible( iWidgetLoaded );
             // redraw incase the orientation changed while in the background
-            Relayout();
+            RelayoutL();
             }
         else
             {
@@ -910,6 +940,13 @@ void CWidgetUiWindow::NetworkConnectionNeededL( TInt* aConnectionPtr,
                                       TApBearerType* aBearerType )
 
     {
+#ifdef BRDO_OCC_ENABLED_FF
+    TBool retryFlag = GetRetryFlag();
+    if( retryFlag )
+        {
+        return;
+        }
+#endif
     // default in case connection setup fails
     *aConnectionPtr = 0;
 
@@ -1272,5 +1309,107 @@ TInt CWidgetUiWindow::DeleteItself(TAny* aPtr)
         p->ExitNow();
     return 0;
     }
+    
+#ifdef BRDO_OCC_ENABLED_FF
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::ConnectionStageAchievedL()
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiWindow::ConnectionStageAchievedL()
+    {
 
+    iWindowManager.GetConnection()->Disconnect();
+   
+    TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
+    SetRetryFlag(ETrue);    
+    
+    if( iRetryConnectivity && iRetryConnectivity->IsActive())
+       {
+       iRetryConnectivity->Cancel();
+       }
+    iRetryConnectivity->Start(KRetryConnectivityTimeout, 0,TCallBack(RetryConnectivity,this));
+
+    }  
+
+void CWidgetUiWindow::ConnNeededStatusL( TInt aErr )
+    {
+    StopConnectionObserving(); //Need to stop the connection observer first
+
+
+    if ( !iConnStageNotifier->IsActive() )
+        {
+        TName* connectionName = iWindowManager.GetConnection()->ConnectionNameL();
+        CleanupStack::PushL( connectionName );
+
+        iConnStageNotifier->StartNotificationL(connectionName, KLinkLayerClosed, this);
+
+        CleanupStack::PopAndDestroy();  //connectionName
+        }
+    } 
+void CWidgetUiWindow::StopConnectionObserving()
+    {
+    
+    if ( iConnStageNotifier && iConnStageNotifier->IsActive() )
+        {
+        iConnStageNotifier->Cancel();
+        }
+    } 
+
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::SetRetryFlag
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiWindow::SetRetryFlag(TBool flag)
+     {
+     reConnectivityFlag = flag;
+     }
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::RetryConnectivity
+// -----------------------------------------------------------------------------
+//
+TInt CWidgetUiWindow::RetryConnectivity(TAny* aWidgetUiWindow)
+    {
+
+    TInt err = ((CWidgetUiWindow*)aWidgetUiWindow)->RetryInternetConnection();
+    return err;
+    }
+TInt CWidgetUiWindow::RetryInternetConnection()
+    {
+    //First cancel the timer
+    if ( iRetryConnectivity && iRetryConnectivity->IsActive() )
+    {
+        iRetryConnectivity->Cancel();
+    }
+    TInt err = KErrNone;
+    if ( !iWindowManager.GetConnection()->Connected() )
+       {
+       TRAP_IGNORE( err = iWindowManager.GetConnection()->StartConnectionL( ETrue ) );
+       }
+    if( err == KErrNone )
+       { 
+   
+       TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandUnSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
+       SetRetryFlag(EFalse);
+       
+       TRAP_IGNORE(ConnNeededStatusL(err)); //Start the observer again
+       TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandRetryTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
+       }
+    else
+        {
+        TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandUnSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
+        SetRetryFlag(EFalse);
+        TRAP_IGNORE(Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandClearQuedTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
+        }
+    
+    return err;
+    }
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::GetRetryFlag
+// -----------------------------------------------------------------------------
+//
+ TBool CWidgetUiWindow::GetRetryFlag()
+      {
+      return reConnectivityFlag;
+      } 
+#endif 
 // End of file

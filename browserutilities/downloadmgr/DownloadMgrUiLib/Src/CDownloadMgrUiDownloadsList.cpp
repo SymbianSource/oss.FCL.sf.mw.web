@@ -1255,9 +1255,14 @@ void CDownloadMgrUiDownloadsList::UpdateProgressInfoL
     // First find the current download in the model.
     TInt index(0);
     TDownloadUiData* dlDataPtr = FindDlUiData( *iListModel, aDownload, index );
-    if ( !dlDataPtr )
+    if ( !dlDataPtr || dlDataPtr->iDownloadState == EHttpDlCompleted )
         {
-        // do nothing
+         /*
+          For download completed do not update any thing in UI list.Download was small and may
+          have completed before you could recieve progress notification        
+          
+          do nothing 
+          */ 
         }
     else
         {
@@ -1429,7 +1434,7 @@ void CDownloadMgrUiDownloadsList::DownloadCompletedL
 		    {
 		    aDownload.GetStringAttribute( EDlAttrAlbumName, dlData.iName );
 		    }
-		else if (dlData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged)
+		else if ( !(dlData.iProgressState == EHttpProgContentFileMoved) || dlData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged)
 			// Filename changed, get the updated filename
 		    {
 			CLOG_WRITE(" EHttpProgDlNameChanged");
@@ -1441,6 +1446,7 @@ void CDownloadMgrUiDownloadsList::DownloadCompletedL
         
         if( dlData.iProgressState == EHttpProgContentFileMoved  || dlData.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )
            {
+            aDownload.GetIntAttribute( EDlAttrDestRemovable, dlData.iExternalMemoryStatus );
             HBufC8* contentType = iUiUtils->ContentTypeL( aDownload, ETrue, KFirstMoIndex );
             if ( contentType->Length() > KMaxContentTypeLength )
                 {
@@ -2714,4 +2720,5 @@ TInt AskIapIdL( TUint32& aId )
 #endif // #ifdef __WINS__
 
 /* End of file. */
+
 

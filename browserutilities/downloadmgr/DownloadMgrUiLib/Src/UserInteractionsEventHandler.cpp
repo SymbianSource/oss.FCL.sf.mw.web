@@ -58,7 +58,7 @@
 // LOCAL CONSTANTS AND MACROS
 _LIT( KListBoxSeparator, "\t" );
 _LIT( KDownloadPath,"download");
-
+const TInt KMyFavApplicationUid   = 0x200110D5;
 
 const TInt KDownloadConfSizeLimit = 100000;
 
@@ -247,7 +247,20 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
             }                                            
         else
             {
-            ret = ShowDownloadConfirmationL( aDownload, aCbaResource );
+            // For mimetype that download confirmation dialog should not be shown
+            TUid pdPlayerUid = { 0 };
+            TDataType dataType ( *contentType );
+            CDocumentHandler* docHandler = CDocumentHandler::NewLC();
+            TBool pdSupported = docHandler->CanHandleProgressivelyL( dataType , pdPlayerUid );
+            CleanupStack::PopAndDestroy ( docHandler );
+            if ( pdPlayerUid == KMyFavApplicationUid)
+                {
+                ret = ETrue;
+                }
+            else 
+                {
+                ret = ShowDownloadConfirmationL( aDownload, aCbaResource );
+                }
             }
         CleanupStack::PopAndDestroy( contentType );            
         }

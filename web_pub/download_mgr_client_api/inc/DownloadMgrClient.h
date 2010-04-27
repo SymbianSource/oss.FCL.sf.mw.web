@@ -1122,3 +1122,4 @@ NONSHARABLE_CLASS( RHttpDownload ): public RSubSessionBase
 
 #endif /* __DOWNLOADMGR_CLIENT_H__ */
 
+

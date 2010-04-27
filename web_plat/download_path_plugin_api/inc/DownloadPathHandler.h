@@ -2,7 +2,7 @@
   File        : DownloadPathHandler.h
   Part of     : web_plat / download_path_plugin_api
   Description : Download path handler plugin interface definition file
-  Version     : %version: 1 % << Don't touch! Updated by Synergy at check-out.
+  Version     : %version: sd1s60p2#1 % << Don't touch! Updated by Synergy at check-out.
 
   Copyright (c) 2010 Nokia Corporation.
   This material, including documentation and any related

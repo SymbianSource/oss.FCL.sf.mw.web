@@ -98,6 +98,7 @@ WebCoreFrameBridge::WebCoreFrameBridge() :
 
 {
     m_focusableNodeList.clear();    
+    m_rtl = FALSE ;
 }
 
 WebCoreFrameBridge::~WebCoreFrameBridge() 
@@ -317,6 +318,7 @@ int WebCoreFrameBridge::maxBidiWidth()
 
 void WebCoreFrameBridge::setWritingDirectionRtl(bool isRtl)
 {
+    m_rtl = isRtl;
     // update rtl only for mainframe
     if (m_frame && m_frame == m_frame->page()->mainFrame()) {
         if (control(m_frame)->brCtlLayoutObserver())

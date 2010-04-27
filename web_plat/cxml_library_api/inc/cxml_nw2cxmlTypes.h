@@ -62,3 +62,4 @@ extern "C"
 
 #endif /* CXML_NW2CXMLTYPES_H */
 
+

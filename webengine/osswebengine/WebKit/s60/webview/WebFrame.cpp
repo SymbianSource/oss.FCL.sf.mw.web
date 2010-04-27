@@ -280,28 +280,21 @@ DocumentLoader* WebFrame::documentLoader()
     return frameLoader()->documentLoader();
 }
 
-void WebFrame::notifyPluginsOfScrolling()
-{
-    Frame* coreFrame = core(this);
-    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) {
-        PassRefPtr<HTMLCollection> objects = frame->document()->objects();       
-        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) 
-            notifyPluginOfScrolling(n->renderer());             
-
-        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();       
-        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) 
-            notifyPluginOfScrolling(n->renderer()); 
-
-        }
+void WebFrame::notifyPluginsOfPositionChange()
+{    
+    PluginHandler* plghandler = StaticObjectsContainer::instance()->pluginHandler();
+    WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
+    for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it ) {
+        notifyPluginOfPositionChange(static_cast<PluginSkin*> (*it));
+    }
 }
 
-void WebFrame::notifyPluginOfScrolling(RenderObject* renderer)
+void WebFrame::notifyPluginOfPositionChange(PluginSkin* plg)
 {        
-    MWebCoreObjectWidget* view = widget(renderer);
     //Don't repaint the plugin objects if Browser is in PageView mode
-    if (view) {
-        view->positionChanged();
-        TRect r = m_view->toDocCoords(static_cast<PluginSkin*>(view)->getPluginWinRect());
+    if (plg) {
+        plg->positionChanged();
+        TRect r = m_view->toDocCoords(plg->getPluginWinRect());
         m_view->topView()->scheduleRepaint(r);
     }
 }
@@ -514,29 +507,11 @@ bool WebFrame::executeScript(const WebCore::String& script)
 }
 
 void WebFrame::makeVisiblePlugins(TBool visible)
-{
-    MWebCoreObjectWidget* view = NULL;
-    int pluginCount = 0;
-    Frame* coreFrame = core(this);
-    PluginSkin* ptr = 0;
-    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) {
-
-        PassRefPtr<HTMLCollection> objects = frame->document()->objects();     
-        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) {
-            view = widget(n); 
-            if (view) {
-                ptr = static_cast<PluginSkin*>(view);
-                ptr->makeVisible(visible);
-            }
-        }
-        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();       
-        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) {
-            view = widget(n);
-            if (view) {
-                ptr = static_cast<PluginSkin*>(view);
-                ptr->makeVisible(visible);
-            }
-        }
+{    
+    PluginHandler* plghandler = StaticObjectsContainer::instance()->pluginHandler();
+    WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
+    for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it ) {
+        static_cast<PluginSkin*> (*it)->makeVisible(visible);
     }
 }
 
@@ -600,5 +575,15 @@ void WebFrame::PlayPausePlugins(bool pause)
     }
 }
 
+void WebFrame::reCreatePlugins()
+{
+    PluginHandler* plghandler = StaticObjectsContainer::instance()->pluginHandler();
+    WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
+    for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it ) {
+        PluginSkin* plg = static_cast<PluginSkin*> (*it); //->PlayPauseNotify(pause);
+        if(plg->activeStreams() > 0)
+           plg->reCreatePlugin();
+    }
+}
 
 // END OF FILE
