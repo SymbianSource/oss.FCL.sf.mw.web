@@ -27,7 +27,7 @@
 // System includes
 #include <BrCtlDialogsProvider.h>
 
-#include <aknpopup.h>
+#include <aknPopup.h>
 #include <aknlists.h>
 
 // FORWARD DECLARATIONS

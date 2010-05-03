@@ -25,8 +25,8 @@
 #include <apmstd.h>
 #include <f32file.h>
 #include <CodDefs.h>
-#include <CharConv.h>
-#include <ImplementationProxy.h>
+#include <charconv.h>
+#include <implementationproxy.h>
 #include "DdRecog.h"
 #include "DdRecogLogger.h"
 

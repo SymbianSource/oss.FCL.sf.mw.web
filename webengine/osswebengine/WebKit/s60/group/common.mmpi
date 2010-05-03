@@ -38,15 +38,15 @@ USERINCLUDE ../../../WebCore/platform
 USERINCLUDE ../../../WebCore/platform/symbian
 USERINCLUDE ../../../WebCore/platform/graphics/symbian
 USERINCLUDE ../../../WebCore/platform/symbian/bitmap
-USERINCLUDE ../../../WebCore/loader/symbian
+USERINCLUDE ../../../WebCore/loader/Symbian
 USERINCLUDE ../../../WebCore/loader
 USERINCLUDE ../../../WebCore/loader/icon
 USERINCLUDE ../../../WebCore/loader/wml
-USERINCLUDE ../WebView
-USERINCLUDE ../Plugins
-USERINCLUDE ../WebCoreSupport
-USERINCLUDE ../FormControls
-USERINCLUDE ../Misc
+USERINCLUDE ../webview
+USERINCLUDE ../plugins
+USERINCLUDE ../webcoresupport
+USERINCLUDE ../formcontrols
+USERINCLUDE ../misc
 
 USERINCLUDE ../../../../../inc
 USERINCLUDE ../../../MemoryManager/Inc 
@@ -81,12 +81,12 @@ MW_LAYER_LIBC_SYSTEMINCLUDE
 MW_LAYER_STDAPIS_SYSTEMINCLUDE
 
 
-SYSTEMINCLUDE ../../../../PageScaler/inc
-SYSTEMINCLUDE ../../../../WidgetEngine/inc
+SYSTEMINCLUDE ../../../../pagescaler/inc
+SYSTEMINCLUDE ../../../../widgetengine/inc
 SYSTEMINCLUDE ../../../../device/inc
-SYSTEMINCLUDE ../../../../WebKitUtils/ToolBar
-SYSTEMINCLUDE ../../../../WebKitUtils/HistoryProvider
-SYSTEMINCLUDE ../../../../WebKitUtils/SqliteSymbian
+SYSTEMINCLUDE ../../../../webkitutils/ToolBar
+SYSTEMINCLUDE ../../../../webkitutils/HistoryProvider
+SYSTEMINCLUDE ../../../../webkitutils/SqliteSymbian
 
 MACRO __S60__
 MACRO __OOM__

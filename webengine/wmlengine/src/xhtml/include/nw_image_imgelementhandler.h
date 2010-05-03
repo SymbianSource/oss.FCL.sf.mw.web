@@ -20,7 +20,7 @@
 #define NW_XHTML_IMAGE_IMGELEMENTHANDLER_H
 
 #include "nw_xhtml_elementhandler.h"
-#include "NW_LMgr_Box.h"
+#include "nw_lmgr_box.h"
 
 #ifdef __cplusplus
 extern "C" {

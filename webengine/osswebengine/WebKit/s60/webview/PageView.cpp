@@ -23,7 +23,7 @@
 #include  <coemain.h>
 #include "pagescaler.h"
 #include "WebView.h"
-#include "brctl.h"
+#include "BrCtl.h"
 
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;

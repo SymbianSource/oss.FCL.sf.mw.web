@@ -30,7 +30,7 @@ void TraceChunkUsage(TInt aChunkHandle, TUint8* aBase, TInt aChunkSize)
 #ifdef __NEW_ALLOCATOR__
 
 #include "MemoryLogger.h"
-#include "SymbianDLHeap.h"
+#include "SymbianDlHeap.h"
 
 _LIT(KDLHeapPanicCategory, "DL Heap");
 #define	GET_PAGE_SIZE(x)			UserHal::PageSizeInBytes(x)

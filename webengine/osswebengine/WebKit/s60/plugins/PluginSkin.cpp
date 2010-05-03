@@ -16,7 +16,7 @@
 */
 
 //INCLUDES
-#include <Browser_Platform_Variant.hrh>
+#include <Browser_platform_variant.hrh>
 #include "../../bidi.h"
 #include "PlatformString.h"
 #include <centralrepository.h>
@@ -35,7 +35,7 @@
 #include "StaticObjectsContainer.h"
 #include "BrCtlDefs.h"
 #include "SettingsContainer.h"
-#include <Uri8.h>
+#include <uri8.h>
 #include <StringLoader.h>
 #include <Webkit.rsg>
 #include "Frame.h"
@@ -43,10 +43,10 @@
 #include "DocumentLoader.h"
 #include "ResourceRequest.h"
 #include "Widget.h"
-#include "PlatformScrollBar.h"
+#include "PlatformScrollbar.h"
 
 #include <ApEngineConsts.h>
-#include <Uri8.h>
+#include <uri8.h>
 #include <InternetConnectionManager.h>
 #include <es_enum.h>
 #include <TextEncoding.h>

@@ -45,19 +45,19 @@ USERINCLUDE     ../../src/htmlp/include
 USERINCLUDE     ../../src/fbox/include
 USERINCLUDE     ../../src/gdi/include
 USERINCLUDE     ../../src/hed/include
-USERINCLUDE     ../../src/imageCH/include
+USERINCLUDE     ../../src/ImageCH/include
 USERINCLUDE     ../../src/image/include
 USERINCLUDE     ../../src/lmgr/include
 USERINCLUDE     ../../src/markup/include
 USERINCLUDE     ../../src/object/include
-USERINCLUDE     ../../src/scrolling/inc
-USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/Scrolling/inc
+USERINCLUDE     ../../src/System/include
 USERINCLUDE     ../../src/text/include
 USERINCLUDE     ../../src/wmlscriptch/include
 USERINCLUDE     ../../src/wml/src
 USERINCLUDE     ../../src/wml/include
-USERINCLUDE     ../../src/mvc/include
-USERINCLUDE     ../../src/msg/include
+USERINCLUDE     ../../src/MVC/include
+USERINCLUDE     ../../src/Msg/include
 
 
 SYSTEMINCLUDE   ../../src/urlloader/include

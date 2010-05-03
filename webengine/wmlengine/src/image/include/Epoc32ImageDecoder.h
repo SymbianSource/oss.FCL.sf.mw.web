@@ -37,7 +37,7 @@
 // INCLUDES
 
 #include <e32base.h>
-#include <ImageConversion.h>
+#include <imageconversion.h>
 
 #include "nw_image_epoc32simpleimage.h"
    

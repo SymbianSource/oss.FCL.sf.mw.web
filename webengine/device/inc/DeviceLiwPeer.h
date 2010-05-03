@@ -19,7 +19,7 @@
 #define __DEVICELIWPEER_H
 
 #include <e32std.h>
-#include <LiwCommon.h>
+#include <liwcommon.h>
 #include "DeviceBinding.h"
 
 namespace KJS

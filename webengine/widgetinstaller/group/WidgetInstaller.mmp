@@ -40,7 +40,7 @@ SOURCEPATH      ../Src
 SOURCE          WidgetInstaller.cpp
 SOURCE          WidgetConfigHandler.cpp
 SOURCE          WidgetRegistrationManager.cpp
-SOURCE          IconConverter.cpp
+SOURCE          Iconconverter.cpp
 SOURCE          WidgetBackupRegistryXml.cpp
 
 // Includes

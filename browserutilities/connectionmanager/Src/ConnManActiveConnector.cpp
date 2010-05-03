@@ -24,7 +24,7 @@
 #include "ConnectionManagerLogger.h"
 
 #include <nifvar.h>
-#include <CommDbConnPref.h>
+#include <commdbconnpref.h>
 
 //--------------------------------------------------------------------------
 //CConnManActiveConnector::CConnManActiveConnector()

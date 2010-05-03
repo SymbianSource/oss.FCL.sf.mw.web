@@ -26,7 +26,7 @@ UID             0x10009D8D 0x10282820
 CAPABILITY CAP_ECOM_PLUGIN 
 
 
-SOURCEPATH      ../Data
+SOURCEPATH      ../data
 
 START RESOURCE  10282820.rss
 TARGET          WidgetRecognizer.rsc

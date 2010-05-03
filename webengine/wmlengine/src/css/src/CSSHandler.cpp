@@ -21,7 +21,7 @@
 #include "CSSHandler.h"
 #include "nw_lmgr_simplepropertylist.h"
 #include "nw_hed_documentroot.h"
-#include "nw_hed_CompositeContentHandler.h"
+#include "nw_hed_compositecontenthandler.h"
 #include "nw_lmgr_statictablebox.h"
 #include "nw_fbox_inputbox.h"
 #include "HEDDocumentListener.h"

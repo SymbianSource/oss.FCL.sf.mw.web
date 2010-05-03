@@ -24,7 +24,7 @@
 #include <eikapp.h>
 #include <eikdoc.h>
 #include <coeccntx.h>
-#include <AknViewAppUi.h>
+#include <aknViewAppUi.h>
 #include "ApiProvider.h"
 
 // CONSTANTS

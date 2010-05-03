@@ -29,7 +29,7 @@
 #include "FrameLoadRequest.h"
 #include "kjs_proxy.h"
 #include "kjs_binding.h"
-#include <stringloader.h>
+#include <StringLoader.h>
 #include <Webkit.rsg>
 
 

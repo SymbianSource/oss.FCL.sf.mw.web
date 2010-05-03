@@ -16,7 +16,7 @@
 */
 
 
-#include <aputils.h> 
+#include <ApUtils.h> 
 #include <InternetConnectionManager.h>
 
 #include "ServerHttpConnection.h"

@@ -27,7 +27,7 @@
 #include "nw_lmgr_activecontainerbox.h"
 #include "nw_lmgr_statictablecellbox.h"
 #include "nwx_settings.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 // CONSTANTS

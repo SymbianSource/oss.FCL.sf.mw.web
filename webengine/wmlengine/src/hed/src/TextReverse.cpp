@@ -20,8 +20,8 @@
 // INCLUDE FILES
 #include <e32std.h>
 #include <e32base.h>
-#include "textreverse.h"
-#include <BidiVisual.h>
+#include "TextReverse.h"
+#include <bidivisual.h>
 #include "nwx_settings.h"
 #include "nwx_statuscodeconvert.h"
 #include "BrsrStatusCodes.h"

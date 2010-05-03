@@ -18,11 +18,11 @@
 
 //  INCLUDES
 #include "WmlControl.h"
-#include "MultipartParser.h"
+#include "multipartparser.h"
 #include "MVCView.h"
 #include "MVCShell.h"
 #include "WmlInterface.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "HistoryController.h"
 #include "HistoryInterface.h"
 

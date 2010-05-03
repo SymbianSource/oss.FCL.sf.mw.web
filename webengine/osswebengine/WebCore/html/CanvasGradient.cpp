@@ -27,7 +27,7 @@
 #include "config.h"
 #include "CanvasGradient.h"
 
-#include "CSSParser.h"
+#include "cssparser.h"
 
 #if PLATFORM(CG)
 #include <ApplicationServices/ApplicationServices.h>

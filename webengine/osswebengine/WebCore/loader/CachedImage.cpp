@@ -25,7 +25,7 @@
 #include "CachedImage.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
-#include "HttpCacheManager.h"
+#include "httpcachemanager.h"
 
 #include "BitmapImage.h"
 #include "Cache.h"

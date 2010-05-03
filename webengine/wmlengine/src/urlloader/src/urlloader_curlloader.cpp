@@ -24,7 +24,7 @@
 #include <coemain.h>
 #include <uri16.h>
 #include "urlloader_urlloaderint.h"
-#include "urlloader_CUrlLoader.h"
+#include "urlloader_curlloader.h"
 #include "urlloader_loaderutils.h"
 #include "fileloader_cfileloader.h"
 #include "BrsrStatusCodes.h"

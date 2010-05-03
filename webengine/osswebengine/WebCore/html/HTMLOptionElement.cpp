@@ -27,7 +27,7 @@
 #include "config.h"
 #include "HTMLOptionElement.h"
 
-#include "CSSStyleSelector.h"
+#include "cssstyleselector.h"
 #include "Document.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"

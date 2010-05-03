@@ -20,13 +20,13 @@
 #include <e32std.h> 
 #include "SyncDecodeThread.h"
 #include "MaskedBitmap.h"
-#include <ImageConversion.h>
+#include <imageconversion.h>
 
 namespace TBidirectionalState {
     class TRunInfo;
 };
 
-#include <EIKENV.H> 
+#include <eikenv.h> 
 
 #define KMaxHeapSize 0x1000000
 

@@ -21,14 +21,14 @@
 // INCLUDE FILES
 
 #include "widgetappdefs.rh"
-#include <APACMDLN.H>
+#include <apacmdln.h>
 #include <s32mem.h>
 #include <e32std.h>
 #include <e32base.h>
 #include <f32file.h>
 #include <apgcli.h>
-#include <W32STD.H>
-#include <APGTASK.H>
+#include <w32std.h>
+#include <apgtask.h>
 #include <oommonitorsession.h>
 #include <e32property.h>
 #include <systemwarninglevels.hrh>

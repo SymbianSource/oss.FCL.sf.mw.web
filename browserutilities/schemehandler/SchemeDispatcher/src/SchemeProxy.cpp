@@ -28,7 +28,7 @@
 #include "MmsHandler.h"
 #include <e32std.h>
 #include <SchemeDefs.hrh>
-#include <ImplementationProxy.h>
+#include <implementationproxy.h>
 
 // Exported proxy for instantiation method resolution
 // Define the interface UIDs

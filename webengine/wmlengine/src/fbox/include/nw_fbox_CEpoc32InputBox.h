@@ -20,7 +20,7 @@
 #define CEPOC32INPUTBOX_H
 
 //  INCLUDES
-#include <E32DEF.H>
+#include <e32def.h>
 #include <coemain.h>
 #include <eikedwob.h>
 #include <coeinput.h>
@@ -28,7 +28,7 @@
 #include <fepbase.h>
 #include <eikrted.h>
 #include <eikseced.h>
-#include "nw_fbox_validator.h"
+#include "NW_FBox_Validator.h"
 
 #include <fepbase.h>
 #include <aknedsts.h> 

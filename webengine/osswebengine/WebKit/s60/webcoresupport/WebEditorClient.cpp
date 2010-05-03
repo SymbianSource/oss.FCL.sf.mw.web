@@ -31,9 +31,9 @@
 #include "WebView.h"
 #include "WebFrame.h"
 #include "WebFormFill.h"
-#include "HtmlNames.h"
+#include "HTMLNames.h"
 #include "WebFepTextEditor.h"
-#include <eikcoctl.rsg>
+#include <EIKCOCTL.rsg>
 #include <eikon.hrh>
 
 

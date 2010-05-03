@@ -35,8 +35,8 @@ NAME CODU
 #include <avkon.mbg>
 #include <appinfo.rh>
 #include <CommonDialogs.rh>
-#include <PathConfiguration.hrh>
-#include <DrmCommon.loc>
+#include <pathconfiguration.hrh>
+#include <drmcommon.loc>
 
 // RESOURCE DEFINITIONS 
 

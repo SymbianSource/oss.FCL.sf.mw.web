@@ -24,7 +24,7 @@
 #include <eikscrlb.h>
 #include "platform/Shared.h"
 #include "BrCtlDefs.h"
-#include "PageScaler.h"
+#include "pagescaler.h"
 #include "Timer.h"
 #include "MemoryManager.h"
 

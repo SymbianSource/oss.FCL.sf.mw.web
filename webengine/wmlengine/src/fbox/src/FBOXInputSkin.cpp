@@ -20,7 +20,7 @@
 #include "nw_lmgr_rootbox.h"
 #include "nw_text_ucs2.h"
 #include "nw_fbox_inputbox.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 /* ------------------------------------------------------------------------- *
    private methods

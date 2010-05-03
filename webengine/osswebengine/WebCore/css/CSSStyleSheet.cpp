@@ -23,7 +23,7 @@
 
 #include "CSSImportRule.h"
 #include "CSSNamespace.h"
-#include "CSSParser.h"
+#include "cssparser.h"
 #include "CSSRuleList.h"
 #include "Document.h"
 #include "ExceptionCode.h"

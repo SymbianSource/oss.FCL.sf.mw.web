@@ -30,7 +30,7 @@
 #include "nw_hed_iloadrecipient.h"
 #include "nw_image_iimageobserver.h"
 
-#include "nw_css_export.h"
+#include "NW_CSS_EXPORT.h"
 #include "nw_image_abstractimage.h"
 #include "nwx_osu_file.h"
 #include "BrsrStatusCodes.h"

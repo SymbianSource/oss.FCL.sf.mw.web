@@ -40,11 +40,11 @@ SOURCE      nwx_http_content_type_strings.c
 
 //USERINCLUDE     ../../src/httploader/include
 //USERINCLUDE     ../../src/httploader/src
-USERINCLUDE     ../../src/fileloader/include
+USERINCLUDE     ../../src/FileLoader/include
 USERINCLUDE     ../../src/urlloader/include
 USERINCLUDE     ../../src/wml/src
 USERINCLUDE     ../../src/wml/include
-USERINCLUDE     ../../src/mvc/include
+USERINCLUDE     ../../src/MVC/include
 USERINCLUDE     ../../src/utils/include
 USERINCLUDE     ../../src/wmlcontrol/include
 

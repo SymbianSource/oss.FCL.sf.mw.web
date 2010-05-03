@@ -27,10 +27,10 @@
 #include "cpspublisher.h"
 #endif
 #include <AknUtils.h>
-#include <ImageConversion.h>
+#include <imageconversion.h>
 #include <WidgetUi.rsg>
 
-#include <schemehandler.h>
+#include <SchemeHandler.h>
 #include <InternetConnectionManager.h>
 #include "WidgetInstallerInternalCRKeys.h"
 #include <BrowserUiSDKCRKeys.h>
@@ -39,7 +39,7 @@
 #include <ApUtils.h>
 #include <AiwGenericParam.h>
 #include <ActiveApDb.h>
-#include <aknsdrawutils.h>
+#include <AknsDrawUtils.h>
 #include "SWInstWidgetUid.h"
 
 

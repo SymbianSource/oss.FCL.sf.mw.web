@@ -22,7 +22,7 @@
 
 // INCLUDES
 #include <e32base.h>
-#include <http/RHTTPSession.h>
+#include <http/rhttpsession.h>
 #include <mconnectioncallback.h>
 
 #include "LeakTracker.h"

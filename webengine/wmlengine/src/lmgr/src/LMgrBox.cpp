@@ -37,7 +37,7 @@
 #include "nw_lmgr_verticaltablecellbox.h"
 #include "urlloader_urlloaderint.h"
 #include "nwx_settings.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 
 #include "nw_lmgr_imgcontainerbox.h"
 #include "LMgrMarkerImage.h"
@@ -46,7 +46,7 @@
 #include "LMgrAnonBlock.h"
 #include "nw_css_tokentoint.h"
 #include "bitdev.h"
-#include "aknutils.h"
+#include "AknUtils.h"
 #include "LMgrObjectBoxOOC.h"
 
 /* ------------------------------------------------------------------------- *

@@ -18,8 +18,8 @@
 */
 
 #include <fbs.h>
-#include <ImageConversion.h>
-#include <BitmapTransforms.h>
+#include <imageconversion.h>
+#include <bitmaptransforms.h>
 #include "IconConverter.h"
 #include "WidgetInstaller.h"
 

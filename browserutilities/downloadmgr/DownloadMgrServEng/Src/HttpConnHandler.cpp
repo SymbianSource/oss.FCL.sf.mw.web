@@ -27,13 +27,13 @@
 #include "HttpDownloadMgrLogger.h"
 
 #include <in_sock.h>
-#include <CommDbConnPref.h>
-#include <HttpFilterAuthenticationInterface.h>
+#include <commdbconnpref.h>
+#include <httpfilterauthenticationinterface.h>
 #include <uaproffilter_interface.h>
-#include <HttpFilterCommonStringsExt.h>
+#include <httpfiltercommonstringsext.h>
 #include <cdblen.h>
 //#include <DeflateFilterInterface.h>
-#include <CookieFilterInterface.h>
+#include <cookiefilterinterface.h>
 
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;

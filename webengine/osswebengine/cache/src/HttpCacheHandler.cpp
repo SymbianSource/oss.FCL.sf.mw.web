@@ -25,10 +25,10 @@
 #include "HttpCacheEvictionHandler.h"
 #include "HttpCacheObserver.h"
 #include "HttpCacheFileWriteHandler.h"
-#include <http/RHTTPTransaction.h>
+#include <http/rhttptransaction.h>
 #include <http/rhttpsession.h>
 #include <http/rhttpheaders.h>
-#include <HttpStringConstants.h>
+#include <httpstringconstants.h>
 #include <httperr.h>
 #include <s32file.h>
 #include <s32mem.h>

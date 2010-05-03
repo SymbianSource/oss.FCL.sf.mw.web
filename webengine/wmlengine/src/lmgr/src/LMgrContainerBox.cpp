@@ -28,7 +28,7 @@
 #include "nw_lmgr_cssproperties.h"
 #include "nw_adt_resizablevector.h"
 #include "nw_lmgr_eventhandler.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_lmgr_slavepropertylist.h"
 #include "nw_adt_vectoriterator.h"
 #include "BrsrStatusCodes.h"

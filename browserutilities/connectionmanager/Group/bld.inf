@@ -24,8 +24,8 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../rom/ConnectionManager.iby			CORE_MW_LAYER_IBY_EXPORT_PATH(ConnectionManager.iby)
-../rom/ConnectionManagerResources.iby	LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(ConnectionManagerResources.iby)
+../rom/Connectionmanager.iby			CORE_MW_LAYER_IBY_EXPORT_PATH(ConnectionManager.iby)
+../rom/connectionmanagerresources.iby	LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(ConnectionManagerResources.iby)
 ../loc/connectionmanager.loc			MW_LAYER_LOC_EXPORT_PATH(connectionmanager.loc)
 
 #ifdef __SERIES60_32__

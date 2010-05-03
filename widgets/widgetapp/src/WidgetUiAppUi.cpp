@@ -24,7 +24,7 @@
 #include "widgetappdefs.rh"
 #include <WidgetUi.rsg>
 #include "WidgetUi.hrh"
-#include <S32MEM.H>
+#include <s32mem.h>
 #include <avkon.hrh>
 #include <e32std.h>
 #include <bautils.h>
@@ -33,7 +33,7 @@
 #include <e32property.h>
 
 #ifdef BRDO_WRT_HS_FF
-#include <AknToolbar.h>
+#include <akntoolbar.h>
 #endif
 
 // EXTERNAL DATA STRUCTURES

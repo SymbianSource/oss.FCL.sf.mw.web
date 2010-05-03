@@ -29,8 +29,8 @@
 #include "Cursor.h"
 #include "loader.h"
 #include "KURL.h"
-#include "Scrollbar.h"
-#include "Scrollbar.h"
+#include "ScrollBar.h"
+#include "ScrollBar.h"
 #include "Path.h"
 #include "PlatformScrollbar.h"
 #include "PlatformMouseEvent.h"
@@ -66,7 +66,7 @@
 #include "DocumentFragment.h"
 
 #include "../bidi.h"
-#include <stringloader.h>
+#include <StringLoader.h>
 #include <webkit.rsg>
 
 

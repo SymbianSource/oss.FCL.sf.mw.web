@@ -25,8 +25,8 @@
 #include <avkon.hrh>
 #include <aknmessagequerydialog.h>
 #include <ActiveApDb.h>
-#include <EscapeUtils.h>
-#include <Uri16.h>
+#include <escapeutils.h>
+#include <uri16.h>
 #include <BrCtlDefs.h>
 #include "WidgetUiObserver.h"
 #include "WidgetUiWindow.h"

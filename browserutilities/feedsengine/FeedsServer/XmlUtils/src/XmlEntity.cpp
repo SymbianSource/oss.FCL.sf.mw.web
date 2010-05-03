@@ -17,7 +17,7 @@
 
 
 
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 #include <libxml2_xmlmemory.h>
 #include <libxml2_globals.h>
 

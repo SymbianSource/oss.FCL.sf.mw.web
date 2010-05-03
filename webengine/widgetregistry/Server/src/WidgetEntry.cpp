@@ -20,7 +20,7 @@
 #include "WidgetRegistryConstants.h"
 #include <s32file.h>
 #include <f32file.h>
-#include <APGTASK.H>
+#include <apgtask.h>
 //#include <widgetappdefs.rh>
 
 // EXTERNAL DATA STRUCTURES

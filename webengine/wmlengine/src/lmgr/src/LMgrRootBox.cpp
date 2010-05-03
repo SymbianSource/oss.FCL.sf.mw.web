@@ -23,7 +23,7 @@
 #include "nw_lmgr_activecontainerbox.h"
 #include "nw_lmgr_statictablecellbox.h"
 #include "nw_adt_resizablevector.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_lmgr_breakbox.h"
 #include "nwx_settings.h"
 #include "nw_lmgr_simplepropertylist.h"

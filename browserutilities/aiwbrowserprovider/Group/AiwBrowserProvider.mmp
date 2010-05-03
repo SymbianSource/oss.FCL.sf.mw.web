@@ -29,7 +29,7 @@ VENDORID    VID_DEFAULT
 UID     0x10009d8d 0x101FD682
 
 SOURCEPATH		../src
-SOURCE			DllMain.cpp
+SOURCE			Dllmain.cpp
 SOURCE          AiwBrowserProviderOpenUrl.cpp
 SOURCE          AiwBrowserProviderSaveUrl.cpp
 

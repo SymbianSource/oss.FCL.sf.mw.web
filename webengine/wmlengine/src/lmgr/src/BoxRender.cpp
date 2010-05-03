@@ -23,7 +23,7 @@
 #include "nwx_logger.h"
 #include "nwx_settings.h"
 
-#include "CStack.h"
+#include "cstack.h"
 
 struct RenderContext
 {

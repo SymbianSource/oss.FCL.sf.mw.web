@@ -19,7 +19,7 @@
 #include "Page.h"
 #include <../bidi.h>
 #include <StringLoader.h>
-#include <Uri16.h>
+#include <uri16.h>
 #include <es_enum.h>
 #include <Webkit.rsg>
 #include "WebFrame.h"
@@ -32,7 +32,7 @@
 #include "ResourceLoaderDelegate.h"
 #include "HttpDefs.h"
 #include "HttpConnection.h"
-#include "CDBCols.h"
+#include "cdbcols.h"
 
 using namespace WebCore;
 

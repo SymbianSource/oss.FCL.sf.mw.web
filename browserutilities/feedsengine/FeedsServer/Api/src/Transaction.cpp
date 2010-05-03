@@ -20,7 +20,7 @@
 #include "Transaction.h"
 #include "FeedsEntity.h"
 #include "FeedsInterface.h"
-#include <S32Mem.h>
+#include <s32mem.h>
 #include <es_sock.h>
 #include "FeedsMap.h"
 #include "Packed.h"

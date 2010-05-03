@@ -16,7 +16,7 @@
 */
 
 
-#include <S32Mem.h>
+#include <s32mem.h>
 
 #include "ImportFeedsTask.h"
 #include "FeedsDatabase.h"

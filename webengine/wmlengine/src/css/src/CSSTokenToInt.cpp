@@ -24,7 +24,7 @@
 #include <nwx_string.h>
 #include <nwx_math.h>
 #include "BrsrStatusCodes.h"
-#include "aknutils.h"
+#include "AknUtils.h"
 
 /* ------------------------------------------------------------------------- *
    private data type

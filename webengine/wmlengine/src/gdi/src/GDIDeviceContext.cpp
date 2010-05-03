@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_object_dynamici.h"
 #include "GDIFont.h"
 #include "nw_gdi_utils.h"
@@ -27,7 +27,7 @@
 #include <nwx_settings.h>
 #include "nwx_logger.h"
 #include "nwx_http_defs.h"
-#include "MVCview.h"
+#include "MVCView.h"
 #include <AknUtils.h>
 #include <gdi.h>
 #include <w32std.h>
@@ -36,11 +36,11 @@
 #include <gulutil.h>
 #include <bautils.h>
 #include <webkit.rsg>
-#include <aknpictographinterface.h>
-#include <aknpictographdrawerinterface.h>
+#include <AknPictographInterface.h>
+#include <AknPictographDrawerInterface.h>
 #include <biditext.h>
 #include "BrsrStatusCodes.h"
-#include "FeatMgr.h"
+#include "featmgr.h"
 #include <AknFontAccess.h>
 
 #include <bldvariant.hrh>

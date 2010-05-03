@@ -19,8 +19,8 @@
 // INCLUDE FILES
 #include <e32std.h>
 #include <e32base.h>
-#include "urlloader_urlloaderi.h"
-#include "urlloader_CUrlLoader.h"
+#include "urlloader_urlloaderI.h"
+#include "urlloader_curlloader.h"
 #include "urlloader_loaderutils.h"
 #include "httploader_mlinkresolvercallbacks.h"
 #include "nwx_defs.h"

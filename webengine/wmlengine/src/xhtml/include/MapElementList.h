@@ -22,7 +22,7 @@
 //  INCLUDES
 #include "nw_xhtml_elementhandler.h"
 #include "BrsrStatusCodes.h"
-#include "NW_LMgr_ImageMapBox.h"
+#include "nw_lmgr_imagemapbox.h"
 
 #include <e32base.h>
 #include "nwx_string.h"

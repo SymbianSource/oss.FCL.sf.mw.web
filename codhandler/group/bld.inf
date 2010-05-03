@@ -22,7 +22,7 @@
 #include "../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_EXPORTS
-../loc/CodViewer.loc  				MW_LAYER_LOC_EXPORT_PATH(CodViewer.loc)
+../Loc/CodViewer.loc  				MW_LAYER_LOC_EXPORT_PATH(CodViewer.loc)
 ../rom/CodHandler.iby				CORE_MW_LAYER_IBY_EXPORT_PATH(CodHandler.iby)
 ../rom/CodHandlerResources.iby		LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(CodHandlerResources.iby)
 

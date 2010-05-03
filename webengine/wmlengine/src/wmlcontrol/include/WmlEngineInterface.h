@@ -21,7 +21,7 @@
 //  INCLUDES
 
 #include <e32base.h>
-#include <COEDEF.H>
+#include <coedef.h>
 #include "BrCtlDefs.h"
 #include "WmlEngineDefs.h"
 

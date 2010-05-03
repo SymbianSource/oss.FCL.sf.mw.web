@@ -58,7 +58,7 @@ SOURCE	nwx_time_utils.c
 SOURCE	nwx_url_utils.c
 SOURCE	nwx_time_epoc32.c
 SOURCE  StringUtils.cpp
-SOURCE	util_CDispatcherEng.cpp
+SOURCE	util_cdispatchereng.cpp
 SOURCE  ucs2_transformation_epoc32.c
 SOURCE  CReferrerHelper.cpp
 SOURCE  FileNameUtils.cpp

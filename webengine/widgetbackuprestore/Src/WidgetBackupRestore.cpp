@@ -18,7 +18,7 @@
 
 #include <abclient.h>
 #include <e32property.h>
-#include "widgetbackuprestore.h"
+#include "WidgetBackupRestore.h"
 #include "WidgetActiveCallback.h"
 
 

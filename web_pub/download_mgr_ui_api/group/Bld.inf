@@ -23,12 +23,12 @@ DEFAULT
 
 PRJ_EXPORTS
 
-../Inc/CDownloadMgrUiBase.h                 MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiBase.h)
-../Inc/CDownloadMgrUiUserInteractions.h     MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiUserInteractions.h)
-../Inc/CDownloadMgrUiDownloadsList.h        MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiDownloadsList.h)
-../Inc/DownloadsListDlgObserver.h           MW_LAYER_PUBLIC_EXPORT_PATH(DownloadsListDlgObserver.h)
-../Inc/CDownloadMgrUiDownloadMenu.h         MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiDownloadMenu.h)
-../Inc/CDownloadMgrUiLibRegistry.h          MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiLibRegistry.h)
+../inc/CDownloadMgrUiBase.h                 MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiBase.h)
+../inc/CDownloadMgrUiUserInteractions.h     MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiUserInteractions.h)
+../inc/CDownloadMgrUiDownloadsList.h        MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiDownloadsList.h)
+../inc/DownloadsListDlgObserver.h           MW_LAYER_PUBLIC_EXPORT_PATH(DownloadsListDlgObserver.h)
+../inc/CDownloadMgrUiDownloadMenu.h         MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiDownloadMenu.h)
+../inc/CDownloadMgrUiLibRegistry.h          MW_LAYER_PUBLIC_EXPORT_PATH(CDownloadMgrUiLibRegistry.h)
 
 PRJ_MMPFILES
 

@@ -37,21 +37,21 @@ SOURCE	Utils.c
 USERINCLUDE     .
 USERINCLUDE     ../../src/gdi/include
 USERINCLUDE     ../../src/htmlp/include
-USERINCLUDE     ../../src/mvc/include
+USERINCLUDE     ../../src/MVC/include
 USERINCLUDE     ../../src/object/include
-USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/System/include
 USERINCLUDE     ../../src/text/include
 USERINCLUDE     ../../src/browser/include
 USERINCLUDE     ../../src/hed/include
-USERINCLUDE     ../../src/evt/include
+USERINCLUDE     ../../src/Evt/include
 USERINCLUDE     ../../src/lmgr/include
 USERINCLUDE     ../../src/image/include
 USERINCLUDE     ../../src/adt/include
 USERINCLUDE     ../../src/wml/include
 USERINCLUDE     ../../src/wml/src
 USERINCLUDE     ../../src/wmlcontrol/include
-USERINCLUDE			../../../OssWebengine/MemoryManager/Inc
-USERINCLUDE			../../../PageScaler/Inc
+USERINCLUDE			../../../osswebengine/MemoryManager/Inc
+USERINCLUDE			../../../pagescaler/inc
 SYSTEMINCLUDE   ../../src/urlloader/include
 SYSTEMINCLUDE   ../../src/utils/include
 

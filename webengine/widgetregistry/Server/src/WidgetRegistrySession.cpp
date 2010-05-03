@@ -16,12 +16,12 @@
 */
 
 
-#include <S32MEM.H>
+#include <s32mem.h>
 
 // User includes
 #include "WidgetRegistry.h"
 #include "WidgetRegistryConstants.h"
-#include "widgetregistryserver.h"
+#include "WidgetRegistryServer.h"
 #include "WidgetRegistryConstants.h"
 #include "WidgetRegistrySession.h"
 

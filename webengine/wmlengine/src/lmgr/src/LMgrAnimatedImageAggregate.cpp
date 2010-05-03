@@ -19,7 +19,7 @@
 #include "nw_lmgr_animatedimageaggregatei.h"
 #include "nw_lmgr_animatedimagebox.h"
 #include "nw_lmgr_rootbox.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 #include "nw_image_epoc32simpleimagei.h"
 #include "nw_image_virtualimagei.h"

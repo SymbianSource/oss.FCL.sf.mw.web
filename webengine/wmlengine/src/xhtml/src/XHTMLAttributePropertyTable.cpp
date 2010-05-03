@@ -30,8 +30,8 @@
 #include "nw_lmgr_rootbox.h"
 #include "nw_lmgr_animatedimagebox.h"
 #include "nw_lmgr_activecontainerbox.h"
-#include "nw_lmgr_Verticaltablebox.h"
-#include "nw_lmgr_Verticaltablecellbox.h"
+#include "nw_lmgr_verticaltablebox.h"
+#include "nw_lmgr_verticaltablecellbox.h"
 #include "nw_fbox_inputbox.h"
 #include "nw_xhtml_attributepropertytablei.h"
 #include "nw_xhtml_xhtml_1_0_tokens.h"
@@ -40,7 +40,7 @@
 #include "XhtmlTableElementHandlerOOC.h"
 #include "nw_hed_domhelper.h"
 #include "HEDDocumentListener.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "CSSImageList.h"
 
 /* ------------------------------------------------------------------------- */

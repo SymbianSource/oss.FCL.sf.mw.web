@@ -30,9 +30,9 @@
 #include "HeaderField.h"
 #include "BuffStorage.h"
 
-#include <SysUtil.h>
+#include <sysutil.h>
 #include <DocumentHandler.h>
-#include <APMSTD.H>
+#include <apmstd.h>
 
 #ifdef __SYNCML_DM_FOTA
 #include <fotaengine.h>

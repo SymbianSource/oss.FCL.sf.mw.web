@@ -19,11 +19,11 @@
 #include "WidgetRegistrationManager.h"
 #include "WidgetUIOperationsWatcher.h"
 #include <apgcli.h>
-#include <APGICNFL.h>
+#include <apgicnfl.h>
 #ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
 #include <apgicnflpartner.h>
 #endif //SYMBIAN_ENABLE_SPLIT_HEADERS
-#include <S32MEM.H>
+#include <s32mem.h>
 #include <WidgetRegistryConstants.h>
 
 // CONSTANTS

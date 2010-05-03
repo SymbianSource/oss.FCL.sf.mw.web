@@ -18,8 +18,8 @@
 
 // INCLUDE FILES
 #include <../bidi.h>
-#include <aknAppUi.h>
-#include <aknutils.h>
+#include <aknappui.h>
+#include <AknUtils.h>
 #include "StaticObjectsContainer.h"
 #include "WebCannedImages.h"
 #include "WebPageFullScreenHandler.h"

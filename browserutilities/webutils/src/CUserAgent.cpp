@@ -22,7 +22,7 @@
 #include <eikenv.h>
 
 #include <Browser_platform_variant.hrh>
-#include "webUtilsCommon.h"
+#include "WebUtilsCommon.h"
 #include "CUserAgent.h"
 #include "WebUtilsLogger.h"
 

@@ -24,7 +24,7 @@
 #include "config.h"
 #include "HTMLImageElement.h"
 
-#include "CSSHelper.h"
+#include "csshelper.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
 #include "EventNames.h"

@@ -24,9 +24,9 @@
 // INCLUDES
 #include <e32base.h>
 #include <e32def.h>
-#include <aknpopup.h>
+#include <aknPopup.h>
 #include <aknlists.h>
-#include <MdaImageConverter.h>
+#include <mdaimageconverter.h>
 
 // Browser as a Plugin includes
 #include <BrCtlDialogsProvider.h>

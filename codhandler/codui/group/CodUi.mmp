@@ -18,7 +18,7 @@
 #include <platform_paths.hrh>
 #include <data_caging_paths.hrh>
 #include <platform/mw/Browser_platform_variant.hrh>
-#include "../../CodEng/inc/CodDefs.h"
+#include "../../codeng/inc/CodDefs.h"
 
 TARGET      CodUi.dll
 TARGETTYPE  dll
@@ -57,7 +57,7 @@ END
 USERINCLUDE     ../inc
 
 
-SYSTEMINCLUDE   ../../CodEng/inc
+SYSTEMINCLUDE   ../../codeng/inc
 
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_ECOM_SYSTEMINCLUDE

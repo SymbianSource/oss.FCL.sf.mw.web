@@ -20,8 +20,8 @@
 #define _NW_Markup_ImageViewerI_h_
 
 #include "nw_object_aggregatei.h"
-#include "nw_hed_iimageVieweri.h"
-#include "nw_markup_imageViewer.h"
+#include "nw_hed_iimagevieweri.h"
+#include "nw_markup_imageviewer.h"
 #include "BrsrStatusCodes.h"
 
 #ifdef __cplusplus

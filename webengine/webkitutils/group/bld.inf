@@ -26,7 +26,7 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../loc/Toolbar.loc         MW_LAYER_LOC_EXPORT_PATH(Toolbar.loc)
+../loc/toolbar.loc         MW_LAYER_LOC_EXPORT_PATH(Toolbar.loc)
 
 #ifdef __SERIES60_32__
 
@@ -44,7 +44,7 @@ OPTION SOURCEFILE iconlist.txt
 END
 
 PRJ_MMPFILES
-webkitutils.mmp
+WebKitUtils.mmp
 
 #endif
 

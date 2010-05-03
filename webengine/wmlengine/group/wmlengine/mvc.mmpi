@@ -19,7 +19,7 @@
 #include  "../webkitcommon.mmpi"
 
 
-SOURCEPATH     ../../src/mvc/src
+SOURCEPATH     ../../src/MVC/src
 
 SOURCE  ILoadListener.c
 SOURCE  MVCShell.cpp
@@ -35,26 +35,26 @@ SOURCE  CEmbeddedDocExitObserver.cpp
 USERINCLUDE    ../../src/adt/include
 USERINCLUDE    ../../src/wmlcontrol/include
 USERINCLUDE    ../../src/css/include
-USERINCLUDE    ../../src/evt/include
+USERINCLUDE    ../../src/Evt/include
 USERINCLUDE    ../../src/fbox/include
 USERINCLUDE    ../../src/gdi/include
 USERINCLUDE    ../../src/hed/include
 USERINCLUDE    ../../src/image/include
-USERINCLUDE    ../../src/imagech/include
+USERINCLUDE    ../../src/ImageCH/include
 USERINCLUDE    ../../src/lmgr/include
 USERINCLUDE    ../../src/markup/include
 USERINCLUDE    ../../src/Msg/include
-USERINCLUDE    ../../src/mvc/include
+USERINCLUDE    ../../src/MVC/include
 USERINCLUDE    ../../src/object/include
 USERINCLUDE    ../../src/text/include
-USERINCLUDE    ../../src/system/include
+USERINCLUDE    ../../src/System/include
 USERINCLUDE    ../../src/wml1x/include
 USERINCLUDE    ../../src/browser/include
 USERINCLUDE    ../../src/wmlscriptch/include
 USERINCLUDE    ../../src/xhtml/include
 USERINCLUDE    ../../src/urlloader/include
 //USERINCLUDE   /S60/mw/web/WebEngine/WmlEngine/src/wml/include
-USERINCLUDE    ../../src/fileloader/include
+USERINCLUDE    ../../src/FileLoader/include
 //USERINCLUDE		../../MemoryManager/Inc
 
 //SYSTEMINCLUDE ../WmlEngine/urlloader/include

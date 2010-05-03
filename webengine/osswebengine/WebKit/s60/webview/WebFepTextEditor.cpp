@@ -38,10 +38,10 @@
 
 #include "Frame.h"
 #include "Editor.h"
-#include "HtmlNames.h"
+#include "HTMLNames.h"
 #include "EventHandler.h"
-#include "HtmlInputElement.h"
-#include "HtmlTextAreaElement.h"
+#include "HTMLInputElement.h"
+#include "HTMLTextAreaElement.h"
 #include "PlatformKeyboardEvent.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
@@ -49,7 +49,7 @@
 #include <coemain.h>
 #include <eikpanic.h>
 #include <aknedsts.h>
-#include <aknutils.h>
+#include <AknUtils.h>
 #include "Text.h"
 
 using namespace WebCore;

@@ -23,8 +23,8 @@
 #include <CodUi.rsg>
 #include <avkon.rsg>
 #include <AknQueryDialog.h>
-#include <ErrorUi.h>
-#include <TextResolver.h>
+#include <ErrorUI.h>
+#include <textresolver.h>
 #include <AiwGenericParam.h>
 #include <DocumentHandler.h>
 #include <DcfRep.h>

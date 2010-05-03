@@ -34,8 +34,8 @@
 #include <CodDownload.h>
 #include <AiwGenericParam.h>
 #include <eikenv.h>
-#include <HttpFilterCommonStringsExt.h>
-#include <EscapeUtils.h>
+#include <httpfiltercommonstringsext.h>
+#include <escapeutils.h>
 
 // CONSTANTS
 _LIT8( KTransactionCallback, "TransactionCallback" );

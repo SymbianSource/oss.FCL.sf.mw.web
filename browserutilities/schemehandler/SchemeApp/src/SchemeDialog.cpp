@@ -24,7 +24,7 @@
 #include <aknappui.h>
 #include <aknlists.h>
 #include <eiklbo.h>
-#include <aknform.h>
+#include <AknForm.h>
 #include "SchemeDialog.h"
 #include "Scheme.hrh"
 

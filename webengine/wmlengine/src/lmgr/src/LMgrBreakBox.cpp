@@ -26,7 +26,7 @@
 #include "nwx_settings.h"
 #include "nw_lmgr_verticaltablecellbox.h"
 #include "nw_lmgr_containerbox.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- *

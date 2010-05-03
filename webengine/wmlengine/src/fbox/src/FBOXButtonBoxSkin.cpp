@@ -19,7 +19,7 @@
 #include "nw_fbox_buttonboxskini.h"
 #include "nw_fbox_buttonbox.h"
 #include "nw_lmgr_rootbox.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- */

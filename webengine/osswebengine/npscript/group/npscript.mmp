@@ -29,7 +29,7 @@ CAPABILITY  CAP_GENERAL_DLL
 
 
 #if defined(WINSCW)
-deffile BWINSCW/npscript.def
+deffile Bwinscw/npscript.def
 #elif defined(ARMCC)
 deffile EABI/npscript.def
 #endif
@@ -41,7 +41,7 @@ SOURCE          npscript.cpp
 
 MW_LAYER_SYSTEMINCLUDE 
 
-SYSTEMINCLUDE   ../../javascriptcore/bindings
-SYSTEMINCLUDE   ../../javascriptcore/wtf/symbian
+SYSTEMINCLUDE   ../../JavaScriptCore/bindings
+SYSTEMINCLUDE   ../../JavaScriptCore/wtf/symbian
 
 LIBRARY         javascriptcore.lib 

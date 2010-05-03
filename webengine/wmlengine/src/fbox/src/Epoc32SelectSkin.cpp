@@ -24,7 +24,7 @@
 #include "nwx_string.h"
 #include "nw_fbox_epoc32formimages.h"
 #include "nw_gdi_types.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_adt_resizablevector.h"
 #include "nw_fbox_formboxutils.h"
 #include "KimonoLocalizationStrings.h"

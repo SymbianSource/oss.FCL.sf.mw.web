@@ -23,7 +23,7 @@
 #include "PlatformString.h"
 #include "TextEncoding.h"
 #include "TextEncodingRegistry.h"
-#include <EIKENV.H>
+#include <eikenv.h>
 #include <wtf/Assertions.h>
 
 using std::auto_ptr;

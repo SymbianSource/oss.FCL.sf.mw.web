@@ -35,11 +35,11 @@
 #include    <StringLoader.h>
 #include    <apgcli.h>
 #include    <eikbtgpc.h>
-#include    <SysUtil.h>
+#include    <sysutil.h>
 #include    <exterror.h>
 #include    <etelpckt.h>
-#include    <AknNoteDialog.h>
-#include    <UriUtils.h>
+#include    <aknnotedialog.h>
+#include    <uriutils.h>
 
 
 // following line is temporary: AVKON dependency removal

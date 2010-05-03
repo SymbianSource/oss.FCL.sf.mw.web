@@ -22,7 +22,7 @@
 #include "HttpCacheUtil.h"
 #include "HttpCacheHandler.h"
 #include <centralrepository.h>
-#include <SysUtilDomainCRKeys.h>
+#include <sysutildomaincrkeys.h>
 
 // EXTERNAL DATA STRUCTURES
 

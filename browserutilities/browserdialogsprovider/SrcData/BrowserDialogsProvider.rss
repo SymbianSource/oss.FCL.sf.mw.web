@@ -27,7 +27,7 @@
 #include <eikon.rh>
 #include <uikon.rh>
 #include <CommonDialogs.rh>
-#include <PathConfiguration.hrh>
+#include <pathconfiguration.hrh>
 
 NAME    BRDP // for Browser Dialogs Provider
 

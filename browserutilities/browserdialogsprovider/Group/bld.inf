@@ -31,6 +31,6 @@ PRJ_EXPORTS
 ../rom/BrowserDialogsProviderResources.iby	LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(BrowserDialogsProviderResources.iby)
 
 PRJ_MMPFILES
-BrowserDialogsProvider.mmp
+browserdialogsprovider.mmp
 
 PRJ_TESTMMPFILES

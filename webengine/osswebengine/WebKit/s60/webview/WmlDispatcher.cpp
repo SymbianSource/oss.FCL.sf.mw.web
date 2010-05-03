@@ -17,7 +17,7 @@
 
 
 //  INCLUDES
-#include <Browser_Platform_Variant.hrh>
+#include <Browser_platform_variant.hrh>
 #include "WmlDispatcher.h"
 
 #ifndef BRDO_WML_DISABLED_FF

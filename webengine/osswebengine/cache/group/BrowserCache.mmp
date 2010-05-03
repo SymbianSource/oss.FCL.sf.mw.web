@@ -62,7 +62,7 @@ MW_LAYER_SYSTEMINCLUDE
 SYSTEMINCLUDE   /epoc32/include  /epoc32/include/oem
 #endif
 SYSTEMINCLUDE /Epoc32/include/http
-SYSTEMINCLUDE /Epoc32/include/libc
+SYSTEMINCLUDE /epoc32/include/libc
 
 
 

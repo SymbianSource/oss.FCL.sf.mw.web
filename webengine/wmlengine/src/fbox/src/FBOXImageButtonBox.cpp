@@ -24,7 +24,7 @@
 #include "nw_evt_focusevent.h"
 #include "nw_evt_accesskeyevent.h"
 #include "nw_lmgr_rootbox.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_image_virtualimage.h"
 #include "BrsrStatusCodes.h"
 

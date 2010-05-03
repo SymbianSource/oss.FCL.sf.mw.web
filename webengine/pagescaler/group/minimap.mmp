@@ -41,7 +41,7 @@ USERINCLUDE     ../inc
 
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_LIBC_SYSTEMINCLUDE
-SYSTEMINCLUDE 	../../osswebengine/memorymanager/inc
+SYSTEMINCLUDE 	../../osswebengine/MemoryManager/Inc
 
 
 LIBRARY         euser.lib 

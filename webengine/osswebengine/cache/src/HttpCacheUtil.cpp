@@ -18,14 +18,14 @@
 // INCLUDE FILES
 #include "HttpCacheUtil.h"
 #include <http/rhttpheaders.h>
-#include <http/RHTTPTransaction.h>
+#include <http/rhttptransaction.h>
 #include <http.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stringpool.h>
 #include <flogger.h>
-#include "TInternetdate.h"
-#include "HttpFilterCommonStringsExt.h"
+#include "tinternetdate.h"
+#include "httpfiltercommonstringsext.h"
 #include "HttpCacheEntry.h"
 
 // EXTERNAL DATA STRUCTURES

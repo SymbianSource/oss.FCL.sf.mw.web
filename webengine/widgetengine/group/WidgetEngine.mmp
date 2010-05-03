@@ -25,11 +25,11 @@ UID 0x10000079  0x10281111
 #include <platform/mw/Browser_platform_variant.hrh>
 
 MW_LAYER_SYSTEMINCLUDE
-USERINCLUDE ../../osswebengine/Webkit/S60/WebView
-USERINCLUDE ../../osswebengine/Webkit/S60/Plugins
-USERINCLUDE ../../osswebengine/Webkit/S60/WebCoreSupport
-USERINCLUDE ../../osswebengine/Webkit/S60/FormControls
-USERINCLUDE ../../osswebengine/Webkit/S60/Misc
+USERINCLUDE ../../osswebengine/WebKit/s60/webview
+USERINCLUDE ../../osswebengine/WebKit/s60/plugins
+USERINCLUDE ../../osswebengine/WebKit/s60/webcoresupport
+USERINCLUDE ../../osswebengine/WebKit/s60/formcontrols
+USERINCLUDE ../../osswebengine/WebKit/s60/misc
 USERINCLUDE ../../osswebengine/cache/inc
 
 USERINCLUDE ../../osswebengine/WebCore
@@ -115,7 +115,7 @@ SOURCE      MenuClient.cpp
 SOURCE      MenuItemClient.cpp
 SOURCE      WidgetEngineBridge.cpp
 
-START RESOURCE ../Src/WidgetMenu.rss
+START RESOURCE ../src/WidgetMenu.rss
 DEPENDS avkon.rsg
 HEADER
 TARGETPATH RESOURCE_FILES_DIR

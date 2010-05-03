@@ -18,19 +18,19 @@
 // INCLUDE FILES
 #include <e32std.h>
 #include <AknUtils.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 #include "ToolBarButton.h"
 #include "ToolBar.h"
-#include "W32STD.H"
+#include "w32std.h"
 #include "RecentUrlStore.h"
-#include <Uri16.h>
-#include <GULICON.H>
+#include <uri16.h>
+#include <gulicon.h>
 #include <AknBidiTextUtils.h>
-#include "BrCtlInterface.h"
-#include <favouritesitem.h>
-#include <favouritesitemlist.h>
-#include <favouritessession.h>
-#include <favouritesdb.h>
+#include "brctlinterface.h"
+#include <FavouritesItem.h>
+#include <FavouritesItemList.h>
+#include <FavouritesSession.h>
+#include <FavouritesDb.h>
 
 #include "eikon.hrh"
 

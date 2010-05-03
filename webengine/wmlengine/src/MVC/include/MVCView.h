@@ -29,8 +29,8 @@
 #include <e32std.h>
 #include <e32def.h>
 #include <f32file.h>
-#include <aknpictographinterface.h>
-#include <aknpictographdrawerinterface.h>
+#include <AknPictographInterface.h>
+#include <AknPictographDrawerInterface.h>
 
 #include <BrCtlDefs.h>
 #include <BrCtlDialogsProvider.h>
@@ -47,7 +47,7 @@
 #include "pagescaler.h"
 
 
-#include "wmlcontrol.h"
+#include "WmlControl.h"
 template <class T> class CArrayPtrFlat;
 
 // CONSTANTS

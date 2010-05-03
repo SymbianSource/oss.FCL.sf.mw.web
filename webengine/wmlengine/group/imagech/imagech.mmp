@@ -20,7 +20,7 @@
 
 TARGET          imagech.lib
 TARGETTYPE      lib
-SOURCEPATH      ../../src/imagech/src/
+SOURCEPATH      ../../src/ImageCH/src/
 
 CAPABILITY CAP_GENERAL_DLL
 
@@ -34,16 +34,16 @@ SOURCE Epoc32ImageContentHandler.cpp
 #include  "../webkitcommon.mmpi"
 
 USERINCLUDE     ../../src/adt/include
-USERINCLUDE     ../../src/evt/include
+USERINCLUDE     ../../src/Evt/include
 USERINCLUDE     ../../src/gdi/include
 USERINCLUDE     ../../src/hed/include
 USERINCLUDE     ../../src/htmlp/include
 USERINCLUDE     ../../src/markup/include
 USERINCLUDE     ../../src/image/include
-USERINCLUDE     ../../src/imagech/include
+USERINCLUDE     ../../src/ImageCH/include
 USERINCLUDE     ../../src/lmgr/include
 USERINCLUDE     ../../src/object/include
-USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/System/include
 USERINCLUDE     ../../src/text/include
 USERINCLUDE     ../../src/fbox/include
 USERINCLUDE     ../../src/wml1x/include
@@ -51,8 +51,8 @@ USERINCLUDE     ../../src/wmlscriptch/include
 USERINCLUDE			../../src/browser/include
 USERINCLUDE     ../../src/wml/src
 USERINCLUDE     ../../src/wml/include
-USERINCLUDE     ../../src/mvc/include
-USERINCLUDE     ../../src/msg/include
+USERINCLUDE     ../../src/MVC/include
+USERINCLUDE     ../../src/Msg/include
 
 SYSTEMINCLUDE   ../../src/urlloader/include
 SYSTEMINCLUDE   ../../src/utils/include

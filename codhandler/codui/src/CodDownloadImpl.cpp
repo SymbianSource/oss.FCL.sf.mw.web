@@ -24,13 +24,13 @@
 #include <apgcli.h>
 #include <eikenv.h>
 #include <StringLoader.h>
-#include <ErrorUi.h>
+#include <ErrorUI.h>
 #include <DcfRep.h>
 #include <RoapDef.h>
 #include <DRMCommon.h>
 #include <aknmessagequerydialog.h>
 #include <hlplch.h>             
-#include <MultipartParser.h>
+#include <multipartparser.h>
 #include <AknQueryDialog.h>
 #include "CodDownloadImpl.h"
 #include "CodUiPanic.h"

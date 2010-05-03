@@ -18,7 +18,7 @@
 
 
 #include <charconv.h>
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 #include <utf.h>
 
 #include "CleanupLibXml2.h"  

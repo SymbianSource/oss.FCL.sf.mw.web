@@ -30,8 +30,8 @@ SOURCE MessageDispatcher.cpp
 
 USERINCLUDE     .
 USERINCLUDE     ../../src/Msg/include
-USERINCLUDE     ../../src/Object/include
-USERINCLUDE     ../../src/Hed/include
+USERINCLUDE     ../../src/object/include
+USERINCLUDE     ../../src/hed/include
 
 SYSTEMINCLUDE   ../../src/utils/include
 MW_LAYER_SYSTEMINCLUDE

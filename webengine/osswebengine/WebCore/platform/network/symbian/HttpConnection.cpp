@@ -15,8 +15,8 @@
 *
 */
 
-#include <Uri8.h>
-#include <EscapeUtils.h>
+#include <uri8.h>
+#include <escapeutils.h>
 #include <http/rhttpheaders.h>
 #include <http/mhttpdatasupplier.h>
 #include <thttpfields.h>
@@ -29,7 +29,7 @@
 #include "ResourceLoaderDelegate.h"
 #include "HttpCacheSupply.h"
 #include "HttpPostDataSupplier.h"
-#include <HttpFilterCommonStringsExt.h>
+#include <httpfiltercommonstringsext.h>
 #include <BrCtlDefs.h>
 #include "BrCtl.h"
 #include "BrCtlSpecialLoadObserver.h"

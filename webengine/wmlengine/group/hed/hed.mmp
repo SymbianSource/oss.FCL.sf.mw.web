@@ -36,7 +36,7 @@ SOURCE	HEDDocumentNode.cpp
 SOURCE	HEDDocumentRoot.cpp
 SOURCE  DomHelper.c
 SOURCE  DomTree.c
-SOURCE	DomVisitor.c
+SOURCE	DOMVisitor.c
 SOURCE	EntitySet.c
 SOURCE	HEDEventHandler.cpp
 SOURCE	HistoryEntry.c
@@ -54,7 +54,7 @@ SOURCE	UrlRequest.c
 SOURCE	UrlResponse.c
 
 
-SOURCE  ContentLoader.cpp
+SOURCE  contentLoader.cpp
 SOURCE  TextReverse.cpp
 SOURCE	urlloader_urlresponse.cpp
 
@@ -63,17 +63,17 @@ SOURCE	urlloader_urlresponse.cpp
 USERINCLUDE     .
 USERINCLUDE     ../../src/utils/include
 USERINCLUDE     ../../src/adt/include
-USERINCLUDE     ../../src/evt/include
+USERINCLUDE     ../../src/Evt/include
 USERINCLUDE     ../../src/htmlp/include
 USERINCLUDE     ../../src/gdi/include
 USERINCLUDE     ../../src/hed/include
-USERINCLUDE     ../../src/msg/include
+USERINCLUDE     ../../src/Msg/include
 USERINCLUDE     ../../src/markup/include
 USERINCLUDE     ../../src/image/include
-USERINCLUDE     ../../src/imagech/include
+USERINCLUDE     ../../src/ImageCH/include
 USERINCLUDE     ../../src/lmgr/include
 USERINCLUDE     ../../src/object/include
-USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/System/include
 USERINCLUDE     ../../src/text/include
 USERINCLUDE     ../../src/MVC/include
 USERINCLUDE     ../../src/wml1x/include

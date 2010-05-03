@@ -21,7 +21,7 @@
 
 //  INCLUDES
 #include "nw_object_dynamic.h"
-#include "nw_css_export.h"
+#include "NW_CSS_EXPORT.h"
 #include "CSSEventListener.h"
 #include "CSSReader.h"
   

@@ -22,7 +22,7 @@ PRJ_PLATFORMS
 DEFAULT GCCE
 
 PRJ_EXPORTS
-../inc/WidgetInstaller.h        |../../../inc/WidgetInstaller.h
+../Inc/WidgetInstaller.h        |../../../inc/WidgetInstaller.h
 ../Rom/WidgetInstaller.iby      CORE_MW_LAYER_IBY_EXPORT_PATH(WidgetInstaller.iby) 
 
 PRJ_MMPFILES

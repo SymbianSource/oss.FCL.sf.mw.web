@@ -40,7 +40,7 @@
 #include    <gulicon.h>
 #include    <uikon.hrh>
 #include    <AknServerApp.h>
-#include    <UriUtils.h>
+#include    <uriutils.h>
 
 // following line is temporary: AVKON dependency removal
 #undef BRDO_APP_GALLERY_SUPPORTED_FF
@@ -2565,7 +2565,7 @@ void CDownloadMgrUiDownloadsList::SetDownloadListHide( TBool aHide )
     }
 #ifdef __WINS__
 #include <commdb.h>
-#include <AknLists.h>
+#include <aknlists.h>
 // ----------------------------------------------------------------------------
 // AskIapId(TUint32& aId)
 // Ask IAP id from the user. Used due to efficiency only on WINS* platforms.

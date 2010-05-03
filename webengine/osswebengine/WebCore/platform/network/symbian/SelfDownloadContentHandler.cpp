@@ -29,8 +29,8 @@
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
 #include "HttpSessionManager.h"
-#include "HttpFilterCommonStringsExt.h"
-#include <Uri8.h>
+#include "httpfiltercommonstringsext.h"
+#include <uri8.h>
 #include <http/rhttptransaction.h>
 #include <http/mhttpdatasupplier.h>
 #include <http/rhttpsession.h>

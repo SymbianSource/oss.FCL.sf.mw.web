@@ -40,17 +40,17 @@
 
 #include <AiwGenericParam.h>
 #include <DocumentHandler.h>
-#include <ApmStd.h>
+#include <apmstd.h>
 #include <Oma2Agent.h>
 #include <RoapDef.h>
 #include <f32file.h>
-#include <BodyPart.h>
-#include <SysUtil.h>
+#include <bodypart.h>
+#include <sysutil.h>
 #include <pathinfo.h>
 #include "CodDefs.h"
 #include <CodUi.rsg>
 #include <AknQueryDialog.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 #include  <bautils.h>
 #include    "FileExt.h"
 

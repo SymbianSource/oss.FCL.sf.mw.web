@@ -26,7 +26,7 @@
 #include <eikdialg.h>
 #include <eikedwin.h>
 #include <aknnotewrappers.h>
-#include <aknwaitdialog.h>
+#include <AknWaitDialog.h>
 
 
 // CLASS DECLARATION

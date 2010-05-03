@@ -28,7 +28,7 @@
 #include "nw_lmgr_activecontainerbox.h"
 #include "nw_lmgr_areabox.h"
 #include "nwx_settings.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_evt_controlkeyevent.h"
 #include "nw_evt_focusevent.h"
 #include "nw_evt_scrollevent.h"

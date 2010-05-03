@@ -23,7 +23,7 @@
 #include <eikdef.h>
 #include <eikenv.h>
 #include <eikappui.h>
-#include <SysUtil.h>
+#include <sysutil.h>
 #include <AknUtils.h>
 
 #include "WebFrame.h"

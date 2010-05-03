@@ -30,7 +30,7 @@
 #include <centralrepository.h>
 #include <BrowserUiSDKCRKeys.h>
 #include <DocumentHandler.h>
-#include <FeatMgr.h>
+#include <featmgr.h>
 
 #ifdef RD_MULTIPLE_DRIVE
 #include <driveinfo.h>

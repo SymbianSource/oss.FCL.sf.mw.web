@@ -25,7 +25,7 @@
 //#include "nw_fbox_passwordbox.h"
 #include "nw_hed_documentroot.h"
 #include "nw_fbox_formboxutils.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 #include "nw_wml1x_wml1xformliaison.h"
 #include "wml_elm_attr.h"

@@ -24,8 +24,8 @@
 #include "PlatformString.h"
 #include "KURL.h"
 #include "IntRect.h"
-#include <GULICON.H>
-#include <FBS.H>
+#include <gulicon.h>
+#include <fbs.h>
 #include "WebKitUtilsSqlite.h"
 
 using namespace WebCore;

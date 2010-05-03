@@ -20,7 +20,7 @@
 #include "wrtusbhandler.h"
 #include "wrtharvester.h"
 #include "wrtusbhandler.h"
-#include <DriveInfo.h>
+#include <driveinfo.h>
 
 // CONSTANTS
 

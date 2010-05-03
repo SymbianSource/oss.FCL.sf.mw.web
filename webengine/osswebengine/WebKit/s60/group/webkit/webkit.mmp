@@ -22,7 +22,7 @@ TARGETTYPE      lib
 
 VENDORID        VID_DEFAULT
 
-SOURCEPATH      ../../WebView
+SOURCEPATH      ../../webview
 SOURCE          WebFrame.cpp
 SOURCE          WebFrameView.cpp
 SOURCE          WebView.cpp
@@ -53,12 +53,12 @@ SOURCE          WebScrollingDeceleratorGH.cpp
 SOURCE          WebScrollbarDrawer.cpp
 SOURCE          WebSprite.cpp
 
-SOURCEPATH      ../../FormControls
+SOURCEPATH      ../../formcontrols
 SOURCE          WebFormFill.cpp
 SOURCE          WebFormFillPopup.cpp
 SOURCE          PopupSelectListBox.cpp
 
-SOURCEPATH      ../../WebCoreSupport
+SOURCEPATH      ../../webcoresupport
 SOURCE          WebChromeClient.cpp
 SOURCE          WebContextMenuClient.cpp
 SOURCE          WebDragClient.cpp
@@ -67,7 +67,7 @@ SOURCE          WebFrameLoaderClient.cpp
 SOURCE          WebFrameBridge.cpp
 SOURCE          WebInspectorClient.cpp
 
-SOURCEPATH      ../../Misc
+SOURCEPATH      ../../misc
 SOURCE          WebIconDatabase.cpp
 SOURCE          WebKitLogger.cpp
 SOURCE          WebUtil.cpp

@@ -32,7 +32,7 @@
 #include <xmlengxestd.h>
 #include "UidAllocator.h"
 #if defined( BRDO_WRT_SECURITY_MGR_FF )
-#include <RTSecManager.h>
+#include <rtsecmanager.h>
 #endif
 #include <e32property.h>
 

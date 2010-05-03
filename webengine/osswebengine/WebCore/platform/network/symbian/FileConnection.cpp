@@ -17,7 +17,7 @@
 
 #include <f32file.h>
 #include <uri8.h>
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 #include <apmrec.h>
 #include <apgcli.h>
 #include "ResourceHandle.h"
@@ -27,7 +27,7 @@
 #include "StaticObjectsContainer.h"
 #include "ResourceRequest.h"
 #include <BrCtlSpecialLoadObserver.h>
-#include "brctl.h"
+#include "BrCtl.h"
 #include "DeprecatedString.h"
 
 const TInt KFileReadChunkSize = 23920; // bytes

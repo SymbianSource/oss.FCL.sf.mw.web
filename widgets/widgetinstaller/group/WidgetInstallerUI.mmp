@@ -51,7 +51,7 @@ END
 // Sources
 SOURCEPATH      ../src 
 SOURCE          WidgetUIMain.cpp
-SOURCE          WidgetInstallerUI.cpp
+SOURCE          WidgetInstallerUi.cpp
 SOURCE          WidgetUIOperationsWatcher.cpp
 SOURCE          WidgetUIHandler.cpp
 SOURCE          WidgetUIConfigHandler.cpp
@@ -59,8 +59,8 @@ SOURCE          WidgetRegistrationManager.cpp
 SOURCE          Iconconverter.cpp
 
 // Includes
-USERINCLUDE     ../Inc
-USERINCLUDE     ../../../Inc
+USERINCLUDE     ../inc
+USERINCLUDE     ../../../inc
 
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_LIBC_SYSTEMINCLUDE

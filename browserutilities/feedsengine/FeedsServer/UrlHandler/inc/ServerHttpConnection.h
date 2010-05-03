@@ -21,7 +21,7 @@
 
 
 // INCLUDES
-#include "httpconnection.h"
+#include "HttpConnection.h"
 
 // CONSTANTS
 

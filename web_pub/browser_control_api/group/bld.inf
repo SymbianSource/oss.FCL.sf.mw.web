@@ -27,7 +27,7 @@ PRJ_EXPORTS
 
 ../inc/BrCtlDefs.h                MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlDefs.h)
 ../inc/BrCtlDialogsProvider.h     MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlDialogsProvider.h)
-../inc/brctlinterface.h           MW_LAYER_PUBLIC_EXPORT_PATH(brctlinterface.h)
+../inc/BrCtlInterface.h           MW_LAYER_PUBLIC_EXPORT_PATH(brctlinterface.h)
 ../inc/BrCtlLayoutObserver.h      MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlLayoutObserver.h)
 ../inc/BrCtlLinkResolver.h        MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlLinkResolver.h)
 ../inc/BrCtlSoftkeysObserver.h    MW_LAYER_PUBLIC_EXPORT_PATH(BrCtlSoftkeysObserver.h)

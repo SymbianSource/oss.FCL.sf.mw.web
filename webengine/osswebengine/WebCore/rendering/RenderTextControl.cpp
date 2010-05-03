@@ -36,7 +36,7 @@
 #include "HitTestResult.h"
 #include "LocalizedStrings.h"
 #include "MouseEvent.h"
-#include "PlatformScrollBar.h"
+#include "PlatformScrollbar.h"
 #include "RenderTheme.h"
 #include "SearchPopupMenu.h"
 #include "SelectionController.h"

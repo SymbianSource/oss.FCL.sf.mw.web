@@ -18,13 +18,13 @@
 
 // INCLUDE FILES
 #include "HttpCacheSupply.h"
-#include "HttpCacheManager.h"
+#include "httpcachemanager.h"
 #include "HttpCacheDataSupplier.h"
 #include "HttpConnection.h"
 #include "ResourceLoaderDelegate.h"
 #include "StaticObjectsContainer.h"
 
-#include <http/RHTTPTransaction.h>
+#include <http/rhttptransaction.h>
 #include <http/mhttpdatasupplier.h>
 #include <http/rhttpsession.h>
 #include <httperr.h>

@@ -20,7 +20,7 @@
 #include "nwx_defs.h"
 #include "nwx_string.h"
 #include "nw_fbox_formbox.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 

@@ -37,7 +37,7 @@ deffile ../eabi/browserengine.def
 MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER
 
-SOURCEPATH      ../../WebView
+SOURCEPATH      ../../webview
 SOURCE BrCtl.cpp
 
 STATICLIBRARY   WebKit.lib

@@ -31,7 +31,7 @@
 #include <Browser_platform_variant.hrh>
 #include "config.h"
 #include "../../bidi.h"
-#include "brctl.h"
+#include "BrCtl.h"
 #include "HistoryController.h"
 #include "PageView.h"
 #include "SettingsContainer.h"

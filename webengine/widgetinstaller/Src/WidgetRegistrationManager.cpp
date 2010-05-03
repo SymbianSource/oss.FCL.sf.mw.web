@@ -19,14 +19,14 @@
 #include "WidgetRegistrationManager.h"
 #include "WidgetInstaller.h"
 #include <apgcli.h>
-#include <APGICNFL.h>
+#include <apgicnfl.h>
 
 #ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
 #include <apgicnflpartner.h>
 //#include <apgicnflinternal.h> // missing
 #endif
 
-#include <S32MEM.H>
+#include <s32mem.h>
 #include <WidgetRegistryData.h>
 
 // CONSTANTS

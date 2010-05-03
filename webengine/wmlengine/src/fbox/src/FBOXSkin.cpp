@@ -21,7 +21,7 @@
 #include "nw_fbox_formbox.h"
 #include "nwx_string.h"
 #include "nw_text_ucs2.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 static const NW_Ucs2 _NW_LMgr_Text_Truncate[] = {'.','.','.','\0'};

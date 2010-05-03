@@ -30,7 +30,7 @@
 #include <SWInstLogTaskParam.h>
 #include <WidgetRegistryClient.h>
 #include <apgcli.h> // RApaLsSession
-#include "cuicanceltimer.h"
+#include "CUICancelTimer.h"
 #include "WidgetUIHandler.h"
 #include "IconConverter.h"
 

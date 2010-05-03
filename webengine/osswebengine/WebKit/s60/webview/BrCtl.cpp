@@ -30,7 +30,7 @@
 #else
 #include <Webkit.rsg>
 #endif
-#include <GULICON.h>
+#include <gulicon.h>
 #include <e32uid.h>
 #include <BrowserDialogsProvider.h>
 //tot:fixme
@@ -44,7 +44,7 @@
 #include "WebDataLoadConsumer.h"
 #include "WebFormFillPopup.h"
 #include "WebPageFullScreenHandler.h"
-#include "PageScaler.h"
+#include "pagescaler.h"
 #include "HistoryController.h"
 #include "HistoryEntry.h"
 #include "HistoryInterface.h"
@@ -68,15 +68,15 @@
 #include "WebCursor.h"
 #include "WebUtil.h"
 #include "WebCharsetData.h"
-#include "HttpCacheManager.h"
+#include "httpcachemanager.h"
 #include "ResourceLoaderDelegate.h"
 #include "EventHandler.h"
-#include "timer.h"
-#include "page.h"
-#include "range.h"
-#include "focusController.h"
+#include "Timer.h"
+#include "Page.h"
+#include "Range.h"
+#include "FocusController.h"
 #include "IconDatabase.h"
-#include "httpDownload.h"
+#include "HttpDownload.h"
 #include "BrCtlSoftkeysObserverImpl.h"
 #include "BrCtlSpecialLoadObserverImpl.h"
 #include "BrCtlLayoutObserverImpl.h"
@@ -89,7 +89,7 @@
 #include <CUserAgent.h>
 
 #ifndef BRDO_WML_DISABLED_FF
-#include "wmlinterface.h"
+#include "WmlInterface.h"
 #include "WmlInterfaceImpl.h"
 #include "WmlEngineInterface.h"
 #endif

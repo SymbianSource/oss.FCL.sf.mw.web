@@ -18,14 +18,14 @@
 
 #include "cpspublisher.h"
 
-#include <LiwServiceHandler.h>
-#include <LiwVariant.h>
-#include <LiwGenericParam.h>
-#include <Liwcommon.h>
+#include <liwservicehandler.h>
+#include <liwvariant.h>
+#include <liwgenericparam.h>
+#include <liwcommon.h>
 #include <liwcommon.hrh>
 #include <AknsFrameBackgroundControlContext.h>
 #include <fbs.h>
-#include <aknsdrawutils.h> 
+#include <AknsDrawUtils.h> 
 
 
 // TODO use global definitions!

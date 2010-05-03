@@ -18,7 +18,7 @@
 
 
 // INCLUDE FILES
-#include <E32STD.h>
+#include <e32std.h>
 #include <AknBidiTextUtils.h>
 #include <AknUtils.h>
 #include <webkit.rsg>

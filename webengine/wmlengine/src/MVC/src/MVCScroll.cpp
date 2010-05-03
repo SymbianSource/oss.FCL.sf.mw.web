@@ -30,7 +30,7 @@
 #include "nw_lmgr_simplepropertylist.h"
 #include "nw_lmgr_rootbox.h"
 #include "nwx_logger.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_lmgr_areabox.h"
 #include "nw_evt_scrollevent.h"
 

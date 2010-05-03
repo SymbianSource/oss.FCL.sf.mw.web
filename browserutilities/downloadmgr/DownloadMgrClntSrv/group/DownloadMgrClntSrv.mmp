@@ -47,7 +47,7 @@ SOURCE  DownloadMgrTransObserver.cpp
 SOURCE  DownloadMgrCod.cpp
 SOURCE  DownloadMgrLogger.cpp
 SOURCE  DownloadMgrClientApiExt.cpp
-SOURCE  ../../DownloadMgrServEng/src/DownloadDataServ.cpp
+SOURCE  ../../DownloadMgrServEng/Src/DownloadDataServ.cpp
 
 USERINCLUDE	    ../inc
 

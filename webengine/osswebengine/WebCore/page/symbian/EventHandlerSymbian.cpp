@@ -43,7 +43,7 @@
 #include "MouseEventWithHitTestResults.h"
 #include "Page.h"
 #include "PlatformKeyboardEvent.h"
-#include "PlatformScrollBar.h"
+#include "PlatformScrollbar.h"
 #include "PlatformWheelEvent.h"
 #include "RenderWidget.h"
 #include "DebugStream.h"

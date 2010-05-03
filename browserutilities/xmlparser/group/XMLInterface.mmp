@@ -32,10 +32,10 @@ DEFFILE ../bwinscw/xmlinterface.def
 #elif defined(WINS)
   DEFFILE    ../bwins/xmlinterface.def
 #else 
-  DEFFILE     ../bmarm/xmlinterface.def
+  DEFFILE     ../bmarm/XMLINTERFACE.DEF
 #endif
 
-SOURCEPATH 	../SRC	
+SOURCEPATH 	../src	
 SOURCE          RXMLReader.cpp
 SOURCE          wml_1_3_dict.c
 SOURCE          syncml_1_0_dict.c
@@ -48,7 +48,7 @@ SOURCE          CXMLObserver.cpp
 // RESOURCE        resource_file
 // RESOURCE        resource_file2
 
-USERINCLUDE     ../INC
+USERINCLUDE     ../inc
 
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_LIBC_SYSTEMINCLUDE

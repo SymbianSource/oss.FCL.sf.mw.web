@@ -17,7 +17,7 @@
 
 #include "config.h"
 
-#include "hashmap.h"
+#include "HashMap.h"
 #include "CString.h"
 #include "CookieJar.h"
 #include "ResourceHandle.h"

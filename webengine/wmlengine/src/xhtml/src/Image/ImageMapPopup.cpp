@@ -24,7 +24,7 @@
 #include <apmstd.h>
 #include <bitdev.h>
 #include <gulicon.h>
-#include <akniconarray.h>
+#include <AknIconArray.h>
 
 #include <avkon.mbg>
 #include <avkon.rsg>

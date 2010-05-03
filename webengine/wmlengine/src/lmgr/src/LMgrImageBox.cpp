@@ -22,7 +22,7 @@
 #include "nw_image_virtualimage.h"
 #include "nw_lmgr_rootbox.h"
 #include "nwx_settings.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_lmgr_activecontainerbox.h"
 #include "BrsrStatusCodes.h"
 

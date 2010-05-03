@@ -17,7 +17,7 @@
 
 // INCLUDE FILES
 #include "HttpConnUtils.h"
-#include "HttpFilterCommonStringsExt.h"
+#include "httpfiltercommonstringsext.h"
 #include <httpstringconstants.h>
 #include <http/rhttpsession.h>
 #include <BrCtlDefs.h>

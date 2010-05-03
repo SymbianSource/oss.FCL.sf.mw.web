@@ -46,9 +46,9 @@
 #include "urlloader_urlresponse.h"
 #include "EmbeddedDocExitObserver.h"
 //R
-#include "historystack.h"
+#include "HistoryStack.h"
 //#include "webkitview.h"
-#include "wmlcontrol.h"
+#include "WmlControl.h"
 
 
 #ifdef __SERIES60_WIM

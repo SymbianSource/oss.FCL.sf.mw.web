@@ -38,7 +38,7 @@ SOURCEPATH      ../../src/wml1x/src/
 
 SOURCE	WML1XApi.cpp
 SOURCE	WML1XContentHandler.cpp
-SOURCE  wml1xEntitySet.c
+SOURCE  Wml1xEntitySet.c
 SOURCE	WML1XEventHandler.cpp
 SOURCE	WML1XFormLiaison.cpp
 SOURCE  Epoc32Wml1xActiveEvent.cpp
@@ -59,14 +59,14 @@ USERINCLUDE     ../../src/ImageCH/include
 USERINCLUDE     ../../src/lmgr/include
 USERINCLUDE     ../../src/markup/include
 USERINCLUDE     ../../src/object/include
-USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/System/include
 USERINCLUDE     ../../src/text/include
 USERINCLUDE     ../../src/wml1x/include
 USERINCLUDE     ../../src/wmlscriptch/include
 USERINCLUDE     ../../src/wml/src
 USERINCLUDE     ../../src/wml/include
 USERINCLUDE     ../../src/MVC/include
-USERINCLUDE     ../../src/msg/include
+USERINCLUDE     ../../src/Msg/include
 USERINCLUDE     ../../src/wmlcontrol/include
 USERINCLUDE   	../../src/utils/include
 

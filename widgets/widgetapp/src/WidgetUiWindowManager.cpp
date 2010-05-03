@@ -31,20 +31,20 @@
 #endif
 
 #include <WidgetUi.rsg>
-#include <BrCtlInterface.h>
+#include <brctlinterface.h>
 #include <WidgetRegistryConstants.h>
 #include <centralrepository.h>
 #include <StringLoader.h>
-#include <AknNoteDialog.h>
+#include <aknnotedialog.h>
 #include <BrowserDialogsProvider.h>
-#include <S32FILE.H>
+#include <s32file.h>
 #include <aknnotewrappers.h>
 #include "cpglobals.h" // CPS string definitions.
 
 #include <InternetConnectionManager.h>
 #include <ActiveApDb.h>
 #include <oommonitorsession.h>
-#include <aknglobalnote.h>
+#include <AknGlobalNote.h>
 
 // LOCAL FUNCTION PROTOTYPES
 TInt doDestructOOMNotifyTimer( TAny* ptr );

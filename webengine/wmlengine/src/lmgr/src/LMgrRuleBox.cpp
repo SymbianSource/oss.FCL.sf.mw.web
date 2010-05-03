@@ -18,7 +18,7 @@
 
 #include "nw_lmgr_ruleboxi.h"
 #include "nw_lmgr_cssproperties.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 /*#define NW_HR_WIDTH_DEFAULT  (NW_GDI_Metric_t)100*/

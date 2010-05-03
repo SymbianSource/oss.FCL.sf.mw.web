@@ -20,7 +20,7 @@
 #define POPUPSELECTLISTBOX_H
 
 //  INCLUDES
-#include <E32DEF.H>
+#include <e32def.h>
 #include <eiktxlbx.h>
 #include <eikfrlb.h> //CFormattedCellListBox
 

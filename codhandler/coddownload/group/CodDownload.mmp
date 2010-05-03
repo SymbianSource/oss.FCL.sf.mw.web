@@ -17,7 +17,7 @@
 
 #include <platform_paths.hrh>
 #include <platform/mw/Browser_platform_variant.hrh>
-#include "../../CodEng/inc/CodDefs.h"
+#include "../../codeng/inc/CodDefs.h"
 
 TARGET          CodDownload.dll
 TARGETTYPE      dll
@@ -31,8 +31,8 @@ SOURCE          CodDownload.cpp
 
 USERINCLUDE     ../inc
 
-SYSTEMINCLUDE   ../../CodUi/inc
-SYSTEMINCLUDE   ../../CodEng/inc
+SYSTEMINCLUDE   ../../codui/inc
+SYSTEMINCLUDE   ../../codeng/inc
 
 MW_LAYER_SYSTEMINCLUDE
 

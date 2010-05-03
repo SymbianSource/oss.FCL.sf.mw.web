@@ -28,9 +28,9 @@
 #include "HttpDownloadMgrLogger.h"
 #include "HeaderField.h"
 
-#include <SysUtil.h>
+#include <sysutil.h>
 #include <DocumentHandler.h>
-#include <APMSTD.H>
+#include <apmstd.h>
 
 #include "HttpDownloadMgrLogger.h"
 

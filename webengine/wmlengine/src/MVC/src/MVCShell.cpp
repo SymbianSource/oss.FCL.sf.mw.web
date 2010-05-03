@@ -21,13 +21,13 @@
 #include <e32base.h>
 #include <e32std.h>
 #include <bldvariant.hrh>
-#include <CHARCONV.H>
+#include <charconv.h>
 #include <eikenv.h>
 #include <f32file.h>
 #include <stddef.h>
 #include <stdlib.h>
-#include <stringloader.h>
-#include <cuseragent.h>
+#include <StringLoader.h>
+#include <CUserAgent.h>
 #include <webkit.rsg>
 #include <uri16.h>
 #include <apmstd.h>
@@ -36,16 +36,16 @@
 #include <caf/supplieroutputfile.h> 
 #include "Oma2Agent.h"
 
-#include "brctl.h"
-#include "brctldefs.h"
+#include "BrCtl.h"
+#include "BrCtlDefs.h"
 
 #include "BrsrStatusCodes.h"
 #include "MVCShell.h"
-#include "contentloader.h"
-#include "GDIDeviceContext.h"
-#include "kimonolocalizationstrings.h"
+#include "contentLoader.h"
+#include "GDIDevicecontext.h"
+#include "KimonoLocalizationStrings.h"
 #include "MVCView.h"
-#include "nw_adt_resizableVector.h"
+#include "nw_adt_resizablevector.h"
 #include "nw_browser_browsermimetable.h"
 #include "nw_evlog_api.h"
 #include "nw_hed_appservices.h"
@@ -83,7 +83,7 @@
 #include "nwx_string.h"
 #include "nwx_time.h"
 #include "nwx_ui_callbacks_register.h"
-#include "stringutils.h"
+#include "StringUtils.h"
 #include "urlloader_loaderutils.h"
 #include "urlloader_urlloaderint.h"
 #include "urlloader_urlloaderI.h"

@@ -21,7 +21,7 @@
 // INCLUDE FILES
 #include "SchemeApp.h"
 #include "SchemeDocument.h"
-#include "BldVariant.hrh"
+#include "bldvariant.hrh"
 #include <eikstart.h>
 
 // ================= MEMBER FUNCTIONS =======================

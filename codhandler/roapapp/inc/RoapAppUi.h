@@ -25,12 +25,12 @@
 
 #include <e32base.h>
 #include <f32file.h>
-#include <AknAppUi.h>
+#include <aknappui.h>
 #include <AknServerApp.h>
 #include <RoapObserver.h>
 #include <DownloadMgrClient.h>
 #include "RoapAppWaitDialog.h"
-#include <CentralRepository.h>
+#include <centralrepository.h>
 
 // FORWARD DECLARATIONS
 

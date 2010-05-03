@@ -24,7 +24,7 @@
 #include <es_sock.h>
 //#include <AknInputBlock.h>
 
-#include "httpconnection.h"
+#include "HttpConnection.h"
 
 // CONSTANTS
 

@@ -23,7 +23,7 @@
 #include "nw_lmgr_statictablecellbox.h"
 #include "nw_lmgr_statictablerowbox.h"
 #include "nw_lmgr_cssproperties.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_fbox_inputbox.h"
 #include "nw_lmgr_imgcontainerbox.h"
 #include "BrsrStatusCodes.h"

@@ -31,7 +31,7 @@
 
 //  INCLUDES
 #include "WebCorePluginHandler.h"
-#include "NPNImplementation.h"
+#include "NpnImplementation.h"
 #include "PluginHandler.h"
 
 // CONSTANTS

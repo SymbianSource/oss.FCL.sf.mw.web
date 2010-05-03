@@ -26,7 +26,7 @@
 #include "HTMLSelectElement.h"
 
 #include "CSSPropertyNames.h"
-#include "CSSStyleSelector.h"
+#include "cssstyleselector.h"
 #include "CharacterNames.h"
 #include "Document.h"
 #include "Event.h"

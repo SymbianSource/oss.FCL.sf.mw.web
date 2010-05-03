@@ -30,8 +30,8 @@ MACRO NOKIA_MOBILE_BROWSER
 SOURCEPATH      ../../src/wmlscriptch/src/
 
 
-SOURCE	iwmlBrowserLib.c
-SOURCE	iwmlScriptListener.c
+SOURCE	IWmlBrowserLib.c
+SOURCE	IWmlScriptListener.c
 SOURCE	WMLSCRIPTCHScrProxyApi.cpp
 SOURCE	WMLSCRIPTCHContentHandler.cpp
 
@@ -50,11 +50,11 @@ USERINCLUDE     ../../src/text/include
 USERINCLUDE     ../../src/wmlscriptch/include
 USERINCLUDE     ../../src/wml/src
 USERINCLUDE     ../../src/wml/include
-USERINCLUDE     ../../src/mvc/include
-USERINCLUDE     ../../src/msg/include
+USERINCLUDE     ../../src/MVC/include
+USERINCLUDE     ../../src/Msg/include
 USERINCLUDE   	../../src/utils/include
 
-USERINCLUDE     ../../../osswebengine/MemoryManager/inc
+USERINCLUDE     ../../../osswebengine/MemoryManager/Inc
 
 SYSTEMINCLUDE   ../../src/utils/include
 SYSTEMINCLUDE   ../../src/urlloader/include

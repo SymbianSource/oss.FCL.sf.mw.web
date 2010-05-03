@@ -20,8 +20,8 @@
 #include <w32std.h>
 #include <apgcli.h>
 #include "WidgetRegistryConstants.h"
-#include "widgetregistryserver.h"
-#include "widgetregistrysession.h"
+#include "WidgetRegistryServer.h"
+#include "WidgetRegistrySession.h"
 
 // ============================ MEMBER FUNCTIONS ===============================
 

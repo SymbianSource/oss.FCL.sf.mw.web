@@ -19,5 +19,5 @@
 //  RESOURCE IDENTIFIER
 NAME    WKUS
 
-#include "ToolBar.rssi"
+#include "toolbar.rssi"
 

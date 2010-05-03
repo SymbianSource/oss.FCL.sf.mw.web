@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "XMLHttpRequest.h"
+#include "xmlhttprequest.h"
 
 #include "CString.h"
 #include "Cache.h"

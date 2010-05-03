@@ -21,7 +21,7 @@
 #include "nw_lmgr_rootbox.h"
 #include "nw_image_epoc32cannedimage.h"
 #include "nwx_settings.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 const

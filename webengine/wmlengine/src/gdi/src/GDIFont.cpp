@@ -21,7 +21,7 @@
 #include <e32def.h>  // First to avoid NULL redefine warning (no #ifndef NULL).
 #include "nw_object_dynamici.h"
 #include "GDIFont.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_text_ucs2.h"
 #include "nwx_string.h"
 #include <fbs.h>

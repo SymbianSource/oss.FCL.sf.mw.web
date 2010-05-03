@@ -22,9 +22,9 @@
 
 #include "Frame.h"
 #include "Editor.h"
-#include "String.h"
-#include "HtmlNames.h"
-#include "HtmlInputElement.h"
+#include "string.h"
+#include "HTMLNames.h"
+#include "HTMLInputElement.h"
 
 #include "Text.h"
 #include "CString.h"

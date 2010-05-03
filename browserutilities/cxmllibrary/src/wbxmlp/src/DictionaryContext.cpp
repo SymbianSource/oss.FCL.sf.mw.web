@@ -17,7 +17,7 @@
 #include <e32std.h>
 #include "DictionaryContext.h"
 #include "cxml_internal.h"
-#include "FeatMgr.h"
+#include "featmgr.h"
 #include "nw_wbxml_dictionary.h"
 
 /* There is possibility that dictionary initialize is called by the embedded

@@ -27,7 +27,7 @@
 #include <AiwBrowserProvider.rsg>
 #include <data_caging_path_literals.hrh>  
 #include <aknnotewrappers.h> 
-#include <AknNoteDialog.h>
+#include <aknnotedialog.h>
 #include <FavouritesDb.h>
 #include <e32std.h>
 

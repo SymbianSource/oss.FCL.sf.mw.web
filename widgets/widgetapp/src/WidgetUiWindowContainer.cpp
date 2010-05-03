@@ -25,18 +25,18 @@
 
 #include <WidgetRegistryConstants.h>
 
-#include <BrCtlInterface.h>
+#include <brctlinterface.h>
 #include <ApUtils.h>
 #include <InternetConnectionManager.h>
 #include <ActiveApDb.h>
 #include <avkon.hrh>
-#include <aknsdrawutils.h>
+#include <AknsDrawUtils.h>
 #include <AknsBasicBackgroundControlContext.h>
 
  // CAknMessageQueryDialog
-#include <AknMessageQueryDialog.h>
+#include <aknmessagequerydialog.h>
 #include <aknnotewrappers.h>
-#include <AknNoteDialog.h>
+#include <aknnotedialog.h>
 #include <BrowserDialogsProvider.h>
 
 // EXTERNAL DATA STRUCTURES

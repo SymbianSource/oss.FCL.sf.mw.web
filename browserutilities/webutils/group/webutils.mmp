@@ -35,7 +35,7 @@ SOURCE			CUserAgent.cpp
 
 
 // Include paths
-USERINCLUDE     . ../INC 
+USERINCLUDE     . ../inc 
 
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_LIBC_SYSTEMINCLUDE

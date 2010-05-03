@@ -22,7 +22,7 @@
 // INCLUDES
 
 #include <e32base.h>
-#include <AknApp.h>
+#include <aknapp.h>
 
 // CLASS DECLARATION
 

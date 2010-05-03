@@ -20,11 +20,11 @@
 #include <http.h>
 #include <BrowserUiSDKCRKeys.h>
 #include "HttpRequestHeaderManager.h"
-#include "HttpFilterCommonStringsExt.h"
+#include "httpfiltercommonstringsext.h"
 #include "ResourceRequest.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
-#include <SysLangUtil.h>
+#include <syslangutil.h>
 #include "WebCharsetData.h"
 #include <tinternetdate.h>
 

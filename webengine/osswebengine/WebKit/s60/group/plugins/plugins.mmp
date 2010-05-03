@@ -28,11 +28,11 @@ SYSTEMINCLUDE	../../../../WebCore/html
 SYSTEMINCLUDE	../../../../WebCore/dom
 SYSTEMINCLUDE	../../../../DerivedSources/WebCore
 
-SOURCEPATH      ../../Plugins
+SOURCEPATH      ../../plugins
 SOURCE          PluginHandler.cpp
 SOURCE          PluginSkin.cpp
 SOURCE          PluginStream.cpp
 SOURCE          PluginPlayer.cpp
-SOURCE          PlugInStreamLoaderClient.cpp
+SOURCE          PluginStreamLoaderClient.cpp
 SOURCE          NpnImplementation.cpp
 SOURCE          PluginWin.cpp

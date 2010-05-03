@@ -31,10 +31,10 @@
 #include "WebFrame.h"
 #include "WebFrameView.h"
 #include "WebView.h"
-#include "Brctl.h"
+#include "BrCtl.h"
 #include <BrCtlDialogsProvider.h>
 #include <CommonContentPolicy.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 #if defined(__BROWSER_SDK)
 #include <webkit_sdk.rsg>
 #else

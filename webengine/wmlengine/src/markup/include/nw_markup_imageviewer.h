@@ -21,7 +21,7 @@
 
 #include "NW_Markup_EXPORT.h"
 #include "nw_object_aggregate.h"
-#include "nw_hed_iimageViewer.h"
+#include "nw_hed_iimageviewer.h"
 #include "nw_lmgr_box.h"
 #include "BrsrStatusCodes.h"
 

@@ -59,7 +59,7 @@
 #include "HitTestResult.h"
 #include "OverflowEvent.h"
 #include "PlatformMouseEvent.h"
-#include "PlatformScrollBar.h" 
+#include "PlatformScrollbar.h" 
 #include "RenderArena.h"
 #include "RenderInline.h"
 #include "RenderTheme.h"

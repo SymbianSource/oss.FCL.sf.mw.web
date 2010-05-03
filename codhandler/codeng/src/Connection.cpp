@@ -25,7 +25,7 @@
 #include "CodUtil.h"
 #include "CodError.h"
 #include "CodLogger.h"
-#include <CommDbConnPref.h>
+#include <commdbconnpref.h>
 #include <cdblen.h>
 #include <es_enum.h>
 

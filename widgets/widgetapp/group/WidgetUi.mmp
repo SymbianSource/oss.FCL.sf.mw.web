@@ -36,7 +36,7 @@ EpocAllowDllData
 
 // RESOURCE INFO
 
-START RESOURCE ../Data/WidgetUi.rss
+START RESOURCE ../data/WidgetUi.rss
 DEPENDS avkon.rsg
 HEADER
 TARGETPATH APP_RESOURCE_DIR
@@ -66,7 +66,7 @@ SOURCE	WidgetUiNetworkListener.cpp
 SOURCE  cpspublisher.cpp
 #endif
 
-START RESOURCE ../Data/WidgetUi_reg.rss
+START RESOURCE ../data/WidgetUi_reg.rss
 DEPENDS widgetui.rsg
 // Do not change the UID below.
 TARGETPATH /private/10003a3f/apps
@@ -77,7 +77,7 @@ MACRO OOM_WIDGET_CLOSEALL
 
 USERINCLUDE .
 USERINCLUDE ../inc
-USERINCLUDE ../../WidgetInstaller/inc
+USERINCLUDE ../../widgetinstaller/inc
 
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_LIBC_SYSTEMINCLUDE

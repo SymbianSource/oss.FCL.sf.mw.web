@@ -33,7 +33,7 @@
 #include "nw_adt_resizablevector.h"
 #include "nw_fbox_formboxutils.h"
 #include "nw_hed_documentroot.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- *

@@ -28,10 +28,10 @@
 #include <e32base.h>
 #include <e32std.h>
 #include <w32std.h>
-#include <COEMAIN.H>
+#include <coemain.h>
 #include <fbs.h>
-#include <FeatMgr.h>
-#include <Languages.hrh>
+#include <featmgr.h>
+#include <languages.hrh>
 
 #include <AknFontAccess.h>
 #include <AknUtils.h>

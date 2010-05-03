@@ -22,7 +22,7 @@
 // INCLUDES FILES
 #include <e32base.h>
 #include <BrCtlDefs.h>
-#include <BrCtlInterface.h> // for MWidgetCallback
+#include <brctlinterface.h> // for MWidgetCallback
 #include <AknServerApp.h>
 #include <coecntrl.h>
 #include "WidgetUiObserver.h"

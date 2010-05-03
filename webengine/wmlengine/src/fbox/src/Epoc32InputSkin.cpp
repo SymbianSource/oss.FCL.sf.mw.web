@@ -34,7 +34,7 @@
 #include "nw_lmgr_textbox.h"
 #include "nw_lmgr_rootbox.h"
 #include "LMgrBoxTreeListener.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_fbox_formboxutils.h"
 #include "BrsrStatusCodes.h"
 #include "nw_lmgr_statictablecellbox.h"

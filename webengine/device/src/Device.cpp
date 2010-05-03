@@ -24,7 +24,7 @@
 #include "DeviceBridge.h"
 #include "DeviceBinding.h"
 #include "DeviceLiwBinding.h"
-#include <LiwServiceHandler.h>
+#include <liwservicehandler.h>
 
 using namespace KJS;
 

@@ -36,7 +36,7 @@
 #include "WebFrameView.h"
 #include <wtf/RefPtr.h>
 #include "EventHandler.h"
-#include "webkitlogger.h"
+#include "WebKitLogger.h"
 #include "FocusController.h"
 #include "RenderListBox.h"
 #include "HTMLSelectElement.h"

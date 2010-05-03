@@ -20,12 +20,12 @@
 // document handler.
 
 #include <e32base.h>
-#include <aiwvariant.h>    
+#include <AiwVariant.h>    
 #include <apmstd.h>             // for TDataType
-#include <ErrorUi.h>            // for Series60 error notes
+#include <ErrorUI.h>            // for Series60 error notes
 #include <eikenv.h>
 #include "nwx_http_defs.h"      
-#include "ContentLoader.h"
+#include "contentLoader.h"
 #include "MVCShell.h"
 #include "BrsrStatusCodes.h"
 #include <BrCtlSpecialLoadObserver.h>

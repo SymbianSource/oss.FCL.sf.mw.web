@@ -19,7 +19,7 @@
 #include "XhtmlTableElementHandler.h"
 
 #include "BrsrStatusCodes.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "HEDDocumentListener.h"
 #include "LMgrAnonTableBox.h"
 

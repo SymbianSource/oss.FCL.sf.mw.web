@@ -19,7 +19,7 @@
 #include "nw_fbox_selectskini.h"
 #include "nw_lmgr_rootbox.h"
 #include "nw_text_ucs2.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- *

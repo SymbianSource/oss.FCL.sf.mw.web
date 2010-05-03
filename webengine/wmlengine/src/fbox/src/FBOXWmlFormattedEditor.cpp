@@ -36,12 +36,12 @@
 #include <bautils.h>
 #include <webkit.rsg>
 #include <PUAcodes.hrh>
-#include <FeatMgr.h>
+#include <featmgr.h>
 #include <baclipb.h>
 #include <aknedsts.h>
 
 // User includes
-#include "nw_fbox_WmlFormattedEditor.h"
+#include "nw_fbox_wmlformattededitor.h"
 // CONSTANTS
 
 static const TInt KWmlDefaultTextColor = 215; ///< black (plain text)

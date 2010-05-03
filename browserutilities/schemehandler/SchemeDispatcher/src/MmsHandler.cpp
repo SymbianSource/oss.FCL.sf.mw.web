@@ -22,7 +22,7 @@
 
 #include "MmsHandler.h"
 #include "SchemeDispLogger.h"
-#include <ECom.h>		// For REComSession
+#include <ecom.h>		// For REComSession
 #include <eikenv.h>
 #include <DocumentHandler.h>
 #include <apgcli.h>

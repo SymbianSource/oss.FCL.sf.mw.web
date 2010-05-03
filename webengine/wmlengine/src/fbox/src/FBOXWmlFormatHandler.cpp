@@ -17,8 +17,8 @@
 
 
 // INCLUDE FILES
-#include <aknutils.h>
-#include "nw_fbox_WmlFormatHandler.h"
+#include <AknUtils.h>
+#include "nw_fbox_wmlformathandler.h"
 #include "NW_Unicode_LetterOther.h"
 #include "NW_Unicode_LetterChina.h"
 #include "NW_Unicode_LetterThai.h"

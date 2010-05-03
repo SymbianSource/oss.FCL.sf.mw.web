@@ -25,7 +25,7 @@ TARGETTYPE  lib
 
 VENDORID    VID_DEFAULT
 
-START RESOURCE ../../../data/webkit.rss
+START RESOURCE ../../../data/Webkit.rss
 DEPENDS avkon.rsg
 DEPENDS eikon.rsg
 HEADER
@@ -48,7 +48,7 @@ START BITMAP webkit.mbm
 	
 	// Masks 
 	SOURCEPATH .
-	SOURCE 1 	../../../data/SelectMultimask.bmp
+	SOURCE 1 	../../../data/SelectMultiMask.bmp
 END
 
 

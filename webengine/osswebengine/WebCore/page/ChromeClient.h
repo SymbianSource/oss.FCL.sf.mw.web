@@ -22,7 +22,7 @@
 #define ChromeClient_h
 
 #include "FocusDirection.h"
-#include "chrome.h"
+#include "Chrome.h"
 
 namespace WebCore {
 

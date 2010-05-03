@@ -25,7 +25,7 @@
 #include <BrCtlSpecialLoadObserver.h>
 #include <BrCtlDownloadObserver.h>
 #include <BrCtlWindowObserver.h>
-#include <BrCtlInterface.h>
+#include <brctlinterface.h>
 #include <DocumentHandler.h>
 #include <flogger.h>
 

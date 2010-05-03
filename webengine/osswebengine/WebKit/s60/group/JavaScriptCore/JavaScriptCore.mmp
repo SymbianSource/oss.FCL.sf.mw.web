@@ -41,9 +41,9 @@ deffile ../EABI/JavaScriptCore_3_2.def
 deffile ../Bwinscw/JavaScriptCore_3_2.def
 #endif
 #elif defined(ARMCC)
-deffile ../EABI/JavaScriptCore.def
+deffile ../eabi/JavaScriptCore.def
 #elif defined( WINSCW )
-deffile ../Bwinscw/JavaScriptCore.def
+deffile ../bwinscw/JavaScriptCore.def
 #endif
 
 MACRO __S60__
@@ -78,7 +78,7 @@ MW_LAYER_STDAPIS_SYSTEMINCLUDE
 SOURCEPATH ../../../../DerivedSources/JavaScriptCore
 SOURCE grammar.cpp
 
-SOURCEPATH ../../../../JavaScriptCore/Api
+SOURCEPATH ../../../../JavaScriptCore/API
 SOURCE JSCallbackConstructor.cpp
 SOURCE JSCallbackFunction.cpp
 SOURCE JSCallbackObject.cpp

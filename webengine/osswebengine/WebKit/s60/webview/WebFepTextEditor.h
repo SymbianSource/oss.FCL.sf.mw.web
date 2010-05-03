@@ -24,7 +24,7 @@
 #include <coeinput.h>
 #include <fepipext.h>
 #include <frmtlay.h>
-#include <AknExtendedInputCapabilities.h> 
+#include <aknextendedinputcapabilities.h> 
 #include <eikccpu.h>
 #include <baclipb.h>
 

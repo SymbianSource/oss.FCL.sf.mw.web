@@ -17,7 +17,7 @@
 
 
 
-#include "CStack.h"
+#include "cstack.h"
 #include "nwx_logger.h"
 #include "nw_lmgr_linebox.h"
 #include "nw_lmgr_nobrbox.h"
@@ -28,7 +28,7 @@
 #include "LMgrMarkerText.h"
 #include "LMgrMarkerImage.h"
 #include "LMgrAnonBlock.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_lmgr_accesskey.h"
 #include "nw_lmgr_verticaltablecellbox.h"
 

@@ -24,7 +24,7 @@
 #include <e32base.h>
 #include <es_sock.h>
 #include <http.h>
-#include <CommDbConnPref.h>
+#include <commdbconnpref.h>
 
 // CONSTANTS
 //const ?type ?constant_var = ?constant;

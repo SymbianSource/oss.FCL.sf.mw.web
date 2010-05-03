@@ -20,7 +20,7 @@
 #define NW_EVT_FONTSIZECHANGEEVENTI_H
 
 #include "nw_evt_eventi.h"
-#include "nw_evt_FontSizeChangeevent.h"
+#include "nw_evt_fontsizechangeevent.h"
 #include "BrsrStatusCodes.h"
 
 #ifdef __cplusplus

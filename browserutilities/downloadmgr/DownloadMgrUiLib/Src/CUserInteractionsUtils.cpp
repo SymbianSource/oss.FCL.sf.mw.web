@@ -42,11 +42,11 @@
 #include    <StringLoader.h>
 #include    <AknSoftNotificationParameters.h>
 #include    <AknSoftNotifier.h>
-#include    <AknNoteWrappers.h>
+#include    <aknnotewrappers.h>
 #include    <BrowserDialogsProvider.h>
 #include    <HttpDownloadMgrCommon.h>
-#include    <PathInfo.h>
-#include    <aknglobalnote.h>
+#include    <pathinfo.h>
+#include    <AknGlobalNote.h>
 #include    <Oma2Agent.h>
 #include    <DRMCommon.h>
 #include	<apmrec.h>
@@ -54,7 +54,7 @@
 #include    <s32mem.h>
 #include    "bautils.h"
 #include	<etelmm.h>
-#include	<MmTsy_names.h>
+#include	<mmtsy_names.h>
 #include    <rconnmon.h>
 #include    <DcfEntry.h>
 #include    <DcfRep.h>

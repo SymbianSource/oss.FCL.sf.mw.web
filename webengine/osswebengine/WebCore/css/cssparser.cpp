@@ -22,12 +22,12 @@
  */
 
 #include "config.h"
-#include "CSSParser.h"
+#include "cssparser.h"
 
 #include "CSSBorderImageValue.h"
 #include "CSSCharsetRule.h"
 #include "CSSCursorImageValue.h"
-#include "CSSHelper.h"
+#include "csshelper.h"
 #include "CSSImageValue.h"
 #include "CSSImportRule.h"
 #include "CSSInheritedValue.h"

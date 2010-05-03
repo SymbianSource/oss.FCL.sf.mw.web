@@ -34,12 +34,12 @@ EPOCALLOWDLLDATA
 MACRO __OOM__
 
 #if defined(WINSCW)
-deffile BWINSCW/WebKitUtils.def
+deffile Bwinscw/WebKitUtils.def
 #elif defined(ARMCC)
 deffile EABI/WebKitUtils.def
 #endif
 
-START RESOURCE ../data/webkitutils.rss
+START RESOURCE ../data/WebKitUtils.rss
 HEADER
 TARGETPATH      RESOURCE_FILES_DIR
 #ifdef __S60_32__
@@ -50,8 +50,8 @@ LANGUAGE_IDS
 END
 
 SOURCEPATH      ../ToolBar
-SOURCE          toolbar.cpp
-SOURCE          toolbarbutton.cpp
+SOURCE          ToolBar.cpp
+SOURCE          ToolBarButton.cpp
 
 SOURCEPATH      ../HistoryProvider
 SOURCE          HistoryEntry.cpp
@@ -101,9 +101,9 @@ SOURCE          vdbemem.c
 SOURCE          vtab.c
 SOURCE          where.c
 
-USERINCLUDE     ../../osswebengine/WebKit/s60/WebView
+USERINCLUDE     ../../osswebengine/WebKit/s60/webview
 
-USERINCLUDE     ../toolbar
+USERINCLUDE     ../ToolBar
 USERINCLUDE     ../HistoryProvider
 USERINCLUDE     ../SqliteSymbian
 

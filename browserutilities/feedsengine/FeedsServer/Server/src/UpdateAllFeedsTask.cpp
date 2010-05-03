@@ -24,7 +24,7 @@
 #include "PackedFeed.h"
 #include "PackedFolder.h"
 #include "UpdateAllFeedsTask.h"
-#include <SysUtil.h>
+#include <sysutil.h>
 
 
 // -----------------------------------------------------------------------------

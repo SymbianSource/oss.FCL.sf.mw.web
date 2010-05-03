@@ -26,12 +26,12 @@
 #include "BrowserViewImagesListBox.h"
 
 // SYSTEM INCLUDES
-#include <documenthandler.h>
+#include <DocumentHandler.h>
 #include <apmstd.h>
-#include <Uri16.h>
+#include <uri16.h>
 #include <aknenv.h>
 #include <avkon.mbg>
-#include <akneditstateindicator.h>
+#include <aknEditStateIndicator.h>
 #include <AknsListBoxBackgroundControlContext.h>
 #include <AiwGenericParam.h>
 

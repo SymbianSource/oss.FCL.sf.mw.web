@@ -25,7 +25,7 @@
 #include "IntRect.h"
 #include "WebCoreGraphicsContext.h"
 #include <e32std.h>
-#include <BITSTD.H>
+#include <bitstd.h>
 #include <gdi.h>
 #include "StaticObjectsContainer.h"
 #include "PictographSymbian.h"

@@ -16,7 +16,7 @@
 */
 
 
-#include <TInternetDate.h>
+#include <tinternetdate.h>
 
 #include "FeedParser.h"
 #include "FeedParserObserver.h"

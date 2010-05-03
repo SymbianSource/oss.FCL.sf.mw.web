@@ -29,7 +29,7 @@
 #include "urlloader_urlloaderint.h"
 #include "nw_lmgr_verticaltablecellbox.h"
 #include "nw_lmgr_statictablecellbox.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 #include "nwx_http_defs.h"
 

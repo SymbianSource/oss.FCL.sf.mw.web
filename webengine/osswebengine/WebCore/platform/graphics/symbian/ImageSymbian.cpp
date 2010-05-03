@@ -38,7 +38,7 @@
 #include "WebCoreGraphicsContext.h"
 #include "bitmap/MaskedBitmap.h"
 #include "bitmap/AnimationDecoder.h"
-#include "String.h"
+#include "string.h"
 #include "StringHash.h"
 #include "DebugStream.h"
 #include "ZoomFactor.h"

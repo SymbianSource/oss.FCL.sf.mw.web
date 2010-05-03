@@ -22,13 +22,13 @@
 
 #include "FileHandler.h"
 #include "SchemeDispLogger.h"
-#include <ECom.h>		// For REComSession
+#include <ecom.h>		// For REComSession
 #include <eikenv.h>
 #include <apmstd.h>
 #include <apparc.h>
 #include <eikproc.h>
 #include <f32file.h>
-#include <APGTASK.H>
+#include <apgtask.h>
 #include <apgcli.h>
 
 // ================= CONSTANTS =======================

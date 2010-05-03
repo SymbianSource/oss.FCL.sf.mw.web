@@ -21,7 +21,7 @@
 #include "HttpDlConnection.h"
 #include "HttpDefs.h"
 #include "HttpSessionManager.h"
-#include "brctl.h"
+#include "BrCtl.h"
 #include "StaticObjectsContainer.h"
 
 // CONSTANTS

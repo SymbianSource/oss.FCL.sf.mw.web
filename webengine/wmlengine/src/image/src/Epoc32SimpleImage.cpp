@@ -25,7 +25,7 @@
 #include "nw_hed_contenthandler.h"
 #include "nw_image_iimageobserver.h"
 #include "nw_adt_resizablevector.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 
 #include "nw_gdi_types.h"
 

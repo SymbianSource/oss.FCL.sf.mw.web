@@ -24,9 +24,9 @@
 
 #include "CUIUtils.h"
 
-#include "WidgetInstallerUI.h"
+#include "WidgetInstallerUi.h"
 #include "WidgetUIOperationsWatcher.h"
-#include "BAUTILS.H"
+#include "bautils.h"
 
 using namespace SwiUI;
 

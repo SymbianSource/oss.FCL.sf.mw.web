@@ -20,7 +20,7 @@
 
 // includes
 #include <apmrec.h>  // For CApaDataRecognizerType
-#include <Browser_Platform_Variant.hrh>
+#include <Browser_platform_variant.hrh>
 
 // constants
 const TUid KUidMimeBrowserRecognizer = { 0x1005A02 };

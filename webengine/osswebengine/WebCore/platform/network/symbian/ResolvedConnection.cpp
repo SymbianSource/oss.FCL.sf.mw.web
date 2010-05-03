@@ -20,7 +20,7 @@
 #include "ResolvedConnection.h"
 #include "ResourceRequest.h"
 
-#include "Brctl.h"
+#include "BrCtl.h"
 #include "WebFrame.h"
 
 // EXTERNAL DATA STRUCTURES

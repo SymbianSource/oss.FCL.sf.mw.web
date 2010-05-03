@@ -23,7 +23,7 @@
 #include "nw_fbox_epoc32formimages.h"
 #include "nw_fbox_formboxutils.h"
 #include "nw_image_epoc32cannedimage.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_lmgr_imgcontainerboxi.h"
 #include "nw_image_cannedimages.h"
 #include "BrsrStatusCodes.h"

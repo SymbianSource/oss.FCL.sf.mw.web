@@ -27,7 +27,7 @@
 #include <../bidi.h>
 #include <eikenv.h>
 #include "RenderBox.h"
-#include <BitmapTransforms.h>
+#include <bitmaptransforms.h>
 #include "WebCoreGraphicsContext.h"
 #include "MaskedBitmap.h"
 #include "BitmapImage.h"

@@ -26,23 +26,23 @@
 TARGET  ConnectionManager.dll
 TARGETTYPE  dll
 UID  0x1000008d 0x10008D3F
-SOURCEPATH ../src
+SOURCEPATH ../Src
 
 VENDORID VID_DEFAULT
 CAPABILITY	CAP_GENERAL_DLL
 
-USERINCLUDE ../inc
+USERINCLUDE ../Inc
 USERINCLUDE ../../inc
 
 MW_LAYER_SYSTEMINCLUDE
 
-START RESOURCE ../data/ConnectionManager.rss
+START RESOURCE ../Data/connectionmanager.rss
 DEPENDS avkon.rsg
 HEADER
 TARGETPATH  RESOURCE_FILES_DIR
 END
 
-SOURCE IdPair.cpp
+SOURCE Idpair.cpp
 SOURCE InternetConnectionManager.cpp
 SOURCE ConnectionObservers.cpp
 SOURCE ConnManActiveConnector.cpp

@@ -65,7 +65,7 @@ SOURCE	NW_Unicode_SymbolOther.c
 
 USERINCLUDE     .
 USERINCLUDE     ../../src/adt/include
-USERINCLUDE     ../../src/evt/include
+USERINCLUDE     ../../src/Evt/include
 USERINCLUDE     ../../src/fbox/include
 USERINCLUDE     ../../src/gdi/include
 USERINCLUDE     ../../src/hed/include

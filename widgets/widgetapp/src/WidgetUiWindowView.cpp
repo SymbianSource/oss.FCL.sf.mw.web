@@ -24,22 +24,22 @@
 #include "WidgetUiWindow.h"
 #include <WidgetUi.rsg>
 #include <Widgetmenu.rsg>
-#include <AknViewAppUi.h>
+#include <aknViewAppUi.h>
 #include <avkon.RSG>
 #include "WidgetUi.hrh"
 #include <aknenv.h>
-#include <aknindicatorcontainer.h>
+#include <AknIndicatorContainer.h>
 #include <aknnavi.h>
 #include <aknnavide.h>
 #include <aknEditStateIndicator.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 #include <e32math.h>
 #include <AknSgcc.h>
 #include <akntitle.h>
 #include <centralrepository.h>
 #include <BrowserUiSDKCRKeys.h>
 #ifdef RD_SCALABLE_UI_V2
-#include <LayoutMetaData.cdl.h> // For Layout_Meta_Data landscape/portrait status
+#include <layoutmetadata.cdl.h> // For Layout_Meta_Data landscape/portrait status
 #include <akntoolbar.h>
 #endif
 

@@ -17,10 +17,10 @@
 
 
 #include <http.h>
-#include <HttpFilterCommonStringsExt.h>
-#include <HttpFilterConnHandlerInterface.h>
+#include <httpfiltercommonstringsext.h>
+#include <httpfilterconnhandlerinterface.h>
 #include <InternetConnectionManager.h>
-#include <HttpFilterCommonStringsAddition.h>
+#include <httpfiltercommonstringsaddition.h>
 
 #include "HttpConnection.h"
 #include "LeakTracker.h"

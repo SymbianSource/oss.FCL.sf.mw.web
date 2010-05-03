@@ -25,7 +25,7 @@
 #include "config.h"
 #include "HTMLEmbedElement.h"
 
-#include "CSSHelper.h"
+#include "csshelper.h"
 #include "CSSPropertyNames.h"
 #include "Frame.h"
 #include "FrameView.h"

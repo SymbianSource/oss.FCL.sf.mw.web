@@ -19,7 +19,7 @@
 #include "FormFillController.h"
 #include "Event.h"
 #include "Timer.h"
-#include "String.h"
+#include "string.h"
 #include "HTMLInputElement.h"
 #include "HTMLFormElement.h"
 #include "FontCache.h"

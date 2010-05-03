@@ -32,7 +32,7 @@ EPOCALLOWDLLDATA
 
 
 #if defined(WINSCW)
-deffile ../Bwinscw/WmlEngine.def
+deffile ../BWINSCW/WmlEngine.def
 #elif defined(ARMCC)
 deffile ../EABI/WmlEngine.def
 #endif
@@ -74,7 +74,7 @@ SOURCE          LMgrBox.cpp
 //--
 
 USERINCLUDE     ../../src/utils/include
-USERINCLUDE     ../../src/scrolling/inc
+USERINCLUDE     ../../src/Scrolling/inc
 USERINCLUDE     ../../src/script/include
 USERINCLUDE     ../../src/script/src
 USERINCLUDE     ../../src/htmlp/include

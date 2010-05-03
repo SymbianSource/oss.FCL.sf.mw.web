@@ -22,7 +22,7 @@
 
 #include "HttpHandler.h"
 #include "SchemeDispLogger.h"
-#include <ECom.h>		// For REComSession
+#include <ecom.h>		// For REComSession
 #include <eikenv.h>
 #include <DocumentHandler.h>
 #include <apgcli.h>
@@ -30,7 +30,7 @@
 #include <eikdoc.h>
 #include <eikproc.h>
 #include <f32file.h>
-#include <APGTASK.H>
+#include <apgtask.h>
 #include <w32std.h>
 #include <BrowserOverriddenSettings.h>
 

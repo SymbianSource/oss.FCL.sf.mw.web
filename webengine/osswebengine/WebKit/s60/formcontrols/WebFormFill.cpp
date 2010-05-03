@@ -21,12 +21,12 @@
 #include "WebFormFill.h"
 #include "WebFormFillPopup.h"
 #include "WebView.h"
-#include "brctl.h"
+#include "BrCtl.h"
 #include "SettingsContainer.h"
 #include "StaticObjectsContainer.h"
 #include "FormFillController.h"
 #include "FormState.h"
-#include "HtmlInputElement.h"
+#include "HTMLInputElement.h"
 #include <webkit.rsg>
 
 #include <StringLoader.h>

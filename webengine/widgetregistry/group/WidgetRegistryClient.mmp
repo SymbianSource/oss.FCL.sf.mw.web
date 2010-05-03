@@ -30,7 +30,7 @@ CAPABILITY        CAP_CLIENT_DLL
 VENDORID          VID_DEFAULT
 
 #if defined(WINSCW)
-deffile ../Bwinscw/WidgetRegistryClient.def
+deffile ../BWINSCW/WidgetRegistryClient.def
 #elif defined(ARMCC)
 deffile ../EABI/WidgetRegistryClient.def
 #endif
@@ -39,7 +39,7 @@ SOURCEPATH ../Client/src
 SOURCE WidgetRegistryClient.cpp
 
 USERINCLUDE       ../Client/inc
-USERINCLUDE       ../Common/inc
+USERINCLUDE       ../common/inc
 USERINCLUDE       ../../../inc
 MW_LAYER_SYSTEMINCLUDE
 

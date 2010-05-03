@@ -31,7 +31,7 @@
 #include "LMgrBoxTreeListener.h"
 #include "nw_lmgr_rootbox.h"
 #include "nw_text_ucs2.h"
-#include "nw_text_abstracti.h"
+#include "NW_Text_AbstractI.h"
 
 
 // ============================ LOCAL DEFINES ==================================

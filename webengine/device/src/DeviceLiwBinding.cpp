@@ -21,11 +21,11 @@
 #include <interpreter.h>
 #include <date_object.h>
 #include <operations.h>
-#include <liwServiceHandler.h>
-#include <RTSecManager.h>
-#include <RTSecMgrUtility.h>
-#include <RTSecMgrScriptSession.h>
-#include <RTSecMgrCommonDef.h>
+#include <liwservicehandler.h>
+#include <rtsecmanager.h>
+#include <rtsecmgrutility.h>
+#include <rtsecmgrscriptsession.h>
+#include <rtsecmgrcommondef.h>
 #include <WidgetRegistryClient.h>
 #include <PropertyNameArray.h>
 #include <internal.h>

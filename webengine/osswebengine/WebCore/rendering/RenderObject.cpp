@@ -27,7 +27,7 @@
 
 #include "AXObjectCache.h"
 #include "AffineTransform.h"
-#include "CSSStyleSelector.h"
+#include "cssstyleselector.h"
 #include "CachedImage.h"
 #include "Chrome.h"
 #include "Document.h"

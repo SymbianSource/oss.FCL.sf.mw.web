@@ -21,7 +21,7 @@
 
 //  INCLUDES
 
-#include <E32BASE.H>
+#include <e32base.h>
 
 // CONSTANTS
 

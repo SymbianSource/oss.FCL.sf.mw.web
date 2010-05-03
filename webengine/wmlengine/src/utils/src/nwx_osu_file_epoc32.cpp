@@ -28,7 +28,7 @@
 #include "nwx_settings.h"
 
 #include <f32file.h>
-#include <SysUtil.h>
+#include <sysutil.h>
 #include "BrsrStatusCodes.h"
 
 

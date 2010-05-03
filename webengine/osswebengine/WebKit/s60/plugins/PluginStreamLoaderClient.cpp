@@ -31,7 +31,7 @@
 #include "PluginStream.h"
 #include "PluginHandler.h"
 
-#include "NetScapePlugInStreamLoader.h"
+#include "NetscapePlugInStreamLoader.h"
 
 using namespace WebCore;
 

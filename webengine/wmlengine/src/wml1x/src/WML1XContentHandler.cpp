@@ -59,12 +59,12 @@
 
 #include <stddef.h>
 #include "nwx_http_defs.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 #include "HEDDocumentListener.h"
 
 
-#include "wmlcontrol.h"
+#include "WmlControl.h"
 
 /* ------------------------------------------------------------------------- *
    private methods

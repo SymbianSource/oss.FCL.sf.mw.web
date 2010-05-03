@@ -26,7 +26,7 @@
 #include <f32file.h>
 #include <badesca.h>
 #include <wtf/HashSet.h>
-#include <ECom/ImplementationInformation.h>    // ecom
+#include <ecom/implementationinformation.h>    // ecom
 #include "EcomBrowserPluginInterface.h"
 #include "WebCorePluginHandler.h"
 

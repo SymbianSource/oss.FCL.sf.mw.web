@@ -43,7 +43,7 @@ SOURCE WidgetRegistryServer.cpp
 SOURCE UidAllocator.cpp
 
 USERINCLUDE       ../Server/inc
-USERINCLUDE       ../Common/inc
+USERINCLUDE       ../common/inc
 USERINCLUDE       ../../../inc
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_LIBC_SYSTEMINCLUDE

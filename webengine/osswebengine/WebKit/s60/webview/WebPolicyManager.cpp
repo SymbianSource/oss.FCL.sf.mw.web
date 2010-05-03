@@ -29,8 +29,8 @@
 #include "WebUtil.h"
 #include "StaticObjectsContainer.h"
 #include "PlugInInfoStore.h"
-#include "MIMETypeRegistry.h"
-#include <Uri8.h>
+#include "MimeTypeRegistry.h"
+#include <uri8.h>
 #include <badesca.h>
 
 using namespace WebCore;

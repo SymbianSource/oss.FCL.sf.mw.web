@@ -22,7 +22,7 @@
 
 #include "CtiHandler.h"
 #include "SchemeDispLogger.h"
-#include <ECom.h>		// For REComSession
+#include <ecom.h>		// For REComSession
 #include <eikenv.h>
 #include <apparc.h>
 #include <apgcli.h>

@@ -30,7 +30,7 @@ NAME    DMUL
 #include <avkon.hrh>
 #include <CommonDialogs.rh>
 #include <avkon.rsg>
-#include <PathConfiguration.hrh>
+#include <pathconfiguration.hrh>
 #include <AvkonIcons.hrh>
 #include <avkon.mbg>
 #include <AiwCommon.hrh>

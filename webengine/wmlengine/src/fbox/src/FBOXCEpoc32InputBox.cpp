@@ -17,19 +17,19 @@
 
 
 // INCLUDE FILES
-#include <E32KEYS.H>
-#include <E32STD.H>
-#include <ptidefs.h>
+#include <e32keys.h>
+#include <e32std.h>
+#include <PtiDefs.h>
 #include "nw_fbox_CEpoc32InputBox.h"
-#include "nw_fbox_WmlFormatHandler.h"
+#include "nw_fbox_wmlformathandler.h"
 #include "nw_fbox_formboxutils.h"
-#include "nw_fbox_WmlFormattedEditor.h"
+#include "nw_fbox_wmlformattededitor.h"
 #include "nw_wml1x_wml_1_3_tokens.h"
 
 #include <aknenv.h>
-#include <akneditstateindicator.h>
-#include <aknindicatorcontainer.h>
-#include <aknutils.h>
+#include <aknEditStateIndicator.h>
+#include <AknIndicatorContainer.h>
+#include <AknUtils.h>
 #include <barsread.h>       // for resource reader
 #include <webkit.rsg>
 
@@ -41,11 +41,11 @@
 #include <txtrich.h>
 #include <aknnotedialog.h>
 #include <gulbordr.h>
-#include "NW_Fbox_InputBox.h"
-#include "NW_Fbox_inputskini.h"
-#include "NW_Fbox_InputSkin.h"
-#include "NW_Fbox_Epoc32InputSkin.h"
-#include "NW_Fbox_textareabox.h"
+#include "nw_fbox_inputbox.h"
+#include "nw_fbox_inputskini.h"
+#include "nw_fbox_inputskin.h"
+#include "nw_fbox_epoc32inputskin.h"
+#include "nw_fbox_textareabox.h"
 #include "BrsrStatusCodes.h"
 
 #include "eikon.hrh"

@@ -25,7 +25,7 @@
 #include <bldvariant.hrh>
 
 #include <ApAccessPointItem.h>
-#include <VpnAPEngine.h>
+#include <VpnApEngine.h>
 #include <AknNotifyStd.h>
 #include <AknGlobalNote.h>
 #include <e32std.h>
@@ -35,41 +35,41 @@
 #include <coemain.h>
 #include <bautils.h>
 #include <connectionmanager.rsg>
-#include <BARSREAD.H>
+#include <barsread.h>
 #include <Avkon.rsg>
-#include <errorui.h>
-#include <aknglobalconfirmationquery.h>
-#include <aknquerydialog.h>
-#include <aknwaitdialog.h>
+#include <ErrorUI.h>
+#include <AknGlobalConfirmationQuery.h>
+#include <AknQueryDialog.h>
+#include <AknWaitDialog.h>
 #include <cdblen.h>
 #include <StringLoader.h>
 #include <connectprog.h>
 #include <nd_err.h>
-#include <CommDbConnPref.h>
-#include <MmTsy_names.h>
+#include <commdbconnpref.h>
+#include <mmtsy_names.h>
 #include <etelmm.h>
 #include <data_caging_path_literals.hrh>
 #include <AknsUtils.h> 
 #include <avkon.mbg>
 #include <ConnMan.mbg>
 #include <rconnmon.h>
-#include <AgentDialog.h>
+#include <agentdialog.h>
 #include <ConnectionUiUtilities.h>
 #include <AknQueryDialog.h>
 #include <WlanCdbCols.h>
 #include <etelpckt.h>
-#include <FeatMgr.h>
+#include <featmgr.h>
 #include <cmmanagerext.h>
 #include <cmdestinationext.h>
 #include <commsdat.h>
-#include <CommsDatTypeInfoV1_1.h>
+#include <commsdattypeinfov1_1.h>
 
 	//User Includes
 #include "InternetConnectionManager.h"
-#include "connman.hrh"
-#include "connectionmanagerlogger.h"
-#include "connectionobservers.h"
-#include "connmanactiveconnector.h"
+#include "ConnMan.hrh"
+#include "ConnectionManagerLogger.h"
+#include "ConnectionObservers.h"
+#include "ConnManActiveConnector.h"
 
 using namespace CMManager;
 

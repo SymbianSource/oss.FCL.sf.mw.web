@@ -24,7 +24,7 @@
 #include "config.h"
 #include "HTMLObjectElement.h"
 
-#include "CSSHelper.h"
+#include "csshelper.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
@@ -40,7 +40,7 @@
 #include "WebCoreWidget.h"
 #endif
 #include "Image.h"
-#include "MIMETypeRegistry.h"
+#include "MimeTypeRegistry.h"
 #include "RenderImage.h"
 #include "RenderPartObject.h"
 #include "RenderWidget.h"

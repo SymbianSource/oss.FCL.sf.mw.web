@@ -24,7 +24,7 @@
 #include "NW_LMgr_EXPORT.h"
 #include "nw_object_interface.h"
 #include "nw_object_dynamic.h"
-#include "nw_image_imageObserver.h"
+#include "nw_image_imageobserver.h"
 #include "nw_image_abstractimage.h"
 
 #ifdef __cplusplus

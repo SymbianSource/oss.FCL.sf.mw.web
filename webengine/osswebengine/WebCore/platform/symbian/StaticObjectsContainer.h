@@ -19,13 +19,13 @@
 #ifndef __STATICOBJECTCONTAINER_H__
 #define __STATICOBJECTCONTAINER_H__
 
-#include <Browser_Platform_Variant.hrh>
+#include <Browser_platform_variant.hrh>
 #include <e32base.h>
 #include <e32std.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/HashMap.h>
 #include <../bidi.h>
-#include <EIKENV.H>
+#include <eikenv.h>
 
 class ResourceLoaderDelegate;
 class LogStream;

@@ -29,7 +29,7 @@ EPOCALLOWDLLDATA
 #if defined(ARMCC)
     DEFFILE ../EABI/RecentUrlStore.def
 #elif defined( WINSCW )
-    DEFFILE ../BWinsCw/RecentUrlStore.def
+    DEFFILE ../BWINSCW/RecentUrlStore.def
 #endif
 
 #include <data_caging_paths.hrh>

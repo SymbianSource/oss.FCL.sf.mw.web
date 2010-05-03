@@ -24,7 +24,7 @@
 #include "HttpPostDataSupplier.h"
 #include "PostDataItem.h"
 #include "FormData.h"
-#include "brctl.h"
+#include "BrCtl.h"
 
 using namespace WebCore;
 

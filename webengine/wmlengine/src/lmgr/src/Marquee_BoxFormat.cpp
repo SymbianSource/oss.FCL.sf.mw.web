@@ -16,7 +16,7 @@
 */
 
 
-#include "CStack.h"
+#include "cstack.h"
 #include "BoxFormat.h"
 
 TBrowserStatusCode

@@ -25,7 +25,7 @@
 
 #include "BaseHandler.h"
 #include <e32base.h>
-#include <documentHandler.h>
+#include <DocumentHandler.h>
 #include <eikdoc.h>
 #include <apparc.h>
 #include <BrowserLauncher.h>

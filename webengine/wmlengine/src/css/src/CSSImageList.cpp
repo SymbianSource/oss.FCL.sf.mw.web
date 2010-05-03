@@ -23,7 +23,7 @@
 #include "CSSImageList.h"
 #include "nw_text_ucs2.h"
 #include "nw_image_virtualimage.h"
-#include "epoc32imagedecoder.h"
+#include "Epoc32ImageDecoder.h"
 #include "nwx_multipart_generator.h"
 #include "nwx_string.h"
 #include "nwx_http_defs.h"

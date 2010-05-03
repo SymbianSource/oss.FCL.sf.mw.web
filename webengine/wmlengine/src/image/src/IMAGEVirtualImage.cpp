@@ -20,7 +20,7 @@
 #include "BrsrStatusCodes.h"
 #include "nw_image_virtualimage.h"
 #include "nw_object_interface.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 
 NW_Bool
 _NW_Image_VirtualImage_IImageObserver_IsVisible(NW_Image_IImageObserver_t* aImageObserver)

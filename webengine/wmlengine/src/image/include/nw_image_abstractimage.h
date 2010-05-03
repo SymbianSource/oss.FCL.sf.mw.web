@@ -23,7 +23,7 @@
 #include "nw_adt_dynamicvector.h"
 #include "nw_gdi_types.h"
 #include "BrsrTypes.h"
-#include "nw_image_imageObserver.h"
+#include "nw_image_imageobserver.h"
 
 #include "NW_Image_EXPORT.h"
 #include "BrsrStatusCodes.h"

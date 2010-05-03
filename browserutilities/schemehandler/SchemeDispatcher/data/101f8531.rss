@@ -17,7 +17,7 @@
 
 
 #include "SchemeDefs.hrh"
-#include "RegistryInfo.rh"
+#include "registryinfo.rh"
 
 RESOURCE REGISTRY_INFO theInfo
 	{

@@ -20,7 +20,7 @@
 #include "config.h"
 #include "PictographSymbian.h"
 #include "WebCoreGraphicsContext.h"
-#include <FeatMgr.h>
+#include <featmgr.h>
 
 // DEFINES
 using namespace WebCore;

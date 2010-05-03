@@ -17,7 +17,7 @@
 
 // INCLUDE FILES
 #include <e32std.h>
-#include <S32FILE.H>
+#include <s32file.h>
 #include <f32file.h>
 #include <uri16.h>
 #include <e32hashtab.h>

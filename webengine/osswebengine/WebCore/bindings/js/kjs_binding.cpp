@@ -36,7 +36,7 @@
 #include "PlatformString.h"
 #include "Range.h"
 #include "RangeException.h"
-#include "XMLHttpRequest.h"
+#include "xmlhttprequest.h"
 #include "kjs_dom.h"
 #include "kjs_window.h"
 #include <kjs/collector.h>

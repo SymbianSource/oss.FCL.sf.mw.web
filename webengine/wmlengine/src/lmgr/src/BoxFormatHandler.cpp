@@ -21,7 +21,7 @@
 #include "BoxFormatHandler.h"
 #include "nwx_logger.h"
 #include "nwx_settings.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "LMgrMarkerText.h"
 #include "LMgrMarkerImage.h"
 #include "LMgrAnonBlock.h"

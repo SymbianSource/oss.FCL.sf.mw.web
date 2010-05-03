@@ -17,7 +17,7 @@
 
 #include <f32file.h>
 #include <uri8.h>
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 #include <apmrec.h>
 #include <apgcli.h>
 //#include <imcvcodc.h>

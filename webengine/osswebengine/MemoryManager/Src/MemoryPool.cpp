@@ -26,7 +26,7 @@
 #include "StopScheduler.h"
 #include "fast_malloc.h"
 #include "SymbianDlHeap.h"
-#include <OOMMonitorSession.h>
+#include <oommonitorsession.h>
 #include <hal.h>
 
 // CONSTANTS

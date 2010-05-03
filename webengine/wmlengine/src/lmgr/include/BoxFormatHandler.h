@@ -20,7 +20,7 @@
 #define BOX_FORMAT_HANDLER_H
 
 #include "e32base.h"
-#include "CStack.h"
+#include "cstack.h"
 #include "nw_gdi_utils.h"
 #include "BoxFormat.h"
 

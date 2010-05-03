@@ -26,7 +26,7 @@
 #include "DownloadMgrDefAttrib.h"
 #include "DownloadMgrHandler.h"
 #include <e32svr.h>
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 #include <centralrepository.h>
 #include "DownloadMgrCRKeys.h"
 #include <BrowserUiSDKCRKeys.h>

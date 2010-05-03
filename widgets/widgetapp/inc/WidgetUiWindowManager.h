@@ -22,7 +22,7 @@
 // INCLUDES FILES
 
 #include <WidgetRegistryClient.h>
-#include <aknglobalconfirmationquery.h>
+#include <AknGlobalConfirmationQuery.h>
 #include <coecntrl.h>
 #include "WidgetUiObserver.h"
 #include "Browser_platform_variant.hrh"

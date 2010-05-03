@@ -29,12 +29,12 @@
 USERINCLUDE     ../../pagescaler/inc
 USERINCLUDE     ../../webkitutils/HistoryProvider
 
-USERINCLUDE     ../../osswebengine/WebKit/s60/WebView
-USERINCLUDE     ../../osswebengine/WEBCORE/bridge/symbian
-USERINCLUDE     ../../osswebengine/WEBCORE/platform
-USERINCLUDE     ../../osswebengine/WEBCORE/platform/network/symbian
-USERINCLUDE     ../../osswebengine/WEBCORE/ForwardingHeaders
-USERINCLUDE     ../../osswebengine/WEBCORE/ForwardingHeaders/wtf
-USERINCLUDE     ../../osswebengine/WEBCORE/loader
+USERINCLUDE     ../../osswebengine/WebKit/s60/webview
+USERINCLUDE     ../../osswebengine/WebCore/bridge/symbian
+USERINCLUDE     ../../osswebengine/WebCore/platform
+USERINCLUDE     ../../osswebengine/WebCore/platform/network/symbian
+USERINCLUDE     ../../osswebengine/WebCore/ForwardingHeaders
+USERINCLUDE     ../../osswebengine/WebCore/ForwardingHeaders/wtf
+USERINCLUDE     ../../osswebengine/WebCore/loader
 
 USERINCLUDE     ../../osswebengine/JavaScriptCore

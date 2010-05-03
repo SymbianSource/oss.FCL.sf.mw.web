@@ -29,9 +29,9 @@
 //#include <CPbkContactEditorDlg.h>   // Phonebook editor
 // For searching a matching number from contact's db
 //#include <TPbkContactItemField.h>
-#include <CNTFLDST.H>
+#include <cntfldst.h>
 
-#include <FeatMgr.h>
+#include <featmgr.h>
 // 
 #include <txtrich.h>
 #include <badesca.h>
@@ -57,7 +57,7 @@
 #include <es_enum.h>
 
 #include <ApUtils.h>
-#include <APDataHandler.h>
+#include <ApDataHandler.h>
 #include <ApAccessPointItem.h>
 #include <commdb.h>
 

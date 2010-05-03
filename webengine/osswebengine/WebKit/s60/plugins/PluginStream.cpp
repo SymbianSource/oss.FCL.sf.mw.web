@@ -15,7 +15,7 @@
 *
 */
 
-#include <SysUtil.h>
+#include <sysutil.h>
 #include "../../bidi.h"
 
 #include "Frame.h"

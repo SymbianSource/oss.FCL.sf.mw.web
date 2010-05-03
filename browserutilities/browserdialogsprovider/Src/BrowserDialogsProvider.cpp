@@ -32,7 +32,7 @@
 #include "BrowserUploadProgressNote.h"  // For UploadProgressNoteL
 
 // System Includes
-#include <aknLists.h>					// for Object Element Dialog
+#include <aknlists.h>					// for Object Element Dialog
 #include <aknmessagequerydialog.h>		// DialogAlertL
 #include <CAknFileSelectionDialog.h>	// File Selection Dialog
 
@@ -47,17 +47,17 @@
 
 #include <aknnotewrappers.h>			
 #include <AknInfoPopupNoteController.h> // tooltip
-#include <PathConfiguration.hrh>
-#include <FeatMgr.h>
+#include <pathconfiguration.hrh>
+#include <featmgr.h>
 #include <MGFetch.h> // Media Fetch
 // General
 #include <StringLoader.h>				// strings
 #include <f32file.h>
-#include <THttpFields.h>
+#include <thttpfields.h>
 #include <textresolver.h>
 
 // Resources
-#include <coneresloader.h>
+#include <ConeResLoader.h>
 #include <BrowserDialogsProvider.rsg>
 
 // Data Caging

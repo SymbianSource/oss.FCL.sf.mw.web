@@ -17,8 +17,8 @@
 
 
 
-#include <Uri16.h>
-#include <UriCommon.h>
+#include <uri16.h>
+#include <uricommon.h>
 
 #include "FileHandler.h"
 #include "HttpHandler.h"

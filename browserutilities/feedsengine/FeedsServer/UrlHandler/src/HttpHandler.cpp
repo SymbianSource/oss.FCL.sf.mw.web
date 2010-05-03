@@ -16,10 +16,10 @@
 */
 
 
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 #include <http.h>
 #include <http/mhttpdatasupplier.h>
-#include <HttpFilterCommonStringsAddition.h>
+#include <httpfiltercommonstringsaddition.h>
 
 #include "HttpConnection.h"
 #include "HttpHandler.h"

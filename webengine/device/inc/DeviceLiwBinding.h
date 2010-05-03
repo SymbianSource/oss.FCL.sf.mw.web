@@ -20,7 +20,7 @@
 #define __DEVICELIWBINDING_H
 
 #include <e32std.h>
-#include <LiwCommon.h>
+#include <liwcommon.h>
 #include "DeviceLiwMap.h"
 #include "DeviceBinding.h"
 #include "DeviceLiwIterable.h"

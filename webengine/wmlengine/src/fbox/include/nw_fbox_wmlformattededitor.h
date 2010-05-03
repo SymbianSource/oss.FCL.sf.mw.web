@@ -22,7 +22,7 @@
 //  INCLUDES
 #include <e32std.h>
 #include <aknkeys.h>
-#include <E32DEF.H>
+#include <e32def.h>
 #include <coeinput.h>
 #include <frmtview.h>
 #include <fepbase.h>
@@ -30,7 +30,7 @@
 #include <eikrted.h>
 #include <eikedwin.h>
 
-#include "nw_fbox_WmlFormatHandler.h"
+#include "nw_fbox_wmlformathandler.h"
 
 // DATA TYPES
 

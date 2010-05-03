@@ -37,7 +37,7 @@ SOURCE          DdRecog.cpp
 
 USERINCLUDE     ../inc
 
-SYSTEMINCLUDE   ../../CodEng/inc
+SYSTEMINCLUDE   ../../codeng/inc
 MW_LAYER_SYSTEMINCLUDE
 MW_LAYER_ECOM_SYSTEMINCLUDE
 

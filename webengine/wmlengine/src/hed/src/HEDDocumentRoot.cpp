@@ -41,7 +41,7 @@
 #include "nwx_logger.h"
 #include "nwx_http_defs.h"
 #include <stddef.h>
-#include <Uri16.h>
+#include <uri16.h>
 #include "BrsrStatusCodes.h"
 #include "HEDDocumentListener.h"
 

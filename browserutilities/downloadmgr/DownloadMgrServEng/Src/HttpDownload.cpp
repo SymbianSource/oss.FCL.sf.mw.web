@@ -29,13 +29,13 @@
 #include    "HttpDownloadMgrLogger.h"
 #include    "bautils.h"
 
-#include    <CommDbConnPref.h>
-#include    <Uri16.h>
-#include    <F32FILE.H>
-#include    <EscapeUtils.h>
-#include    <HttpFilterCommonStringsExt.h>
+#include    <commdbconnpref.h>
+#include    <uri16.h>
+#include    <f32file.h>
+#include    <escapeutils.h>
+#include    <httpfiltercommonstringsext.h>
 #include    <tinternetdate.h>
-#include    <SysUtil.h>
+#include    <sysutil.h>
 
 // following line is temporary: AVKON dependency removal
 #undef BRDO_APP_GALLERY_SUPPORTED_FF

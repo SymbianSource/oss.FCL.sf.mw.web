@@ -21,7 +21,7 @@
 #include <e32std.h>
 #include <e32base.h>
 #include "nwx_http_defs.h"
-#include "fileloader_CFileLoader.h"
+#include "fileloader_cfileloader.h"
 #include "urlloader_loaderutils.h"
 #include "fileloader_cfilehandler.h"
 

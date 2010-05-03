@@ -19,7 +19,7 @@
 #ifndef NW_LMGR_VERTICALTABLECELLBOX_H
 #define NW_LMGR_VERTICALTABLECELLBOX_H
 
-#include "nw_lmgr_Verticaltablebox.h"
+#include "nw_lmgr_verticaltablebox.h"
 
 #ifdef __cplusplus
 extern "C" 

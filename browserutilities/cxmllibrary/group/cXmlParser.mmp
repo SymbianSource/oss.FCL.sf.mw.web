@@ -24,13 +24,13 @@ TARGETTYPE      dll
 
 #if defined(ARMCC)
 UID	0x1000008D 	0x101F8710
-deffile EABI/cXmlParser.def
+deffile eabi/CXMLPARSER.DEF
 #elif defined( WINSCW )
-deffile Bwinscw/cXmlParser.def
+deffile BWINSCW/CXMLPARSER.DEF
 #elif defined( WINS )
 deffile Bwins/cXmlParser.def
 #else
-deffile Bmarm/cXmlParser.def
+deffile bmarm/CXMLPARSER.DEF
 #endif
 
 CAPABILITY CAP_GENERAL_DLL
@@ -51,7 +51,7 @@ SOURCE	tinydom/src/tiny_dom_utils.c
 SOURCE	tinydom/src/tiny_dom_write.c
 SOURCE	tinytree/src/EBuffer.c
 SOURCE	tinytree/src/tree.c
-SOURCE	tinyTree/src/TreeVector.c
+SOURCE	tinytree/src/TreeVector.c
 SOURCE	wbxmlp/src/dictionary.c
 SOURCE	wbxmlp/src/DictionaryContext.cpp
 SOURCE	wbxmlp/src/doc.c
@@ -70,7 +70,7 @@ SOURCE	encoder/src/WBXMLWriter.cpp
 SOURCE  utils/src/cxml_mem.c
 SOURCE  utils/src/cxml_vector.c
 SOURCE  utils/src/cxml_str.c
-SOURCE  utils/src/E32XMLPARSERDLLEntryPoint.cpp
+SOURCE  utils/src/E32XMLParserDllEntryPoint.cpp
 SOURCE  utils/src/cxml_file_if.cpp
 
 

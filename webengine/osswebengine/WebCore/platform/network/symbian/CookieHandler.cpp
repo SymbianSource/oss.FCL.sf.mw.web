@@ -18,8 +18,8 @@
 
 
 // INCLUDES
-#include "Cookiehandler.h"
-#include <CookieManagerClient.h>
+#include "CookieHandler.h"
+#include <cookiemanagerclient.h>
 
 // EXTERNAL DATA STRUCTURES
 

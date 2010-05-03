@@ -22,7 +22,7 @@
 #ifdef BRDO_TOUCH_ENABLED_FF
 #include <touchfeedback.h>
 #endif // BRDO_TOUCH_ENABLED_FF
-#include "brctl.h"
+#include "BrCtl.h"
 #include "BrCtlDefs.h"
 #include "WebPointerEventHandler.h"
 #include "WebView.h"

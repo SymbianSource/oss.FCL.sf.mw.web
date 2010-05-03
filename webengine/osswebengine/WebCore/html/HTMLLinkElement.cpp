@@ -24,7 +24,7 @@
 #include "config.h"
 #include "HTMLLinkElement.h"
 
-#include "CSSHelper.h"
+#include "csshelper.h"
 #include "CachedCSSStyleSheet.h"
 #include "DocLoader.h"
 #include "Document.h"

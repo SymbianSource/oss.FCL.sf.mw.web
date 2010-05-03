@@ -29,7 +29,7 @@
 #include "config.h"
 #include "HTMLTokenizer.h"
 
-#include "CSSHelper.h"
+#include "csshelper.h"
 #include "Cache.h"
 #include "CachedScript.h"
 #include "DocLoader.h"

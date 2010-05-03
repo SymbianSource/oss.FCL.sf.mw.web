@@ -24,8 +24,8 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../../rom/SchemeHandler.iby  CORE_MW_LAYER_IBY_EXPORT_PATH(SchemeHandler.iby)
-../../rom/SchemeHandlerResources.iby  LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(SchemeHandlerResources.iby)
+../../Rom/SchemeHandler.iby  CORE_MW_LAYER_IBY_EXPORT_PATH(SchemeHandler.iby)
+../../Rom/SchemeHandlerResources.iby  LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(SchemeHandlerResources.iby)
 ../loc/SchemeApp.loc  MW_LAYER_LOC_EXPORT_PATH(SchemeApp.loc)
 
 #ifdef __SERIES60_32__

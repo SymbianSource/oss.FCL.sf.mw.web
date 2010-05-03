@@ -20,7 +20,7 @@
 
 #include "nw_fbox_checkbox.h"
 #include "nw_fbox_epoc32formimages.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "BrsrStatusCodes.h"
 
 /* ------------------------------------------------------------------------- */

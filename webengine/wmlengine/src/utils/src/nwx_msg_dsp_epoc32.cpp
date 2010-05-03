@@ -31,7 +31,7 @@
 #include "nwx_logger.h"
 #include "nwx_msg_dsp_api_epoc32.h"
 #include "nwx_string.h"
-#include "util_CDispatcherEng.h"
+#include "util_cdispatchereng.h"
 #include "BrsrStatusCodes.h"
 
 

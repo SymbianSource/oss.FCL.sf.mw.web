@@ -26,7 +26,7 @@
 #include "nwx_string.h"
 #include "nwx_url_utils.h"
 #include "nwx_logger.h"
-#include "textreverse.h"
+#include "TextReverse.h"
 #include "nwx_settings.h"
 #include <nwx_status.h>
 #include "nwx_statuscodeconvert.h"

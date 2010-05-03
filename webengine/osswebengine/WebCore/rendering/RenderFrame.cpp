@@ -32,7 +32,7 @@
 #if PLATFORM(SYMBIAN)
 #include "Document.h"
 #include "Frame.h"
-#include "renderView.h"
+#include "RenderView.h"
 #include "FrameView.h"
 #include "ScrollTypes.h"
 #endif

@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include <../bidi.h>
-#include <aknutils.h>
+#include <AknUtils.h>
 #include "WebPageZoomHandler.h"
 #include "SettingsContainer.h"
 #include <AknVolumePopup.h>

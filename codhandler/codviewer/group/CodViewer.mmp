@@ -19,7 +19,7 @@
 #include <platform_paths.hrh>
 #include <data_caging_paths.hrh>
 #include <platform/mw/Browser_platform_variant.hrh>
-#include "../../CodEng/inc/CodDefs.h"
+#include "../../codeng/inc/CodDefs.h"
 
 TARGET          CodViewer.exe
 TARGETTYPE      exe
@@ -43,8 +43,8 @@ LANGUAGE_IDS
 #endif
 END
 
-SYSTEMINCLUDE   ../../CodEng/inc
-SYSTEMINCLUDE   ../../CodUi/inc
+SYSTEMINCLUDE   ../../codeng/inc
+SYSTEMINCLUDE   ../../codui/inc
 MW_LAYER_SYSTEMINCLUDE
 
 

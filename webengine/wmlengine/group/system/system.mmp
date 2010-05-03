@@ -20,7 +20,7 @@
 
 TARGET          System.lib
 TARGETTYPE      lib
-SOURCEPATH      ../../src/system/src/
+SOURCEPATH      ../../src/System/src/
 
 CAPABILITY CAP_GENERAL_DLL
 VENDORID        VID_DEFAULT
@@ -33,12 +33,12 @@ SOURCE Epoc32OptionList.cpp
 #include  "../webkitcommon.mmpi"
 
 USERINCLUDE     .
-USERINCLUDE     ../../src/Object/include
-USERINCLUDE     ../../src/mvc/include
-USERINCLUDE     ../../src/system/include
+USERINCLUDE     ../../src/object/include
+USERINCLUDE     ../../src/MVC/include
+USERINCLUDE     ../../src/System/include
 USERINCLUDE     ../../src/utils/include
 USERINCLUDE     ../../src/hed/include
-USERINCLUDE     ../../src/msg/include
+USERINCLUDE     ../../src/Msg/include
 USERINCLUDE     ../../src/wml/include
 USERINCLUDE     ../../src/markup/include
 USERINCLUDE     ../../src/wmlcontrol/include

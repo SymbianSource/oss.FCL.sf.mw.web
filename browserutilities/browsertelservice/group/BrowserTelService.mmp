@@ -34,7 +34,7 @@ LANG sc
 LANGUAGE_IDS 
 #endif
 
-START RESOURCE ../data/browsertelservice.rss
+START RESOURCE ../data/BrowserTelService.rss
 DEPENDS avkon.rsg
 HEADER
 TARGETPATH  RESOURCE_FILES_DIR

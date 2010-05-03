@@ -42,7 +42,7 @@
 #include "HTMLObjectElement.h"
 #include "HTMLParamElement.h"
 #include "KURL.h"
-#include "MIMETypeRegistry.h"
+#include "MimeTypeRegistry.h"
 #include "Page.h"
 #include "RenderView.h"
 #include "Text.h"

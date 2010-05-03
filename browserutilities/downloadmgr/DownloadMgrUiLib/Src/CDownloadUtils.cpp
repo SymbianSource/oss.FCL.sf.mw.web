@@ -27,7 +27,7 @@
 #include	<apgcli.h>
 #include    <caf/caf.h>
 #include    <utf.h>
-#include    <Browser_Platform_Variant.hrh>
+#include    <Browser_platform_variant.hrh>
 // LOCAL CONSTANTS AND MACROS
 
 #ifdef BRDO_WML_DISABLED_FF

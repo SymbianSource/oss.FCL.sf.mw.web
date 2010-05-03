@@ -16,7 +16,7 @@
 */
 
 #include "RenderThemeSymbian.h"
-#include "staticobjectscontainer.h"
+#include "StaticObjectsContainer.h"
 // implement Symbian theme here
 
 

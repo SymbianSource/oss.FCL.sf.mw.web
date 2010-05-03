@@ -22,7 +22,7 @@
 // INCLUDES
 
 #include <e32base.h>
-#include <AknAppUi.h>
+#include <aknappui.h>
 #include <AknServerApp.h>
 #include <CodLoadObserver.h>
 #include "CodWaitDialog.h"

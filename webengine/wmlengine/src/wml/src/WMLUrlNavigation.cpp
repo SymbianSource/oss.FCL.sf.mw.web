@@ -39,7 +39,7 @@
 #include "wml_decoder.h"
 
 #include "nw_hed_documentroot.h"
-#include "mvcshell.h"
+#include "MVCShell.h"
 #include "nw_lmgr_rootbox.h"
 #include "nw_wml1x_wml1xcontenthandler.h"
 #include "BrsrStatusCodes.h"

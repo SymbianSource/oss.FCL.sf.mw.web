@@ -26,7 +26,7 @@
 
 #include "nw_gdi_types.h"
 #include "nw_lmgr_propertylist.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 
 // FORWARD DECLARATIONS
 #ifdef __cplusplus

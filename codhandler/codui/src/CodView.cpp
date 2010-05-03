@@ -32,7 +32,7 @@
 #include "CodLogger.h"
 #include <Oma2Agent.h>
 #include <AknUtils.h>
-#include <AknLayout.cdl.h>
+#include <aknlayout.cdl.h>
 
 #include "eikon.hrh"
 

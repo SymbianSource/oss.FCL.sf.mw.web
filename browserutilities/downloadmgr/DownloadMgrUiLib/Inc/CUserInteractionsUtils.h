@@ -22,7 +22,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <E32DEF.H>
+#include <e32def.h>
 #include <e32std.h>
 #include <apparc.h>
 #include <HttpDownloadMgrCommon.h>

@@ -23,26 +23,26 @@
 #include "wrtharvesterpublisherobserver.h"
 
 #include "wrtharvesterconst.h"
-#include <widgetregistryconstants.h>
+#include <WidgetRegistryConstants.h>
 #include <wrtharvester.rsg>
 
 #include <implementationproxy.h>
 
-#include <LiwServiceHandler.h>
-#include <LiwVariant.h>
-#include <LiwGenericParam.h>
+#include <liwservicehandler.h>
+#include <liwvariant.h>
+#include <liwgenericparam.h>
 #include <e32property.h>    //Publish & Subscribe
 #include <AknTaskList.h>
 #include <apaid.h>
 #include <apacmdln.h>
 #include <s32mem.h>
-#include <APGTASK.H>
+#include <apgtask.h>
 #include <coemain.h>
 #include <bautils.h>
 #include <f32file.h>
 #include <e32std.h>
 #include <AknNotify.h>
-#include <aknglobalconfirmationquery.h>
+#include <AknGlobalConfirmationQuery.h>
 #include <StringLoader.h>
 #include <data_caging_path_literals.hrh>
 

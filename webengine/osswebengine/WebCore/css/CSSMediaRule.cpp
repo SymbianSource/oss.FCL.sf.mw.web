@@ -25,7 +25,7 @@
 #include "config.h"
 #include "CSSMediaRule.h"
 
-#include "CSSParser.h"
+#include "cssparser.h"
 #include "CSSRuleList.h"
 #include "ExceptionCode.h"
 #include "MediaList.h"

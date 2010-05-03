@@ -31,16 +31,16 @@
 #include "Connection.h"
 #include "Timeout.h"
 #include "CodProgress.h"
-#include "CodEngbase.h"
+#include "CodEngBase.h"
 
-#include <CookieFilterInterface.h>
+#include <cookiefilterinterface.h>
 #include <uaproffilter_interface.h>
-#include <DeflateFilterInterface.h>
+#include <deflatefilterinterface.h>
 #include <httperr.h>
 #include <bldvariant.hrh>
-#include <ECom.h>
+#include <ecom.h>
 #include <es_sock.h>
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 #include <http/rhttpheaders.h>
 #include <Oma2Agent.h>
 #include <HttpDownloadMgrCommon.h>

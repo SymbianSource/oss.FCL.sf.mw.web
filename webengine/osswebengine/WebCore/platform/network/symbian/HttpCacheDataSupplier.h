@@ -20,7 +20,7 @@
 #define CHTTPCACHEDATASUPPLIER_H
 
 //  INCLUDES
-#include <http/MHTTPDataSupplier.h>
+#include <http/mhttpdatasupplier.h>
 
 // CONSTANTS
 

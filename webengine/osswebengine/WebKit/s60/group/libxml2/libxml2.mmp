@@ -20,7 +20,7 @@
 TARGET webcore_xmlparser.lib
 TARGETTYPE lib
 
-SOURCEPATH ../../../../WebCore/platform/symbian/libxml2
+SOURCEPATH ../../../../WebCore/platform/symbian/Libxml2
 
 SOURCE          XmlEnglibxml2dll.cpp
 SOURCE          Libxml2_chvalid.c

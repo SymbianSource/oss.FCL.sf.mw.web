@@ -21,7 +21,7 @@
 #include "nw_lmgr_rootbox.h"
 #include "nw_fbox_buttonbox.h"
 #include "nw_fbox_epoc32formimages.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nw_fbox_formboxutils.h"
 #include "BrsrStatusCodes.h"
 

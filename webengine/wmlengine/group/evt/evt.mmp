@@ -20,7 +20,7 @@
 
 TARGET          evt.lib
 TARGETTYPE      lib
-SOURCEPATH      ../../src/evt/src/
+SOURCEPATH      ../../src/Evt/src/
 
 CAPABILITY CAP_GENERAL_DLL
 VENDORID        VID_DEFAULT
@@ -43,7 +43,7 @@ SOURCE TimerEvent.c
 SOURCE UnicodeKeyEvent.c
 SOURCE OpenViewerEvent.c
 
-USERINCLUDE     ../../src/evt/include
+USERINCLUDE     ../../src/Evt/include
 USERINCLUDE     ../../src/object/include
 USERINCLUDE     ../../src/gdi/include
 USERINCLUDE   	../../src/utils/include

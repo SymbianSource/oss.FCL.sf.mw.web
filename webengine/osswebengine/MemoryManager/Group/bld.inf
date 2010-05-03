@@ -22,7 +22,7 @@ PRJ_PLATFORMS
 DEFAULT 
 
 PRJ_EXPORTS
-../inc/MemoryManager.h MW_LAYER_PUBLIC_EXPORT_PATH(MemoryManager.h)
+../Inc/MemoryManager.h MW_LAYER_PUBLIC_EXPORT_PATH(MemoryManager.h)
 
 PRJ_MMPFILES
 MemMan.mmp

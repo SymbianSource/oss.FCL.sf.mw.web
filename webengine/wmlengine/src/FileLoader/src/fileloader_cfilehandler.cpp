@@ -23,7 +23,7 @@
 #include <uri16.h>
 #include <apmrec.h>
 #include <apgcli.h>
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 
 #include "fileloader_cfilehandler.h"
 #include "fileloader_cfileloader.h"

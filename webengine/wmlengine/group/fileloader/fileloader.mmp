@@ -25,13 +25,13 @@ CAPABILITY CAP_GENERAL_DLL
 VENDORID        VID_DEFAULT
 
 
-SOURCEPATH      ../../src/fileloader/src
+SOURCEPATH      ../../src/FileLoader/src
 SOURCE		fileloader_cfileloader.cpp
 SOURCE		fileloader_cfilehandler.cpp
 SOURCE		fileloader_csaveddeckhandler.cpp
 
 USERINCLUDE     ../../src/urlloader/include
-USERINCLUDE     ../../src/fileloader/include
+USERINCLUDE     ../../src/FileLoader/include
 USERINCLUDE     ../../src/utils/include
 
 

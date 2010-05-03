@@ -39,19 +39,19 @@ SOURCE	wml_1_3_dict.c
 
 USERINCLUDE  ../../src/adt/include
 USERINCLUDE  ../../src/css/include
-USERINCLUDE  ../../src/evt/include
+USERINCLUDE  ../../src/Evt/include
 USERINCLUDE  ../../src/fbox/include
 USERINCLUDE  ../../src/gdi/include
 USERINCLUDE  ../../src/hed/include
 USERINCLUDE  ../../src/image/include
-USERINCLUDE  ../../src/imagech/include
+USERINCLUDE  ../../src/ImageCH/include
 USERINCLUDE  ../../src/lmgr/include
 USERINCLUDE  ../../src/markup/include
 USERINCLUDE  ../../src/Msg/include
-USERINCLUDE  ../../src/mvc/include
+USERINCLUDE  ../../src/MVC/include
 USERINCLUDE  ../../src/object/include
 USERINCLUDE  ../../src/text/include
-USERINCLUDE  ../../src/system/include
+USERINCLUDE  ../../src/System/include
 USERINCLUDE  ../../src/wml1x/include
 USERINCLUDE  ../../src/browser/include
 USERINCLUDE  ../../src/wmlscriptch/include

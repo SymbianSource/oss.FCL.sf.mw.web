@@ -23,11 +23,11 @@
 
 #include <e32base.h>
 #include <e32def.h>
-#include <aknpopup.h>
+#include <aknPopup.h>
 #include <aknlists.h>
 #include <apparc.h>
 #include <aknconsts.h>
-#include <akneditstateindicator.h>
+#include <aknEditStateIndicator.h>
 #include <AknsListBoxBackgroundControlContext.h>
 
 class CCoeControl;

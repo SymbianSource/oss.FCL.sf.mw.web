@@ -20,7 +20,7 @@
 #include <calslbs.h>
 #include <StringLoader.h>
 #include <webkit.rsg>
-#include <commoncontentpolicy.h>
+#include <CommonContentPolicy.h>
 
 #include "BrCtl.h"
 #include "BrCtlDialogsProvider.h"
@@ -35,7 +35,7 @@
 #include "nw_dom_domvisitor.h"
 #include "nw_fbox_formbox.h"
 #include "nw_fbox_optgrpbox.h"
-#include "nw_fbox_validator.h"
+#include "NW_FBox_Validator.h"
 #include "nw_hed_documentroot.h"
 #include "nw_loadreq.h"
 #include "nw_nvpair.h"

@@ -15,7 +15,7 @@
 *
 */
 
-#include <RegistryInfo.rh>
+#include <registryinfo.rh>
 #include <oommonitorplugin.hrh>
 
 RESOURCE REGISTRY_INFO theInfo

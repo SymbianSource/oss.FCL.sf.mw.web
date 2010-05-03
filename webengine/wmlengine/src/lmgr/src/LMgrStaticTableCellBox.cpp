@@ -22,7 +22,7 @@
 #include "nw_lmgr_cssproperties.h"
 #include "nw_lmgr_boxvisitor.h"
 #include "nw_lmgr_rootbox.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "nwx_math.h"
 #include "nw_lmgr_eventhandler.h"
 #include "nw_lmgr_activecontainerbox.h"

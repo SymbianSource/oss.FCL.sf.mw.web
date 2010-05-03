@@ -25,17 +25,17 @@
 #include <badesca.h>
 #include <eiksbfrm.h>
 #include <eikspane.h>
-#include <FeatMgr.h>
+#include <featmgr.h>
 #include <f32file.h>
 #include <flogger.h>
 #include <nwx_defs_symbian.h>
 #include <stddef.h>
 
-#include <CenRepNotifyHandler.h>
+#include <cenrepnotifyhandler.h>
 #include <centralrepository.h>
-#include <HttpCacheManagerInternalCRKeys.h>
+#include <httpcachemanagerinternalcrkeys.h>
 
-#include <stringloader.h>
+#include <StringLoader.h>
 #include <webkit.rsg>
 
 #include "BoxFormatHandler.h"
@@ -43,7 +43,7 @@
 #include "BrCtl.h"
 #include "BrsrStatusCodes.h"
 #include "CBrowserSettings.h"
-#include "GDIDeviceContext.h"
+#include "GDIDevicecontext.h"
 #include "LMgrMarkerText.h"
 #include "LMgrMarkerImage.h"
 #include "LMgrAnonBlock.h"
@@ -73,7 +73,7 @@
 #include "nw_fbox_formbox.h"
 #include "nw_fbox_formboxutils.h"
 #include "nw_fbox_checkbox.h"
-#include "nw_fbox_WmlFormattedEditor.h"
+#include "nw_fbox_wmlformattededitor.h"
 #include "nw_fbox_radiobox.h"
 #include "nw_fbox_epoc32inputskin.h"
 #include "nw_fbox_selectbox.h"
@@ -116,7 +116,7 @@
 
 #include "TEncodingMapping.h"
 #include "urlloader_urlloaderint.h"
-#include <BrCtlInterface.h>
+#include <brctlinterface.h>
 #include "BrCtlDialogsProvider.h"
 
 #include "HistoryController.h"

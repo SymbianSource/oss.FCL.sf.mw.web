@@ -22,7 +22,7 @@
 #include "Cache.h"
 #include "DocLoader.h"
 #include "IntPoint.h"
-#include "String.h"
+#include "string.h"
 #include "HTMLNames.h"
 #include "EventNames.h"
 #include "HTMLInputElement.h"
@@ -40,13 +40,13 @@
 #include "StaticObjectsContainer.h"
 #include "SelectionController.h"
 #include "WebUtil.h"
-#include "errordefs.h"
+#include "ErrorDefs.h"
 #include "RenderListBox.h"
 #include "RenderTextControl.h"
 #include "RenderView.h"
 #include "PlatformScrollbar.h"
 #include "HTMLSelectElement.h"
-#include "webkitlogger.h"
+#include "WebKitLogger.h"
 #include <StringLoader.h>
 #include <sslerr.h>
 #include <httperr.h>

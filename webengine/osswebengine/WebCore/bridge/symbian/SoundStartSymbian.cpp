@@ -18,11 +18,11 @@
 #include <e32base.h>
 #include "config.h"
 #include "SoundStartSymbian.h"
-#include "KUrl.h"
+#include "KURL.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "Widget.h"
-#include "HtmlNames.h"
+#include "HTMLNames.h"
 #include "WebCoreWidget.h"
 #include "WebCoreFrameBridge.h"
 
