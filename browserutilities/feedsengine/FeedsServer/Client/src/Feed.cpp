@@ -207,6 +207,8 @@ EXPORT_C void CFeed::ItemStatusL(RArray<TInt>& aItemIds,
     {
     aItemIds.Reset();
     aItemStatus.Reset();
+    CleanupClosePushL(aItemIds);
+    CleanupClosePushL(aItemStatus);
 
     // Add the item attributes.
     for (TInt i = 0; i < iItems.Count(); i++)
@@ -214,6 +216,8 @@ EXPORT_C void CFeed::ItemStatusL(RArray<TInt>& aItemIds,
         User::LeaveIfError(aItemIds.Append(iItems[i]->Id()));
         User::LeaveIfError(aItemStatus.Append(iItems[i]->ItemStatus()));
         }
+    
+    CleanupStack::Pop(2); // aItemIds, aItemStatus
     }
 
 // -----------------------------------------------------------------------------

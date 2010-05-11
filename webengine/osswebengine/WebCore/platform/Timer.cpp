@@ -32,6 +32,7 @@
 #include <limits>
 #include <wtf/HashSet.h>
 #include <wtf/Vector.h>
+#include <kjs_window.h>
 
 using namespace std;
 
@@ -413,6 +414,7 @@ void setDeferringTimers(bool shouldDefer)
         return;
     deferringTimers = shouldDefer;
     updateSharedTimer();
+    KJS::setDeferringJSTimers(shouldDefer); // defer JS timers also
 }
 
 }

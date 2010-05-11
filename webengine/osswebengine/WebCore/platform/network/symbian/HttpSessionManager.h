@@ -102,6 +102,7 @@ public:
     TUint pendingTransactionsCount(){ return m_pendingHttpRequests.size(); }
     TBool isInSecureConnection() {return m_inSecConnection;}
     void setInSecureConnection(TBool inSecCon) {m_inSecConnection = inSecCon;}    
+    void cancelQueuedTransactions();
 
 private:
     void updateFilters(bool initializing = false);

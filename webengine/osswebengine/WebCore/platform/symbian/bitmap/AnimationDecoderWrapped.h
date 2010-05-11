@@ -48,8 +48,11 @@
 
 // INCLUDES
 
+#include <../bidi.h>
+#include "config.h"
 #include <e32base.h>
 #include <imageconversion.h> // TFrameInfo
+#include <RefPtr.h>
 
 // FORWARD DECLARATIONS
 class CMaskedBitmap;
@@ -57,8 +60,8 @@ class CBufferedImageDecoder;
 class CSynDecodeThread;
 namespace WebCore {
     class ImageObserver;
-}
-// CONSTANTS
+    class SharedBuffer;
+};
 
 _LIT(KMimeJPEG, "image/jpeg");
 _LIT(KMimeJPG, "image/jpg");
@@ -106,13 +109,8 @@ class CAnimationDecoderWrapped  : public CActive
         /*
         * From MIHLFileImage, see base class header.
         */
-        void OpenL( const TDesC8& aData, TDesC* aMIMEType, TBool aIsComplete );
+        void OpenL( WebCore::SharedBuffer* aData, TDesC* aMIMEType, TBool aIsComplete );
         void OpenAndDecodeSyncL( const TDesC8& aData );
-
-        /*
-        * From MIHLFileImage, see base class header.
-        */
-        void AddDataL( const TDesC8& aData, TBool aIsComplete );
 
         /*
         * From MIHLFileImage, see base class header.
@@ -122,8 +120,8 @@ class CAnimationDecoderWrapped  : public CActive
         /*
         * From MIHLFileImage, see base class header.
         */
-        TDisplayMode DisplayMode() const { return KMaxDepth; }
-
+		TDisplayMode DisplayMode() const { 	return KMaxDepth;}
+		
         /*
         * From MIHLFileImage, see base class header.
         */
@@ -225,13 +223,14 @@ class CAnimationDecoderWrapped  : public CActive
             };
 
   private: // Data
-
+        RefPtr<WebCore::SharedBuffer>  m_data;
+        TPtrC8  m_dataptr;
         // Image status & state
         TRequestStatus* iImageStatus;
         TImageState iImageState;
 
         // Own: Image decoder
-        CBufferedImageDecoder* iDecoder; // owned
+        CImageDecoder* iDecoder; // owned
 
         TFrameInfo iFrameInfo;
         TBool iAnimation;

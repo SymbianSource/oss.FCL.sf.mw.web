@@ -164,7 +164,8 @@ PluginSkin::PluginSkin( WebFrame& frame )
       m_pluginfuncs(0),
       m_resized(false),
       m_oldRect(TRect(0,0,0,0)),
-      m_oldViewport(TRect(0,0,0,0))
+      m_oldViewport(TRect(0,0,0,0)),
+      m_loadmode(ELoadModeNone)
   {
   }
 
@@ -835,7 +836,8 @@ TBool PluginSkin::RunScript()
 int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,const TDesC* aWindowType)
 {
     TPluginLoadMode loadmode = GetLoadMode(aWindowType);
-
+    setLoadMode(loadmode);
+    
     if (url.Ptr() == NULL ) {                        
         return KErrArgument;
     }

@@ -351,7 +351,7 @@ void CWebFepTextEditor::SetInlineEditingCursorVisibilityL(TBool /*aCursorVisibil
 // -----------------------------------------------------------------------------
 void CWebFepTextEditor::CancelFepInlineEdit()
 {
-    if (IsTextAreaFocused()) {
+    if (IsTextAreaFocused()||IsInputElementFocused()) {
         if (m_inlineEditText && DocumentLengthForFep() < DocumentMaximumLengthForFep()) {
             HBufC* tempBuf = HBufC::NewLC(DocumentLengthForFep());
             TPtr ptr(tempBuf->Des());

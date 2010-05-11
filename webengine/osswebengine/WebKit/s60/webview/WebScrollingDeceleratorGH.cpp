@@ -109,6 +109,7 @@ void WebScrollingDeceleratorGH::cancelDecel()
     m_decelelatorSwitch = false;
     if (m_decelTimer->IsActive()) {
         m_webView.setScrolling(false);
+		m_webView.resumeJsTimers();		
         m_decelTimer->Cancel();
     }
 }
@@ -137,11 +138,13 @@ void WebScrollingDeceleratorGH::startDecel(TRealPoint& speed, WebScrollbarDrawer
     m_numscrollsteps = 0;
     if (m_decelTimer->IsActive()) {
         m_webView.setScrolling(false);
+    	m_webView.resumeJsTimers();
         m_decelTimer->Cancel();
     }
     
     WebFrameView* scrollingView = m_webView.pageScrollHandler()->currentScrollingFrameView();
     if (scrollingView) {
+        m_webView.pauseJsTimers(); // pause the JS timers
         m_webView.setScrolling(true);
         m_startPos = scrollingView->contentPos();
         m_lastPos = m_startPos;
@@ -193,6 +196,8 @@ void WebScrollingDeceleratorGH::scroll()
         if (m_scrollbarDrawer) {
             m_scrollbarDrawer->fadeScrollbar();
         }
+		
+        m_webView.resumeJsTimers(); // resume the js timers
         m_webView.setScrolling(false);
         m_decelTimer->Cancel();
         handler->clearScrollingElement();

@@ -6844,7 +6844,6 @@ void CHttpDownload::UpdateDestFileNameL()
         if( downloadPathPlugin )
             {
              GetUpdatedPathFromPluginL(downloadPathPlugin,rootPath,fileNamePtr);
-             CleanupStack::PopAndDestroy( downloadPathPlugin );
             }
          else 
            {
@@ -6873,6 +6872,13 @@ void CHttpDownload::UpdateDestFileNameL()
     CLOG_WRITE_1( " exiting fileName: %S", fileName );
 #ifdef RD_MULTIPLE_DRIVE
     CleanupStack::PopAndDestroy( drivesDynList ); 
+#endif
+
+#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+    if(downloadPathPlugin)
+    {
+     CleanupStack::PopAndDestroy( downloadPathPlugin );
+    }
 #endif
     CleanupStack::PopAndDestroy( &fs );
     }    

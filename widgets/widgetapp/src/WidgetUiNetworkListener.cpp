@@ -91,12 +91,24 @@ void CWidgetUiNetworkListener::RunL()
         }
     else if ( iNote().iState == EInterfaceDown )
         {
+#ifndef BRDO_OCC_ENABLED_FF
+        RTimer timer; 
+        TRequestStatus timerStatus; // Request status associated with timer
+        timer.CreateLocal();   	
+#endif
         // check if there are no other active connections
         if ( !CheckActiveNetworkConnection() )
             {
             // notify widgets of a network connection going down
             iWindowManager.NotifyConnecionChange( EFalse );
+#ifndef BRDO_OCC_ENABLED_FF
+            timer.After(timerStatus,30000000);
+            User::WaitForRequest(timerStatus);
+#endif
             }
+#ifndef BRDO_OCC_ENABLED_FF        
+            timer.Close();
+#endif
         }
          
     iConn.AllInterfaceNotification( iNote, iStatus );

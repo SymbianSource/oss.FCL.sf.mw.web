@@ -39,6 +39,10 @@
 // INCLUDES
 #include "AnimationDecoderWrapped.h"
 
+namespace WebCore {
+	class SharedBuffer;
+}
+
 // CLASS DECLARATION
 /**
 *  CAnimationDecoder
@@ -74,7 +78,7 @@ class CAnimationDecoder
         /*
         * From MIHLFileImage, see base class header.
         */
-        void OpenL( const TDesC8& aData, TDesC* aMIMEType, TBool aIsComplete );
+        void OpenL( WebCore::SharedBuffer* aData, TDesC* aMIMEType, TBool aIsComplete );
 
         /*
         * From MIHLFileImage, see base class header.

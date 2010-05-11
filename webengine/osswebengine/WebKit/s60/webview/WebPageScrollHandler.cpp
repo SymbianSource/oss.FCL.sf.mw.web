@@ -126,8 +126,8 @@ WebPageScrollHandler::WebPageScrollHandler(WebView& webView)
 //
 void WebPageScrollHandler::constructL()
     {
-        m_scrollTimer = CPeriodic::NewL(CActive::EPriorityUserInput - 1);
-        m_pageOverviewScrollPeriodic = CPeriodic::NewL(CActive::EPriorityUserInput - 1);
+        m_scrollTimer = CPeriodic::NewL(CActive::EPriorityUserInput);
+        m_pageOverviewScrollPeriodic = CPeriodic::NewL(CActive::EPriorityUserInput);
         m_lastPosition = TPoint(0, 0);
         m_scrollbarDrawer = WebScrollbarDrawer::NewL();
         if(AknLayoutUtils::PenEnabled()) {

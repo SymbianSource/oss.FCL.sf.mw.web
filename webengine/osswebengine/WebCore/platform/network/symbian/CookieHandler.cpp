@@ -64,9 +64,9 @@ TPtrC stripWhiteSpace(const TDesC& aString)
 // Creates a new object.
 // @return The constructed session.
 //
-CookieHandler* CookieHandler::init()
+CookieHandler* CookieHandler::init(RStringPool aStringPool)
 {
-    CookieHandler* self = new CookieHandler;
+    CookieHandler* self = new CookieHandler(aStringPool);
     if (self) {
         TRAPD(err, self->constructL());
         if (err) {
@@ -94,7 +94,6 @@ TText* CookieHandler::cookiesForUrlL(const TDesC8& aUrl, TInt32& aLen)
     User::LeaveIfError( uriParser.Parse( aUrl ));
     // possible leave
     cookieManager.GetCookiesL(uriParser.UriDes(), m_getCookies, cookie2Reqd);
-    
     TText* cookieString = NULL;
     
     HBufC8* cookieString8 = NULL;
@@ -175,7 +174,7 @@ void CookieHandler::addCookieL(const TDesC& aCookieData, const TDesC8& aUrl, con
     popAndDestroyCount +=6;
     // create a cookie
     // Why are we using the stringpool only constructor of cookie?
-    CCookie* cookie = CCookie::NewL( (*m_stringPool) );
+    CCookie* cookie = CCookie::NewL( (m_stringPool) );
     
     CleanupStack::PushL( cookie );
     popAndDestroyCount ++;
@@ -192,7 +191,6 @@ void CookieHandler::addCookieL(const TDesC& aCookieData, const TDesC8& aUrl, con
     if(cookieRecord.m_secure.Length()) {
         User::LeaveIfError( cookie->SetAttribute( CCookie::EVersion, versionAttrib ) );
     }
-    
     cookieManager.StoreCookie(*cookie, uriParser);
     CleanupStack::PopAndDestroy(popAndDestroyCount); // RCookieManager.Close(), InitAttributesForLongCookieLC(6),cookie,unicodeToAsciiLC,asciiToUnicodeLC(2)
 }
@@ -201,33 +199,34 @@ void CookieHandler::addCookie(const TDesC& aCookieData, const TDesC8& aUrl, cons
 {
     TRAP_IGNORE(addCookieL(aCookieData, aUrl, aPolicyBaseURL));
 }
+void CookieHandler::destroy()
+{
+  // frees all memory allocated ,
+  // including the objects whose
+  // pointers are contained by the array
+  m_getCookies.ResetAndDestroy();
 
+  if(m_cookieManager) {
+  m_cookieManager->Close();
+  delete m_cookieManager;
+  m_cookieManager = NULL;
+  }
+
+}
 //
 // Destructor.
 //
 CookieHandler::~CookieHandler()
-{
-    // frees all memory allocated ,
-    // including the objects whose
-    // pointers are contained by the array
-    m_getCookies.ResetAndDestroy();
-    
+    {
+    destroy();
     m_getCookies.Close();
-    if(m_cookieManager) {
-        m_cookieManager->Close();
-        delete m_cookieManager;
     }
-    
-    if(m_stringPool) {
-        m_stringPool->Close();
-        delete m_stringPool;
-    }
-}
 
 //
 // Constructor.
 //
-CookieHandler::CookieHandler()
+CookieHandler::CookieHandler(RStringPool aStringPool)
+  : m_stringPool(aStringPool)
 {}
 
 //
@@ -236,9 +235,7 @@ CookieHandler::CookieHandler()
 //
 void CookieHandler::constructL( )
 {
-    m_stringPool = new (ELeave)RStringPool;
-    m_stringPool->OpenL();
-    m_cookieManager = new (ELeave) RCookieManager( *m_stringPool );
+    m_cookieManager = new (ELeave) RCookieManager( m_stringPool );
     User::LeaveIfError( m_cookieManager->Connect() );
 }
 
@@ -292,30 +289,30 @@ void CookieHandler::initAttributesForLongCookieLC( RStringF& aName,
 {
     
     // Setting name attribute
-    aName = m_stringPool->OpenFStringL(unicodeToAsciiLC(aCookieRecord.m_name)->Des());
+    aName = m_stringPool.OpenFStringL(unicodeToAsciiLC(aCookieRecord.m_name)->Des());
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aName);
     
     // Setting name attribute
-    aNameValue = m_stringPool->OpenFStringL(unicodeToAsciiLC(aCookieRecord.m_nameValue)->Des());
+    aNameValue = m_stringPool.OpenFStringL(unicodeToAsciiLC(aCookieRecord.m_nameValue)->Des());
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aNameValue);
     
-    aExpires = m_stringPool->OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_expires)->Des());
+    aExpires = m_stringPool.OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_expires)->Des());
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aExpires);
     // Setting Path attribute
-    aPath = m_stringPool->OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_pathName)->Des());
+    aPath = m_stringPool.OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_pathName)->Des());
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aPath );
     
     // Setting Domain attribute
-    aDomain = m_stringPool->OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_domainName)->Des() );
+    aDomain = m_stringPool.OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_domainName)->Des() );
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aDomain );
     
     // Setting Domain attribute
-    aVersion = m_stringPool->OpenFStringL( _L8("1"));
+    aVersion = m_stringPool.OpenFStringL( _L8("1"));
     CleanupClosePushL<RStringF>( aVersion );
 }
 

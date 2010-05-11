@@ -925,7 +925,10 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
             User::Leave( connFailure );
             }
         *aNewConn = ETrue;
-
+        
+#ifdef BRDO_OCC_ENABLED_FF        
+        TRAP_IGNORE(ConnNeededStatusL(KErrNone)); 
+#endif        
         }
     }
 
@@ -1323,6 +1326,8 @@ void CWidgetUiWindow::ConnectionStageAchievedL()
     TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
     SetRetryFlag(ETrue);    
     
+    TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandCancelQueuedTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
+    
     if( iRetryConnectivity && iRetryConnectivity->IsActive())
        {
        iRetryConnectivity->Cancel();
@@ -1349,7 +1354,7 @@ void CWidgetUiWindow::ConnNeededStatusL( TInt aErr )
 void CWidgetUiWindow::StopConnectionObserving()
     {
     
-    if ( iConnStageNotifier && iConnStageNotifier->IsActive() )
+    if ( iConnStageNotifier )
         {
         iConnStageNotifier->Cancel();
         }

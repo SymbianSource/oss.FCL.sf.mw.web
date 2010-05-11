@@ -210,7 +210,7 @@ void RenderPartObject::updateWidget(bool onlyCreateNonNetscapePlugins)
           mapClassIdToServiceType(o->m_classId, serviceType);
 #if PLATFORM(SYMBIAN) 
       //If there is no Type and Classid then return.
-      else if (serviceType.isEmpty() && o->m_classId.isEmpty())
+      else if (serviceType.isEmpty() && o->m_classId.isEmpty() && !embed)
           return;
 #endif
       

@@ -2344,9 +2344,16 @@ void* RSymbianDLHeap::remap(void* p,unsigned oldsz,unsigned sz)
 			{
 			// need to allocate-copy-free
 			void* newp = map(0, sz);
-			memcpy(newp, p, oldsz);
-			unmap(p,oldsz);
-			return newp;
+            if(newp)
+                {
+                memcpy(newp, p, oldsz);
+                unmap(p,oldsz);
+                return newp;
+                }
+            else
+                {
+                return 0;
+                }
 			}
 		}
 	return p;

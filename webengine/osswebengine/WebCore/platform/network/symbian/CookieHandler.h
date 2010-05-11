@@ -21,6 +21,7 @@
 
 // System includes
 #include <e32base.h>
+#include <stringpool.h> 
 
 // CONSTANTS
 
@@ -33,7 +34,7 @@ const TUint8 KMaxNumOfTypes = 30;
 // FUNCTION PROTOTYPES
 
 // FORWARD DECLARATIONS
-class RStringPool;
+//class RStringPool;
 class CCookie;
 class RStringF;
 class RCookieManager;
@@ -67,7 +68,7 @@ class CookieHandler
         * Creates a new object.
         * @return The constructed session.
         */
-        static CookieHandler* init();
+        static CookieHandler* init(RStringPool aStringPool);
 
         /**
         * adds cookie ,
@@ -87,12 +88,13 @@ class CookieHandler
         * Destructor.
         */
         virtual ~CookieHandler();
+        void destroy();
 
     private :    // constructors
         /**
         * Constructor.
         */
-        CookieHandler( );
+        CookieHandler( RStringPool aStringPool);
 
         /**
         * ConstructL.
@@ -161,8 +163,9 @@ class CookieHandler
         */
         void parseCookieFieldsL( const TPtrC& aCookieString,
                                  CookieRecord& aCookieRecord) const;
+                                 
     private :    // data members
-        RStringPool* m_stringPool ;// <<has
+        RStringPool m_stringPool ;// <<has
         RPointerArray<CCookie> m_getCookies;// <<has
         RCookieManager* m_cookieManager; // NOTE: should not use pointers to r-class, but RCookieManager
                     // class doesn't provide a default constructor, too bad :(

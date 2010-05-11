@@ -211,7 +211,14 @@ class TBrCtlDefs
              ECommandSetRetryConnectivityFlag,
              ECommandUnSetRetryConnectivityFlag,
              ECommandClearQuedTransactions,
-             ECommandConnToDownloadManager
+             ECommandConnToDownloadManager,
+             
+            /**
+            * Pause/Resume Script Timers
+            */
+             ECommandPauseScriptTimers,
+             ECommandResumeScriptTimers,
+			 ECommandCancelQueuedTransactions
             };
         /**
         * The load event that occurred.

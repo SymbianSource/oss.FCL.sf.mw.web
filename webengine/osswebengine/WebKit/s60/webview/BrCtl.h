@@ -727,7 +727,8 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         TBrCtlWmlServiceOption*                 m_firstPrevDoElement;
         MBrCtlDownloadObserver*                 m_brCtlDownloadObserver;
         CPeriodic* m_windoCloseTimer;       //new timer for managing browser window close
-
+        bool m_didFirstLayout;
+        
 };
 
 #endif      // BRCTL_H

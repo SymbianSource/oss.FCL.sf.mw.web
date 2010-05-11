@@ -164,12 +164,16 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
         {
             m_ignoreTap = false;
             handleTouchUp(aGesture);
-            m_webview->setScrolling(false);
+			m_webview->resumeJsTimers(); // resume js timers
             break;
         }
 
         case stmGesture::EGestureUidPan:
         {
+            // pause js timers (if not already done)
+            if(!m_webview->jsTimersPaused()) 
+                m_webview->pauseJsTimers();
+
             if(!m_webview->isScrolling())
                 m_webview->setScrolling(true);
             handleMove(aGesture);
@@ -193,6 +197,9 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
         if(!m_webview->inPageViewMode())
             {
             handlePinchZoomL(aGesture);
+            if(aGesture.GestureState() != EGestureEnter) {
+                m_webview->resumeJsTimers(); // resume js timers
+                }
             }
             break;
         }
@@ -328,6 +335,10 @@ void WebPointerEventHandler::HandlePointerEventL(const TPointerEvent& aPointerEv
         }
     }
     
+    // pause JS timers for better ui response    
+    if (aPointerEvent.iType == TPointerEvent::EButton1Down) {
+        m_webview->pauseJsTimers();    
+    }
 #ifdef BRDO_USE_GESTURE_HELPER
       m_gestureInterface->HandlePointerEventL(aPointerEvent);
 #endif

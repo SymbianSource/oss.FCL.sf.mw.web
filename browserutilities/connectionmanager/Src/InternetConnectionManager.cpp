@@ -457,17 +457,16 @@ TInt CInternetConnectionManager::ConnectL
 			}
 		else
 			{               
+            if(iConnection.SubSessionHandle() <= 0)
+                {
+				//  RConnection handle is invalid, we haven't opened the RConnection yet.
 		        connErr = iConnection.Open( iServ, KAfInet );
+		       	}
 		        CLOG_WRITE_1( "RConnection: %d", connErr );
 		        if( connErr == KErrNone )
 		            {
 		            // Always pass the IAP Id to RConnection even in silent mode
 		            connErr = iSyncConnector->Connect( overrides );
-		            }
-		        if( connErr != KErrNone )
-		            {
-		            CLOG_WRITE( "Closing all" );
-		            iConnection.Close();
 		            }
 			}
 		}
@@ -518,11 +517,6 @@ CInternetConnectionManager::~CInternetConnectionManager()
 		delete iCommsDb;
 		}
 
-    if( iConnected )
-        {
-        iConnection.Close();
-        }
-
     if( !iSilentMode )
         // Temp fix for CDMA
         {
@@ -537,8 +531,8 @@ CInternetConnectionManager::~CInternetConnectionManager()
 	delete iNoteDialog;
 	delete iSyncConnector;
 	iRFs.Close();
-
-    iServ.Close();
+	iConnection.Close();
+	iServ.Close();
     
 	CLOG_CLOSE;
 	}
@@ -652,11 +646,13 @@ EXPORT_C void CInternetConnectionManager::StopConnectionL()
     CLOG_ENTERFN( "StopConnectionL()" );
 
     StopConnectionObserving();
+    
     if( iConnected )
         {
-        CLOG_WRITE( "StopConnectionL() Stop the Connection" );
+        CLOG_WRITE( "StopConnectionL() Stop the Connection" );        
         iConnection.Close();
-        }
+        TInt err = iConnection.Open( iServ, KAfInet );        
+        }    
     
 //    iServ.Close();
     iConnected = EFalse;
@@ -1379,7 +1375,6 @@ void CInternetConnectionManager::ConnectionStageAchievedL(TInt /*aStage*/)
      {
      	// this is a connection closed event
         CLOG_WRITE( "ConnectionStageAchievedL() Stoping the connection instead of closing" );
-        iConnection.Close();
     	iConnected = EFalse;
 
     	if( !iSilentMode )
@@ -2150,17 +2145,16 @@ TInt CInternetConnectionManager::ConnectWithSnapIdL(TUint32 aRequestedSnapId)
 
 	if ( !connErr )
 		{
+		if(iConnection.SubSessionHandle() <= 0)
+			{
+			//  RConnection handle is invalid, we haven't opened the RConnection yet.
         connErr = iConnection.Open( iServ, KAfInet );
+        	}
         CLOG_WRITE_1( "RConnection: %d", connErr );
         if( connErr == KErrNone )
             {
            //connect with snap id
             connErr = iSyncConnector->ConnectSnap( overrides );
-            }
-        if( connErr != KErrNone )
-            {
-            CLOG_WRITE( "Closing all" );
-            iConnection.Close();
             }
 		}
 	

@@ -204,6 +204,9 @@ int HttpConnection::submit()
 void HttpConnection::submitL()
 {
     __ASSERT_DEBUG( !m_transaction, THttpConnUtils::PanicLoader( KErrArgument ) );
+    TBool retryFlag = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->getRetryConnectivityFlag();
+    if( retryFlag )
+        return;
 
     HttpSessionManager* httpSessionMgr = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager();
     User::LeaveIfNull(httpSessionMgr);
@@ -726,7 +729,9 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
         default:
             {
             // error handling
-            if(aEvent.iStatus == KErrNotReady || aEvent.iStatus == KErrDisconnected   )
+            //KErrDisconnected should be coming only for OCC
+            //MHFRunL gets call before connection manager
+            if(aEvent.iStatus == KErrDisconnected)
                 StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->setRetryConnectivityFlag();                 
             else
                 handleError(aEvent.iStatus);               
@@ -787,11 +792,10 @@ int HttpConnection::HandleSpecialEvent(int event)
 
 void HttpConnection::complete(int error)
 {
-    TBool retryFlag = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->getRetryConnectivityFlag();
+    HttpSessionManager* httpSessionManager = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager();
+    TBool retryFlag = httpSessionManager->getRetryConnectivityFlag();
     if( retryFlag )
         {
-        m_transaction->Cancel();
-        //m_cancelled = false; //for flash
         return;
         }
     
@@ -850,6 +854,7 @@ void HttpConnection::complete(int error)
         m_transaction->Close();
         delete m_transaction;
         m_transaction = NULL;
+        httpSessionManager->removeRequest(this);
     }
     if (error) {
         CResourceHandleManager::self()->receivedFinished(m_handle, error, this);
@@ -1202,57 +1207,60 @@ TInt HttpConnection::CheckForNonHttpRedirect()
 
     if(uriParser.Parse( m_transaction->Request().URI().UriDes() ) == KErrNone)
         {
-        if (uriParser.IsPresent(EUriHost) && uriParser.IsPresent(EUriScheme)) // looking only for absolue Url path and schemes other than http(s)
+        if (uriParser.IsPresent(EUriScheme)) // looking only for absolue Url path and schemes other than http(s)
             {
             const TDesC8& scheme = uriParser.Extract(EUriScheme);
-            if (scheme.FindF(_L8("http")) == KErrNotFound) // everything but http(s)
+            if(uriParser.IsPresent(EUriHost) || scheme.FindF(_L8("tel")) == KErrNone)
                 {
-                TPtrC8 ptr(uriParser.UriDes());
-                // these arrays are pushed into CleanupStack in case leave
-                // if no leave, they will be freed below
-                RArray<TUint>* typeArray = new (ELeave) RArray<TUint>(1);
-                CleanupStack::PushL(typeArray);
-
-                CDesCArrayFlat* desArray = new (ELeave) CDesCArrayFlat(1);
-                CleanupStack::PushL(desArray);
-
-                User::LeaveIfError(typeArray->Append(EParamRequestUrl));
-
-                HBufC16* urlbuf = HBufC16::NewLC( ptr.Length()  + 1); // +1 for zero terminate
-                urlbuf->Des().Copy( ptr );
-                TPtr16 bufDes16 = urlbuf->Des();
-                bufDes16.ZeroTerminate();
-
-                desArray->AppendL(bufDes16);
-                CleanupStack::Pop();
-
-                MBrCtlSpecialLoadObserver* loadObserver = control(m_frame)->brCtlSpecialLoadObserver();
-
-                if (loadObserver)
+                if (scheme.FindF(_L8("http")) == KErrNotFound) // everything but http(s)
                     {
-                    TRAP_IGNORE(loadObserver->HandleRequestL(typeArray, desArray));
+                    TPtrC8 ptr(uriParser.UriDes());
+                    // these arrays are pushed into CleanupStack in case leave
+                    // if no leave, they will be freed below
+                    RArray<TUint>* typeArray = new (ELeave) RArray<TUint>(1);
+                    CleanupStack::PushL(typeArray);
+
+                    CDesCArrayFlat* desArray = new (ELeave) CDesCArrayFlat(1);
+                    CleanupStack::PushL(desArray);
+
+                    User::LeaveIfError(typeArray->Append(EParamRequestUrl));
+
+                    HBufC16* urlbuf = HBufC16::NewLC( ptr.Length()  + 1); // +1 for zero terminate
+                    urlbuf->Des().Copy( ptr );
+                    TPtr16 bufDes16 = urlbuf->Des();
+                    bufDes16.ZeroTerminate();
+
+                    desArray->AppendL(bufDes16);
+                    CleanupStack::Pop();
+
+                    MBrCtlSpecialLoadObserver* loadObserver = control(m_frame)->brCtlSpecialLoadObserver();
+
+                    if (loadObserver)
+                        {
+                        TRAP_IGNORE(loadObserver->HandleRequestL(typeArray, desArray));
+                        }
+
+                    // No leave, so pop here and clean up
+                    CleanupStack::Pop(desArray);
+                    CleanupStack::Pop(typeArray);
+
+                    // cleanup arrays
+                    if (typeArray)
+                        {
+                        // Closes the array and frees all memory allocated to the array
+                        typeArray->Close();
+                        delete typeArray;
+                        }
+
+                    if (desArray)
+                        {
+                        // Deletes all descriptors from the array and frees the memory allocated to the array buffer
+                        desArray->Reset();
+                        delete desArray;
+                        }
+
+                    return KErrCancel;
                     }
-
-                // No leave, so pop here and clean up
-                CleanupStack::Pop(desArray);
-                CleanupStack::Pop(typeArray);
-
-                // cleanup arrays
-                if (typeArray)
-                    {
-                    // Closes the array and frees all memory allocated to the array
-                    typeArray->Close();
-                    delete typeArray;
-                    }
-
-                if (desArray)
-                    {
-                    // Deletes all descriptors from the array and frees the memory allocated to the array buffer
-                    desArray->Reset();
-                    delete desArray;
-                    }
-
-                return KErrCancel;
                 }
             }
         }
@@ -1269,6 +1277,7 @@ RHTTPTransaction* HttpConnection::takeOwnershipHttpTransaction()
     m_transaction->PropertySet().RemoveProperty(session.StringPool().StringF(HttpFilterCommonStringsExt::ESelfPtr,
         HttpFilterCommonStringsExt::GetTable()));
     m_transaction = NULL;
+    m_isDone = true;
     return trans;
 }
 

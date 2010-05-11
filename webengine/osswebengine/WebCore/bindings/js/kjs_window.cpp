@@ -72,6 +72,12 @@
 #include <wtf/MathExtras.h>
 #include "symbian/kjs_console.h"
 
+// for JTimerBase
+#include "SystemTime.h"
+#include <wtf/HashSet.h>
+#include <wtf/Vector.h>
+
+
 #if ENABLE(XSLT)
 #include "JSXSLTProcessor.h"
 #endif
@@ -85,7 +91,8 @@ static int lastUsedTimeoutId;
 
 static int timerNestingLevel = 0;
 const int cMaxTimerNestingLevel = 5;
-const double cMinimumTimerInterval = 0.010;
+const double cMinimumTimerInterval = 0.020; // lower values can block CPU if periodic timers are used
+
 
 struct WindowPrivate {
     WindowPrivate()
@@ -108,7 +115,537 @@ struct WindowPrivate {
     TimeoutsMap m_timeouts;
 };
 
-class DOMWindowTimer : public TimerBase {
+// ==========================================================================================
+// Base class for JavaScript timers - start
+// ==========================================================================================
+using namespace std;
+class JTimerBase : Noncopyable {
+public:
+    JTimerBase();
+    virtual ~JTimerBase();
+
+    void start(double nextFireInterval, double repeatInterval);
+    void startRepeating(double repeatInterval) { start(repeatInterval, repeatInterval); }
+    void startOneShot(double interval) { start(interval, 0); }
+    void stop();
+    bool isActive() const;
+    double nextFireInterval() const;
+    double repeatInterval() const { return m_repeatInterval; }
+    void augmentRepeatInterval(double delta) { setNextFireTime(m_nextFireTime + delta); m_repeatInterval += delta; }
+    
+    
+    static void setDeferringTimers(bool);
+    static void shutdownSharedTimer();    
+    double m_nextFireTime; // 0 if inactive
+    double m_repeatInterval; // 0 if not repeating
+    int m_heapIndex; // -1 if not in heap
+private:
+    virtual void fired() = 0; // to be implemented in derived class
+    void checkConsistency() const;
+    void checkHeapIndex() const;
+    void setNextFireTime(double);
+    bool inHeap() const { return m_heapIndex != -1; }
+    void heapDecreaseKey();
+    void heapDelete();
+    void heapDeleteMin();
+    void heapIncreaseKey();
+    void heapInsert();
+    void heapPop();
+    void heapPopMin();
+
+    //static void fireTimersInNestedEventLoop();
+    static void deleteTimerHeap();
+    static void collectFiringTimers(double fireTime, Vector<JTimerBase*>&);
+    static void fireTimers(double fireTime, const Vector<JTimerBase*>&);
+    
+    //shared timer functions
+    static void sharedTimerFired();
+    static TInt TimerFn( TAny* /*aPtr*/ );
+    static void setSharedTimerFireTime(double fireTime);
+    static bool isDeferringTimers();    
+    static void updateSharedTimer();
+    static void stopSharedTimer();
+    static void initSharedTimer();
+    
+    friend class TimerHeapElement;
+    friend bool operator<(const TimerHeapElement&, const TimerHeapElement&);
+};
+
+static bool deferringTimers;
+static Vector<JTimerBase*>* timerHeap;
+static HashSet<const JTimerBase*>* timersReadyToFire;
+
+struct JTimerCleaner {
+    ~JTimerCleaner() {
+        if( timerHeap ) {
+            delete timerHeap;
+            timerHeap = 0;
+            JTimerBase::shutdownSharedTimer();
+        }
+    }
+};
+struct JTimerCleaner jCleanTimer;
+
+// ----------------
+
+// Class to represent elements in the heap when calling the standard library heap algorithms.
+// Maintains the m_heapIndex value in the timers themselves, which allows us to do efficient
+// modification of the heap.
+class TimerHeapElement {
+public:
+    explicit TimerHeapElement(int i) : m_index(i), m_timer((*timerHeap)[m_index]) { checkConsistency(); }
+
+    TimerHeapElement(const TimerHeapElement&);
+    TimerHeapElement& operator=(const TimerHeapElement&);
+
+    JTimerBase* timer() const { return m_timer; }
+
+    void checkConsistency() const {
+        ASSERT(m_index >= 0);
+        ASSERT(m_index < (timerHeap ? static_cast<int>(timerHeap->size()) : 0));
+    }
+
+private:
+    TimerHeapElement();
+
+    int m_index;
+    JTimerBase* m_timer;
+};
+
+inline TimerHeapElement::TimerHeapElement(const TimerHeapElement& o)
+    : m_index(-1), m_timer(o.timer())
+{
+}
+
+inline TimerHeapElement& TimerHeapElement::operator=(const TimerHeapElement& o)
+{
+    JTimerBase* t = o.timer();
+    m_timer = t;
+    if (m_index != -1) {
+        checkConsistency();
+        (*timerHeap)[m_index] = t;
+        t->m_heapIndex = m_index;
+    }
+    return *this;
+}
+
+inline bool operator<(const TimerHeapElement& a, const TimerHeapElement& b)
+{
+    // Note, this is "backwards" because the heap puts the largest element first
+    // and we want the lowest time to be the first one in the heap.
+    return b.timer()->m_nextFireTime < a.timer()->m_nextFireTime;
+}
+
+// ----------------
+
+// Class to represent iterators in the heap when calling the standard library heap algorithms.
+// Returns TimerHeapElement for elements in the heap rather than the JTimerBase pointers themselves.
+class TimerHeapIterator : public iterator<random_access_iterator_tag, TimerHeapElement, int> {
+public:
+    TimerHeapIterator() : m_index(-1) { }
+    TimerHeapIterator(int i) : m_index(i) { checkConsistency(); }
+
+    TimerHeapIterator& operator++() { checkConsistency(); ++m_index; checkConsistency(); return *this; }
+    TimerHeapIterator operator++(int) { checkConsistency(); checkConsistency(1); return m_index++; }
+
+    TimerHeapIterator& operator--() { checkConsistency(); --m_index; checkConsistency(); return *this; }
+    TimerHeapIterator operator--(int) { checkConsistency(); checkConsistency(-1); return m_index--; }
+
+    TimerHeapIterator& operator+=(int i) { checkConsistency(); m_index += i; checkConsistency(); return *this; }
+    TimerHeapIterator& operator-=(int i) { checkConsistency(); m_index -= i; checkConsistency(); return *this; }
+
+    TimerHeapElement operator*() const { return TimerHeapElement(m_index); }
+    TimerHeapElement operator[](int i) const { return TimerHeapElement(m_index + i); }
+
+    int index() const { return m_index; }
+
+    void checkConsistency(int offset = 0) const {
+        ASSERT(m_index + offset >= 0);
+        ASSERT(m_index + offset <= (timerHeap ? static_cast<int>(timerHeap->size()) : 0));
+    }
+
+private:
+    int m_index;
+};
+
+inline bool operator==(TimerHeapIterator a, TimerHeapIterator b) { return a.index() == b.index(); }
+inline bool operator!=(TimerHeapIterator a, TimerHeapIterator b) { return a.index() != b.index(); }
+inline bool operator<(TimerHeapIterator a, TimerHeapIterator b) { return a.index() < b.index(); }
+
+inline TimerHeapIterator operator+(TimerHeapIterator a, int b) { return a.index() + b; }
+inline TimerHeapIterator operator+(int a, TimerHeapIterator b) { return a + b.index(); }
+
+inline TimerHeapIterator operator-(TimerHeapIterator a, int b) { return a.index() - b; }
+inline int operator-(TimerHeapIterator a, TimerHeapIterator b) { return a.index() - b.index(); }
+
+// ----------------
+
+static TInt64 remainingMicro = 0;
+static bool shutdownInProgress = false;
+static CPeriodic* sharedTimer;
+
+void setDeferringJSTimers(bool defer)
+    {
+    JTimerBase::setDeferringTimers(defer);
+    }
+
+void JTimerBase::shutdownSharedTimer()
+    {
+    shutdownInProgress = true;
+    stopSharedTimer();
+    JTimerBase::deleteTimerHeap();
+    }
+
+void JTimerBase::initSharedTimer()
+    {
+    shutdownInProgress = false;
+    }
+
+
+TInt JTimerBase::TimerFn( TAny* /*aPtr*/ )
+    {
+    if (shutdownInProgress)
+        {
+        return KErrNone;
+        }
+    if( remainingMicro == 0 )
+        {
+            sharedTimerFired();
+        }
+    else
+        {
+        setSharedTimerFireTime( -1 );
+        }
+    return KErrNone;
+    }
+
+
+void JTimerBase::setSharedTimerFireTime(double fireTime)
+    {
+    if (shutdownInProgress)
+        {
+        return;
+        }
+
+    if (sharedTimer)
+        {
+        sharedTimer->Cancel();
+        delete sharedTimer;
+        sharedTimer = NULL;
+        }
+    if (fireTime != -1)
+        remainingMicro = 0;
+
+    sharedTimer = CPeriodic::New( CActive::EPriorityIdle );
+    if( sharedTimer )
+        {
+        TInt64 interval( remainingMicro );
+        if( remainingMicro == 0 )
+            {
+            // fireTime comes in second resolution
+            TTime fireDate( TTime(fireTime * 1000000 ).Int64() );
+
+            TTime time;
+            time.HomeTime();
+            interval = fireDate.Int64() - time.Int64();
+            }
+        interval = interval < 0 ? 0 : interval;
+        //
+        TInt t;
+        if (interval<(TInt)(KMaxTInt32))
+            {
+            t = interval;
+            remainingMicro = 0;
+            }
+        else
+            {
+            t = KMaxTInt32;
+            remainingMicro = interval - KMaxTInt32;
+            }
+        sharedTimer->Start( t, 0, JTimerBase::TimerFn);
+        }
+    }
+
+
+void JTimerBase::stopSharedTimer()
+    {
+    if (sharedTimer)
+        {
+        sharedTimer->Cancel();
+        delete sharedTimer;
+        sharedTimer = NULL;
+        }
+    remainingMicro = 0;
+    /*
+     * The static boolean variable shutdownInProgress, must be reset in scenario's where a browser control instance is deleted and a new
+     * instance is created without actually closing the application.
+     */
+    shutdownInProgress = false ;
+    }
+
+void JTimerBase::updateSharedTimer()
+{
+    if (timersReadyToFire || deferringTimers || !timerHeap || timerHeap->isEmpty())
+        stopSharedTimer();
+    else
+        setSharedTimerFireTime(timerHeap->first()->m_nextFireTime);
+}
+
+bool JTimerBase::isDeferringTimers()
+{
+    return deferringTimers;
+}
+
+void JTimerBase::setDeferringTimers(bool shouldDefer)
+{
+    if (shouldDefer == deferringTimers)
+        return;
+    deferringTimers = shouldDefer;
+    updateSharedTimer();
+}
+
+// ----------------
+
+JTimerBase::JTimerBase() : m_nextFireTime(0), m_repeatInterval(0), m_heapIndex(-1)
+{
+}
+
+JTimerBase::~JTimerBase()
+{
+    stop();
+
+    ASSERT(!inHeap());
+}
+
+void JTimerBase::start(double nextFireInterval, double repeatInterval)
+{
+    m_repeatInterval = repeatInterval;
+    setNextFireTime(currentTime() + nextFireInterval);
+}
+
+void JTimerBase::stop()
+{
+    m_repeatInterval = 0;
+    setNextFireTime(0);
+
+    ASSERT(m_nextFireTime == 0);
+    ASSERT(m_repeatInterval == 0);
+    ASSERT(!inHeap());
+}
+
+bool JTimerBase::isActive() const
+{
+    return m_nextFireTime || (timersReadyToFire && timersReadyToFire->contains(this));
+}
+
+double JTimerBase::nextFireInterval() const
+{
+    ASSERT(isActive());
+    double current = currentTime();
+    if (m_nextFireTime < current)
+        return 0;
+    return m_nextFireTime - current;
+}
+
+inline void JTimerBase::checkHeapIndex() const
+{
+    ASSERT(timerHeap);
+    ASSERT(!timerHeap->isEmpty());
+    ASSERT(m_heapIndex >= 0);
+    ASSERT(m_heapIndex < static_cast<int>(timerHeap->size()));
+    ASSERT((*timerHeap)[m_heapIndex] == this);
+}
+
+inline void JTimerBase::checkConsistency() const
+{
+    // Timers should be in the heap if and only if they have a non-zero next fire time.
+    ASSERT(inHeap() == (m_nextFireTime != 0));
+    if (inHeap())
+        checkHeapIndex();
+}
+
+void JTimerBase::heapDecreaseKey()
+{
+    ASSERT(m_nextFireTime != 0);
+    checkHeapIndex();
+    #if PLATFORM(SYMBIAN)
+    // check for valid heap index
+    if(m_heapIndex < static_cast<int>(timerHeap->size()))
+    #endif
+        {
+        push_heap(TimerHeapIterator(0), TimerHeapIterator(m_heapIndex + 1));
+        }
+    checkHeapIndex();
+}
+
+inline void JTimerBase::heapDelete()
+{
+    ASSERT(m_nextFireTime == 0);
+    heapPop();
+    timerHeap->removeLast();
+    m_heapIndex = -1;
+}
+
+inline void JTimerBase::heapDeleteMin()
+{
+    ASSERT(m_nextFireTime == 0);
+    heapPopMin();
+    timerHeap->removeLast();
+    m_heapIndex = -1;
+}
+
+inline void JTimerBase::heapIncreaseKey()
+{
+    ASSERT(m_nextFireTime != 0);
+    heapPop();
+    heapDecreaseKey();
+}
+
+inline void JTimerBase::heapInsert()
+{
+    ASSERT(!inHeap());
+    if (!timerHeap)
+        timerHeap = new Vector<JTimerBase*>;
+    timerHeap->append(this);
+    m_heapIndex = timerHeap->size() - 1;
+    heapDecreaseKey();
+}
+
+inline void JTimerBase::heapPop()
+{
+    // Temporarily force this timer to have the minimum key so we can pop it.
+    double fireTime = m_nextFireTime;
+    m_nextFireTime = -numeric_limits<double>::infinity();
+    heapDecreaseKey();
+    heapPopMin();
+    m_nextFireTime = fireTime;
+}
+
+void JTimerBase::heapPopMin()
+{
+    ASSERT(this == timerHeap->first());
+    checkHeapIndex();
+    pop_heap(TimerHeapIterator(0), TimerHeapIterator(timerHeap->size()));
+    checkHeapIndex();
+    ASSERT(this == timerHeap->last());
+}
+
+void JTimerBase::setNextFireTime(double newTime)
+{
+    // Keep heap valid while changing the next-fire time.
+
+    if (timersReadyToFire)
+        timersReadyToFire->remove(this);
+
+    double oldTime = m_nextFireTime;
+    if (oldTime != newTime) {
+        m_nextFireTime = newTime;
+
+        bool wasFirstTimerInHeap = m_heapIndex == 0;
+
+        if (oldTime == 0)
+            heapInsert();
+        else if (newTime == 0)
+            heapDelete();
+        else if (newTime < oldTime)
+            heapDecreaseKey();
+        else
+            heapIncreaseKey();
+
+        bool isFirstTimerInHeap = m_heapIndex == 0;
+
+        if (wasFirstTimerInHeap || isFirstTimerInHeap)
+            updateSharedTimer();
+    }
+
+    checkConsistency();
+}
+
+void JTimerBase::collectFiringTimers(double fireTime, Vector<JTimerBase*>& firingTimers)
+{
+    while (!timerHeap->isEmpty() && timerHeap->first()->m_nextFireTime <= fireTime) {
+        JTimerBase* timer = timerHeap->first();
+        firingTimers.append(timer);
+        timersReadyToFire->add(timer);
+        timer->m_nextFireTime = 0;
+        timer->heapDeleteMin();
+    }
+}
+
+void JTimerBase::fireTimers(double fireTime, const Vector<JTimerBase*>& firingTimers)
+{
+    int size = firingTimers.size();
+    for (int i = 0; i != size; ++i) {
+        JTimerBase* timer = firingTimers[i];
+
+        // If not in the set, this timer has been deleted or re-scheduled in another timer's fired function.
+        // So either we don't want to fire it at all or we will fire it next time the shared timer goes off.
+        // It might even have been deleted; that's OK because we won't do anything else with the pointer.
+        if (!timersReadyToFire->contains(timer))
+            continue;
+
+        // Setting the next fire time has a side effect of removing the timer from the firing timers set.
+        double interval = timer->repeatInterval();
+        timer->setNextFireTime(interval ? fireTime + interval : 0);
+
+        // Once the timer has been fired, it may be deleted, so do nothing else with it after this point.
+        timer->fired();
+
+        // Catch the case where the timer asked timers to fire in a nested event loop.
+        if (!timersReadyToFire)
+            break;
+    }
+}
+
+void JTimerBase::sharedTimerFired()
+{
+    // Do a re-entrancy check.
+    if (timersReadyToFire)
+        return;
+
+    double fireTime = currentTime();
+    Vector<JTimerBase*> firingTimers;
+    HashSet<const JTimerBase*> firingTimersSet;
+
+    timersReadyToFire = &firingTimersSet;
+
+    collectFiringTimers(fireTime, firingTimers);
+    fireTimers(fireTime, firingTimers);
+
+    timersReadyToFire = 0;
+
+    updateSharedTimer();
+}
+/*
+void JTimerBase::fireTimersInNestedEventLoop()
+{
+    timersReadyToFire = 0;
+    updateSharedTimer();
+}
+*/
+
+void JTimerBase::deleteTimerHeap()
+{
+    if (timerHeap)
+    {
+        while (!timerHeap->isEmpty())
+        {
+            JTimerBase* timer = timerHeap->first();
+            timer->m_nextFireTime = 0;
+            timer->heapDeleteMin();        
+        }
+        delete timerHeap ;
+        timerHeap = NULL ;
+    }
+}
+
+
+// ==========================================================================================
+// Base class for JavaScript timers - end
+// ==========================================================================================
+
+
+class DOMWindowTimer : public JTimerBase {
 public:
     DOMWindowTimer(int timeoutId, int nestingLevel, Window* o, ScheduledAction* a)
         : m_timeoutId(timeoutId), m_nestingLevel(nestingLevel), m_object(o), m_action(a) { }
@@ -1544,7 +2081,7 @@ int Window::installTimeout(ScheduledAction* a, int t, bool singleShot)
 #if PLATFORM(SYMBIAN)
     if (d->m_evt && d->m_evt->type() == "mouseover")  {
         if (singleShot) {
-            double interval = max(0.001, t * 0.001);
+            double interval = max(0.010, t * 0.001);
             if (interval < cMinimumTimerInterval && (timerNestingLevel + 1) >= cMaxTimerNestingLevel) {
                 interval = cMinimumTimerInterval;
             }
@@ -1563,13 +2100,15 @@ int Window::installTimeout(ScheduledAction* a, int t, bool singleShot)
     // Use a minimum interval of 10 ms to match other browsers, but only once we've
     // nested enough to notice that we're repeating.
     // Faster timers might be "better", but they're incompatible.
-    double interval = max(0.001, t * 0.001);
+    double interval = max(0.010, t * 0.001); // min interval for mobile device
     if (interval < cMinimumTimerInterval && nestLevel >= cMaxTimerNestingLevel)
         interval = cMinimumTimerInterval;
     if (singleShot)
         timer->startOneShot(interval);
-    else
+    else {
+        interval = max(0.030, t * 0.001); // keep periodic timers less frequent
         timer->startRepeating(interval);
+	}
     return timeoutId;
 }
 
@@ -1642,7 +2181,14 @@ void Window::timerFired(DOMWindowTimer* timer)
         int timeoutId = timer->timeoutId();
 
         timer->action()->execute(this);
-        if (d->m_timeouts.contains(timeoutId) && timer->repeatInterval() && timer->repeatInterval() < cMinimumTimerInterval) {
+	
+    	// The DOMWindowTimer object may have been deleted or replaced during execution, 
+    	// so we re-fetch it. 
+    	timer = d->m_timeouts.get(timeoutId); 
+    	if (!timer) 
+    	   	return; 
+	 
+        if (timer->repeatInterval() && timer->repeatInterval() < cMinimumTimerInterval) {        
             timer->setNestingLevel(timer->nestingLevel() + 1);
             if (timer->nestingLevel() >= cMaxTimerNestingLevel)
                 timer->augmentRepeatInterval(cMinimumTimerInterval - timer->repeatInterval());

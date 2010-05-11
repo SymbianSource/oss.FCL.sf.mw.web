@@ -417,7 +417,8 @@ class PluginSkin : public CBase,
         void reCreatePlugin();
         TInt activeStreams() { return m_streams.size(); }
         void PlayPauseNotify(bool pause);
-
+        TPluginLoadMode getLoadMode(){return m_loadmode;}
+        void setLoadMode(TPluginLoadMode mode){m_loadmode = mode;}
   public:  // from MMemoryCollector
         TUint Collect(unsigned int aRequired);
         void Restore()                          {}
@@ -478,8 +479,8 @@ class PluginSkin : public CBase,
         RArray<NPN_GenericElement>*  iGenericElementArray;
         TRect   m_oldRect;
         TRect    m_oldViewport;
+        TPluginLoadMode m_loadmode;
         
-
 public:
         TInt m_handle;
         NPP m_instance;    

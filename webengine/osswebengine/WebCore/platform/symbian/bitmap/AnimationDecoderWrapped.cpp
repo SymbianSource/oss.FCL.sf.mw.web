@@ -51,11 +51,10 @@
 #include "SyncDecodeThread.h"
 #include <Oma2Agent.h>
 #include <Browser_Platform_Variant.hrh>
+#include "SharedBuffer.h"
+
 using namespace ContentAccess;
 
-namespace TBidirectionalState {
-    class TRunInfo;
-};
 
 #include <eikenv.h>
 
@@ -242,24 +241,25 @@ HBufC8* CAnimationDecoderWrapped::DecodeDRMImageContentL(const TDesC8& aData)
 // -----------------------------------------------------------------------------
 // OpenL
 // -----------------------------------------------------------------------------
-void CAnimationDecoderWrapped::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBool aIsComplete )
+void CAnimationDecoderWrapped::OpenL( SharedBuffer* aData, TDesC* aMIMEType, TBool aIsComplete )
 {
     iCanBeDeleted = EFalse;
     if(!iObserver) {
-        OpenAndDecodeSyncL(aData);
+        TPtrC8 ptr( (const TUint8*)aData->data(), aData->size() );
+        OpenAndDecodeSyncL(ptr);
         iCanBeDeleted = ETrue;
         if (iIsInvalid)
             delete this;
         return;
     }
-        
+    m_data = aData;
+    m_dataptr.Set((const TUint8*)aData->data(), aData->size());   
     
     delete iDestination;
     iDestination = NULL;
     iDestination = CMaskedBitmap::NewL();
 
     HBufC8* mime = 0;
-    TPtrC8 buffer(aData.Ptr(),aData.Length());
     if (aMIMEType) {
         // it is safer to ignore the server supplied mime type and just recognize
         // the image type from the data headers. this does not work for all formats though
@@ -270,31 +270,23 @@ void CAnimationDecoderWrapped::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBo
         }
         if( *aMIMEType==KMimeDRM )
         {
-        iDrmContent = DecodeDRMImageContentL(aData);
+        iDrmContent = DecodeDRMImageContentL(m_dataptr);
         
         TInt drmContentLength = iDrmContent->Des().Length();
-        buffer.Set( (const TUint8*)iDrmContent->Des().Ptr(), drmContentLength);
+        m_dataptr.Set( (const TUint8*)iDrmContent->Des().Ptr(), drmContentLength);
         }
     }
-         
-    if( !iDecoder )
-        iDecoder = CBufferedImageDecoder::NewL(CEikonEnv::Static()->FsSession());
-
-    if (mime){
-        if (iDecoder) {
-            iDecoder->OpenL(buffer,*mime,CImageDecoder::EOptionNone);
-            CleanupStack::PopAndDestroy(); // mime
-        }
-    }
-    else {
-        if (iDecoder) {
-            iDecoder->OpenL(buffer,CImageDecoder::EOptionNone);
-        }
-    }
+    delete iDecoder;
+    iDecoder = NULL;
+    
+    if(mime) 
+       iDecoder = CImageDecoder::DataNewL(CEikonEnv::Static()->FsSession(), m_dataptr, *mime);
+    else 
+       iDecoder = CImageDecoder::DataNewL(CEikonEnv::Static()->FsSession(), m_dataptr);
 
     iRawDataComplete = aIsComplete;
 
-    if(iDecoder && iDecoder->ValidDecoder()  && iDecoder->IsImageHeaderProcessingComplete()) {
+    if(iDecoder && iDecoder->IsImageHeaderProcessingComplete()) {
         StartDecodingL();
     }
     else {
@@ -310,7 +302,7 @@ void CAnimationDecoderWrapped::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBo
         // first see if have a netscape 2.0 extension header 
         const TUint8 extString[] = { 'N', 'E', 'T', 'S', 'C', 'A', 'P','E','2','.','0','\3','\1' };
         const TInt sizeofextString = sizeof(extString);
-        TPtrC8 rawDataPtr((TUint8*)aData.Ptr(), aData.Length());
+        TPtrC8 rawDataPtr((TUint8*)m_dataptr.Ptr(), m_dataptr.Length());
         TInt offset = rawDataPtr.Find(extString, sizeofextString);
         if(offset != KErrNotFound) {
             // found a header, get the loop count -
@@ -331,41 +323,13 @@ void CAnimationDecoderWrapped::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBo
         }
         iCurLoopCount = iLoopCount;
     }
+    if(mime)
+        {
+        CleanupStack::PopAndDestroy(mime);
+        }
     iCanBeDeleted = ETrue;
     if (iIsInvalid)
         delete this;
-}
-
-// -----------------------------------------------------------------------------
-// CAnimationDecoderWrapped::AddDataL
-// New chunk of raw data
-//
-// -----------------------------------------------------------------------------
-//
-void CAnimationDecoderWrapped::AddDataL(
-    const TDesC8& aNextChunk,
-    TBool aIsComplete )
-{
-    iRawDataComplete = aIsComplete;
-
-    if( iDecoder ) {
-        iDecoder->AppendDataL(aNextChunk);
-        if( iDecoder->ValidDecoder() ) {
-            //  if the image conversion is busy , then just appending the
-            // data should be sufficient
-            if(iStatus == KRequestPending) {
-                // more image data
-                iDecoder->ContinueConvert( &iStatus );
-                SetActive();
-            }
-        }
-        else {
-            iDecoder->ContinueOpenL() ;
-            if(iDecoder->ValidDecoder()  && iDecoder->IsImageHeaderProcessingComplete()){
-                StartDecodingL();
-            }
-        }
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -384,7 +348,6 @@ void CAnimationDecoderWrapped::StartDecodingL()
         // we only support gray2 and gray256 tiling
         TDisplayMode maskmode = ( (iFrameInfo.iFlags & TFrameInfo::EAlphaChannel) && (iFrameInfo.iFlags & TFrameInfo::ECanDither)) ? EGray256 : EGray2;
         TInt error = iDestination->Create( iFrameInfo.iOverallSizeInPixels, DisplayMode(), maskmode );
-
         if (!error)
             LoadFrame(0);
         else
@@ -578,8 +541,7 @@ void CAnimationDecoderWrapped::StartLoadAnimationBitmapL( TInt aFrameIndex )
     CFbsBitmap& animMask = iAnimationBitmap->MaskModifyable();
 
     TFrameInfo frameInfo( iDecoder->FrameInfo( aFrameIndex ) );
-    User::LeaveIfError( animBitmap.Create(
-    frameInfo.iOverallSizeInPixels, EColor16M ) );
+    User::LeaveIfError(animBitmap.Create(frameInfo.iOverallSizeInPixels, DisplayMode()));
 
     TDisplayMode maskDisplayMode( ENone );
 
@@ -588,7 +550,7 @@ void CAnimationDecoderWrapped::StartLoadAnimationBitmapL( TInt aFrameIndex )
             maskDisplayMode = EGray256;
         maskDisplayMode = EGray2;
 
-        User::LeaveIfError( animMask.Create( frameInfo.iOverallSizeInPixels, maskDisplayMode ) );
+        User::LeaveIfError(animMask.Create(frameInfo.iOverallSizeInPixels, maskDisplayMode));
         iDecoder->Convert( &iStatus, animBitmap, animMask, aFrameIndex );
     }
     else
@@ -639,6 +601,7 @@ void CAnimationDecoderWrapped::CompleteLoadL()
         iImageState = EInactive;
         iObserver->imageReady(sizeinBytes);
         delete iDecoder, iDecoder = NULL;
+        m_data = NULL;
     }
 }
 

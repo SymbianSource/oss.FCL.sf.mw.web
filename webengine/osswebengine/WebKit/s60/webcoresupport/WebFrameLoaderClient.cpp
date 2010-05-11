@@ -161,6 +161,7 @@ void WebFrameLoaderClient::makeRepresentation(DocumentLoader* docLoader)
             core(m_webFrame)->loader()->isLoadingMainFrame() &&
             FrameLoadTypeStandard == core(m_webFrame)->loader()->loadType()){
             m_webFrame->frameView()->topView()->resetZoomLevel();
+            m_webFrame->frameView()->topView()->resetJsTimers();
         }
 
         if (!core(m_webFrame)->ownerElement()) {

@@ -39,6 +39,11 @@ namespace WebCore
     class Frame;
 }
 
+namespace KJS
+{
+    class PausedTimeouts;
+}
+
 class CPluginHandler;
 class WebPreferences;
 class WebBackForwardList;
@@ -533,6 +538,12 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void clearEventFired() { m_firedEvent = 0; }
         
         void wait(double t); 
+
+        // JavaScript timers - pause and resume
+        void pauseJsTimers();
+        void resumeJsTimers();
+        bool jsTimersPaused() { return (m_jsTimeouts) ? true : false; }
+        void resetJsTimers() { m_jsTimeouts = 0; }
     private:
         WebCore::Page*          m_page;
         WebFrameView*           m_frameView;
@@ -634,6 +645,9 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         CPeriodic               *m_checkerBoardDestroyTimer;
         
         TBool                    m_isPinchZoomOut;
+		
+   	    // JavaScript (DOMWindowTimer) timers
+        KJS::PausedTimeouts*     m_jsTimeouts;
     };
 
 #endif

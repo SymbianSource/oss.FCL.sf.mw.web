@@ -60,7 +60,6 @@ HttpSessionManager::HttpSessionManager()
     m_SelfDownloadContentHandler = NULL;
     m_SelfDownloadContentTypes = KNullStr().Alloc();
     retryConnectivityFlag = EFalse;
-    m_inSecConnection = EFalse;
 }
 
 HttpSessionManager::~HttpSessionManager()
@@ -70,6 +69,7 @@ HttpSessionManager::~HttpSessionManager()
     delete m_ReqHdrManager;
     m_ReqHdrManager = NULL;
     delete m_cookieHandler;
+    m_cookieHandler = NULL;
     delete m_httpDownload;
     m_httpDownload = NULL;
     delete m_SelfDownloadContentHandler;
@@ -142,7 +142,7 @@ void HttpSessionManager::openHttpSessionIfNeededL()
             m_ReqHdrManager = HttpRequestHeaderManager::NewL(m_httpSession);
         }
         if (!m_cookieHandler) {
-            m_cookieHandler = CookieHandler::init();
+            m_cookieHandler = CookieHandler::init(m_httpSession.StringPool());
         }
     }
     updateFilters(true);
@@ -175,6 +175,9 @@ void HttpSessionManager::closeHttpSession()
         // disconnect the Dl Mgr
         if (m_httpDownload){
             m_httpDownload->disconnect();
+        if(m_cookieHandler)
+            m_cookieHandler->destroy();
+   
 		}
         m_httpSession.Close();
         m_sessionRunning = false;
@@ -263,20 +266,25 @@ void HttpSessionManager::retryTransactions()
 {
     Vector<HttpConnection *> requests;
     
+    TBool newConn = ETrue;
+    m_httpSession.ConnectionInfo().SetPropertyL(m_httpSession.StringPool().StringF(HttpFilterCommonStringsExt::EHttpNewConnFlag, HttpFilterCommonStringsExt::GetTable()), THTTPHdrVal((TBool)newConn));
+ 
     for(HashMap<HttpConnection *, ResourceHandle *>::iterator tmpit = m_pendingHttpRequests.begin();
         tmpit != m_pendingHttpRequests.end(); ++tmpit)
         {
-        	ResourceHandle *tmp = tmpit->second;
-        	ResourceHandleClient* client = tmp->client();
-            if(!client->isLoadingPlugins())
                 requests.append(tmpit->first);  
         }
     //Submit them again
     for (int i=0; i<requests.size(); ++i)
         {
+        if(requests[i]->HttpTransaction()) {
              requests[i]->HttpTransaction()->SubmitL();
         }
-
+        else {
+             removeRequest(requests[i]);
+        }
+                 
+        }
 }
 
 HttpConnection* HttpSessionManager::firstHttpConnection()
@@ -480,6 +488,22 @@ void HttpSessionManager::UpdateCacheL(const String& url, const String &equiv, co
             }
         }
         CleanupStack::PopAndDestroy(); // url8
+    }
+}
+
+void HttpSessionManager::cancelQueuedTransactions()
+{
+    Vector<HttpConnection *> requests;
+    for(HashMap<HttpConnection *, ResourceHandle *>::iterator tmpit = m_pendingHttpRequests.begin();
+        tmpit != m_pendingHttpRequests.end(); ++tmpit)
+        {
+                requests.append(tmpit->first);  
+        }
+    
+    for (int i = 0; i < requests.size(); ++i) {
+        if(requests[i]->HttpTransaction()) {
+            requests[i]->HttpTransaction()->Cancel();
+        }
     }
 }
 

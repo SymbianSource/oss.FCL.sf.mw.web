@@ -295,6 +295,7 @@ void CFeedParser::AddMappingL(RArray<ElementHandlerMapEntry>& aMappings,
         const TDesC8& aNamespace, const TDesC8& aElementName, TInt aValueId, 
         ElementHandlerFunctionL aHandler)
     {
+    CleanupClosePushL(aMappings);  
     ElementHandlerMapEntry  entry;
 
     // Init the entry.
@@ -305,6 +306,7 @@ void CFeedParser::AddMappingL(RArray<ElementHandlerMapEntry>& aMappings,
     
     // Append the entry.
     User::LeaveIfError(aMappings.Append(entry));
+    CleanupStack::Pop();
     }
 
 

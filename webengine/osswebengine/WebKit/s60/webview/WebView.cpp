@@ -100,6 +100,7 @@ using namespace HTMLNames;
 #include "EventNames.h"
 #include "Editor.h"
 #include "ThumbnailGenerator.h"
+#include <kjs_window.h>
 
 using namespace WebCore;
 using namespace EventNames;
@@ -217,6 +218,7 @@ m_brctl(brctl)
 , m_checkerBoardGc(NULL)
 , m_checkerBoardDestroyTimer(NULL)
 , m_isPinchZoomOut(false)
+, m_jsTimeouts(0)
 {
 }
 
@@ -273,6 +275,9 @@ WebView::~WebView()
     
     destroyCheckerBoard();
     delete m_checkerBoardDestroyTimer;
+    
+    if (StaticObjectsContainer::instance()->webSurface()->topView() == this) 
+        StaticObjectsContainer::instance()->webSurface()->setView( NULL ); 
     
 }
 
@@ -355,14 +360,15 @@ void WebView::ConstructL( CCoeControl& parent )
         m_pageScalerEnabled = false;
     }
     else  {
-        if(m_brctl->capabilities() & TBrCtlDefs::ECapabilityGraphicalPage)
+        if((m_brctl->capabilities() & TBrCtlDefs::ECapabilityGraphicalHistory)
+        	&& !(m_brctl->capabilities() & TBrCtlDefs::ECapabilityGraphicalPage))
+            {
+            m_thumbnailGenerator = CThumbnailGenerator::NewL(*this);          
+            }
+        else 
             {
             initializePageScalerL();
             m_pageScalerEnabled = true;
-            }
-        else if(m_brctl->capabilities() & TBrCtlDefs::ECapabilityGraphicalHistory)
-            {
-            m_thumbnailGenerator = CThumbnailGenerator::NewL(*this);
             }        
     }
     if (m_brctl->capabilities() & TBrCtlDefs::ECapabilityAutoFormFill) {
@@ -564,11 +570,12 @@ void WebView::MakeViewVisible(TBool visible)
 
     if ( visible ) {
       clearOffScreenBitmap();
-      m_tabbedNavigation->initializeForPage();
+      if ( m_brctl && m_brctl->settings() && SettingsContainer::NavigationTypeTabbed == m_brctl->settings()->getNavigationType() ) {
+          m_tabbedNavigation->initializeForPage();
+      }
       syncRepaint( mainFrame()->frameView()->visibleRect() );
       TRAP_IGNORE( m_webfeptexteditor->EnableCcpuL() ); 
     }
-
 }
 
 
@@ -1916,6 +1923,9 @@ void WebView::clearOffScreenBitmap()
 
 void WebView::scrollBuffer(TPoint to, TPoint from, TBool usecopyscroll)
 {
+    if(!IsVisible())
+        return;
+    
     TRect rect(m_offscreenrect);
 
     TSize bufSize( rect.Size() );
@@ -2521,6 +2531,7 @@ void WebView::zoomLevelChanged(int newZoomLevel)
     updateScrollbars(mainFrame()->frameView()->contentSize().iHeight, mainFrame()->frameView()->contentPos().iY,
         mainFrame()->frameView()->contentSize().iWidth, mainFrame()->frameView()->contentPos().iX);
 
+    m_allowRepaints = true;
     syncRepaint(view->visibleRect());
 
     int zoomLevel = m_brctl->historyHandler()->historyController()->currentEntryZoomLevel();
@@ -3250,4 +3261,27 @@ void WebView::calculateZoomRect(TRect &aOldRect, TRect &aNewRect, TInt aOldZoom,
         }
     }
 
+void WebView::pauseJsTimers()
+{
+    if(m_jsTimeouts==0) {        
+        WebCore::Frame *frame = core(mainFrame());
+        KJS::Window* window = KJS::Window::retrieveWindow(frame);
+        if(window) {
+            m_jsTimeouts = window->pauseTimeouts();
+        }
+    }
+}
+
+void WebView::resumeJsTimers()
+{
+    if(m_jsTimeouts) {
+        WebCore::Frame *frame = core(mainFrame());
+        KJS::Window* window = KJS::Window::retrieveWindow(frame);
+        if(window) {
+            window->resumeTimeouts(m_jsTimeouts);
+            delete m_jsTimeouts;
+            m_jsTimeouts = 0;
+        }
+    }
+}
 // END OF FILE

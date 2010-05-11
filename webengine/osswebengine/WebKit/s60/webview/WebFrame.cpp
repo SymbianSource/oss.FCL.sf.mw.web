@@ -508,10 +508,27 @@ bool WebFrame::executeScript(const WebCore::String& script)
 
 void WebFrame::makeVisiblePlugins(TBool visible)
 {    
-    PluginHandler* plghandler = StaticObjectsContainer::instance()->pluginHandler();
-    WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
-    for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it ) {
-        static_cast<PluginSkin*> (*it)->makeVisible(visible);
+    MWebCoreObjectWidget* view = NULL;  
+    Frame* coreFrame = core(this); 
+    PluginSkin* plg = 0; 
+    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) { 
+    
+        PassRefPtr<HTMLCollection> objects = frame->document()->objects();      
+        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) { 
+            view = widget(n);  
+            if (view) { 
+                plg = static_cast<PluginSkin*>(view); 
+                plg->makeVisible(visible);
+            } 
+        } 
+        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();        
+        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) { 
+            view = widget(n); 
+            if (view) { 
+                plg = static_cast<PluginSkin*>(view); 
+                plg->makeVisible(visible);
+            } 
+        }
     }
 }
 
@@ -577,12 +594,29 @@ void WebFrame::PlayPausePlugins(bool pause)
 
 void WebFrame::reCreatePlugins()
 {
-    PluginHandler* plghandler = StaticObjectsContainer::instance()->pluginHandler();
-    WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
-    for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it ) {
-        PluginSkin* plg = static_cast<PluginSkin*> (*it); //->PlayPauseNotify(pause);
-        if(plg->activeStreams() > 0)
-           plg->reCreatePlugin();
+    MWebCoreObjectWidget* view = NULL;  
+    Frame* coreFrame = core(this); 
+    PluginSkin* plg = 0; 
+    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) { 
+   
+        PassRefPtr<HTMLCollection> objects = frame->document()->objects();      
+        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) { 
+            view = widget(n);  
+            if (view) { 
+                plg = static_cast<PluginSkin*>(view); 
+                if (plg->activeStreams() > 0)
+                    plg->reCreatePlugin(); 
+            } 
+        } 
+        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();        
+        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) { 
+            view = widget(n); 
+            if (view) { 
+                plg = static_cast<PluginSkin*>(view); 
+                if (plg->activeStreams() > 0)
+                    plg->reCreatePlugin(); 
+            } 
+        }
     }
 }
 

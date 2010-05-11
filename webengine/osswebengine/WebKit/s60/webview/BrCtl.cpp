@@ -420,6 +420,7 @@ CBrCtl::CBrCtl(
    , m_wmlEngineInterface(NULL)
    , m_brCtlDownloadObserver(aBrCtlDownloadObserver)
    , m_windoCloseTimer(NULL)
+   , m_didFirstLayout(false)
 {
     m_documentHeight = 0;
     m_displayHeight = 0;
@@ -594,12 +595,15 @@ void CBrCtl::HandleBrowserLoadEventL( TBrCtlDefs::TBrCtlLoadEvent aLoadEvent, TU
                 m_webView->formFillPopup()->handleCommandL(TBrCtlDefs::ECommandCancel);            
             break;
         case TBrCtlDefs::EEventNewContentDisplayed:
-            if(m_brCtlLayoutObserver && m_webView)
+            if(m_brCtlLayoutObserver && m_webView && !m_didFirstLayout)  {
                 m_brCtlLayoutObserver->NotifyLayoutChange( (webView()->mainFrame()->bridge()->m_rtl ? EOriginTopRight : EOriginTopLeft));
+                m_didFirstLayout = true;
+            }
             break;
         case TBrCtlDefs::EEventContentFinished:
         case TBrCtlDefs::EEventUploadFinished:
             m_pageLoadFinished = true;
+            m_didFirstLayout= false;
             if (m_suspendTimers) {
                 m_suspendTimers = false;
                 setDeferringTimers(true);
@@ -664,6 +668,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
                     if (coreFrame)
                         coreFrame->eventHandler()->deactivatedEvent();
                 }
+                m_webView->setEditable(EFalse);
                 break;
             }
         case TBrCtlDefs::ECommandCancelFetch:
@@ -777,7 +782,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
                     setDeferringTimers(false);
                 m_suspendTimers = false;
 #endif
-
+                m_webView->resumeJsTimers();
                 break;
             }
         case TBrCtlDefs::ECommandAppBackground:
@@ -801,6 +806,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
 
                 //Disable the zooming bar when it goes to background
                 m_webView->hideZoomSliderL();
+                m_webView->pauseJsTimers();
                 break;
             }
         case TBrCtlDefs::ECommandClearAutoFormFillData:
@@ -956,6 +962,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
 
        case TBrCtlDefs::ECommandEnterFullscreenBrowsing:
             {
+             m_webView->resumeJsTimers();
              m_webView->EnterFullscreenBrowsingL();
              break;
             }
@@ -1005,7 +1012,24 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
                }
            break;
            }
-       
+       case TBrCtlDefs::ECommandLoseFocus:
+       case TBrCtlDefs::ECommandPauseScriptTimers:
+           {
+           m_webView->pauseJsTimers();
+           break;
+           }
+           
+       case TBrCtlDefs::ECommandGainFocus:
+       case TBrCtlDefs::ECommandResumeScriptTimers:
+           {
+           m_webView->resumeJsTimers();
+           break;
+           }
+       case TBrCtlDefs::ECommandCancelQueuedTransactions:
+           {
+           StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cancelQueuedTransactions();
+		   break;
+           }		   
       default:
             {
             if ( m_wmlEngineInterface &&
@@ -1717,6 +1741,9 @@ EXPORT_C void CBrCtl::LoadUrlL(const TDesC& url, TInt apid,
         User::Leave(KErrArgument);
     // convert to 8
 
+    // reset timers ptr, if paused from last page
+    m_webView->resetJsTimers();
+        
     _LIT(KJs, "javascript:");
     if (url.Length() > KJs().Length()) {
         if (url.Left(KJs().Length()).FindF(KJs) == 0) {
@@ -2525,6 +2552,7 @@ MBrCtlDownloadObserver* CBrCtl::brCtlDownloadObserver()
     }
     return m_brCtlDownloadObserver;
 }
+
 
 
 

@@ -688,7 +688,10 @@ TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWind
             TRAP_IGNORE( aWidgetWindow->Engine()->HandleCommandL( 
                     (TInt)TBrCtlDefs::ECommandIdBase +
                     (TInt)TBrCtlDefs::ECommandDisconnect ) );
-            iConnection->CancelConnection(); 
+            iConnection->CancelConnection();
+#ifdef BRDO_OCC_ENABLED_FF            
+            aWidgetWindow->StopConnectionObserving();
+#endif
             iConnection->StopConnectionL();
             delete aWidgetWindow;
             return ETrue;
@@ -711,6 +714,9 @@ TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWind
                 aWidgetWindow->Engine()->HandleCommandL( 
                 (TInt)TBrCtlDefs::ECommandIdBase +
                                 (TInt)TBrCtlDefs::ECommandDisconnect );
+#ifdef BRDO_OCC_ENABLED_FF                                    
+                aWidgetWindow->StopConnectionObserving();
+#endif
                 iConnection->StopConnectionL();
                 }             
             delete aWidgetWindow;
@@ -1090,6 +1096,7 @@ void CWidgetUiWindowManager::ResumeWidgetL( const TUid& aUid )
             (TInt)TBrCtlDefs::ECommandIdBase);
 #ifdef BRDO_WRT_HS_FF 
         wdgt_window->Engine()->MakeVisible( EFalse );
+        wdgt_window->SetIsCurrentWindow( EFalse );
         wdgt_window->Engine()->SetRect( iCpsPublisher->BitmapSize());
         //When HS comes to foreground show the latest updatd content on HS.
         //Relayout can sometimes happen only when widget in FullView.
@@ -1405,6 +1412,9 @@ void CWidgetUiWindowManager::CloseAllWidgets()
                        (TInt)TBrCtlDefs::ECommandIdBase +
                        (TInt)TBrCtlDefs::ECommandDisconnect ) );
                        iConnection->CancelConnection();
+#ifdef BRDO_OCC_ENABLED_FF                       
+                       window->StopConnectionObserving();
+#endif                       
                        iConnection->StopConnectionL();
            delete window;  
            }  
@@ -1559,6 +1569,9 @@ void CWidgetUiWindowManager::CenrepChanged(TInt aHSModeOnline)
                                 (TInt)TBrCtlDefs::ECommandIdBase +
                                 (TInt)TBrCtlDefs::ECommandDisconnect );
                     iConnection->CancelConnection();
+#ifdef BRDO_OCC_ENABLED_FF                    
+					window->StopConnectionObserving();
+#endif
                     iConnection->StopConnectionL();
                     }
 		  	        }

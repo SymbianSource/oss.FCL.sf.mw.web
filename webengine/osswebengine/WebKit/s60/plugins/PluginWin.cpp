@@ -376,6 +376,14 @@ void PluginWin::makeVisible( TBool visible )
     {
         CCoeControl::MakeVisible(visible);
     }
+    TPluginLoadMode loadmode = m_pluginskin->getLoadMode();
+    if(loadmode == ELoadModeNew ){
+        m_pluginskin->setLoadMode(ELoadModeNone);
+        if(visible)
+            HandleGainingForeground();
+        else
+            HandleLosingForeground();
+    }
     NotifyPluginVisible(visible);
     if (!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event) {
         NPEvent event;

@@ -103,6 +103,10 @@ void StringImpl::init(const char* str, unsigned len)
     }
     
     m_data = newUCharVector(m_length);
+    if ( !m_data ) { 
+        m_length = 0; 
+        return; 
+    }
     int i = m_length;
     UChar* ptr = m_data;
     while (i--) {
@@ -123,7 +127,11 @@ void StringImpl::init(const UChar* str, unsigned len)
     }
     
     m_data = newUCharVector(len);
-    memcpy(m_data, str, len * sizeof(UChar));
+    if ( !m_data ) { 
+        m_length = 0;     
+        return; 
+    }
+    memcpy(m_data, str, len * sizeof(UChar));    
 }
 
 StringImpl::~StringImpl()

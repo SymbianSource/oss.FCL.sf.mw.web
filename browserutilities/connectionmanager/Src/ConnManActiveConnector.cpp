@@ -195,7 +195,6 @@ void CConnManActiveConnector::DoCancel()
 	{
 	CLOG_WRITE( "CConnManActiveConnector: DoCancel called");
     
-	iConnection.Close();
 	User::RequestComplete( iExternalRequestStatus, KErrCancel );//completing user req
     
 	CLOG_WRITE( "CConnManActiveConnector: DoCancel returned");

@@ -1,20 +1,23 @@
 /*
-* Copyright (c) 2007 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+* ==============================================================================
+*  Name        : WidgetRegistrySTIF.cpp
+*  Part of     : STIF for WidgetRegistry
 *
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
+*  Description : CWidgetRegistrySTIF class member functions
+*  Version:   1.0
 *
-* Contributors:
+*  Copyright (C) 2007 Nokia Corporation.
+*  This material, including documentation and any related
+*  computer programs, is protected by copyright controlled by
+*  Nokia Corporation. All rights are reserved. Copying,
+*  including reproducing, storing,  adapting or translating, any
+*  or all of this material requires the prior written consent of
+*  Nokia Corporation. This material also contains confidential
+*  information which may not be disclosed to others without the
+*  prior written consent of Nokia Corporation.
 *
-* Description:  CWidgetRegistrySTIF class member functions
-*
+* ============================================================================
 */
-
 
 // INCLUDE FILES
 #include <Stiftestinterface.h>
@@ -152,7 +155,9 @@ TInt CWidgetRegistrySTIF::ClientSessionCreateL( TTestResult& aResult )
     RWidgetRegistryClientSession* registryClient;
     registryClient = new (ELeave) RWidgetRegistryClientSession;
     CleanupStack::PushL( registryClient );
-        TInt error = registryClient->Disconnect();
+    TInt error = registryClient->Connect();
+    if ( KErrNone == error )
+        error = registryClient->Disconnect();
         if ( KErrNone == error )
             {
             aResult.SetResult( KErrNone, KPassed );
@@ -188,7 +193,12 @@ TInt CWidgetRegistrySTIF::ClientSessionTwoConnectL( TTestResult& aResult )
     RWidgetRegistryClientSession* registryClient2;
     registryClient2 = new (ELeave) RWidgetRegistryClientSession;
     CleanupStack::PushL( registryClient2 );
+    
+  
+            
+    
     TInt error = registryClient2->Connect();
+   
     if ( KErrNone == error )
         {
         aResult.SetResult( KErrNone, KPassed );
@@ -349,7 +359,19 @@ TInt CWidgetRegistrySTIF::ClientSessionWidgetExistsL( TTestResult& aResult )
     TInt error = registryClient->Connect();
     if ( KErrNone == error )
         {
-        TBool b = registryClient->WidgetExistsL( KValidBundle );
+        //TBool b = registryClient->WidgetExistsL( KValidBundle );
+        RWidgetInfoArray widgetInfoArray;
+        error = registryClient->InstalledWidgetsL( widgetInfoArray );
+        CWidgetInfo *myInfo = widgetInfoArray[0];
+        //myInfo->iBundleName;
+        
+           TUid     ValidUid = myInfo->iUid;
+           HBufC*  iWidgetBundleId = HBufC::NewL(KWidgetRegistryVal);
+           TPtr widgetBundleId = iWidgetBundleId->Des();
+            
+        //HBufC BundleID( HBufC16::NewL(1024));
+        registryClient->GetWidgetBundleId( ValidUid , widgetBundleId );
+        TBool b = registryClient->WidgetExistsL( widgetBundleId );
         if ( b != EFalse )
             {
             aResult.SetResult( KErrNone, KPassed );
@@ -496,7 +518,20 @@ TInt CWidgetRegistrySTIF::ClientSessionGetWidgetUidL( TTestResult& aResult )
     TInt error = registryClient->Connect();
     if ( KErrNone == error )
         {
-        TInt uid = registryClient->GetWidgetUidL( KValidBundle );
+        RWidgetInfoArray widgetInfoArray;
+        error = registryClient->InstalledWidgetsL( widgetInfoArray );
+        CWidgetInfo *myInfo = widgetInfoArray[0];
+        //myInfo->iBundleName;
+    
+       TUid     ValidUid = myInfo->iUid;
+       HBufC*  iWidgetBundleId = HBufC::NewL(KWidgetRegistryVal);
+       TPtr widgetBundleId = iWidgetBundleId->Des();
+        
+      //HBufC BundleID( HBufC16::NewL(1024));
+       
+       registryClient->GetWidgetBundleId( ValidUid , widgetBundleId );
+        TInt uid = registryClient->GetWidgetUidL( widgetBundleId );
+        
         if ( iValidUid == TUid::Uid( uid ) )
             {
             aResult.SetResult( KErrNone, KPassed );
@@ -796,6 +831,232 @@ TInt CWidgetRegistrySTIF::ClientSessionGetLprojNameL( TTestResult& aResult )
  }
 
 
+//Added as part of homescreen implementation testcases
+    
+//Method to verify IsWidgetInFullView API
+ TInt CWidgetRegistrySTIF::ClientSessionIsWidgetInFullViewTest( TTestResult& aResult )
+ {
+    aResult.SetResult( KErrGeneral, KFailed );
+    RWidgetRegistryClientSession* registryClient;
+    registryClient = new (ELeave) RWidgetRegistryClientSession;
+    CleanupStack::PushL( registryClient );
+    TInt error = registryClient->Connect();
+    if ( KErrNone == error )
+        {
+    
+    const TInt maxExponent = 32;
+    TAny* Cells[maxExponent];
+    TInt j=0;
+
+    for (TInt i = 0; i < maxExponent; i++)
+        Cells[i] = 0;
+        
+    
+    for (TInt i = KMaxTInt/2-1; i > 0; )
+    {
+        Cells[j] = User::Alloc(i);
+        if( !( Cells[j] ) )
+        {
+            i/=2;
+        }
+        else
+        {
+            j++;
+        }
+    }
+          TBool iswidgetinfullview = registryClient->IsWidgetInFullView( KNullUid );
+          
+          for (TInt i = 0; i < maxExponent; i++) // release all consumed heap memory
+                      if (Cells[i])
+                       User::Free(Cells[i]);
+          
+          
+          if(EFalse == iswidgetinfullview)
+          {
+             aResult.SetResult( KErrNone, KPassed );    
+          }
+        registryClient->Disconnect();
+        } 
+    CleanupStack::PopAndDestroy( registryClient );
+    return KErrNone;
+ }
+
+//Method to verify IsWidgetInMiniView API
+ TInt CWidgetRegistrySTIF::ClientSessionIsWidgetInMiniViewTest( TTestResult& aResult )
+ {
+    aResult.SetResult( KErrGeneral, KFailed );
+    RWidgetRegistryClientSession* registryClient;
+    registryClient = new (ELeave) RWidgetRegistryClientSession;
+    CleanupStack::PushL( registryClient );
+    TInt error = registryClient->Connect();
+    if ( KErrNone == error )
+        {
+    
+    const TInt maxExponent = 32;
+       TAny* Cells[maxExponent];
+       TInt j=0;
+
+       for (TInt i = 0; i < maxExponent; i++)
+           Cells[i] = 0;
+           
+       
+       for (TInt i = KMaxTInt/2-1; i > 0; )
+       {
+           Cells[j] = User::Alloc(i);
+           if( !( Cells[j] ) )
+           {
+               i/=2;
+           }
+           else
+           {
+               j++;
+           }
+       }
+          TBool iswidgetinminiview = registryClient->IsWidgetInMiniView( KNullUid );
+          
+          for (TInt i = 0; i < maxExponent; i++) // release all consumed heap memory
+                               if (Cells[i])
+                                User::Free(Cells[i]);
+          if(EFalse == iswidgetinminiview)
+          {
+              aResult.SetResult( KErrNone, KPassed );    
+          }
+        registryClient->Disconnect();
+        } 
+    CleanupStack::PopAndDestroy( registryClient );
+    return KErrNone;
+ }
+    
+//Method to verify IsBlanketPermGranted API
+ TInt CWidgetRegistrySTIF::ClientSessionIsBlanketPermGrantedTest( TTestResult& aResult )
+ {
+    aResult.SetResult( KErrGeneral, KFailed );
+    RWidgetRegistryClientSession* registryClient;
+    registryClient = new (ELeave) RWidgetRegistryClientSession;
+    CleanupStack::PushL( registryClient );
+    TInt error = registryClient->Connect();
+    if ( KErrNone == error )
+        {
+            TBool iswidgetgranted = registryClient->IsBlanketPermGranted( KNullUid );
+            if(EFalse == iswidgetgranted)
+            {
+                aResult.SetResult( KErrNone, KPassed );    
+            }
+        registryClient->Disconnect();
+        } 
+    CleanupStack::PopAndDestroy( registryClient );
+    return KErrNone;
+ }
+    
+    
+//Method to verify SetminiViewL API
+ TInt CWidgetRegistrySTIF::ClientSessionSetMiniViewTestL( TTestResult& aResult )
+ {
+    aResult.SetResult( KErrGeneral, KFailed );
+    RWidgetRegistryClientSession* registryClient;
+    registryClient = new (ELeave) RWidgetRegistryClientSession;
+    CleanupStack::PushL( registryClient );
+    TInt error = registryClient->Connect();
+    if ( KErrNone == error )
+        {
+           registryClient->SetMiniViewL( KNullUid, 0 );
+           aResult.SetResult( KErrNone, KPassed );
+           registryClient->Disconnect();
+        }
+    CleanupStack::PopAndDestroy( registryClient );
+    return KErrNone;
+ }
+
+
+//Method to verify SetFullViewL API
+ TInt CWidgetRegistrySTIF::ClientSessionSetFullViewTestL( TTestResult& aResult )
+ {
+    aResult.SetResult( KErrGeneral, KFailed );
+    RWidgetRegistryClientSession* registryClient;
+    registryClient = new (ELeave) RWidgetRegistryClientSession;
+    CleanupStack::PushL( registryClient );
+    TInt error = registryClient->Connect();
+    if ( KErrNone == error )
+        {
+           registryClient->SetFullViewL( KNullUid, 0 );
+           aResult.SetResult( KErrNone, KPassed );
+           registryClient->Disconnect();
+        }
+    CleanupStack::PopAndDestroy( registryClient );
+    return KErrNone;
+ }
+
+//Method to verify SetBlanketPermissionL API
+ TInt CWidgetRegistrySTIF::ClientSessionSetBlanketPermissionTestL( TTestResult& aResult )
+ {
+    aResult.SetResult( KErrGeneral, KFailed );
+    RWidgetRegistryClientSession* registryClient;
+    registryClient = new (ELeave) RWidgetRegistryClientSession;
+    CleanupStack::PushL( registryClient );
+    TInt error = registryClient->Connect();
+    if ( KErrNone == error )
+        {
+    const TInt maxExponent = 32;
+      TAny* Cells[maxExponent];
+      TInt j=0;
+
+      for (TInt i = 0; i < maxExponent; i++)
+          Cells[i] = 0;
+          
+      
+      for (TInt i = KMaxTInt/2-1; i > 0; )
+      {
+          Cells[j] = User::Alloc(i);
+          if( !( Cells[j] ) )
+          {
+              i/=2;
+          }
+          else
+          {
+              j++;
+          }
+      }     
+           registryClient->SetBlanketPermissionL( KNullUid, 0 );
+           
+           for (TInt i = 0; i < maxExponent; i++) // release all consumed heap memory
+                               if (Cells[i])
+                                User::Free(Cells[i]);
+           
+           
+           aResult.SetResult( KErrNone, KPassed );
+           registryClient->Disconnect();
+        }
+    CleanupStack::PopAndDestroy( registryClient );
+    return KErrNone;
+ }
+ 
+
+//Method to verify WidgetSapiAccessState API
+ TInt CWidgetRegistrySTIF::ClientSessionWidgetSapiAccessStateTest( TTestResult& aResult )
+ {
+    aResult.SetResult( KErrGeneral, KFailed );
+    RWidgetRegistryClientSession* registryClient;
+    registryClient = new (ELeave) RWidgetRegistryClientSession;
+    CleanupStack::PushL( registryClient );
+    TInt error = registryClient->Connect();
+    if ( KErrNone == error )
+        {
+           TInt aAccessState = registryClient->WidgetSapiAccessState( KNullUid );
+           if(aAccessState == -1)
+            {
+                aResult.SetResult( KErrNone, KPassed );   
+            }
+           else
+            {
+                aResult.SetResult( KErrNone, KFailed );      
+            }
+        registryClient->Disconnect();
+        }
+    CleanupStack::PopAndDestroy( registryClient );
+    return KErrNone;
+ }
+ 
+ 
 const TCaseInfo CWidgetRegistrySTIF::Case ( const TInt aCaseNumber ) const
     {
     static TCaseInfoInternal const KCases[] =
@@ -871,6 +1132,20 @@ const TCaseInfo CWidgetRegistrySTIF::Case ( const TInt aCaseNumber ) const
                CWidgetRegistrySTIF::ClientSessionGetLprojNameL ),
         ENTRY( "ClientSession SecurityPolicyId",
                CWidgetRegistrySTIF::ClientSessionSecurityPolicyId ),
+        ENTRY( "ClientSession IsWidgetInFullViewTest",
+               CWidgetRegistrySTIF::ClientSessionIsWidgetInFullViewTest ),
+        ENTRY( "ClientSession IsWidgetInMiniViewTest",
+               CWidgetRegistrySTIF::ClientSessionIsWidgetInMiniViewTest ),
+        ENTRY( "ClientSession IsBlanketPermGrantedTest",
+               CWidgetRegistrySTIF::ClientSessionIsBlanketPermGrantedTest ),
+        ENTRY( "ClientSession SetminiViewTestL",
+               CWidgetRegistrySTIF::ClientSessionSetMiniViewTestL ),
+        ENTRY( "ClientSession SetFullViewTestL",
+               CWidgetRegistrySTIF::ClientSessionSetFullViewTestL ),
+        ENTRY( "ClientSession SetBlanketPermissionTestL",
+               CWidgetRegistrySTIF::ClientSessionSetBlanketPermissionTestL ),
+        ENTRY( "ClientSession WidgetSapiAccessStateTest",
+               CWidgetRegistrySTIF::ClientSessionWidgetSapiAccessStateTest ),
         
         };
     /*
