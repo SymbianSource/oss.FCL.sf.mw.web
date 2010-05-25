@@ -146,13 +146,13 @@ void CWidgetInstallerUI::InstallL( RFile& aFile,
 void CWidgetInstallerUI::SilentInstallL( RFile& aFile,
                                          TInstallReq& aInstallParams,
                                          TBool /*aIsDRM*/,
-                                         TInstallOptions& /*aOptions*/,
+                                         TInstallOptions& aOptions,
                                          TRequestStatus& aStatus )
     {
     __ASSERT_ALWAYS( !iWatcher, User::Leave( KErrInUse ) );
     TRAPD( err ,
            iWatcher = CWidgetUIOperationsWatcher::NewL();
-           iWatcher->SilentInstallL( aFile, aInstallParams.iMIME, aStatus );
+           iWatcher->SilentInstallL( aFile, aInstallParams.iMIME, aOptions.iDrive, aStatus );
         );
     if ( KErrNone != err )
       {

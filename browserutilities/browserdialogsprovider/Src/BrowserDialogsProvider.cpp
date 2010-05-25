@@ -131,6 +131,8 @@ void CBrowserDialogsProvider::ConstructL()
 //-----------------------------------------------------------------------------
 CBrowserDialogsProvider::~CBrowserDialogsProvider()
 	{
+	iDialogs.Close();
+	iDialogs.ResetAndDestroy();
 	iResourceLoader.Close();
 
 	// Delete any dialogs
@@ -991,9 +993,6 @@ EXPORT_C void CBrowserDialogsProvider::CancelAll()
 	 if(iSelectDlg  )
         iSelectDlg->CancelPopup();
 		
-    iDialogs.Close();
-    // Empty the array
-    iDialogs.ResetAndDestroy();
 	}
 
 //-----------------------------------------------------------------------------

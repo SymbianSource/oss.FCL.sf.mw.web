@@ -101,6 +101,14 @@ class CWidgetUiAppUi : public CAknViewAppUi, MApiProvider
         * @return void
         */
         void SendAppToBackground();
+       
+        /**
+        * SendAppToForeground
+        * Send widget ui to foreground
+        * @since 
+        * @return void
+        */
+        void SendAppToForeground();
         
         /**
         * SetDisplayLandscapeL

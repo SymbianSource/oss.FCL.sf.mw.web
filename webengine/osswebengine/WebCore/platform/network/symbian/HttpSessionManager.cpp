@@ -42,7 +42,8 @@
 // CONSTANTS
 _LIT8( KHttpProtString, "HTTP/TCP" );
 _LIT (KNullStr, "");
-
+const TInt KResetRetryFlagTimeOut = 5*1000*1000;
+TInt doResetFlag(TAny*);
 class MBrCtlSpecialLoadObserver;
 
 using namespace WebCore;
@@ -60,6 +61,7 @@ HttpSessionManager::HttpSessionManager()
     m_SelfDownloadContentHandler = NULL;
     m_SelfDownloadContentTypes = KNullStr().Alloc();
     retryConnectivityFlag = EFalse;
+    m_resetTimer = NULL;
 }
 
 HttpSessionManager::~HttpSessionManager()
@@ -76,6 +78,12 @@ HttpSessionManager::~HttpSessionManager()
     m_SelfDownloadContentHandler = NULL;
     delete m_SelfDownloadContentTypes;
     m_SelfDownloadContentTypes = NULL;
+    if(m_resetTimer)
+        {
+        m_resetTimer->Cancel();
+        delete m_resetTimer;
+        m_resetTimer = NULL;
+        }
     m_ClientAcceptHeaders.ResetAndDestroy();
     m_ClientAcceptHeaders.Close();
     closeHttpSession();
@@ -505,6 +513,31 @@ void HttpSessionManager::cancelQueuedTransactions()
             requests[i]->HttpTransaction()->Cancel();
         }
     }
+}
+
+void HttpSessionManager::startTimer()
+{
+	RDebug::Printf("hamish HttpSessionManager::startTimer()");
+    if(m_resetTimer)
+        deleteTimer();
+    m_resetTimer = CPeriodic::NewL(CActive::EPriorityStandard);
+    m_resetTimer->Start(KResetRetryFlagTimeOut,0,TCallBack(&doResetFlag,this));
+}
+
+void HttpSessionManager::deleteTimer()
+{
+    m_resetTimer->Cancel();
+    delete m_resetTimer;
+    m_resetTimer = NULL;
+}
+    
+TInt doResetFlag(TAny* ptr)
+{
+	RDebug::Printf("hamish doResetFlag");
+    HttpSessionManager* tmp = static_cast<HttpSessionManager*>(ptr);
+    tmp->unSetRetryConnectivityFlag();
+    tmp->deleteTimer();  
+    return EFalse;
 }
 
 // end of file

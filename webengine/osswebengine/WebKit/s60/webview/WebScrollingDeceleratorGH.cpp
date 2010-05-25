@@ -37,8 +37,7 @@ const int KDecelCurveSize = 10;
 
 const int KScrollIntervalTimeout = 60000; // scroll timer interval in microseconds
 
-const float KDeccelerationLow = -350.0;
-const float KDeccelerationHigh = -600.0;
+const float KDecceleration = -750.0;
 const float KSpeedHigh = 2000.0;
 
 int decelTimerCB(TAny* ptr);
@@ -79,7 +78,7 @@ WebScrollingDeceleratorGH::WebScrollingDeceleratorGH(WebView& webView)
 void WebScrollingDeceleratorGH::ConstructL()
 {
     m_decelTimer = CPeriodic::NewL(CActive::EPriorityStandard);
-    m_deceleration = KDeccelerationHigh;
+    m_deceleration = KDecceleration;
 }
 
 // -----------------------------------------------------------------------------
@@ -125,11 +124,9 @@ void WebScrollingDeceleratorGH::startDecel(TRealPoint& speed, WebScrollbarDrawer
     
     if (absSpeedX > KSpeedHigh) {
         speedX = KSpeedHigh * speedX/absSpeedX ;
-        m_deceleration = KDeccelerationLow;
     }
     if (absSpeedY > KSpeedHigh) {
         speedY = KSpeedHigh * speedY/absSpeedY;
-        m_deceleration = KDeccelerationLow;
     }
     
     m_initSpeed.iX = (-1) * speedX;

@@ -68,38 +68,14 @@ CWidgetSidChecker* CWidgetSidChecker::NewL()
 
 CWidgetSidChecker::~CWidgetSidChecker()
 	{
-	iClientSession.Close();
+	
 	}
 
-TBool CWidgetSidChecker::AppRegisteredAt(const TUid& aSid, TDriveUnit /*aDrive*/)
+TBool CWidgetSidChecker::AppRegisteredAt(const TUid& /*aSid*/, TDriveUnit /*aDrive*/)
     {
-      TFindProcess findProcess (_L("widgetregistry*"));
-      TFullName result;       
-      if(findProcess.Next(result) == KErrNone )
-        {
-        TBool res = AppRegisteredAtL(aSid);
-        return res;
-        }
-      return EFalse;      
+    return ETrue;      
     }
-	
 
-TBool CWidgetSidChecker::AppRegisteredAtL( TUid aSid )
-    {
-    TBuf<KMaxFileName> aWidgetBundleId;
-    TBool res = EFalse;
-    
-    User::LeaveIfError( iClientSession.Connect() );    
-    iClientSession.GetWidgetBundleId(aSid, aWidgetBundleId);
-    //check if the widget exists by querying to WidgetRegisrty return ETrue if exists else return EFalse
-    if(iClientSession.WidgetExistsL( aWidgetBundleId ) )    
-      res = ETrue;
-    else
-      res = EFalse;
-    
-    iClientSession.Disconnect();
-    return res;
-    }
 	
 void CWidgetSidChecker::SetRescanCallBackL(const TCallBack &/*aCallBack*/)
 	{

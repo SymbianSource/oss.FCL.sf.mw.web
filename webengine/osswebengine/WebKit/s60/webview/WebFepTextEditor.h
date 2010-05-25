@@ -133,6 +133,7 @@ public:
     bool IsWapMaskedModeInput(WebCore::Frame* frame);
     void EnableCcpuL();
     TBool IsInputElementFocused() const;
+    void ReportEventL();
 private:
     void  findPrevSiblingTextLen(Node*, TInt&) const;
     Node* findTextNodeForCurPos(Node* aNode, TInt& aPos) const;

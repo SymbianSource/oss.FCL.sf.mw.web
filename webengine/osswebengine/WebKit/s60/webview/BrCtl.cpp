@@ -605,8 +605,8 @@ void CBrCtl::HandleBrowserLoadEventL( TBrCtlDefs::TBrCtlLoadEvent aLoadEvent, TU
             m_pageLoadFinished = true;
             m_didFirstLayout= false;
             if (m_suspendTimers) {
-                m_suspendTimers = false;
-                setDeferringTimers(true);
+                m_suspendTimers = false;                
+                m_webView->pauseJsTimers();
             }
 #ifndef BRDO_WML_DISABLED_FF
             if (m_wmlUnloadPending)
@@ -791,7 +791,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
                 if(m_webView->widgetExtension())
                     {
                     if(m_pageLoadFinished)
-                        setDeferringTimers(true);
+                        m_webView->pauseJsTimers();                        
                     else 
                         m_suspendTimers = true;
                     }
@@ -799,14 +799,14 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
                     {
                     if (m_webView->isLoading())
                         m_suspendTimers = true;
-                    else if (!isDeferringTimers())
-                        setDeferringTimers(true);
+                    else 
+                        m_webView->pauseJsTimers();                        
+                        
                     }
 #endif
 
                 //Disable the zooming bar when it goes to background
-                m_webView->hideZoomSliderL();
-                m_webView->pauseJsTimers();
+                m_webView->hideZoomSliderL();                
                 break;
             }
         case TBrCtlDefs::ECommandClearAutoFormFillData:

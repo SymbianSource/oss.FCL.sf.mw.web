@@ -493,7 +493,12 @@ void CHttpCacheEntry::WriteBodyDataAsync(TRequestStatus& aStatus)
     {
     delete iWriteHelper;
     iWriteHelper = NULL;
-    TRAP_IGNORE( iWriteHelper = CHttpCacheEntryAsyncWriteHelper::NewL( this, aStatus ) );
+    TRAPD(err, iWriteHelper = CHttpCacheEntryAsyncWriteHelper::NewL( this, aStatus ) );
+    if(err != KErrNone)
+        {
+        TRequestStatus *stat = &aStatus;
+        User::RequestComplete(stat, err);
+        }
     }
 
 // -----------------------------------------------------------------------------

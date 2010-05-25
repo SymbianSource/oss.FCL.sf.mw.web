@@ -146,7 +146,8 @@ void CWebFepTextEditor::UpdateEditingMode()
                     state->SetFlags( EAknEditorFlagNoLRNavigation |
                                         EAknEditorFlagLatinInputModesOnly |
                                         EAknEditorFlagNoT9 |
-                                        EAknEditorFlagUseSCTNumericCharmap );
+                                        EAknEditorFlagUseSCTNumericCharmap |
+                                        EAknEditorFlagNoLRNavigation);                    
                     state->SetDefaultInputMode(EAknEditorSecretAlphaInputMode);
                     state->SetCurrentInputMode(EAknEditorSecretAlphaInputMode);
                     state->SetPermittedCases(EAknEditorLowerCase|EAknEditorUpperCase);
@@ -155,6 +156,7 @@ void CWebFepTextEditor::UpdateEditingMode()
                     state->SetDefaultCase(EAknEditorLowerCase);
                     state->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG_LATIN_ONLY);
                     state->SetNumericKeymap(EAknEditorStandardNumberModeKeymap);
+                    state->SetCcpuState(NULL);
                 }
             }
             else {
@@ -181,6 +183,7 @@ void CWebFepTextEditor::UpdateEditingMode()
                             state->SetDefaultCase(EAknEditorLowerCase);
                             state->SetPermittedInputModes(EAknEditorAllInputModes);
                             state->SetPermittedCases(EAknEditorAllCaseModes);//allow everything
+                            state->SetCcpuState(this);
                         }
                     }
             }
@@ -1498,4 +1501,10 @@ TBool CWebFepTextEditor::IsInputElementFocused() const
     Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
     return ( frame && frame->document()->focusedNode() &&
              frame->document()->focusedNode()->hasTagName(HTMLNames::inputTag));
+    }
+
+void CWebFepTextEditor::ReportEventL()
+    {
+    m_ExtendedInputCapabilities->ReportEventL(CAknExtendedInputCapabilities::
+                        MAknEventObserver::EPointerEventReceived, NULL );
     }

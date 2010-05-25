@@ -38,4 +38,3 @@ end
 LIBRARY euser.lib aplist.lib ecom.lib efsrv.lib  
 LIBRARY ws32.lib apparc.lib
 library apgrfx.lib
-LIBRARY WidgetRegistryClient.lib

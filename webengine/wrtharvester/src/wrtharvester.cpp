@@ -774,13 +774,39 @@ void CWrtHarvester::RequestForNotificationL( CWrtInfo& wrtInfo )
 void CWrtHarvester::QueueOperationL( TWidgetOperations aOperation, TUid aUid )
     {
     //Hack to find out if WidgetUi exist as Queue keeps filling up
-    if((iHSCount*3 <= iWidgetOperations.Count() && !CheckTaskExistsL()) || (aOperation == WidgetSelect))
-        {
+    SWidgetOperation op = { aOperation, aUid };
+    
+    if((iHSCount*3 <= iWidgetOperations.Count() && !CheckTaskExistsL() ) || (aOperation == WidgetSelect))
+        {        
         ClearAllOperations();
         iWidgetUIListener->SetValue(1);
-        }        
-    SWidgetOperation op = { aOperation, aUid };
-    iWidgetOperations.Append( op );
+        } 
+    
+    TBool queued (EFalse);
+    for(TInt i =0; i < iWidgetOperations.Count() && (aOperation == WidgetResume || aOperation == WidgetSuspend ) ; i++)
+        {
+        SWidgetOperation opInQueue = iWidgetOperations[i];
+        //we get resume but we already have suspend in Queue
+        //make Resume as Suspend    
+        if(op.iOperation == WidgetResume && opInQueue.iUid == op.iUid && opInQueue.iOperation == WidgetSuspend )
+            {            
+            iWidgetOperations[i].iOperation = WidgetResume;
+            queued = ETrue;
+            break;
+            }            
+        //we get suspend but we already have resume in Queue
+        //make Suspend as Resume    
+        if(op.iOperation == WidgetSuspend  && opInQueue.iUid == op.iUid && opInQueue.iOperation == WidgetResume )
+            {            
+            iWidgetOperations[i].iOperation = WidgetSuspend;
+            queued = ETrue;
+            break;
+            }    
+        }
+            
+    if(!queued)
+        iWidgetOperations.Append( op );
+            
     TryLaunchNextOperationL();
     }
 

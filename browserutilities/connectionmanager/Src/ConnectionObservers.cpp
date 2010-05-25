@@ -111,12 +111,8 @@ void CConnectionStageNotifierWCB::RunL()
     if( !iMultiObserver )
         {
         CLOG_WRITE( "CConnectionStageNotifierWCB Browser UI" );
-        #ifdef BRDO_OCC_ENABLED_FF //This is only for emulator testing. It should be #ifdef
-          if ( iProgressBuf().iStage == iStageToObserve  && (iProgressBuf().iError == KErrDisconnected || iProgressBuf().iError == KErrTimedOut) )
-        #else
-	      if ( iProgressBuf().iStage == iStageToObserve )
-        #endif
-		    {
+        if ( iProgressBuf().iStage == iStageToObserve )
+            {
             CLOG_WRITE( "Stage achived" );
 		    DoCloseAgent();
 		    iObserver->ConnectionStageAchievedL();
@@ -300,4 +296,14 @@ TBool CConnectionStageNotifierWCB::IsAnyStageReached( TInt aCurrentStage )
     return EFalse;
     }
 
+//--------------------------------------------------------------------------
+//CConnectionStageNotifierWCB::GetProgressBuffer()
+//--------------------------------------------------------------------------
+EXPORT_C TNifProgressBuf
+    CConnectionStageNotifierWCB::GetProgressBuffer()
+    {
+    CLOG_ENTERFN( "CConnectionStageNotifierWCB::GetProgressBuffer()" );
+    return iProgressBuf;
+    }
+    
 //EOF

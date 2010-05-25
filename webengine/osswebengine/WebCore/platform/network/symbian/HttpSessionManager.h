@@ -103,6 +103,8 @@ public:
     TBool isInSecureConnection() {return m_inSecConnection;}
     void setInSecureConnection(TBool inSecCon) {m_inSecConnection = inSecCon;}    
     void cancelQueuedTransactions();
+    void startTimer();
+    void deleteTimer();
 
 private:
     void updateFilters(bool initializing = false);
@@ -138,6 +140,7 @@ private:
 	RPointerArray<HBufC8> m_ClientAcceptHeaders;
 	TBool retryConnectivityFlag;
 	TBool m_inSecConnection;
+	CPeriodic* m_resetTimer;
 
 };
 #endif // __HTTPSESSIONMANAGER_H__

@@ -43,4 +43,5 @@ EXPORTS
 	?StartNotificationL@CConnectionStageNotifierWCB@@QAEXPAV?$TBuf@$0IA@@@PAHHPAVMConnectionMultiStageObserver@@H@Z @ 42 NONAME ; void CConnectionStageNotifierWCB::StartNotificationL(class TBuf<128> *, int *, int, class MConnectionMultiStageObserver *, int)
 	?StopConnectionL@CInternetConnectionManager@@QAEXXZ @ 43 NONAME ; void CInternetConnectionManager::StopConnectionL(void)
 	?UnsetApChangeObserver@CInternetConnectionManager@@UAEXXZ @ 44 NONAME ; void CInternetConnectionManager::UnsetApChangeObserver(void)
+	?GetProgressBuffer@CConnectionStageNotifierWCB@@QAE?AV?$TPckgBuf@VTNifProgress@@@@XZ @ 45 NONAME ; class TPckgBuf<class TNifProgress> CConnectionStageNotifierWCB::GetProgressBuffer(void)
 

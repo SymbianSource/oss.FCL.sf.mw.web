@@ -653,6 +653,11 @@ EXPORT_C void CInternetConnectionManager::StopConnectionL()
         iConnection.Close();
         TInt err = iConnection.Open( iServ, KAfInet );        
         }    
+    else
+        {
+        CLOG_WRITE( "Cancel the Connection" );
+        CancelConnection();
+        }
     
 //    iServ.Close();
     iConnected = EFalse;
@@ -1660,8 +1665,10 @@ EXPORT_C void CInternetConnectionManager::ShowConnectionChangedDlg()
 //    
  void CInternetConnectionManager::CancelConnection()
     {
+    CLOG_ENTERFN("CInternetConnectionManager::CancelConnection");
     if(iSyncConnector && iSyncConnector->IsActive()) 
         {
+        CLOG_WRITE( "Connection is cancelled" );        
         iSyncConnector->Cancel();
         }
 	}

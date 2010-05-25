@@ -400,7 +400,22 @@ void CWidgetUiAppUi::SendAppToBackground()
     TApaTask task = taskList.FindApp( wapUid );
     task.SendToBackground();
     }
-    
+   
+   
+// -----------------------------------------------------------------------------
+// CWidgetUiAppUi::SendAppToForeground
+// force the application to the foreground
+//
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiAppUi::SendAppToForeground()
+    {
+    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
+    TUid wapUid( TUid::Uid( KWidgetAppUid ) );
+    TApaTask task = taskList.FindApp( wapUid );
+    task.BringToForeground();
+    }
+        
 // -----------------------------------------------------------------------------
 // CWidgetUiAppUi::SetRotationSupport()
 // check to see if screen oriantation can be changed

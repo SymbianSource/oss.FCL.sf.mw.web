@@ -18,9 +18,6 @@
 #define __WIDGETSIDCHECKER_H__
 
 #include <apsidchecker.h>
-#include <WidgetRegistryClient.h>
-
-class RWidgetRegistryClientSession;
 
 NONSHARABLE_CLASS(CWidgetSidChecker) : public CAppSidChecker
 	{
@@ -33,9 +30,8 @@ public:
 	virtual void SetRescanCallBackL(const TCallBack &aCallback);
 
 private:
-    CWidgetSidChecker();
-    TBool AppRegisteredAtL(TUid aSid );
-    RWidgetRegistryClientSession  iClientSession;
+    CWidgetSidChecker();   
+    
 	};
 
 #endif

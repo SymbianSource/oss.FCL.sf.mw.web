@@ -628,7 +628,9 @@ int mapHttpErrors(int err )
         err == KErrHttpCannotEstablishTunnel) {
         return KErrSSLAlertHandshakeFailure;
     }
-
+    //Deal With Socket error
+   if( err <= KErrNetUnreach && err >= KErrUrgentData )
+        return err;
     // Deal with DNS lookup errors
     if ((err <= KErrInet6NoDestination) && (err > (KErrInet6NoDestination - 200))) {
         return KBrowserHTTP502;

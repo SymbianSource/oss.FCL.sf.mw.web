@@ -2818,6 +2818,7 @@ void WebView::checkForZoomChange()
 void WebView::activateVirtualKeyboard()
 {
     if (isEditable() && iCoeEnv->Fep()) {
+        fepTextEditor()->ReportEventL();
         fepTextEditor()->CancelEditingMode();
         fepTextEditor()->UpdateEditingMode();
         iCoeEnv->Fep()->HandleChangeInFocus();

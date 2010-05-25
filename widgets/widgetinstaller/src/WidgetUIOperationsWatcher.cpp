@@ -185,9 +185,11 @@ CWidgetUIOperationsWatcher::~CWidgetUIOperationsWatcher()
 void CWidgetUIOperationsWatcher::SilentInstallL(
     RFile& aFile,
     const TDesC8& aMIME,
+    TChar& aDrive,
     TRequestStatus& aRequestStatus )
     {
     iSilent = ETrue;
+    iRfs.CharToDrive(aDrive,iDrive);
     InstallL( aFile, aMIME, aRequestStatus );
     }
 
@@ -1231,7 +1233,7 @@ TBool CWidgetUIOperationsWatcher::PromptUserForInstallL( TBool aOverwrite )
         }
     else
             {
-            TDriveUnit selectedDrive(_L("C"));        // in real should be read from install options which are ignore too at the moment.
+            TDriveUnit selectedDrive(iDrive);            
             UpdateWidgetBasePathL( selectedDrive );
             *(iPropertyValues[EDriveName]) = selectedDrive.Name();
             }

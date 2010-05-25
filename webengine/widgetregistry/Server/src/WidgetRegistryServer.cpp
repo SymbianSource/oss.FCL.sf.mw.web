@@ -131,12 +131,9 @@ void CWidgetRegistryServer::RunServerL()
        TRAP_IGNORE(
             apparcSession.RegisterNonNativeApplicationTypeL(
                 KUidWgtWidgetLauncher, KWgtLauncherApp()));
-                
-                
-		    apparcSession.PrepareNonNativeApplicationsUpdatesL();
-            apparcSession.ForceCommitNonNativeApplicationsUpdatesL();
-        apparcSession.Close();
-        }
+
+           apparcSession.Close();
+           }
 
     // First create and install the active scheduler
     CActiveScheduler* scheduler = new ( ELeave ) CActiveScheduler;

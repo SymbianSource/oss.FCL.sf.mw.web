@@ -127,6 +127,8 @@ public:
                                       MConnectionMultiStageObserver* aObserver,
                                       TBool aCompleteIfAlreadyAtStage = ETrue );
 
+    IMPORT_C TNifProgressBuf GetProgressBuffer();
+
 protected:
 
     /**

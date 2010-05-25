@@ -512,6 +512,8 @@ TInt CHttpCacheStreamHandler::FlushAsync(CHttpCacheEntry& aEntry, TRequestStatus
             // !enoughSpace
             saveOk = KErrDiskFull;
             aEntry.BodyData().Reset();
+            TRequestStatus *stat = &aStatus;
+            User::RequestComplete(stat, saveOk);
             }
         }
     else

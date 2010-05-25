@@ -48,7 +48,6 @@ class CWidgetUiWindow;
 class CWidgetUiAppUi;
 class CWidgetUiCpsObserver;
 class CAknNoteDialog;
-class CBrowserDialogsProvider;
 class CBrCtlInterface;
 class CLiwServiceHandler;
 class MLiwInterface;
@@ -298,14 +297,7 @@ class CWidgetUiWindowManager : public CBase,
         */
         RWidgetRegistryClientSession& WidgetUIClientSession() { return iClientSession; }
 
-        /**
-        * DialogsProvider
-        * @since 3.1
-        * @param none
-        * @return CBrowserDialogsProvider
-        */
-        CBrowserDialogsProvider* DialogsProvider() { return iDialogsProvider; }
-        
+              
         /**
          * HandleLSKCommandL
          * @since 5.0
@@ -624,7 +616,6 @@ class CWidgetUiWindowManager : public CBase,
         RWidgetRegistryClientSession        iClientSession;     // owned
         TBool                               iServerConnected;   // connected to Widget Registry server ?
         TBool                               iStrictMode;
-        CBrowserDialogsProvider*            iDialogsProvider;// owned, responsible for deleting
         CInternetConnectionManager*         iConnection;        // owned, responsible for deleting
         TNetworkMode                        iNetworkMode;       // unknown mode =  0, online mode = 1, offline mode = 2
         TBool                               iNetworkConnected;  // ETrue if there is an active network connection, else EFalse

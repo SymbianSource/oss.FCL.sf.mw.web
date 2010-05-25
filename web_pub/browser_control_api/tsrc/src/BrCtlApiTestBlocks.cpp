@@ -196,7 +196,7 @@ TInt CBrowserControlApiTest::CreateBrCtlL(
 						TBrCtlDefs::ECapabilityClientResolveEmbeddedURL |
 						TBrCtlDefs::ECapabilityLoadHttpFw |
 						TBrCtlDefs::ECapabilitySavedPage |
-						TBrCtlDefs::ECapabilityDisplayScrollBar ;
+						TBrCtlDefs::ECapabilityDisplayScrollBar|TBrCtlDefs::ECapabilityGraphicalHistory ;
 		
     TRAP( err, 
         iBrCtlTestContainer = new (ELeave) CBrCtlApiTestContainer;

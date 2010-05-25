@@ -86,7 +86,13 @@ TPoint ScrollableView::contentPos()
 WebFrameView* ScrollableView::activeFrameView()
 {
     if (m_scrollingElement) {
-        return kit(m_scrollingElement->document()->frame())->frameView();
+        Frame* frame = m_scrollingElement->document()->frame();
+        if(frame) {
+            return kit(frame)->frameView();
+        }
+        else {
+            return NULL;
+        }
     }
     else {
         return m_frameView;

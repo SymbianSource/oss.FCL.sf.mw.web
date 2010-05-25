@@ -941,9 +941,12 @@ void CHttpCacheManager::GetCriticalDriveLevelsL( CRepository& aRepository, const
     // get critical level
     // RAM drive can have different critical level
     TVolumeInfo vinfo;
-    User::LeaveIfError(CCoeEnv::Static()->FsSession().Volume(vinfo, drive));
-    //
+    RFs fsSession;
+    User::LeaveIfError(fsSession.Connect());
+    CleanupClosePushL( fsSession );
+    User::LeaveIfError(fsSession.Volume(vinfo, drive));
     User::LeaveIfError(aRepository.Get((vinfo.iDrive.iType == EMediaRam ? KRamDiskCriticalLevel : KDiskCriticalThreshold), aCriticalLevel));
+    CleanupStack::PopAndDestroy(&fsSession);
     }
 
 void CHttpCacheManager::CreateHttpCacheL( const TInt& aSecIdInt, const TInt& aCacheSize, const TInt& aCriticalLevel, const THttpCachePostponeParameters& aPostpone )

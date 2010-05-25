@@ -170,7 +170,8 @@ void CWidgetBackupRestore::HandleBackupStateL( const TInt aValue )
         }
     else
         {
-        if ( type == conn::EBURNormal )
+        //If iLastType is EBURUnset, do not stop the activescheduler
+        if ( type == conn::EBURNormal && iLastType != conn::EBURUnset )
             {
             if ( iLastType == conn::EBURBackupFull || iLastType == conn::EBURBackupPartial )
                 {

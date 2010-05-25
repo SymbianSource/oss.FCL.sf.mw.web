@@ -77,6 +77,7 @@ class CFbsBitmap;
 class CSchemeHandler;
 class CBrCtlInterface;
 class CJpgSaver;
+class CBrowserDialogsProvider;
 // CLASS DECLARATION
 
 /**
@@ -541,7 +542,14 @@ class CWidgetUiWindow :  public CBase,
         TBool CanBeDeleted();
         
         static TInt DeleteItself(TAny* aPtr);
+
+#ifdef BRDO_OCC_ENABLED_FF        
+        void CancelAllDialogs();
         
+        
+        TBool IsDialogsLaunched();        
+#endif
+
         
     protected:
 
@@ -647,6 +655,7 @@ class CWidgetUiWindow :  public CBase,
         TBool                           iConnecting;                            
         TBool                           iDeleteItself;
         CAsyncCallBack*                 iAsyncCallBack;    
+        CBrowserDialogsProvider*        iDialogsProvider;// owned, responsible for deleting
 #ifdef BRDO_OCC_ENABLED_FF
         CConnectionStageNotifierWCB*    iConnStageNotifier;                                
 #endif

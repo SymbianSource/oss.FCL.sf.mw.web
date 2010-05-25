@@ -719,6 +719,9 @@ void FrameView::scheduleRelayout()
     if (!m_frame->document() || !m_frame->document()->shouldScheduleLayout())
         return;
 
+    if (!m_frame->settings())
+        return;
+
     // In flat frame layout mode the content of frame affects layout of the parent frames.
     // Invalidate also parent frame starting from the owner element of this frame.
 #if PLATFORM(SYMBIAN)

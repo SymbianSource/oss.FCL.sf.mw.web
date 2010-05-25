@@ -97,7 +97,7 @@ public: // New functions
      * Handle silent install request.
      * @since 3.1
      */
-    void SilentInstallL( RFile&, const TDesC8&, TRequestStatus& );
+    void SilentInstallL( RFile&, const TDesC8&, TChar&, TRequestStatus& );
 
     /**
      * Handle uninstall request.
@@ -309,6 +309,7 @@ private: // Data
     
     TFileName iWidgetName;  // save the widget name during overwrite (only for HS widgets)
     TBool iWidgetInHS;      // indicates whether the widget was in HS
+    TInt iDrive;            //Drive to intall widgets in case of silent install
     };
 }
 

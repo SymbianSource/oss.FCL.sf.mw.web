@@ -36,7 +36,6 @@
 #include <centralrepository.h>
 #include <StringLoader.h>
 #include <AknNoteDialog.h>
-#include <browserdialogsprovider.h>
 #include <S32FILE.H>
 #include <aknnotewrappers.h>
 #include "cpglobals.h" // CPS string definitions.
@@ -174,7 +173,6 @@ void CWidgetUiWindowManager::ConstructL()
         delete cenRep;
         }
         
-    iDialogsProvider = CBrowserDialogsProvider::NewL( NULL );
     iHandler = CDocumentHandler::NewL(CEikonEnv::Static()->Process());
 
     iDb = CActiveApDb::NewL( EDatabaseTypeIAP );
@@ -220,10 +218,9 @@ CWidgetUiWindowManager::~CWidgetUiWindowManager()
     iCenrepNotifyHandler->DoCancel();
     delete iCenrepNotifyHandler;
 #endif
-    if( iDialogsProvider)
-        iDialogsProvider->CancelAll();
-    iActiveFsWindow = NULL;
-    iWindowList.ResetAndDestroy();
+      iActiveFsWindow = NULL;
+	  
+	  iWindowList.ResetAndDestroy();
   
 #ifdef BRDO_WRT_HS_FF   
     delete iNetworkListener;
@@ -239,8 +236,6 @@ CWidgetUiWindowManager::~CWidgetUiWindowManager()
     iClientSession.Close();
     
     delete iHandler;
-    delete iDialogsProvider;
-
     if ( iConnection )
         {
         TRAP_IGNORE( iConnection->StopConnectionL() );
@@ -274,6 +269,14 @@ TBool CWidgetUiWindowManager::DeactivateMiniViewL( const TUid& aUid )
 
  
     iClientSession.SetMiniViewL( aUid, EFalse );
+#ifdef BRDO_OCC_ENABLED_FF
+    wdgt_window->CancelAllDialogs();
+        
+     if ( wdgt_window->IsDialogsLaunched() )
+        {
+        return EFalse;
+        }
+#endif    
     return CloseWindow( wdgt_window );
     }
 
@@ -411,6 +414,14 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
                             (TInt)TBrCtlDefs::ECommandDisconnect );
                     iConnection->CancelConnection();
                     iConnection->StopConnectionL();
+#ifdef BRDO_OCC_ENABLED_FF                    
+                    for ( TInt i = 0; i < iWindowList.Count(); i++ )
+        				{
+        				CWidgetUiWindow* window = iWindowList[i];
+        				//send to all windows
+                    	window->StopConnectionObserving();
+                    	}
+#endif                    	
                     }
                 if(wdgt_window->IsWidgetLoaded())
                     wdgt_window->DetermineNetworkState();
@@ -421,8 +432,27 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
             break; 
         case WidgetFullViewClose:
         	{
-        	Exit( EEikCmdExit, aUid );
         	needToNotify = EFalse ;
+#ifdef BRDO_OCC_ENABLED_FF 
+        	CWidgetUiWindow* window( GetWindow( aUid ) );
+            if( !window )
+                return;
+            else if ( window->IsDialogsLaunched() )
+                {
+          	    iActiveFsWindow = window;
+          	    // Bring app to foreground
+          	    iAppUi.SendAppToForeground(); 
+          	    if ( iActiveFsWindow->Engine()->Rect() != View()->ClientRect())
+                    {
+                    iActiveFsWindow->Engine()->SetRect( View()->ClientRect() );
+                    }
+                iActiveFsWindow->SetCurrentWindow( ETrue ); 
+          	   
+            }else
+         	    Exit( EEikCmdExit, aUid );
+#else
+                Exit( EEikCmdExit, aUid );
+#endif
         	}
         	break;
         }
@@ -653,11 +683,7 @@ TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWind
     {
     __ASSERT_DEBUG( aWidgetWindow, User::Invariant() );
     TBool count(EFalse);
-    if ( iDialogsProvider->IsDialogLaunched() )
-        {
-        return EFalse;
-        }
-
+  
     if ( iClientSession.IsWidgetInFullView ( aWidgetWindow->Uid()))
         {
 #ifdef BRDO_WRT_HS_FF
@@ -942,9 +968,11 @@ void CWidgetUiWindowManager::HandleForegroundEvent( TBool aForeground )
         }
     else
         {
-        if(iDialogsProvider)
-            iDialogsProvider->CancelAll();
-            
+#ifdef BRDO_OCC_ENABLED_FF
+        if(iActiveFsWindow)
+            iActiveFsWindow->CancelAllDialogs();
+#endif    
+        
 #ifdef BRDO_WRT_HS_FF  
         CFbsBitmap* bitmap( new CFbsBitmap() );
         if ( bitmap && iCpsPublisher)
@@ -1083,6 +1111,12 @@ void CWidgetUiWindowManager::ResumeWidgetL( const TUid& aUid )
         (wdgt_window->WidgetMiniViewState() == EPublishSuspend) )
         {
         //Widgets on HS cannnot be active
+        if (iActiveFsWindow )
+            {
+            iActiveFsWindow->Engine()->MakeVisible( EFalse );
+            iActiveFsWindow->SetIsCurrentWindow( EFalse );
+            iActiveFsWindow->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase);
+            }
         iActiveFsWindow = NULL;
         // Publish should start only after widget is resumed.
         wdgt_window->SetWindowStateMiniViewL(EPublishStart);
@@ -1362,7 +1396,6 @@ void CWidgetUiWindowManager::NotifyConnecionChange( TBool aConn )
 // ------------------------------------------------------------------------
 TBool  CWidgetUiWindowManager::CloseAllWidgetsUnderOOM()
     {
-    TInt temp(0);
     TInt err(KErrNone);
     CWidgetUiWindow* windowToBeClosed(NULL);
     TTime currentTime;

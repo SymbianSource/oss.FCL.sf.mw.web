@@ -29,7 +29,7 @@
 #include <AknUtils.h>
 #include <ImageConversion.h>
 #include <WidgetUi.rsg>
-
+#include <browserdialogsprovider.h>
 #include <schemehandler.h>
 #include <internetconnectionmanager.h>
 #include "WidgetInstallerInternalCRKeys.h"
@@ -56,7 +56,9 @@ static const TUint32 KDummyCommand = 0;
 
 const TUint KWmlNoDefaultAccessPoint = KMaxTUint; // see cenrep setting default -1 as int, here as uint
 const TUint KWmlNoDefaultSnapId = KMaxTUint; // see cenrep setting default -1 as int, here as uint
+#ifdef BRDO_OCC_ENABLED_FF
 const TInt KRetryConnectivityTimeout( 2*1000*1000 ); // 2 seconds
+#endif
 
 // MACROS
 
@@ -112,7 +114,8 @@ CWidgetUiWindow::CWidgetUiWindow( CWidgetUiWindowManager& aWindowManager, CCpsPu
 void CWidgetUiWindow::ConstructL( const TUid& aUid )
     {
     iUid = aUid;
-
+    iDialogsProvider = CBrowserDialogsProvider::NewL( NULL );
+    
     iPenEnabled = AknLayoutUtils::PenEnabled();
     iShowSoftkeys = iPenEnabled;
 
@@ -125,7 +128,7 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
     iUrl = GetUlrL( clientSession, aUid );
     iWidgetUiObserver = CWidgetUiObserver::NewL( *this );
 
-    iWidgetUiDialogsProviderProxy = CWidgetUiDialogsProviderProxy::NewL(*(iWindowManager.DialogsProvider()), NULL, *this);
+    iWidgetUiDialogsProviderProxy = CWidgetUiDialogsProviderProxy::NewL(*iDialogsProvider, NULL, *this);
 
 #ifdef BRDO_WRT_HS_FF
     iNetworkModeWait = new(ELeave) CActiveSchedulerWait();
@@ -219,6 +222,10 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
 //
 CWidgetUiWindow::~CWidgetUiWindow()
     {
+    if( iDialogsProvider)
+        {
+         iDialogsProvider->CancelAll();
+        }
     if (iEngine && iWidgetUiObserver)
         {
         iEngine->RemoveLoadEventObserver( iWidgetUiObserver );
@@ -246,7 +253,8 @@ CWidgetUiWindow::~CWidgetUiWindow()
         iAsyncCallBack->Cancel();
         }
     delete iAsyncCallBack;
-    iAsyncCallBack=NULL;    
+    iAsyncCallBack=NULL;  
+    delete iDialogsProvider;
     }
 
 // -----------------------------------------------------------------------------
@@ -356,7 +364,7 @@ TBool CWidgetUiWindow::WidgetFullViewState() const
 TBool CWidgetUiWindow::DialogMimeFileSelectLC(HBufC*& aSelectedFileName,
                                  const TDesC& aMimeType)
     {
-    return iWindowManager.DialogsProvider()->DialogMimeFileSelectLC(aSelectedFileName, aMimeType);
+    return iDialogsProvider->DialogMimeFileSelectLC(aSelectedFileName, aMimeType);
     }
 
 // -----------------------------------------------------------------------------
@@ -795,13 +803,11 @@ void CWidgetUiWindow::NetworkSecurityCheckL()
 
             if ( prompt )
                 {
-                CBrowserDialogsProvider* dialogProvider
-                            = iWindowManager.DialogsProvider();
                 TBool grant = EFalse;
                 HBufC* message = StringLoader::LoadLC( R_WIDGETUI_NETWORK_ACCESS );
                 HBufC* yes = StringLoader::LoadLC( R_WIDGETUI_SOFTKEY_YES );
                 HBufC* no = StringLoader::LoadLC( R_WIDGETUI_SOFTKEY_NO );
-                grant = dialogProvider->DialogConfirmL( _L(""), *message, *yes, *no );
+                grant = iDialogsProvider->DialogConfirmL( _L(""), *message, *yes, *no );
                 CleanupStack::PopAndDestroy( 3 );
                 // save prompt result for session
                 SetNetworkAccessGrant( grant? EAllow : EDeny );
@@ -1308,8 +1314,10 @@ TInt CWidgetUiWindow::DeleteItself(TAny* aPtr)
     CWidgetUiWindow* self = (CWidgetUiWindow*)aPtr;
     CWidgetUiWindowManager* p = &self->iWindowManager;
     delete self;
+    //The Correct fix is to call AppUI::Exit()
+    //But that is leaving
     if(p->WindowListCount() == 0)
-        p->ExitNow();
+        User::Exit(KErrNone);
     return 0;
     }
     
@@ -1320,20 +1328,22 @@ TInt CWidgetUiWindow::DeleteItself(TAny* aPtr)
 //
 void CWidgetUiWindow::ConnectionStageAchievedL()
     {
-
     iWindowManager.GetConnection()->Disconnect();
-   
-    TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
-    SetRetryFlag(ETrue);    
     
-    TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandCancelQueuedTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
+    TNifProgressBuf buf = iConnStageNotifier->GetProgressBuffer();
+    if( buf().iError == KErrDisconnected )
+        {
+        TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
+        SetRetryFlag(ETrue);    
     
-    if( iRetryConnectivity && iRetryConnectivity->IsActive())
-       {
-       iRetryConnectivity->Cancel();
-       }
-    iRetryConnectivity->Start(KRetryConnectivityTimeout, 0,TCallBack(RetryConnectivity,this));
-
+        TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandCancelQueuedTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
+    
+        if( iRetryConnectivity && iRetryConnectivity->IsActive())
+            {
+            iRetryConnectivity->Cancel();
+            }
+        iRetryConnectivity->Start(KRetryConnectivityTimeout, 0,TCallBack(RetryConnectivity,this));
+        }
     }  
 
 void CWidgetUiWindow::ConnNeededStatusL( TInt aErr )
@@ -1416,5 +1426,18 @@ TInt CWidgetUiWindow::RetryInternetConnection()
       {
       return reConnectivityFlag;
       } 
+ 
+ void CWidgetUiWindow::CancelAllDialogs()
+     {
+     if( iDialogsProvider)
+         {
+          iDialogsProvider->CancelAll();
+         }
+     }
+ 
+ TBool CWidgetUiWindow::IsDialogsLaunched()
+     {
+     return (iDialogsProvider && iDialogsProvider->IsDialogLaunched() );
+     }
 #endif 
 // End of file

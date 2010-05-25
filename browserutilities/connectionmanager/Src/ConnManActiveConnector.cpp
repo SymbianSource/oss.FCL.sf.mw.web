@@ -194,7 +194,8 @@ void CConnManActiveConnector::StartConnection( TConnSnapPref* aSettings, TReques
 void CConnManActiveConnector::DoCancel()
 	{
 	CLOG_WRITE( "CConnManActiveConnector: DoCancel called");
-    
+    //This is work around fix for bug ESNA-855BUN
+    iConnection.Close();
 	User::RequestComplete( iExternalRequestStatus, KErrCancel );//completing user req
     
 	CLOG_WRITE( "CConnManActiveConnector: DoCancel returned");

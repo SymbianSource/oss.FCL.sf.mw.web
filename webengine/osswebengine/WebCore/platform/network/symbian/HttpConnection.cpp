@@ -83,10 +83,13 @@ TInt DefersData::RunError(TInt aError)
 
 void DefersData::Activate()
 {
-    SetActive();
-    iStatus = KRequestPending;
-    TRequestStatus* status = &iStatus;
-    User::RequestComplete( status, KErrNone );
+    if(!IsActive())
+        {
+        SetActive();
+        iStatus = KRequestPending;
+        TRequestStatus* status = &iStatus;
+        User::RequestComplete( status, KErrNone );
+        }
 }
 
 
@@ -416,6 +419,11 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                     return;
                     }
                 }
+            if(httpStatus == EHttpNotAcceptable)
+                {
+                complete(KBrowserHTTPStatusCodes - m_transaction->Response().StatusCode());
+                return;
+                }
             if ( !handled )
                 {
                 // url
@@ -731,8 +739,11 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
             // error handling
             //KErrDisconnected should be coming only for OCC
             //MHFRunL gets call before connection manager
-            if(aEvent.iStatus == KErrDisconnected)
+            if(aEvent.iStatus == KErrNotReady)
+                {
                 StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->setRetryConnectivityFlag();                 
+                StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->startTimer();    
+                }
             else
                 handleError(aEvent.iStatus);               
             break;
