@@ -74,6 +74,7 @@ class WebFrameView;
 class WebFrameBridge;
 class WebPagePinchZoomHandler;
 class CThumbnailGenerator;
+class PluginSkin;
 
 
 const TUint KMouseEventFired = 0x00000001;
@@ -544,6 +545,8 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void resumeJsTimers();
         bool jsTimersPaused() { return (m_jsTimeouts) ? true : false; }
         void resetJsTimers() { m_jsTimeouts = 0; }
+        RPointerArray<PluginSkin>& getVisiblePlugins(){ return m_visiblePlugins;}
+        
     private:
         WebCore::Page*          m_page;
         WebFrameView*           m_frameView;
@@ -648,6 +651,8 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
 		
    	    // JavaScript (DOMWindowTimer) timers
         KJS::PausedTimeouts*     m_jsTimeouts;
+        
+        RPointerArray<PluginSkin> m_visiblePlugins;
     };
 
 #endif

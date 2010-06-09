@@ -1287,6 +1287,11 @@ RHTTPTransaction* HttpConnection::takeOwnershipHttpTransaction()
     // remove own address from transaction properties
     m_transaction->PropertySet().RemoveProperty(session.StringPool().StringF(HttpFilterCommonStringsExt::ESelfPtr,
         HttpFilterCommonStringsExt::GetTable()));
+    if(m_cacheSupply->IsSupplying())
+        {
+        //Download is started from cache.
+        m_cacheSupply->SetDownloadTransaction(m_transaction);
+        }
     m_transaction = NULL;
     m_isDone = true;
     return trans;

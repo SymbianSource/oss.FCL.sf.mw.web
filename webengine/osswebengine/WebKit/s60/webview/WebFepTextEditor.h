@@ -134,6 +134,8 @@ public:
     void EnableCcpuL();
     TBool IsInputElementFocused() const;
     void ReportEventL();
+    
+    TBool inlineTextEditingStarted();
 private:
     void  findPrevSiblingTextLen(Node*, TInt&) const;
     Node* findTextNodeForCurPos(Node* aNode, TInt& aPos) const;
@@ -148,6 +150,7 @@ private:
     CAknExtendedInputCapabilities* m_ExtendedInputCapabilities;
     CAknCcpuSupport* m_CcpuSupport;
     TBool m_longKeyPress;
+    TBool m_inlineTextEditingStarted;
     };
 
 #endif

@@ -23,7 +23,7 @@
 #include <schemehandler.h>
 #include "SchemeAppUi.h"
 #include "Scheme.hrh"
-#include <SchemeApp.rsg>
+#include <schemeapp.rsg>
 #include <apgcli.h>
 #include <avkon.hrh>
 #include <apparc.h>

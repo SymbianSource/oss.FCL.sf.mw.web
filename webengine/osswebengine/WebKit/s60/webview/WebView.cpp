@@ -234,6 +234,8 @@ WebView::~WebView()
     m_pageZoomHandler = NULL;
 
     m_zoomLevelArray.Close();
+    m_visiblePlugins.Reset();
+    m_visiblePlugins.Close();
 
     // prevent frameViews to access members when topView is
     // closing down.
@@ -405,6 +407,7 @@ void WebView::ConstructL( CCoeControl& parent )
     m_waiter = new(ELeave) CActiveSchedulerWait();
     
     m_checkerBoardDestroyTimer = CPeriodic::NewL(CActive::EPriorityIdle);
+    m_visiblePlugins.Reset();
     
 }
 
@@ -650,7 +653,7 @@ void WebView::syncRepaint()
       return;
     }
 
-    if (!IsVisible()) {
+    if (!IsVisible() || ( StaticObjectsContainer::instance()->webSurface()->topView() != this ) ) {
       return;
     }
 
@@ -1180,11 +1183,8 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
      * and send it here.
      */
     if (eventcode == EEventKeyDown){
-        downEventConsumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame) || 
-                            ((m_focusedElementType == TBrCtlDefs::EElementActivatedInputBox && // style of input box     
-                              page()->chrome()->client()->elementVisibilityChanged()));
+        downEventConsumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame);
     }
-     
     /*
      * downEventConsumed will be true if JavaScript consumes key event
      * If we are not in the widget mode we want to deactivate input box
@@ -2124,7 +2124,7 @@ bool WebView::isSmallPage()
 {
     TSize docSize = DocumentSize();
     TSize viewSize = DocumentViewport().Size();
-    return ((docSize.iWidth * docSize.iHeight*100)/(viewSize.iWidth*viewSize.iHeight) < KSmallPageScale);
+    return (docSize.iWidth/viewSize.iWidth) * (docSize.iHeight/viewSize.iHeight) * 100 < KSmallPageScale;
 }
 
 void WebView::willSubmitForm(FormState* formState)

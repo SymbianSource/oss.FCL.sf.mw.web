@@ -33,6 +33,9 @@
 #include "StaticObjectsContainer.h"
 #include "WebTabbedNavigation.h"
 #include "WebPagePinchZoomHandler.h"
+#include "FocusController.h"
+#include "Frame.h"
+#include "page.h"
 
 using namespace WebCore;
 
@@ -418,6 +421,28 @@ void WebFrameView::resizeContent(const TSize &size)
             m_topView->updateScrollbars(m_contentSize.iHeight, m_contentPos.iY, m_contentSize.iWidth, m_contentPos.iX);
         }
     }
+    moveFocus();
+}
+
+void WebFrameView::moveFocus()
+{
+    // After resizing, move the focus to the correct node
+	if (m_topView && m_topView->focusedElementType() == TBrCtlDefs::EElementAnchor &&
+        m_topView->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed) { 
+    	Frame* mainFrame = core(m_topView->mainFrame());
+        FocusController* focusController = m_topView->page()->focusController();
+        Frame* focusedFrame = focusController->focusedOrMainFrame();
+        if (focusedFrame == NULL) {
+	 	    focusedFrame = mainFrame;
+        }
+        Node* node = focusedFrame->document()->focusedNode();
+	 	if (node) {
+            TRect rect = node->getRect().Rect();
+            TPoint viewpoint = kit(focusedFrame)->frameView()->frameCoordsInViewCoords(rect.iTl);
+            WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+            cursor->updatePositionAndElemType(viewpoint);
+	 	}
+	 }
 }
 
 void WebFrameView::setMayUseCopyScroll(TBool aCopy)

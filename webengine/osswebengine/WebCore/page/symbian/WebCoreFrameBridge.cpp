@@ -321,7 +321,7 @@ void WebCoreFrameBridge::setWritingDirectionRtl(bool isRtl)
     m_rtl = isRtl;
     // update rtl only for mainframe
     if (m_frame && m_frame == m_frame->page()->mainFrame()) {
-        if (control(m_frame)->brCtlLayoutObserver())
+        if (control(m_frame)->brCtlLayoutObserver() && m_rtl)
             control(m_frame)->brCtlLayoutObserver()->NotifyLayoutChange(isRtl ? EOriginTopRight : EOriginTopLeft);
         if (kit(m_frame->page())->pageScaler())
             kit(m_frame->page())->pageScaler()->SetRelativePosition(0, 3, isRtl ? CPageScaler::ETopLeft : CPageScaler::ETopRight);

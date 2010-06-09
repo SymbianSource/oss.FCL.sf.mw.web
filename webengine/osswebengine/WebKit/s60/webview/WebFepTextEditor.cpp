@@ -76,7 +76,8 @@ CWebFepTextEditor::CWebFepTextEditor(WebView* aView)
     : m_webView(aView),
       m_textFormatMask(NULL),
       m_inlineEditText(NULL),
-      m_longKeyPress(EFalse)
+      m_longKeyPress(EFalse),
+      m_inlineTextEditingStarted(EFalse)
 {
     // Set up the extended capabilities
     TRAP_IGNORE(
@@ -323,6 +324,7 @@ void CWebFepTextEditor::StartFepInlineEditL(
 {
     CCoeEnv::Static()->ForEachFepObserverCall(FepObserverHandleStartOfTransactionL);
     ClearInlineText();
+    m_inlineTextEditingStarted= ETrue;
     UpdateInlineText(aInitialInlineText);
 }
 
@@ -549,7 +551,7 @@ if (frame &&
 			Node* editNode = sc->focusNode();
 			TPoint viewPoint = kit(frame)->frameView()->frameCoordsInViewCoords(editNode->getRect().Rect().iBr);
 			xPos = viewPoint.iX;
-			yPos = viewPoint.iY;
+			yPos = frame->document()->focusedNode()->getRect().bottomLeft().y() + rect.height();
 			String str;
 			if ( editNode &&
 				 editNode->isTextNode() ) {
@@ -600,6 +602,7 @@ void CWebFepTextEditor::DoCommitFepInlineEditL()
     m_inlineEditText = NULL;
     
     m_longKeyPress = EFalse;
+    m_inlineTextEditingStarted= EFalse;
 
     HandleUpdateCursor();
     UpdateEditingMode();
@@ -921,6 +924,9 @@ bool CWebFepTextEditor::GetStateFromFormatMask(TUint& currentCase,
         }
 
         return ETrue;
+    }
+	else {
+    setSCTAvailability(true);
     }
 
     return EFalse;
@@ -1388,6 +1394,10 @@ void CWebFepTextEditor::EnableCcpuL()
 {
     CAknCcpuSupport* ccpu = NULL;
     CAknEdwinState* edwinState = static_cast<CAknEdwinState*>(this->State(KNullUid));
+    if ( edwinState && edwinState->MenuBar() && edwinState->MenuBar()->IsDisplayed() )
+        {
+        return;
+        }
     ccpu = new(ELeave) CAknCcpuSupport(this);
     ccpu->SetMopParent(this);
     CleanupStack::PushL(ccpu);
@@ -1508,3 +1518,9 @@ void CWebFepTextEditor::ReportEventL()
     m_ExtendedInputCapabilities->ReportEventL(CAknExtendedInputCapabilities::
                         MAknEventObserver::EPointerEventReceived, NULL );
     }
+
+TBool CWebFepTextEditor::inlineTextEditingStarted()
+    {
+    return m_inlineTextEditingStarted; 
+    }
+

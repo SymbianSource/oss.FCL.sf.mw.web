@@ -1723,7 +1723,8 @@ void CEpoc32InputBox::UpdateInlineTextL(const TDesC& aText)
         HBufC* newText = HBufC::NewL(iDocumentText->Length() + aText.Length());
         newText->Des().Append(iDocumentText->Left(curPos));
         newText->Des().Append(aText);
-        newText->Des().Append(iDocumentText->Right(iDocumentText->Length() - curPos));
+        if(iDocumentText->Length() >= curPos)
+            newText->Des().Append(iDocumentText->Right(iDocumentText->Length() - curPos));
         iInlineEditText = newText;
         }
 }

@@ -196,6 +196,7 @@ bool ResourceLoaderDelegate::checkSecurityStatus(const ResourceRequest& request,
                     }
                     else {
                         enterStatus = HttpUiCallbacks::EExitingSecurePage;
+                        m_httpSessionManager.setInSecureConnection(EFalse);
                     }
                 } // if (!secureUrl)
                 else {

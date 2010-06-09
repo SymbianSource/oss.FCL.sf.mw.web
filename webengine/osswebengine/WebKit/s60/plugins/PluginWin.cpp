@@ -67,7 +67,7 @@ void panicPlugin(TInt error = KErrNone)
 //
 PluginWin::PluginWin(PluginSkin* pluginskin)
     : m_pluginskin(pluginskin)
-    , m_windowedPlugin(true), m_fullscreen(false), m_windowCreated(false)
+    , m_windowedPlugin(true), m_fullscreen(false), m_windowCreated(false), m_visibilty(false)
 {
 }
 
@@ -98,6 +98,15 @@ void PluginWin::ConstructL( const WebView& view )
 //
 PluginWin::~PluginWin()
 {
+    CBrCtl* brCtl = control(m_pluginskin->frame());
+    if (brCtl) {
+        WebView*  view = brCtl->webView();
+        if (view) {
+            int index = view->getVisiblePlugins().Find(m_pluginskin);
+            if (index != KErrNotFound)
+                view->getVisiblePlugins().Remove(index);
+        }
+    }
 
     TRAP_IGNORE( setPluginFocusL( EFalse ) );
 
@@ -384,6 +393,18 @@ void PluginWin::makeVisible( TBool visible )
         else
             HandleLosingForeground();
     }
+    
+    WebView* view = control(m_pluginskin->frame())->webView();
+    int index = view->getVisiblePlugins().Find(m_pluginskin);
+    if (visible && (m_visibilty != visible) && (index == KErrNotFound)) {
+        view->getVisiblePlugins().AppendL(m_pluginskin);
+        m_visibilty = visible;
+    }
+    else if (!visible && (index != KErrNotFound)) {
+        view->getVisiblePlugins().Remove(index);
+        m_visibilty = visible;
+    }
+    
     NotifyPluginVisible(visible);
     if (!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event) {
         NPEvent event;
@@ -832,4 +853,22 @@ TBool PluginWin::HandleGesture(const TStmGestureEvent& aEvent)
     }    
     return ret;
 
+}
+
+bool PluginWin::containsPoint(WebView& view, const TPoint& pt)
+{
+    if (m_control) {
+        if (StaticObjectsContainer::instance()->isPluginFullscreen()) {
+            return true;
+        }
+        else {
+            TPoint point = pt;
+            TPoint viewPos = view.PositionRelativeToScreen();
+            TPoint ctrlPos = m_control->PositionRelativeToScreen();
+            point += viewPos;
+            return m_control->Rect().Contains(point - ctrlPos);
+        }
+    }
+    else 
+        return false;   
 }

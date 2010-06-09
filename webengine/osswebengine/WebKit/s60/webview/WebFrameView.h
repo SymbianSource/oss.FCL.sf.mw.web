@@ -104,6 +104,8 @@ public:
     int getBidiWidth();
     bool needScroll(const TPoint& aPoint);
 private:
+    void moveFocus();
+
     WebFrameView(const WebFrameView&);            // not implemented
     WebFrameView& operator=(const WebFrameView&); // not implemented
     

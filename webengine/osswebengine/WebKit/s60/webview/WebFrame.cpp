@@ -549,7 +549,7 @@ Node* WebFrame::getClosestAnchorElement(const TPoint& viewPt, TPoint& newPos)
     
     Frame* coreFrame = core(this);
 
-	int dist = 99999999;
+	unsigned int dist = 0xFFFFFFFF;
 	Node* result = 0;
 	//for (Node* n=links->firstItem(); n; n=links->nextItem()) {
 	for(Node* n = coreFrame->document(); n != 0; n = n->traverseNextNode()) {
@@ -563,7 +563,7 @@ Node* WebFrame::getClosestAnchorElement(const TPoint& viewPt, TPoint& newPos)
 			
 			int x = xInRect(r, pt.x());
 			int y = yInRect(r, pt.y());
-			int d = (pt.x() - x) * (pt.x() - x) + (pt.y() - y) * (pt.y() - y);
+			unsigned int d = (pt.x() - x) * (pt.x() - x) + (pt.y() - y) * (pt.y() - y);
 			if (dist > d) {
 				dist = d;
 				result = n;

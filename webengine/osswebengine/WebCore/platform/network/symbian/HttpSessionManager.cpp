@@ -273,10 +273,13 @@ void HttpSessionManager::handleError(int error)
 void HttpSessionManager::retryTransactions()
 {
     Vector<HttpConnection *> requests;
-    
+
+    if (m_sessionRunning)
+    {
     TBool newConn = ETrue;
     m_httpSession.ConnectionInfo().SetPropertyL(m_httpSession.StringPool().StringF(HttpFilterCommonStringsExt::EHttpNewConnFlag, HttpFilterCommonStringsExt::GetTable()), THTTPHdrVal((TBool)newConn));
- 
+    }
+
     for(HashMap<HttpConnection *, ResourceHandle *>::iterator tmpit = m_pendingHttpRequests.begin();
         tmpit != m_pendingHttpRequests.end(); ++tmpit)
         {

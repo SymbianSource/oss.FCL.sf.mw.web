@@ -48,7 +48,8 @@ SOURCE	BodyPart.cpp
 SOURCE  GZipBufMgr.cpp
 
 LIBRARY  euser.lib
-LIBRARY  estlib.lib
+LIBRARY  libc.lib
+LIBRARY  libm.lib
 LIBRARY  InetProtUtil.lib
 LIBRARY  estor.lib
 LIBRARY	 ezlib.lib

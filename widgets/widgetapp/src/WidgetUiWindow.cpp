@@ -231,6 +231,14 @@ CWidgetUiWindow::~CWidgetUiWindow()
         iEngine->RemoveLoadEventObserver( iWidgetUiObserver );
         iEngine->RemoveStateChangeObserver( iWindowManager.View() );
         }
+#ifdef BRDO_OCC_ENABLED_FF 
+    if ( iRetryConnectivity)
+        {
+        iRetryConnectivity->Cancel();
+        delete iRetryConnectivity;
+        iRetryConnectivity = NULL;
+        }
+#endif
     delete iEngine;
     delete iWidgetUiObserver;
     delete iUrl;
@@ -931,9 +939,14 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
             User::Leave( connFailure );
             }
         *aNewConn = ETrue;
-        
+        if(iWindowManager.GetNetworkMode() == EOfflineMode)
+        	{
+            iWindowManager.GetConnection()->CancelConnection();
+            iWindowManager.GetConnection()->StopConnectionL();        		
+        	}      
 #ifdef BRDO_OCC_ENABLED_FF        
-        TRAP_IGNORE(ConnNeededStatusL(KErrNone)); 
+		else
+        	TRAP_IGNORE(ConnNeededStatusL(KErrNone)); 
 #endif        
         }
     }
@@ -1343,6 +1356,10 @@ void CWidgetUiWindow::ConnectionStageAchievedL()
             iRetryConnectivity->Cancel();
             }
         iRetryConnectivity->Start(KRetryConnectivityTimeout, 0,TCallBack(RetryConnectivity,this));
+        }
+    else
+        {
+        TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandCancelFetch + (TInt)TBrCtlDefs::ECommandIdBase ) );
         }
     }  
 

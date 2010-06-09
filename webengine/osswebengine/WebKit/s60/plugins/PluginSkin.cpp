@@ -85,8 +85,11 @@ _LIT(KApplicationId,"ApplicationId");
 _LIT(KSecMgrScriptSession,"SecMgrScriptSession");
 _LIT(KAllowNetworkAccess,"AllowNetworkAccess");
 
-
+#if defined(__PLATFORM_VERSION_32__)
+#define KArraySize 1
+#else
 #define KArraySize 3
+#endif
 
 const TInt32 KWidgetApplicationId =  0x10282822;
 const TInt32 KBrowserApplicationId = 0x10008D39;

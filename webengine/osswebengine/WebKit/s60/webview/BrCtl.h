@@ -607,6 +607,7 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         
         void showWindow();
         void closeWindowSoon();
+        // this function leaves in case of exit which is the normal behaviour
         void doCloseWindowSoon();
         TBool sendCommandsToClient(TBrCtlDefs::TBrCtlClientCommands aCommand,
                                     const CArrayFix<TPtrC>& aAttributesNames,

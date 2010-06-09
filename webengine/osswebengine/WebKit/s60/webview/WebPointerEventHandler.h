@@ -61,6 +61,7 @@ private:
     void doTapL();
     void updateCursor(const TPoint& pos);
     void handlePinchZoomL(const TStmGestureEvent& aGesture);
+    bool isPluginConsumable(const TStmGestureUid uid);
 private:
     WebPointerEventHandler(WebView* view);            
     WebView* m_webview;

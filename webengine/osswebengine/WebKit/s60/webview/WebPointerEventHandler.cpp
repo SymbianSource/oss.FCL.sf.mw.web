@@ -105,24 +105,30 @@ void WebPointerEventHandler::ConstructL()
 void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGesture)
 {
     TStmGestureUid uid = aGesture.Code();
-
     if (m_webview->pinchZoomHandler()->isPinchActive() && uid != stmGesture::EGestureUidPinch)
         return;
-
+    
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
-
-    PluginSkin* plugin = m_webview->mainFrame()->focusedPlugin();
-    if (plugin && plugin->pluginWin()) {
-        if (plugin->pluginWin()->HandleGesture(aGesture)) {
-         if(!plugin->isActive()) {
-            plugin->activate();
-         }
-         else {
-            m_webview->mainFrame()->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
-            m_webview->page()->focusController()->setFocusedNode(plugin->getElement(), m_webview->page()->focusController()->focusedOrMainFrame());                        
-            m_webview->brCtl()->updateDefaultSoftkeys();
-         }
-         return;
+    
+    bool pluginConsumable = isPluginConsumable(uid);
+    
+    if (pluginConsumable && m_webview->getVisiblePlugins().Count() > 0) {
+        for ( int i=0; i < m_webview->getVisiblePlugins().Count(); i++) {
+             PluginSkin* plugin = m_webview->getVisiblePlugins()[i];
+             if (plugin && plugin->pluginWin() && plugin->pluginWin()->containsPoint(*m_webview,aGesture.CurrentPos())) {
+                 if (plugin->pluginWin()->HandleGesture(aGesture)) {
+                     if(!plugin->isActive()) {
+                         plugin->activate();
+                     }
+                     else {
+                         m_webview->mainFrame()->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
+                         m_webview->page()->focusController()->setFocusedNode(plugin->getElement(), m_webview->page()->focusController()->focusedOrMainFrame());                        
+                         m_webview->brCtl()->updateDefaultSoftkeys();
+                     }
+                     return;
+                 }
+                 break;
+             }
         }
     }
 
@@ -130,7 +136,6 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
     if (IS_TABBED_NAVIGATION) {
         m_webview->tabbedNavigation()->updateCursorPosition(aGesture.CurrentPos());
     }
-
 
     switch(uid) {
         case stmGesture::EGestureUidTouch:
@@ -607,4 +612,18 @@ void  WebPointerEventHandler::handlePinchZoomL(const TStmGestureEvent& aGesture)
         dehighlight();
     }
     m_webview->pinchZoomHandler()->handlePinchGestureEventL(aGesture);
+}
+
+
+//-----------------------------------------------------------------------------
+// WebPointerEventHandler::isPluginConsumable
+//-----------------------------------------------------------------------------
+bool WebPointerEventHandler::isPluginConsumable(const TStmGestureUid uid)
+{
+    //  Gestures which a Plugin can consume
+    return (uid == stmGesture::EGestureUidRelease ||
+            uid == stmGesture::EGestureUidTap ||
+            uid == stmGesture::EGestureUidTouch ||
+            uid == stmGesture::EGestureUidLongPress ||
+            (uid == stmGesture::EGestureUidPan && m_webview->widgetExtension())); // Currently Pan is consumed in Widget mode
 }

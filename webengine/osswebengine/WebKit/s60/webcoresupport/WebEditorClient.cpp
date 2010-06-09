@@ -500,6 +500,8 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     break;
                     }
 
+                if(m_webView->fepTextEditor()->inlineTextEditingStarted()) 
+                    return;
                 if (TChar(kevent->symbianEvent().iCode).IsPrint()) {
                     if (m_webView->fepTextEditor()->DocumentLengthForFep() <
                         m_webView->fepTextEditor()->DocumentMaximumLengthForFep()) {
@@ -687,6 +689,7 @@ void WebEditorClient::handleDeleteText(Frame* frame)
         m_webView->fepTextEditor()->HandleMaskedDeleteText(frame);
     }
 }
+
 
 
 

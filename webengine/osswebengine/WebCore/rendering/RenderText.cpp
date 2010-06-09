@@ -863,6 +863,9 @@ UChar RenderText::previousCharacter()
 
 void RenderText::setTextInternal(PassRefPtr<StringImpl> text, bool backspace)
 {
+#if PLATFORM(SYMBIAN)
+    unsigned oldlength = m_text->length();
+#endif
     m_text = text;
     ASSERT(m_text);
 
@@ -929,7 +932,16 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text, bool backspace)
                 	m_text = m_text->secure(bullet);
                 }
                 else{
-                    m_text = m_text->secureShowOffset(bullet, m_offset);
+                    
+                    if(oldlength <= m_text->length())
+                        {
+                        m_offset =  m_text->length() - 1 ;
+                        m_text = m_text->secureShowOffset(bullet, m_offset);
+                        }
+                    else
+                        {
+                        m_text = m_text->secure(bullet);
+                        }
                 }
                 	
                 break;

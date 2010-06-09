@@ -281,7 +281,7 @@ void CFileHandler::RunL()
                 TUint contentLength = 0;
 
                 const TUint16* responseUrl = (iRedirectedUrl == NULL) ? iUrl : iRedirectedUrl;
-            		
+                HBufC* newUrl = NULL;
 
                 if (iMethod == NW_URL_METHOD_GET)
 					{
@@ -296,7 +296,7 @@ void CFileHandler::RunL()
 					}
 
 					//R->fake the url
-					HBufC* newUrl = HBufC::NewL( urlLen );
+					newUrl = HBufC::NewL( urlLen );
 					newUrl->Des().Copy(iData.Mid( position + 1, urlLen-1 ));
 					newUrl->Des().ZeroTerminate();				
 
@@ -313,7 +313,6 @@ void CFileHandler::RunL()
 					iFileLoader->PartialResponse( (TUint16*)newUrl->Ptr(), dataDes, NULL, contentTypeString, NULL, NW_FALSE, // multipart information is missing.
 						NULL, NULL, charset, NULL, Success, NW_URL_METHOD_GET, iTransId, 0 /*first chunk*/, NULL, dataDes.Length(),
 						KErrNone, iLoadContext, iLoadCallback);
-					delete newUrl;
 					}
                 
                 // Send the close response
@@ -324,6 +323,8 @@ void CFileHandler::RunL()
 				iFileLoader->PartialResponse( responseUrl, emptyData, NULL, contentTypeString, NULL, NW_FALSE, // multipart information is missing
                   NULL, NULL, charset, NULL, Success, iMethod, iTransId, -1 /*last chunk*/, NULL, contentLength,
                   KErrNone, iLoadContext, iLoadCallback);
+
+                delete newUrl;
                 }
             else
 				{

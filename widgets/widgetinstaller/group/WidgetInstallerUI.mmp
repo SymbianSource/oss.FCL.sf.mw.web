@@ -39,7 +39,7 @@ END
 START RESOURCE  ../data/WidgetInstallerUI.rss
 DEPENDS avkon.rsg
 HEADER
-TARGETPATH      Resource
+TARGETPATH      resource
 #ifdef __S60_32__
 LANG sc 
 #else

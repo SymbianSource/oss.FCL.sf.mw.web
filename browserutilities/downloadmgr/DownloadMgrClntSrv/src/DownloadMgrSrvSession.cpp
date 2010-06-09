@@ -145,6 +145,7 @@ void CDownloadMgrSession::ServiceL( const RMessage2& aMessage )
     if( iComplete || ( KErrNone != err ) )
         {
         // Only the syncron requests has to be completed here!
+        if ((!aMessage.IsNull()) && (!CurrentMessage().IsNull())  )
 	    aMessage.Complete( err );
         }
 	}
@@ -354,8 +355,9 @@ void CDownloadMgrSession::InitializeL()
     CArrayPtrFlat<CHttpDownload>* currentDownloads = iClientAppInstance->DownloadsL();
 	TPckg<TInt> countPckg( currentDownloads->Count() );
 	TPckg<TInt> sessionId( iSessionId );
-
+  if (!CurrentMessage().IsNull())
     Write( 1, CurrentMessage(), countPckg );
+  if (!CurrentMessage().IsNull())
     Write( 3, CurrentMessage(), sessionId );
 
     CLOG_NAME_2( _L("Session_%x_%x"), uidPckg().iUid, iSessionId );

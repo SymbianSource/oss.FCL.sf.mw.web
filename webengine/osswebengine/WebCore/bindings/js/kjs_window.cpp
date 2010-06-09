@@ -100,6 +100,7 @@ struct WindowPrivate {
         , m_evt(0)
         , m_dialogArguments(0)
         , m_returnValueSlot(0)
+        , m_paused(false)
     {
     }
 
@@ -113,6 +114,8 @@ struct WindowPrivate {
     JSValue** m_returnValueSlot;
     typedef HashMap<int, DOMWindowTimer*> TimeoutsMap;
     TimeoutsMap m_timeouts;
+    RArray<int> m_timersToBeCleared;
+    bool m_paused;
 };
 
 // ==========================================================================================
@@ -767,7 +770,8 @@ Window::Window(DOMWindow* window)
 Window::~Window()
 {
     clearAllTimeouts();
-
+    d->m_timersToBeCleared.Close();
+    
     // Clear any backpointers to the window
 
     ListenersMap::iterator i2 = d->jsEventListeners.begin();
@@ -2087,6 +2091,8 @@ int Window::installTimeout(ScheduledAction* a, int t, bool singleShot)
             }
             impl()->frame()->page()->chrome()->wait(interval);
             a->execute(this);
+            // clear the event after it is handled. 
+            d->m_evt = 0; 
             return lastUsedTimeoutId;
         }
     }
@@ -2128,6 +2134,7 @@ PausedTimeouts* Window::pauseTimeouts()
     if (count == 0)
         return 0;
 
+    d->m_paused = true;
     PausedTimeout* t = new PausedTimeout [count];
     PausedTimeouts* result = new PausedTimeouts(t, count);
 
@@ -2157,15 +2164,21 @@ void Window::resumeTimeouts(PausedTimeouts* timeouts)
     PausedTimeout* array = timeouts->takeTimeouts();
     for (size_t i = 0; i != count; ++i) {
         int timeoutId = array[i].timeoutId;
-        DOMWindowTimer* timer = new DOMWindowTimer(timeoutId, array[i].nestingLevel, this, array[i].action);
-        d->m_timeouts.set(timeoutId, timer);
-        timer->start(array[i].nextFireInterval, array[i].repeatInterval);
+        if (KErrNotFound == d->m_timersToBeCleared.Find(timeoutId)) {
+            DOMWindowTimer* timer = new DOMWindowTimer(timeoutId, array[i].nestingLevel, this, array[i].action);
+            d->m_timeouts.set(timeoutId, timer);
+            timer->start(array[i].nextFireInterval, array[i].repeatInterval);
+        }
     }
     delete [] array;
+    d->m_timersToBeCleared.Reset();
+    d->m_paused = false;
 }
 
 void Window::clearTimeout(int timeoutId, bool delAction)
 {
+    if(d->m_paused)
+        d->m_timersToBeCleared.Append(timeoutId);
     WindowPrivate::TimeoutsMap::iterator it = d->m_timeouts.find(timeoutId);
     if (it == d->m_timeouts.end())
         return;

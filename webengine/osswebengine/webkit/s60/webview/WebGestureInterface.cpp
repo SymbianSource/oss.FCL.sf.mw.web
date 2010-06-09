@@ -136,8 +136,14 @@ void WebGestureInterface::ConstructL()
     holdArea.iShape = TStmGestureArea::ERectangle;
     holdArea.iTimeout =  HOLD_AREA_TIMEOUT;
     holdArea.iSize.iWidth = HOLD_AREA_WIDTH;
+    
+    //Double tap functionality is enabled based on ECapabilityFitToScreen capability.
+    //setting the doubletap timeout to ZERO if this cap is not defined
+    if (m_webview->brCtl()->capabilities() & TBrCtlDefs::ECapabilityFitToScreen) 
+        gestureParams[stmGesture::EDoubleTapTimeout   ] = DOUBLE_TAP_TIMEOUT;
+    else
+        gestureParams[stmGesture::EDoubleTapTimeout   ] = 0;    
 
-    gestureParams[stmGesture::EDoubleTapTimeout   ] = DOUBLE_TAP_TIMEOUT;
     gestureParams[stmGesture::ESuppressTimeout    ] = SUPPRESS_TIMEOUT;
     gestureParams[stmGesture::EMoveSuppressTimeout] = MOVE_SUPPRESS_TIMEOUT;
     gestureParams[stmGesture::EPanSpeedLow        ] = PAN_SPEED_LOW;

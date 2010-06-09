@@ -2211,7 +2211,15 @@ void CBrCtl::doCloseWindowSoon()
 {
     m_windoCloseTimer->Cancel();
     if (brCtlWindowObserver())
-        TRAP_IGNORE(brCtlWindowObserver()->HandleWindowCommandL(KNullDesC(), ECloseWindow));
+        {
+        TRAPD(err,brCtlWindowObserver()->HandleWindowCommandL(KNullDesC(), ECloseWindow));
+		if ( err == KLeaveExit )
+		    { // while we exit the browser it actually leaves with KLeaveExit from the system.
+		      // If we block this here then the exit would not happen so propogate the leave 
+		      // condition to the system for handling
+		    User::Leave(KLeaveExit);
+		    }        
+        }
 }
 
 TBool CBrCtl::sendCommandsToClient(

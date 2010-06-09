@@ -487,9 +487,18 @@ void WebScrollbarDrawer::drawThumb(CBitmapContext* gc, TRect& rect)
   TRect r(TPoint(0, 0), rect.Size());
   gc->SetBrushStyle(CGraphicsContext::ESolidBrush);
   gc->SetPenStyle(CGraphicsContext::ESolidPen);
+// Current platform API has some problem in drawing the border of
+// the rounded rect.Once it is fixed in platform this code can be reverted back.
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+  gc->SetPenSize(TSize(4,4));
+#else
   gc->SetPenSize(TSize(2,2));
+#endif  
   gc->SetPenColor(TRgb(242, 242, 242));
   gc->SetBrushColor(TRgb(10, 10, 10));
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+  gc->DrawRect(r);
+#endif  
   gc->DrawRoundRect(r, TSize(7, 7));
  
 }
@@ -507,6 +516,9 @@ void WebScrollbarDrawer::drawThumbMask(CBitmapContext* gc, TRect& rect)
   gc->SetBrushColor(brushMaskColor);
   gc->SetPenSize(TSize(2,2));
   gc->SetPenColor(TRgb(5, 5, 5));
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+  gc->DrawRect(r);
+#endif
   gc->DrawRoundRect(r, TSize(7, 7));
 }
 

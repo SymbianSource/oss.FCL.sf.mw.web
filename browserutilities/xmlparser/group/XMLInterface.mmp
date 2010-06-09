@@ -55,7 +55,7 @@ LIBRARY   efsrv.lib
 LIBRARY		euser.lib
 LIBRARY		bafl.lib
 LIBRARY		charconv.lib 
-LIBRARY		cxmlparser.lib
+LIBRARY		cXmlParser.lib
 
 #ifdef __S60_32__
 LANG sc 

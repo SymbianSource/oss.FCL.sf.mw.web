@@ -28,8 +28,7 @@
 
 using namespace WebCore;
 
-const int KFullScreenButtonHeight = 60;
-const int KFullScreenButtonWidth = 60;
+const int KFullScreenButtonOffset = 50;
 const int KFullScreenButtonBuff  = 5;
 
 // -----------------------------------------------------------------------------
@@ -66,6 +65,9 @@ void WebPageFullScreenHandler::ConstructL()
     m_buttonIcon = StaticObjectsContainer::instance()->webCannedImages()->getImage(WebCannedImages::EImageEscFullScreen);
     TPoint pos = CalculatePosition();
     BaseConstructL(m_webView, pos, m_buttonIcon.m_img, m_buttonIcon.m_msk, ETrue);
+     if (AknLayoutUtils::PenEnabled()) {
+         DrawableWindow()->SetPointerGrab(ETrue);
+     }
     Hide();   
 }
 
@@ -147,11 +149,18 @@ void WebPageFullScreenHandler::HandlePointerEventL(const TPointerEvent& aPointer
 
        case TPointerEvent::EButton1Up:
            {
-           if (m_isTouchDown) {
-               Hide();
-               m_webView->notifyFullscreenModeChangeL( false );
-           }
-           m_isTouchDown = EFalse;
+           	TPoint fsPostion = PositionRelativeToScreen();
+            TRect fsRect = TRect(fsPostion,m_buttonIcon.m_img->SizeInPixels());
+            fsRect = TRect(fsRect.iTl - TPoint(KFullScreenButtonOffset,KFullScreenButtonOffset), fsRect.iBr);
+           	TPoint pointerPosition = fsPostion + aPointerEvent.iPosition;
+           	if( fsRect.Contains(pointerPosition))
+           	{
+             if (m_isTouchDown) {
+                  Hide();
+                  m_webView->notifyFullscreenModeChangeL( false );
+               }
+               m_isTouchDown = EFalse;
+            }
            }
            break;          
         }       

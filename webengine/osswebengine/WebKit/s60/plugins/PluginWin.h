@@ -481,6 +481,7 @@ public: // Functions from MPluginAdapter
     void HandlePointerEventFromPluginL(const TPointerEvent& aEvent);
     TBool HandleGesture(const TStmGestureEvent& aEvent);    
 	TBool Windowed() { return m_windowedPlugin;}
+	bool containsPoint(WebView& view, const TPoint& pt);
     protected: // New functions
 
         /**
@@ -506,6 +507,7 @@ public: // Functions from MPluginAdapter
         bool                                m_fullscreen;
         bool                                m_windowCreated;
         bool                                m_forceScroll;
+        bool                                m_visibilty;
     };
 
 
