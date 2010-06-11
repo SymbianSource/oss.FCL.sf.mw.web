@@ -137,12 +137,12 @@ CGestureHelperImpl* CGestureHelperImpl::NewL( MGestureObserver& aObserver )
     CGestureHelperImpl* self = new ( ELeave ) CGestureHelperImpl( aObserver );
     CleanupStack::PushL( self );
     self->iEventSender = CGestureEventSender::NewL( aObserver );
-    self->iDoubleTapTimer = CCallbackTimer::NewL( *self, EmitFirstTapEvent, 
+    self->iDoubleTapTimer = CCallbackTimer::NewL( *self, &CGestureHelperImpl::EmitFirstTapEvent, 
             KMaxTapDuration, EFalse ); // double tap is disabled by default
-    self->iHoldingTimer = CCallbackTimer::NewL( *self, StartHoldingL, 
+    self->iHoldingTimer = CCallbackTimer::NewL( *self, &CGestureHelperImpl::StartHoldingL, 
         KHoldDuration, EFalse ); // holding is enabled by default
     
-    self->iLongTouchTimer = CCallbackTimer::NewL( *self, HandleLongTouch, 
+    self->iLongTouchTimer = CCallbackTimer::NewL( *self, &CGestureHelperImpl::HandleLongTouch, 
             KLongTapDuration, ETrue ); // holding is enabled by default
     
     self->iGesture = new ( ELeave ) CGesture();

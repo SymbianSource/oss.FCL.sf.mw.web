@@ -19,6 +19,8 @@
 #ifndef FAVOURITES_LIMITS_H
 #define FAVOURITES_LIMITS_H
 
+#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // CONSTANTS
 
 //========== Favourites attribute limits ==========//

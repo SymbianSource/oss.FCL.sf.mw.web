@@ -18,6 +18,8 @@
 #ifndef WEBUTILSINTERNALCRKEYS_H
 #define WEBUTILSINTERNALCRKEYS_H
 
+#warning The Web Utils API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 #include <WebUtilsSDKCRKeys.h>
 
 // AppName fragment of useragent string

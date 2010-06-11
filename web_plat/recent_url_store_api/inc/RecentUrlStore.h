@@ -24,6 +24,8 @@
 #ifndef RECENTURLSTORE_H
 #define RECENTURLSTORE_H
 
+#warning The Recent URL Store API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // INCLUDES
 #include <e32base.h>
 #include <s32file.h>

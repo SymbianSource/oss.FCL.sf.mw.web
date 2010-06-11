@@ -20,6 +20,8 @@
 #ifndef BODYPART_H
 #define BODYPART_H
 
+#warning The Multipart Parser API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>

@@ -20,6 +20,8 @@
 #ifndef CDOWNLOADMGRUILIBREGISTRY_H
 #define CDOWNLOADMGRUILIBREGISTRY_H
 
+#warning This Download Manager UI API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <e32std.H>
 #include <e32base.h>

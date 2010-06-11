@@ -85,7 +85,6 @@
 #include "PluginSkin.h"
 #include "HttpUiCallbacks.h"
 #include "PluginWin.h"
-#include <BrowserVersion.h>
 #include <CUserAgent.h>
 
 #ifndef BRDO_WML_DISABLED_FF
@@ -1503,10 +1502,10 @@ EXPORT_C HBufC* CBrCtl::VersionInfoLC(TBrCtlDefs::TBrCtlVersionInfo aVersionInfo
           return versionInfo;
           }
 
-      case TBrCtlDefs::EVersionInfoBuild:
+      /*case TBrCtlDefs::EVersionInfoBuild:
           {
           return MobileBrowserBuild.AllocLC();
-          }
+          }*/
 
         case TBrCtlDefs::EBrowserVersion:
           {

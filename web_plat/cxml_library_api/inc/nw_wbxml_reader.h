@@ -15,6 +15,7 @@
 *
 */
 
+#warning The CXML API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
 
 /** ----------------------------------------------------------------------- **
     @package:     NW_WBXML

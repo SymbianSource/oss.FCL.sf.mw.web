@@ -43,6 +43,8 @@
 #ifndef __XMLUTILS_H
 #define __XMLUTILS_H
 
+#warning The XML API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 
 // Error Codes
 const TInt KErrDictionaryInitFailed=(-90);

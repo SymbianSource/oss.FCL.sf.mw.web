@@ -19,6 +19,8 @@
 #ifndef CXML_TYPE_DEF_H
 #define CXML_TYPE_DEF_H
 
+#warning The CXML API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 /*
  *  ANSI/ISO C header files needed to define basic data types
  * (ie. NULL, etc)

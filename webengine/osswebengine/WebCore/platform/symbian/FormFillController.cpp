@@ -43,7 +43,7 @@ static const double kSearchStartTimeout = 0.5f;
 FormFillController::FormFillController() 
                     : m_popup(0), m_callback(0), m_inputElement(0), m_formDB(0), m_passwdDB(0)
 {
-    m_searchTimer = new Timer<FormFillController>(this, FormFillController::fireSearch);
+    m_searchTimer = new Timer<FormFillController>(this, &FormFillController::fireSearch);
 }
 
 FormFillController::~FormFillController()

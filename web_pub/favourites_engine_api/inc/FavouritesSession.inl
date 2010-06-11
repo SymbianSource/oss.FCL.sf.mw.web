@@ -19,6 +19,8 @@
 #ifndef FAVOURITES_SESSION_INL
 #define FAVOURITES_SESSION_INL
 
+#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // ---------------------------------------------------------
 // RFavouritesSession::SendReceive
 // ---------------------------------------------------------

@@ -82,7 +82,7 @@ public:
     void open(const String& method, const KURL&, bool async, const String& user, ExceptionCode&);
     void open(const String& method, const KURL&, bool async, const String& user, const String& password, ExceptionCode&);
     void send(const String& body, ExceptionCode&);
-    void abort();
+IMPORT    void abort();
     void setRequestHeader(const String& name, const String& value, ExceptionCode&);
     void overrideMIMEType(const String& override);
     String getAllResponseHeaders() const;

@@ -24,6 +24,8 @@
 #ifndef CXML_STR_H
 #define CXML_STR_H
 
+#warning The CXML API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 #ifdef __cplusplus
 extern "C" {
 #endif

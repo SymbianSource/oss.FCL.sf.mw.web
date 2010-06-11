@@ -20,6 +20,8 @@
 #ifndef CDOWNLOADMGRUIBASE_H
 #define CDOWNLOADMGRUIBASE_H
 
+#warning This Download Manager UI API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <E32BASE.H>
 #include <ConeResLoader.h>

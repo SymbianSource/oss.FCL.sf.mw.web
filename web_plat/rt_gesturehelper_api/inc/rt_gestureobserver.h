@@ -18,6 +18,8 @@
 #ifndef _RT_GESTUREOBSERVER_H_
 #define _RT_GESTUREOBSERVER_H_
 
+#warning The RT Gesture API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 #include <e32std.h>
 
 namespace RT_GestureHelper

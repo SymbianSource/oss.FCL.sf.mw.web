@@ -19,6 +19,9 @@
 #ifndef FAVOURITES_DB_INCREMENTAL_H
 #define FAVOURITES_DB_INCREMENTAL_H
 
+#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
+
 //  INCLUDES
 
 #include <FavouritesHandle.h>

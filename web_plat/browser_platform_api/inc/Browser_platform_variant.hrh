@@ -26,6 +26,8 @@
 #ifndef BROWSER_PLATFORM_VARIANT_HRH
 #define BROWSER_PLATFORM_VARIANT_HRH
 
+#warning The Browser Platfrom API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 /*
 * Establish which platform we are building on.
 * If required, un-comment correct platform macro as
@@ -113,7 +115,7 @@
 Disable WML support using BRDO_WML_DISABLED_FF
 Default is WML support enabled 
 */
-#undef BRDO_WML_DISABLED_FF
+#define BRDO_WML_DISABLED_FF
 
 // Defines if SecurityManager component is present
 #define BRDO_WRT_SECURITY_MGR_FF

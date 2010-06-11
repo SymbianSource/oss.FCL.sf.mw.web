@@ -19,6 +19,8 @@
 #ifndef FAVOURITES_WAP_AP_H
 #define FAVOURITES_WAP_AP_H
 
+#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <e32base.h>
 #include <s32strm.h>

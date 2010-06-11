@@ -166,6 +166,7 @@ typedef struct NW_Encoder_StringTableIterator_s{
                   The string table or NULL if not success.
 
  ** ----------------------------------------------------------------------- **/
+IMPORT_C
 NW_Encoder_StringTable_t*
 NW_Encoder_StringTable_new(void);
 

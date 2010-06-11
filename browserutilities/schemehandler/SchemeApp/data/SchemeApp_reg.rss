@@ -17,7 +17,7 @@
 
 
 #include <appinfo.rh>
-#include <SchemeApp.rsg>
+#include <schemeapp.rsg>
 #include <data_caging_paths_strings.hrh>
 
 

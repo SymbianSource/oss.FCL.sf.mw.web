@@ -35,6 +35,9 @@
 #ifndef __MXMLATTRIBUTES_H
 #define __MXMLATTRIBUTES_H
 
+#warning The XML API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
+
 //  INCLUDES
 #include <e32std.h>
 

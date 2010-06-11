@@ -64,6 +64,8 @@
 #include "npapi.h"
 #endif
 
+#warning This NP API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 #include "jri.h"
 
 /******************************************************************************************
