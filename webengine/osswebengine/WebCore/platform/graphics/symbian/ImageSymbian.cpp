@@ -53,11 +53,7 @@
 #include <AknsConstants.h>
 #include <eikenv.h>
 
-#ifdef __GCCE__
-#include <WebKitIcons_gcce.mbg>
-#else
 #include <WebKitIcons.mbg>
-#endif
 
 namespace WebCore {
 
@@ -101,7 +97,7 @@ BitmapImage::BitmapImage(ImageObserver* observer)
 }
 
 BitmapImage::BitmapImage(CMaskedBitmap* bitmap)
-    : m_currentFrame(0) 
+    : m_currentFrame(0)
     , m_frameTimer(0)
     , m_repetitionCount(0)
     , m_repetitionsComplete(0)
@@ -151,7 +147,7 @@ BitmapImage::~BitmapImage()
 
 void BitmapImage::destroyDecodedData(bool)
 {
-    // Destroy the cached images and release them, 
+    // Destroy the cached images and release them,
     // only cache one image in Symbian port.
     if (m_frames.size()) {
         m_frames.last().clear();
@@ -170,18 +166,18 @@ IntSize BitmapImage::size() const
 
 void BitmapImage::setMimeType(const String& mimeType)
 {
-    m_source.setMimeType(mimeType);    
+    m_source.setMimeType(mimeType);
 }
 
 const String& BitmapImage::getMimeType()
 {
-    return m_source.getMimeType();    
+    return m_source.getMimeType();
 }
 
 bool BitmapImage::dataChanged(bool allDataReceived)
 {
     destroyDecodedData(true);
-    
+
     // Feed all the data we've seen so far to the image decoder.
     m_allDataReceived = allDataReceived;
         TRAPD(oomErr, m_source.setDataL(m_data.get(), allDataReceived));
@@ -284,7 +280,7 @@ void BitmapImage::advanceAnimation(Timer<BitmapImage>* timer)
         return;
 
     m_currentFrame++;
-	m_repetitionCount =  m_source.decoder()->getLoopCount(); 
+	m_repetitionCount =  m_source.decoder()->getLoopCount();
     if(m_repetitionCount == -1) m_repetitionCount++;
     if (m_currentFrame >= frameCount()) {
         m_repetitionsComplete += 1;
@@ -446,14 +442,14 @@ void BitmapImage::drawPattern(GraphicsContext* ctxt, const FloatRect& srcRect, c
                              const FloatPoint& phase, CompositeOperator, const FloatRect& dstRect)
 {
     WebCoreGraphicsContext* context = ctxt->platformContext();
-    
+
     CMaskedBitmap* bm = frameAtIndex(m_currentFrame);
-    if(!bm || bm->IsFullyTransparent()) 
+    if(!bm || bm->IsFullyTransparent())
         return;
 
     IntSize intrinsicImageSize = size();
     TSize scaledSize( xForm(TSize(srcRect.width(), srcRect.height())) );
-    
+
     scaledSize.iWidth = scaledSize.iWidth < 1 ? 1 : scaledSize.iWidth;
     scaledSize.iHeight = scaledSize.iHeight < 1 ? 1 : scaledSize.iHeight;
 
@@ -464,7 +460,7 @@ void BitmapImage::drawPattern(GraphicsContext* ctxt, const FloatRect& srcRect, c
     if ( bm->SizeInPixels() == TSize(1,1) && !bm->HasMask() ) {
         checkForSolidColor();
     }
-        
+
     CFbsBitmap* dstBmp = context->contentBuffer();
 
     if (dstBmp != NULL) {
@@ -481,9 +477,9 @@ void BitmapImage::drawPattern(GraphicsContext* ctxt, const FloatRect& srcRect, c
         // start point in source image
         TPoint point( xForm(TPoint(phase.x(), phase.y())) );
         TPoint off( point.iX%scaledSize.iWidth, point.iY%scaledSize.iHeight );
-        off = TPoint( off.iX < 0 ? off.iX + scaledSize.iWidth : off.iX, 
+        off = TPoint( off.iX < 0 ? off.iX + scaledSize.iWidth : off.iX,
                 off.iY < 0 ? off.iY + scaledSize.iHeight : off.iY );
-    
+
         // transform coordinates to bitmap space
         TRect bmpRect( clip );
         TPoint orig( context->origin() );
@@ -517,12 +513,12 @@ void Image::drawPattern(GraphicsContext* ctxt, const FloatRect& tileRect, const 
 void BitmapImage::checkForSolidColor()
 {
     if ( m_source.decoder()->decodeInProgress() || m_isSolidColor ) return;
-    
+
     CMaskedBitmap* bm = frameAtIndex(m_currentFrame);
-    
-    if(!bm) 
+
+    if(!bm)
         return;
-    
+
     if ( frameCount() == 1 ) {
         TRgb bgColor;
         bm->Bitmap().GetPixel(bgColor, bm->SizeInPixels().AsPoint() );
