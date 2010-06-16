@@ -61,7 +61,7 @@ DEBUGLIBRARY flogger.lib
 #endif
 
 
-#if defined(ARMCC)
+#if defined(EABI)
         DEFFILE ../EABI/WebUtils_EKA2.DEF 
 #elif defined( WINSCW )
         DEFFILE ../BWINSCW/WEBUTILS_EKA2.DEF

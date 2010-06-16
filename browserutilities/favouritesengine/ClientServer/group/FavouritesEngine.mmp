@@ -85,7 +85,7 @@ LIBRARY         charconv.lib
 
 DEBUGLIBRARY    flogger.lib
 
-#if defined(ARMCC)
+#if defined(EABI)
     DEFFILE ../EABI/FavouritesEngine.DEF
 #elif defined( WINSCW )
     DEFFILE ../BWinsCw/FAVOURITESENGINE.def
