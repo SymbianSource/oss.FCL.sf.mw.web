@@ -40,18 +40,18 @@ NPError NpnUrlLoader(NPP aInstance, const TDesC& aUrl, TUint8 aMethod,
                      const TDesC* aWindowType, const TDesC& aBuf,
                      TBool aFromFile, TBool aNotify, void* aNotifyData)
 {
-      
+
     PluginWin* pluginWin = (PluginWin* )aInstance->ndata;
     if ( !pluginWin ) {
         return NPERR_INVALID_INSTANCE_ERROR;
     }
 
     TInt status = KErrNone;
-    
+
     // Make the load request
         // convert to 8 bit
         HBufC8* url = HBufC8::NewLC(aUrl.Length());
-        url->Des().Copy(aUrl);    
+        url->Des().Copy(aUrl);
         if (aMethod==EUrlGet) {
             TRAP_IGNORE(status = pluginWin->pluginSkin()->getRequestL(*url, aNotify, aNotifyData, aWindowType));
         }
@@ -72,7 +72,7 @@ NPError NpnUrlLoader(NPP aInstance, const TDesC& aUrl, TUint8 aMethod,
         default:
             return NPERR_GENERIC_ERROR;
     }
-    
+
 }
 
 // -----------------------------------------------------------------------------
@@ -161,7 +161,7 @@ NPError NpnDestroyStream(NPP /*aInstance*/, NPStream* /*aStream*/,
 //
 void NpnStatus(NPP aInstance, const TDesC& aMessage)
 {
-    // This function is not supported.    
+    // This function is not supported.
 }
 
 // -----------------------------------------------------------------------------
@@ -172,7 +172,7 @@ void NpnStatus(NPP aInstance, const TDesC& aMessage)
 //
 const TDesC* NpnUAgent(NPP /*aInstance*/)
 {
-    // Get User Agent String    
+    // Get User Agent String
     CUserAgent* usrAgnt = CUserAgent::NewL();
     CleanupStack::PushL( usrAgnt );
 
@@ -185,7 +185,7 @@ const TDesC* NpnUAgent(NPP /*aInstance*/)
 
     CleanupStack::PopAndDestroy(2);
 
-    return userAgent;    
+    return userAgent;
 }
 
 // -----------------------------------------------------------------------------
@@ -199,7 +199,7 @@ const TDesC* NpnUAgent(NPP /*aInstance*/)
     if (aSize) {
         return User::Alloc(aSize);
     }
-    
+
     return NULL;
 }
 
@@ -275,7 +275,7 @@ NPError NpnGetUrlNotify(NPP aInstance, const TDesC& aUrl,
     TPtrC nullPtr(NULL, 0);
     return NpnUrlLoader(aInstance, aUrl, EUrlGet, aWindowType, nullPtr,
                         EFalse, ETrue, aNotifyData);
-                        
+
 }
 
 // -----------------------------------------------------------------------------
@@ -302,15 +302,15 @@ NPError NpnGetUrlNotify(NPP aInstance, const TDesC& aUrl,
 NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
 {
     TInt err = NPERR_NO_ERROR;
-    
+
     switch (aVariable) {
-        
+
         case NPNVjavascriptEnabledBool: // Tells whether JavaScript is enabled; true=JavaScript enabled, false=not enabled
         // NEEDS IMPLEMENTATION
         //  *((TBool*) aRetValue) = NW_Settings_GetEcmaScriptEnabled();
         break;
 
-        case NPNVnetscapeWindow: {         
+        case NPNVnetscapeWindow: {
 
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             if (pluginWin) {
@@ -323,24 +323,24 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
                 npWindow->height = rect.Height();
                 npWindow->type = pluginWin->Windowed() ? NPWindowTypeWindow : NPWindowTypeDrawable;
                 npWindow->window = pluginWin->Windowed() ? NULL : (MPluginAdapter*) pluginWin;
-            
+
                 NPRect clipRect = {0,0,0,0};
                 npWindow->clipRect = clipRect;
             }
         }
         break;
-        
+
         case NPNVPluginElementNPObject: {
 		PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
         WebCore::Element* pluginElement;
         if (pluginWin) {
         	pluginElement = pluginWin->pluginSkin()->getElement();
         }
-            
+
         NPObject* pluginScriptObject = 0;
         if (pluginElement->hasTagName(appletTag) || pluginElement->hasTagName(embedTag) || pluginElement->hasTagName(objectTag))
 			pluginScriptObject = static_cast<WebCore::HTMLPlugInElement*>(pluginElement)->getNPObject();
-            
+
         if (pluginScriptObject)
         	_NPN_RetainObject(pluginScriptObject);
 
@@ -348,7 +348,7 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
         *v = pluginScriptObject;
         }
         break;
-        
+
         case NPNVWindowNPObject: {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             NPObject* windowObject = pluginWin->windowScriptNPObject();
@@ -368,17 +368,18 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
                                     // true=SmartUpdate enabled, false=not enabled
         case NPNVisOfflineBool:     // Tells whether offline mode is enabled;
                                     // true=offline mode enabled, false=not enabled
-            
-        case NPNNetworkAccess:
+
+        case NPNNetworkAccess: {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             TInt apId = -1;
             if (pluginWin) {
                 apId = pluginWin->pluginSkin()->handleNetworkAccess();
             }
             *((TInt*) aRetValue) = apId;
-            break;
-            
-       case NPNVGenericParameter: {   
+        }
+        break;
+
+       case NPNVGenericParameter: {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             if (pluginWin) {
                 void **v = (void **)aRetValue;
@@ -389,7 +390,7 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
             }
         }
         break;  // for code consistency
-        
+
        case NPNVSupportsWindowless:{
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
                if (pluginWin) {
@@ -399,7 +400,7 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
                    err = NPERR_GENERIC_ERROR;
                }
        }
-       break;		   
+       break;
         default:
             {
             *((TBool*) aRetValue) = EFalse;
@@ -407,7 +408,7 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
             }
             break;
     }   // end of switch
-    
+
     return err;
 
 }
@@ -442,9 +443,9 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
               if (isWindowed)
                   pluginWin->setWindowedPlugin(*isWindowed);
               }
-          
+
           }
-        break;          
+        break;
         case NPPVpluginTransparentBool:
             {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
@@ -452,7 +453,7 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
                 NPBool* isTransparent = (NPBool*)aSetValue;
                 if (isTransparent)
                     pluginWin->setTransparentPlugin(*isTransparent);
-            }          
+            }
             }
         break;
         case NPPVPluginFocusPosition:
@@ -505,9 +506,9 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
             }
         default:
         break;
-    
+
     }   // end of switch
-      
+
     return NPERR_NO_ERROR;
 }
 

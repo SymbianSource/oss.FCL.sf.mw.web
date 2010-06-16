@@ -153,8 +153,8 @@ typedef union
 } PrintfArgValue;
 
 
-void flushbuffer(PrintfTarget *target);
-int  dopr(PrintfTarget *target, const char *format, va_list args);
+static void flushbuffer(PrintfTarget *target);
+static int  dopr(PrintfTarget *target, const char *format, va_list args);
 
 
 EXPORT_C int
