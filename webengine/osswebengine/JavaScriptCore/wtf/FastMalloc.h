@@ -34,7 +34,7 @@ namespace WTF {
     IMPORT void fastFree(void* p);
     IMPORT void *fastRealloc(void* p, size_t n);
 
-#ifndef NDEBUG    
+#ifndef NDEBUG
     void fastMallocForbid();
     void fastMallocAllow();
 #endif
@@ -46,7 +46,7 @@ using WTF::fastCalloc;
 using WTF::fastRealloc;
 using WTF::fastFree;
 
-#ifndef NDEBUG    
+#ifndef NDEBUG
 using WTF::fastMallocForbid;
 using WTF::fastMallocAllow;
 #endif
@@ -62,9 +62,9 @@ using WTF::fastMallocAllow;
 #ifndef _CRTDBG_MAP_ALLOC
 
 #if PLATFORM(SYMBIAN)
-WTF_PRIVATE_INLINE void* operator new(size_t s) { return fastMalloc(s); }
+WTF_PRIVATE_INLINE void* operator new(size_t s) __NO_THROW { return fastMalloc(s); }
 WTF_PRIVATE_INLINE void operator delete(void* p) __NO_THROW { fastFree(p); }
-WTF_PRIVATE_INLINE void* operator new[](size_t s) { return fastMalloc(s); }
+WTF_PRIVATE_INLINE void* operator new[](size_t s) __NO_THROW { return fastMalloc(s); }
 WTF_PRIVATE_INLINE void operator delete[](void* p) __NO_THROW { fastFree(p); }
 #else
 #if !defined(USE_SYSTEM_MALLOC) || !(USE_SYSTEM_MALLOC)

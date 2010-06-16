@@ -20,7 +20,7 @@
  * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
  * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
- * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE. 
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
 #ifndef PlatformKeyboardEvent_h
@@ -61,7 +61,7 @@ namespace WebCore {
     public:
 #if PLATFORM(SYMBIAN)
         String text() const;
-#elif
+#else
         String text() const { return m_text; }
 #endif //PLATFORM(SYMBIAN)
         String unmodifiedText() const { return m_unmodifiedText; }
@@ -123,7 +123,7 @@ namespace WebCore {
 #endif
 
 #if PLATFORM(SYMBIAN)
-        TKeyEvent m_symbianEvent;        
+        TKeyEvent m_symbianEvent;
 #endif
 
     };

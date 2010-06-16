@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:  
+* Description:
 *
 */
 
@@ -40,10 +40,10 @@ namespace WebCore {
 
 static const double kSearchStartTimeout = 0.5f;
 
-FormFillController::FormFillController() 
+FormFillController::FormFillController()
                     : m_popup(0), m_callback(0), m_inputElement(0), m_formDB(0), m_passwdDB(0)
 {
-    m_searchTimer = new Timer<FormFillController>(this, FormFillController::fireSearch);
+    m_searchTimer = new Timer<FormFillController>(this, &FormFillController::fireSearch);
 }
 
 FormFillController::~FormFillController()
@@ -100,7 +100,7 @@ void FormFillController::updatePopupView()
         m_popup->invalidate();
     } else if(m_popup) {
         m_popup->clear();
-    }    
+    }
 }
 
 void FormFillController::setInputElement(MFormFillCallback* callback, HTMLInputElement* input)
@@ -108,7 +108,7 @@ void FormFillController::setInputElement(MFormFillCallback* callback, HTMLInputE
     clearInputElement();
     m_inputElement = input;
     m_callback = callback;
-                            
+
     startSearch(m_inputElement->name(), m_inputElement->value() );
 }
 
@@ -176,7 +176,7 @@ void FormFillController::insertInputNameAndValue(const String& name_, const Stri
 }
 
 void FormFillController::fillPasswordIfExists(HTMLInputElement* uNode)
-{   
+{
     HTMLFormElement* form = uNode->form();
     if (!m_passwdDB)
         m_passwdDB = new FormLoginStore();
@@ -188,7 +188,7 @@ void FormFillController::fillPasswordIfExists(HTMLInputElement* uNode)
             // search if we have already stored the password
             String passwdValue;
             String realm = passwdRealm(uNode->document()->URL());
-            if (!realm.isEmpty() && m_passwdDB->search(realm, uNode->name(), 
+            if (!realm.isEmpty() && m_passwdDB->search(realm, uNode->name(),
                                     uNode->value(), passwd->name(), passwdValue)) {
                 passwd->setValue(passwdValue);
             }
@@ -216,14 +216,14 @@ void FormFillController::saveFormData(HTMLFormElement* form, MFormFillCallback* 
         if (current->hasTagName(HTMLNames::inputTag)) {
             HTMLInputElement* input = static_cast<HTMLInputElement*>(current);
             if (input->inputType() == HTMLInputElement::TEXT) {
-                if (input->autoComplete()) { 
-                
-                    bool ignorefield = false;    
+                if (input->autoComplete()) {
+
+                    bool ignorefield = false;
 
                     // find the matching password and save login data
                     int passwdFields = 0;
                     HTMLInputElement* passwd = NULL;
-                    if (passwdFillEnabled) 
+                    if (passwdFillEnabled)
                         passwd = searchPasswordFields(form, input, passwdFields);
                     String realm = passwdRealm(input->document()->URL());
                     if (passwdFields == 1) {
@@ -256,12 +256,12 @@ void FormFillController::saveFormData(HTMLFormElement* form, MFormFillCallback* 
                             m_passwdDB->commit();
                             ignorefield = true;
                         } else if (!ignorefield) {
-                            // don't save this time, should delete previously-save 
+                            // don't save this time, should delete previously-save
                             m_passwdDB->removePartial(realm, input->name(), input->value(), passwd->name());
                             m_passwdDB->commit();
-                        } 
+                        }
 
-                       
+
                     }
                     else if (passwdFields > 1) {
                         // most likely this is a password change form, need to purge
@@ -275,7 +275,7 @@ void FormFillController::saveFormData(HTMLFormElement* form, MFormFillCallback* 
                         insertInputNameAndValue(input->name(), input->value());
                 }
             }
-        }        
+        }
     }
 }
 
@@ -297,7 +297,7 @@ HTMLInputElement* FormFillController::searchPasswordFields(HTMLFormElement* form
                 continue;
             }
             else if (usernameIdx != -1 && input->inputType() == HTMLInputElement::TEXT) {
-                // current element is a text input element positioning between uNode and 
+                // current element is a text input element positioning between uNode and
                 // any possible successing password field.  So uNode can't be a
                 // usename field.
                 break;
@@ -314,7 +314,7 @@ HTMLInputElement* FormFillController::searchPasswordFields(HTMLFormElement* form
             }
         }
     }
-    
+
     return passwd;
 }
 
