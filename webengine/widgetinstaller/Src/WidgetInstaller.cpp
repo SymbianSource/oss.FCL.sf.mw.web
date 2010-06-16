@@ -472,14 +472,16 @@ void CWidgetInstaller::FixWidgetPropsL()
                     break;
                     
                     case EWidgetPropTypeInt:
-                    TLex toInt( value->Des() );
-                    TInt k;
-                    if ( KErrNone != toInt.Val( k ) )
-                       {
-                       User::Leave( KErrCorrupt );
-                       }
-                    if ( propId ==  EBlanketPermGranted )
-                        backupBlanketPerm = k;        
+                    	{
+		                TLex toInt( value->Des() );
+		                TInt k;
+		                if ( KErrNone != toInt.Val( k ) )
+		                   {
+		                   User::Leave( KErrCorrupt );
+		                   }
+		                if ( propId ==  EBlanketPermGranted )
+		                    backupBlanketPerm = k;
+						}        
                     break;                    
 					          
 					          case EWidgetPropTypeString:
