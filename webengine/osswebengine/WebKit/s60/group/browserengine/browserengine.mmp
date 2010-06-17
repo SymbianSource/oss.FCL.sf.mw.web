@@ -28,7 +28,7 @@ EPOCALLOWDLLDATA
 
 #if defined(WINSCW)
 deffile ../bwinscw/browserengine.def
-#elif defined(ARMCC)
+#elif defined(EABI)
 deffile ../eabi/browserengine.def
 #endif
 

@@ -27,7 +27,7 @@ UID         0x1000008d 0x10008D5F
 //MACRO _DEBUG
 //#define _DEBUG
 
-#if defined(ARMCC)
+#if defined(EABI)
   DEFFILE ../EABI/DOWNLOADMGRU_EKA2.def
 #else
   DEFFILE ../BWinsCw/DOWNLOADMGRU_EKA2.def

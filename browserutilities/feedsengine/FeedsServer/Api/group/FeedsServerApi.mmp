@@ -29,7 +29,7 @@ UID               0x1000008d 0x2001F46B
 
 #if defined(WINSCW)
 deffile Bwinscw/FeedsServerApi.def
-#elif defined(ARMCC)
+#elif defined(EABI)
 deffile EABI/FeedsServerApi.def
 #endif
 

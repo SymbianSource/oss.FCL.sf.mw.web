@@ -35,7 +35,7 @@ MACRO __OOM__
 
 #if defined(WINSCW)
 deffile Bwinscw/WebKitUtils.def
-#elif defined(ARMCC)
+#elif defined(EABI)
 deffile EABI/WebKitUtils.def
 #endif
 

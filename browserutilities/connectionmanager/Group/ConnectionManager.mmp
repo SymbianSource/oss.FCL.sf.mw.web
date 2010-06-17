@@ -79,7 +79,7 @@ LIBRARY     featmgr.lib
 LIBRARY     cmmanager.lib
 DEBUGLIBRARY    flogger.lib
 
-#if defined(ARMCC)
+#if defined(EABI)
     DEFFILE ../EABI/CONNECTIONMANAGERU_EKA2.def
 #else
     DEFFILE ../BWinsCw/CONNECTIONMANAGERU_EKA2.def

@@ -31,7 +31,7 @@ VENDORID    VID_DEFAULT
 //MACRO _DEBUG
 //#define _DEBUG
   
-#if defined(ARMCC)
+#if defined(EABI)
   DEFFILE ../EABI/HTTPDMSERVENGU_EKA2.def
 #else
   DEFFILE ../BWinsCw/HTTPDMSERVENGU_EKA2.def

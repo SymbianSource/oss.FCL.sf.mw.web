@@ -33,7 +33,7 @@ EPOCALLOWDLLDATA
 
 #if defined(WINSCW)
 deffile Bwinscw/BrowserCache.def
-#elif defined(ARMCC)
+#elif defined(EABI)
 deffile EABI/BrowserCache.def
 #endif
 

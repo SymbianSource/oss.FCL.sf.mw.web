@@ -31,7 +31,7 @@ VENDORID          VID_DEFAULT
 
 #if defined(WINSCW)
 deffile ../BWINSCW/WidgetRegistryClient.def
-#elif defined(ARMCC)
+#elif defined(EABI)
 deffile ../EABI/WidgetRegistryClient.def
 #endif
 

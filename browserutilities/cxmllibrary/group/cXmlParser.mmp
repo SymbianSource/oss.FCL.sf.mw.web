@@ -20,10 +20,9 @@
 TARGET          cXmlParser.dll
 TARGETTYPE      dll
 
-
-
-#if defined(ARMCC)
 UID	0x1000008D 	0x101F8710
+
+#if defined(EABI)
 deffile eabi/CXMLPARSER.DEF
 #elif defined( WINSCW )
 deffile BWINSCW/CXMLPARSER.DEF

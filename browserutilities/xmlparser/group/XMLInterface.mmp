@@ -25,7 +25,7 @@ UID             0x1000008d 0x101F9750
 
 VENDORID VID_DEFAULT
 
-#if defined(ARMCC)
+#if defined(EABI)
 DEFFILE ../eabi/xmlinterface.def
 #elif defined(WINSCW)
 DEFFILE ../bwinscw/xmlinterface.def

@@ -45,7 +45,7 @@ EPOCALLOWDLLDATA
 
 #if defined(WINSCW)
 deffile ../BWINSCW/Device.def
-#elif defined(ARMCC)
+#elif defined(EABI)
 deffile ../EABI/Device.def
 #endif
 

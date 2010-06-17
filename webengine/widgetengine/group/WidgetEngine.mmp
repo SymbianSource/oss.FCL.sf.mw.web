@@ -85,7 +85,7 @@ EPOCALLOWDLLDATA
 
 #if defined(WINSCW)
 deffile ../BWINSCW/WidgetEngine.def
-#elif defined(ARMCC)
+#elif defined(EABI)
 deffile ../EABI/WidgetEngine.def
 #endif
 

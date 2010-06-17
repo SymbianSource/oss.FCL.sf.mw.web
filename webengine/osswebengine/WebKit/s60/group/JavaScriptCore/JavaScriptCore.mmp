@@ -35,12 +35,12 @@ EPOCALLOWDLLDATA
 EPOCHEAPSIZE 0x5000 0x1000000
 
 #if defined(__S60_32__)
-#if defined(ARMCC)
+#if defined(EABI)
 deffile ../EABI/JavaScriptCore_3_2.def
 #elif defined( WINSCW )
 deffile ../Bwinscw/JavaScriptCore_3_2.def
 #endif
-#elif defined(ARMCC)
+#elif defined(EABI)
 deffile ../eabi/JavaScriptCore.def
 #elif defined( WINSCW )
 deffile ../bwinscw/JavaScriptCore.def

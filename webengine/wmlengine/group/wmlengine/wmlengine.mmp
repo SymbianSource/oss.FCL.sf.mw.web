@@ -33,7 +33,7 @@ EPOCALLOWDLLDATA
 
 #if defined(WINSCW)
 deffile ../BWINSCW/WmlEngine.def
-#elif defined(ARMCC)
+#elif defined(EABI)
 deffile ../EABI/WmlEngine.def
 #endif
 

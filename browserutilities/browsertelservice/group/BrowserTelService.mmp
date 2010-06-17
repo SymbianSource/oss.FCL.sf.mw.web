@@ -96,7 +96,7 @@ LIBRARY     featmgr.lib // feature mannger support
 LIBRARY     estor.lib  // RWriteStream, RFileBuf
 LIBRARY     Centralrepository.lib
 
-#if defined(ARMCC)
+#if defined(EABI)
     DEFFILE ../EABI/BROWSERTELSERVICEU_EKA2.def
 #elif defined( WINSCW )
     DEFFILE ../BWinsCw/BROWSERTELSERVICEU_EKA2.def

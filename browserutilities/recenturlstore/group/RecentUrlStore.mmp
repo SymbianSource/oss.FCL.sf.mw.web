@@ -26,7 +26,7 @@ VENDORID  VID_DEFAULT
 CAPABILITY  CAP_GENERAL_DLL
 EPOCALLOWDLLDATA
 
-#if defined(ARMCC)
+#if defined(EABI)
     DEFFILE ../EABI/RecentUrlStore.def
 #elif defined( WINSCW )
     DEFFILE ../BWINSCW/RecentUrlStore.def
