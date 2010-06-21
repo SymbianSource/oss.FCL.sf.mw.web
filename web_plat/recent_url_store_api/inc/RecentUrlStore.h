@@ -122,6 +122,11 @@ class CRecentUrlStore : public CBase
 	    */
 	    void CreateDatabaseL();
 	    
+	    /**
+      *  Insert the Escape Sequence
+      */
+      TInt InsertEscapeSequence(TChar aChar,TUint16* aDestPtr,const TDesC& aString);
+	    
     /*  Private Members  */
 
     private :

@@ -44,6 +44,7 @@
 #include "WebPointerEventHandler.h"
 #include "WebPageScrollHandler.h"
 #include "WebKitLogger.h"
+#include "WebCoreGraphicsContext.h"
 
 #include <rt_gestureif.h>
 
@@ -89,6 +90,9 @@ void PluginWin::ConstructL( const WebView& view )
     }
     // Add the focus/foreground observer
     ControlEnv()->AddForegroundObserverL( *this ) ;
+    m_pluginHasBitmap = false;
+    m_pausedBitmap = NULL;
+    m_BitmapSupported = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -98,21 +102,21 @@ void PluginWin::ConstructL( const WebView& view )
 //
 PluginWin::~PluginWin()
 {
-    CBrCtl* brCtl = control(m_pluginskin->frame());
-    if (brCtl) {
-        WebView*  view = brCtl->webView();
-        if (view) {
-            int index = view->getVisiblePlugins().Find(m_pluginskin);
-            if (index != KErrNotFound)
-                view->getVisiblePlugins().Remove(index);
-        }
-    }
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+
+    int index = pluginHandler->getVisiblePlugins().Find(m_pluginskin);
+    if (index != KErrNotFound)
+        pluginHandler->getVisiblePlugins().Remove(index);
 
     TRAP_IGNORE( setPluginFocusL( EFalse ) );
 
     // Remove the foreground observer
     ControlEnv()->RemoveForegroundObserver( *this );
     delete m_bitmap;
+   if (m_pausedBitmap)
+        {
+        delete m_pausedBitmap;
+        }
 }
 
 // -----------------------------------------------------------------------------
@@ -161,6 +165,7 @@ void PluginWin::windowChanged()
 void PluginWin::windowChangedL()
 {
     if (m_fullscreen) return;
+    PlayPausePluginL();
     if (m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->setwindow ){
         NPWindow  window;
     TRect rect( m_pluginskin->getPluginWinRect() );
@@ -381,7 +386,11 @@ TInt PluginWin::refreshPlugin(CFbsBitGc& bitmapContext,TRect aRect)
 //
 void PluginWin::makeVisible( TBool visible )
     {
-    if(IsVisible() != visible) 
+    WebView* view = control(m_pluginskin->frame())->webView();
+    if(!view)
+        return;
+    
+    if((!m_pluginHasBitmap) && (IsVisible() != visible) && (!view->isPinchZoom()))
     {
         CCoeControl::MakeVisible(visible);
     }
@@ -394,14 +403,14 @@ void PluginWin::makeVisible( TBool visible )
             HandleLosingForeground();
     }
     
-    WebView* view = control(m_pluginskin->frame())->webView();
-    int index = view->getVisiblePlugins().Find(m_pluginskin);
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+    int index = pluginHandler->getVisiblePlugins().Find(m_pluginskin);
     if (visible && (m_visibilty != visible) && (index == KErrNotFound)) {
-        view->getVisiblePlugins().AppendL(m_pluginskin);
+        pluginHandler->getVisiblePlugins().AppendL(m_pluginskin);
         m_visibilty = visible;
     }
     else if (!visible && (index != KErrNotFound)) {
-        view->getVisiblePlugins().Remove(index);
+        pluginHandler->getVisiblePlugins().Remove(index);
         m_visibilty = visible;
     }
     
@@ -728,17 +737,50 @@ void PluginWin::NotifyPluginVisible (TBool visible)
       }	
     }
 }
-void PluginWin::PlayPausePluginL (bool pause)
+void PluginWin::PlayPausePluginL ()
 {
-    if(m_notifier) {        
-      if (pause) {
-          m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)1 );
-      }
-      else {
-          m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)0 );
-      }
+    if(m_notifier) 
+    {
+        CBrCtl*   brCtl = control(m_pluginskin->frame());    
+        WebView*  view = brCtl->webView();
+        TBool scrolling = view->viewIsScrolling();
+        if (scrolling) {
+            m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)1 );
+        }
+        else {
+            m_notifier->NotifyL( MPluginNotifier::EPluginPause, (void*)0 );
+        }
     }
 }
+
+TBool PluginWin::IsCollectBitmapSupported ()
+{
+    if(m_notifier) {
+        m_BitmapSupported = m_notifier->NotifyL( MPluginNotifier::ECollectBitmapSupported, (void*)0 ) ;
+    }
+    return m_BitmapSupported;
+}
+
+
+void PluginWin::GetBitmapFromPlugin (bool status)
+    {
+    if(m_notifier) {
+         if (status) {
+             m_notifier->NotifyL( MPluginNotifier::ECollectBitmap, (void*)1 );
+         }
+         else {
+             m_notifier->NotifyL( MPluginNotifier::ECollectBitmap, (void*)0 );
+             
+             m_pluginHasBitmap = 0;
+             if(m_pausedBitmap)
+                 {
+                 delete m_pausedBitmap;
+                 m_pausedBitmap = NULL;
+                 }
+         }
+       }
+}
+
 
 void PluginWin::HandlePointerEventFromPluginL(const TPointerEvent& aEvent)
 {
@@ -872,3 +914,77 @@ bool PluginWin::containsPoint(WebView& view, const TPoint& pt)
     else 
         return false;   
 }
+// -----------------------------------------------------------------------------
+// PluginWin::SetBitmapFromPlugin
+// Plugin video is captured in CFBsBitmap and handle is passed to plugin window 
+// Duplicate the bitmap handle and use it to draw while Panning or Pinch zoom
+// -----------------------------------------------------------------------------
+void PluginWin::SetBitmapFromPlugin(TInt aHandle)
+    {
+
+//    m_pluginfocus = 1;
+
+    if (aHandle)
+        {
+        if (m_pausedBitmap)
+            {
+            delete m_pausedBitmap;
+            m_pausedBitmap = NULL;
+            }
+        m_pausedBitmap = new (ELeave) CFbsBitmap();
+        TInt dupStatus = m_pausedBitmap->Duplicate(aHandle);
+        if(dupStatus == KErrNone)
+            { 
+            m_pluginHasBitmap = true;
+            
+            
+            if (IsVisible())
+                   {
+                   MakeVisible(false);
+                   }
+            //setPluginFocusL(false);
+            drawBitmapToWebCoreContext();
+            } 
+       }
+    else
+        {
+        if(m_pausedBitmap)
+        {
+            delete m_pausedBitmap;
+        	m_pausedBitmap = NULL;
+		}
+        m_pluginHasBitmap = false;
+        }
+    }
+
+void PluginWin::ClearPluginBitmap()
+    {
+    if(m_pausedBitmap)
+        {
+        delete m_pausedBitmap;
+        m_pausedBitmap = NULL;
+        m_pluginHasBitmap = false; //clearing plugin bitmap
+        }
+    }
+
+void PluginWin::drawBitmapToWebCoreContext()
+    { 
+    CBrCtl* brCtl = control(m_pluginskin->frame());
+    WebView* view = brCtl->webView();
+    WebCoreGraphicsContext* context = view->getGraphicsContext();
+    CFbsBitGc& gc = context->gc();
+    TRect plWinRect(m_pluginskin->getPluginWinRect());
+
+    TRect oldcontextrect = context->clippingRect();
+    TRect clippingRect = context->clippingRect();
+
+    // save the gc state
+    TWebCoreSavedContext saved(context->save());
+    
+    if(plWinRect != clippingRect)
+        {
+        context->setClippingRect(plWinRect);
+        }
+    gc.DrawBitmap(plWinRect, m_pausedBitmap);
+    context->restore(saved);
+    }

@@ -59,6 +59,9 @@ class CWidgetUiNetworkListener;
 class CCpsPublisher;
 #endif
 // CLASS DECLARATION
+#ifdef BRDO_OCC_ENABLED_FF
+#include <connectionobservers.h>
+#endif
 
 class CRepository; 
 
@@ -93,7 +96,10 @@ class CCenrepNotifyHandler : public CActive
 *  @since 3.1
 */
 class CWidgetUiWindowManager : public CBase,
-	                             public MCenrepWatcher
+	                           public MCenrepWatcher
+#ifdef BRDO_OCC_ENABLED_FF
+                              ,public MConnectionStageObserver
+#endif
     {
     public:  // constructors / destructor
 
@@ -604,7 +610,27 @@ class CWidgetUiWindowManager : public CBase,
         * @return none
         */
         void SendWidgetToBackground( const TUid& aUid );
-
+#ifdef BRDO_OCC_ENABLED_FF        
+   protected:  // from MConnectionStageObserver
+      
+       // Connection stage achieved. 
+        void ConnectionStageAchievedL();
+   public:
+    
+        //Retry flags
+        void SetRetryFlag(TBool flag);
+        TBool GetRetryFlag();
+        
+        //For Call back for reconnectivity
+        static TInt RetryConnectivity(TAny* aWindowManager);
+        TInt RetryInternetConnection(); 
+        
+        CPeriodic *iRetryConnectivity;
+        TBool reConnectivityFlag;
+        void ConnNeededStatusL( TInt aErr );
+        void StopConnectionObserving();
+#endif
+        
     private:
 
         CWidgetUiWindow*                    iActiveFsWindow;    // reference.
@@ -632,7 +658,10 @@ class CWidgetUiWindowManager : public CBase,
         CPeriodic*                          iNotifyHarvester;//Notify harvester to send next event
 #ifdef  OOM_WIDGET_CLOSEALL
         TTime                               iTimeLastWidgetOpen;
-#endif  
+#endif
+#ifdef BRDO_OCC_ENABLED_FF
+        CConnectionStageNotifierWCB*    iConnStageNotifier;                                
+#endif
     };
 
 #endif  // WIDGETUIWINDOWMANAGER_H_

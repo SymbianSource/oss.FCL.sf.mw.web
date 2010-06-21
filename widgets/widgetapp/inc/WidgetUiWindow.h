@@ -27,9 +27,6 @@
 #include <coecntrl.h>
 #include "WidgetUiObserver.h"
 
-#ifdef BRDO_OCC_ENABLED_FF
-#include <connectionobservers.h>
-#endif
 
 // CONSTANTS
 enum TWidgetAccessGrant
@@ -90,9 +87,6 @@ class CWidgetUiWindow :  public CBase,
                     public MWidgetCallback, 
                     public MBrCtlSpecialLoadObserver,
                     public MAknServerAppExitObserver
-#ifdef BRDO_OCC_ENABLED_FF
-	                ,public MConnectionStageObserver
-#endif
     {
     public:
 
@@ -239,28 +233,6 @@ class CWidgetUiWindow :  public CBase,
 
         void HandleServerAppExit( TInt aReason );
 
-#ifdef BRDO_OCC_ENABLED_FF        
-    protected:  // from MConnectionStageObserver
-      
-        /**
-        * Connection stage achieved. 
-        */
-        void ConnectionStageAchievedL();
-   public:
-   	
-        //Retry flags
-        void SetRetryFlag(TBool flag);
-        TBool GetRetryFlag();
-        
-        //For Call back for reconnectivity
-        static TInt RetryConnectivity(TAny* aCBrowserAppUi);
-        TInt RetryInternetConnection();	
-        
-        CPeriodic *iRetryConnectivity;
-        TBool reConnectivityFlag;
-        void ConnNeededStatusL( TInt aErr );
-        void StopConnectionObserving();
-#endif
     public:  // new functions
 
         /**
@@ -656,9 +628,7 @@ class CWidgetUiWindow :  public CBase,
         TBool                           iDeleteItself;
         CAsyncCallBack*                 iAsyncCallBack;    
         CBrowserDialogsProvider*        iDialogsProvider;// owned, responsible for deleting
-#ifdef BRDO_OCC_ENABLED_FF
-        CConnectionStageNotifierWCB*    iConnStageNotifier;                                
-#endif
+
    };
 
 #endif  //

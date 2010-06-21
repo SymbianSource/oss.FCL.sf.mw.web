@@ -49,7 +49,8 @@ WidgetPreferences::WidgetPreferences() :m_widgetid(0),
                                         m_basepath(0),
                                         m_filepath(0)
 {
-    m_preferences = new RPtrHashMap<TDesC,PrefElement>();    
+    m_preferences = new RPtrHashMap<TDesC,PrefElement>();
+    m_asynsave = new (ELeave) CAsyncCallBack(TCallBack(SavePref,this),CActive::EPriorityIdle);
 }
 
 // ----------------------------------------------------------------------------
@@ -59,8 +60,19 @@ WidgetPreferences::WidgetPreferences() :m_widgetid(0),
 //
 // ----------------------------------------------------------------------------
 WidgetPreferences::~WidgetPreferences()
-{
-    //TRAP_IGNORE( saveL() );
+{       
+    if(m_asynsave && m_asynsave->IsActive())
+        {
+        m_asynsave->Cancel();
+        TRAPD(err, saveL());
+        if(err!= KErrNone) 
+            {
+            deleteAllPrefFiles();
+            }      
+        }    
+    delete m_asynsave;
+    m_asynsave = NULL;
+    
     if (m_preferences) {
         m_preferences->ResetAndDestroy();
         m_preferences->Close();
@@ -265,14 +277,10 @@ void WidgetPreferences::setPreferenceL( const TDesC& akey, const TDesC& avalue)
 
         CleanupStack::Pop();   // k
 
-        // Save update to persistent storage
-        TRAPD(err, saveL());
-        if(err!= KErrNone)
-            {
-            deleteAllPrefFiles();
-            }
+    // Save update to persistent storage
+    m_asynsave->Cancel();
+    m_asynsave->CallBack();
     }
-
 }
 
 // ----------------------------------------------------------------------------
@@ -543,6 +551,23 @@ void WidgetPreferences::loadL()
     internalizeL(readStream);
 
     CleanupStack::PopAndDestroy(3); // readStream, filePath, fs
+}
+
+// ----------------------------------------------------------------------------
+// WidgetPreferences::SavePref
+// Save preferences for persistent storage
+//
+//
+// 
+TInt WidgetPreferences::SavePref(TAny* aPtr)
+{   
+    WidgetPreferences* self = (WidgetPreferences*)aPtr;
+    TRAPD(err, self->saveL());
+    if(err!= KErrNone)
+        {
+        self->deleteAllPrefFiles();
+        }
+    return 0;
 }
     
 // ----------------------------------------------------------------------------

@@ -366,6 +366,7 @@ typedef enum {
     NPPVPluginDeactivate = 101,
     NPPVPluginZoom = 102,
     NPPVPluginPointerEvent = 103,
+    NPPVPluginBitmap = 104, 
     NPPVpluginInteractiveBool = 1000,
 #endif
 

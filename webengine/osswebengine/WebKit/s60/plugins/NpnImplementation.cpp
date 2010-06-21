@@ -477,6 +477,20 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
             }
             break;
             }
+        case NPPVPluginBitmap :
+            PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
+            if (pluginWin) {
+                TInt* bitMapHandle = (TInt*)aSetValue;
+                if (*bitMapHandle) {
+                    TInt handle = *bitMapHandle; 
+                    pluginWin->SetBitmapFromPlugin(handle);
+                }
+                else 
+                    { 
+                    pluginWin->SetBitmapFromPlugin(KErrNone);
+                    }
+            }
+            break; 
         case NPPVPluginDeactivate:
             {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;

@@ -60,7 +60,7 @@ class WebScrollingDeceleratorGH: public CBase
 
     public: // Main functions
         
-        void startDecel(TRealPoint& speed, WebScrollbarDrawer* scrollbarDrawer);
+        bool startDecel(TRealPoint& speed, WebScrollbarDrawer* scrollbarDrawer);
         
         void cancelDecel();
         

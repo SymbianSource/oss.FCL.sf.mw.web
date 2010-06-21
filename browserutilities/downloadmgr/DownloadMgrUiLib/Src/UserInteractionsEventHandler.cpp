@@ -1102,11 +1102,17 @@ void CUserInteractionsEventHandler::HandleCompletedStateL()
                     }
 
 
-                // update EDlAttrDestFilename with new path
-                User::LeaveIfError
-		                ( iDownload.SetStringAttribute( EDlAttrDestFilename, *fileName ) );
-                // move file
-                User::LeaveIfError( iDownload.Move() );
+                TBool isProg(EFalse);
+                User::LeaveIfError( iDownload.GetBoolAttribute( EDlAttrProgressive, isProg ) );
+
+                // Move operation should be invoked by DL Manger if its not a progressive download. 
+                if( !isProg )
+                    {
+                    // update EDlAttrDestFilename with new path
+                    User::LeaveIfError
+                            ( iDownload.SetStringAttribute( EDlAttrDestFilename, *fileName ) );
+                    User::LeaveIfError( iDownload.Move() );
+                    }
           	    CleanupStack::PopAndDestroy( fileName ); // fileName
                 }
             }

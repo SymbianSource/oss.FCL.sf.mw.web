@@ -48,6 +48,7 @@
 
 // INCLUDES
 
+#include <browser_platform_variant.hrh>
 #include <../bidi.h>
 #include "config.h"
 #include <e32base.h>
@@ -80,7 +81,6 @@ _LIT(KMimeDRM, "application/vnd.oma.drm.content");
 
 // FIXME: we should move this back to EColor64K after Symbian fix their Gif image decoder bug.
 const TDisplayMode KMaxDepth = EColor16M;
-
 // CLASS DECLARATION
 /**
 *  CAnimationDecoderWrapped

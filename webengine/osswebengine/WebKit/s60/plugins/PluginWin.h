@@ -477,11 +477,19 @@ public: // Functions from MPluginAdapter
     
     
     void ToggleScreenMode(bool aFullScreen);
-    void PlayPausePluginL (bool pause);
+    void PlayPausePluginL ();
     void HandlePointerEventFromPluginL(const TPointerEvent& aEvent);
     TBool HandleGesture(const TStmGestureEvent& aEvent);    
 	TBool Windowed() { return m_windowedPlugin;}
 	bool containsPoint(WebView& view, const TPoint& pt);
+	void SetBitmapFromPlugin(TInt aHandle);
+	TBool IsPluginFocused() {return m_pluginfocus; }
+	TBool IsPluginBitMapSet() {return m_pluginHasBitmap; }
+	CFbsBitmap* PluginBitmap() {return m_pausedBitmap; }
+	void GetBitmapFromPlugin (bool status);
+	void ClearPluginBitmap();
+	TBool IsCollectBitmapSupported();
+	void drawBitmapToWebCoreContext();
     protected: // New functions
 
         /**
@@ -508,6 +516,9 @@ public: // Functions from MPluginAdapter
         bool                                m_windowCreated;
         bool                                m_forceScroll;
         bool                                m_visibilty;
+        CFbsBitmap*                         m_pausedBitmap;       //Plugin paused Bitmap
+        bool                                m_pluginHasBitmap;
+        bool                                m_BitmapSupported;
     };
 
 

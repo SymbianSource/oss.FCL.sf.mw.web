@@ -315,7 +315,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         *
         *
         */
-        void setViewIsScrolling(bool scrolling) { m_viewIsScrolling = scrolling; };
+        void setViewIsScrolling(bool scrolling);
 
         /**
         * Return if the user is currently scrolling
@@ -389,11 +389,8 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
          * Starts the checkerboard timer. End of this timer, checkerboard will be destroyed.
          */
         void startCheckerBoardDestroyTimer();
-        
-        void setScrolling(bool scroll);
-         
-        bool isScrolling() { return m_scroll; }
 
+        void scrollStatus(bool status);
     public: // from MPageScalerCallback
         /**
         *
@@ -545,8 +542,8 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void resumeJsTimers();
         bool jsTimersPaused() { return (m_jsTimeouts) ? true : false; }
         void resetJsTimers() { m_jsTimeouts = 0; }
-        RPointerArray<PluginSkin>& getVisiblePlugins(){ return m_visiblePlugins;}
-        
+
+        WebCoreGraphicsContext* getGraphicsContext() {return m_webcorecontext; }
     private:
         WebCore::Page*          m_page;
         WebFrameView*           m_frameView;
@@ -614,7 +611,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         int                 m_startZoomLevel;
         bool                m_dirtyZoomMode;
         bool                m_zoomLevelChangedByUser;
-        bool                m_isPluginsVisible;
         bool                m_historyLoad;
         bool                m_redirectWithLockedHistory;
         // full screen mode
@@ -638,7 +634,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         TBool                    m_isPinchZoom;
         TRealPoint               m_pinchDocDelta;
         int                      m_drawsMissed;
-        bool m_scroll;
         CThumbnailGenerator* m_thumbnailGenerator;
         
         CFbsBitmap              *m_checkerBoardBitmap;
@@ -652,7 +647,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
    	    // JavaScript (DOMWindowTimer) timers
         KJS::PausedTimeouts*     m_jsTimeouts;
         
-        RPointerArray<PluginSkin> m_visiblePlugins;
+        TBool                    m_scrollingstatus;
     };
 
 #endif

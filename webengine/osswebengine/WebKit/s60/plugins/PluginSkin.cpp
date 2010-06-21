@@ -168,7 +168,8 @@ PluginSkin::PluginSkin( WebFrame& frame )
       m_resized(false),
       m_oldRect(TRect(0,0,0,0)),
       m_oldViewport(TRect(0,0,0,0)),
-      m_loadmode(ELoadModeNone)
+      m_loadmode(ELoadModeNone),
+      m_NPObject(0)
   {
   }
 
@@ -412,6 +413,7 @@ void PluginSkin::Close()
     m_pluginfuncs = 0;
     m_pluginSupported = EFalse;
     m_pluginClosed = true;
+    
  }
 
 
@@ -483,9 +485,35 @@ void PluginSkin::draw( WebCoreGraphicsContext& context,
         }
     if(m_pluginwin)
         {
-        positionChanged();
-        // Force the control to be redrawn.
-        m_pluginwin->refreshPlugin(*gc,newRect);
+        //if bitmap is shared from plugins then draw the shared bitmap
+        if(m_pluginwin->IsPluginBitMapSet())
+            {
+            CFbsBitmap* bitmap = m_pluginwin->PluginBitmap();
+            if(bitmap)
+                {
+                TRect clippingRect = context.clippingRect();
+                TRect oldcontextrect = context.clippingRect();
+
+                if(newRect != clippingRect)
+                    {
+                    context.setClippingRect(newRect);
+                    }
+                 gc->DrawBitmap(newRect, bitmap);
+                 context.setClippingRect(oldcontextrect);
+                }
+            else
+                {
+                //if not a valid bitmap, then hide that plugin
+                m_pluginwin->MakeVisible(EFalse);
+                }
+                positionChanged();
+            }
+        else
+            {
+            positionChanged();
+            // Force the control to be redrawn, for window less plugins
+            m_pluginwin->refreshPlugin(*gc,newRect);
+            }
         }
     }
 
@@ -1019,15 +1047,13 @@ void PluginSkin::handlePluginError( TInt error )
 
 void* PluginSkin::pluginScriptableObject()
 {
-    //
-    if (m_pluginfuncs && m_pluginfuncs->getvalue) {
-        void *value = 0;
-        NPError npErr = m_pluginfuncs->getvalue( m_instance, NPPVpluginScriptableNPObject, (void *)&value);
-        if (npErr == NPERR_NO_ERROR) {
-            return value;
+    if (!m_NPObject && m_pluginfuncs && m_pluginfuncs->getvalue) {
+        NPError npErr = m_pluginfuncs->getvalue( m_instance, NPPVpluginScriptableNPObject, &m_NPObject);
+        if (npErr != NPERR_NO_ERROR) {
+            m_NPObject = 0;
         }
     }
-    return (void *)0;
+    return m_NPObject;
 }
 
 TBool validateDataScheme(const TPtrC8& url)
@@ -1265,10 +1291,8 @@ void PluginSkin::reCreatePlugin()
         {
           rfs.Delete(m_tempFilesArray[i]->Des());
         }
-    
     m_tempFilesArray.ResetAndDestroy();
-    
-    
+       
     //create/load the destroyed plugin again
     
     NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(m_url->Des(), this, core(m_frame));
@@ -1277,8 +1301,106 @@ void PluginSkin::reCreatePlugin()
     }    
 }
 
-void PluginSkin::PlayPauseNotify(bool pause)
-{
+// -----------------------------------------------------------------------------
+// PluginWin::NotifyPluginsForScrollOrPinch
+// When ever there is Scroll or Pinch zoom is in progress, the webframe will
+// Notify all the plugins "ETrue" for Start and "EFalse" for end
+// -----------------------------------------------------------------------------
+void PluginSkin::NotifyPluginsForScrollOrPinch(bool status)
+    {
     if(m_pluginwin)
-        m_pluginwin->PlayPausePluginL(pause);
+       {
+        //while pinch zoom, deactivate and activate the plugins.
+    WebView* view = control(frame())->webView();
+    if(!view)
+        return;
+
+       //check weather the collect bitmap is supported or not
+        TBool bitmapSupported  = m_pluginwin->IsCollectBitmapSupported();
+
+        //if bitmap is not supported, check for pinch zoom and deactivate the plugins.
+        if((view->isPinchZoom()))
+            {
+            //if bitmap sharing is not supported then deactivate or activate the plugins
+            if(!bitmapSupported)
+                {
+                if(status)
+                    {
+                    if(m_pluginwin->IsVisible())
+                        {
+                        m_pluginwin->MakeVisible(false);
+                        m_pluginwin->setPluginFocusL(false);
+                        }
+                    }
+                else
+                    {
+                    activate();
+                    }
+                }
+
+            }
+
+        if(bitmapSupported)
+           {
+            m_pluginwin->GetBitmapFromPlugin(status);
+            if(!status)
+                {
+                m_pluginwin->ClearPluginBitmap();
+                activateVisiblePlugins();
+                }
+          }
+       }
 }
+
+// -----------------------------------------------------------------------------
+// PluginWin::IsCollectBitmapSupported
+// Check Plugin are supported for Bitmap Sharing
+// -----------------------------------------------------------------------------
+TBool PluginSkin::IsCollectBitmapSupported()
+    {
+    if(m_pluginwin)
+        {
+        return  m_pluginwin->IsCollectBitmapSupported();
+        }
+    return false;
+    }
+
+void PluginSkin::activateVisiblePlugins()
+    {
+    TRect fullRect(getPluginWinRect());
+    TRect clipRect(getClipRect());
+    TRect frameRect(m_frame->frameView()->rect());
+    TRect viewRect = control(m_frame)->webView()->Rect();
+    TBool isPageViewMode = control(m_frame)->webView()->inPageViewMode();
+    WebFrame* pf = m_frame;
+    TPoint p = frameRect.iTl;
+
+    if (m_frame->parentFrame())
+        {
+        pf = m_frame->parentFrame();
+        p = pf->frameView()->frameCoordsInViewCoords(frameRect.iTl);
+        }
+
+    TSize  sz = pf->frameView()->toViewCoords(frameRect.Size());
+    TRect frameRectInViewCoord = TRect(p, sz);
+    TBool isPluginVisible = frameRectInViewCoord.Intersects(fullRect);
+    TBool isFrameVisible = m_frame->frameView()->isVisible() &&
+            frameRectInViewCoord.Intersects(viewRect);
+
+    TBool visibility = isFrameVisible && !isPageViewMode && isPluginVisible;
+    if(fullRect.Size() != TSize(0,0))
+        {
+        if (visibility)
+            {
+            m_pluginwin->MakeVisible(true); //forcefully make the plugin visible, this is for pinch exit
+            m_pluginwin->makeVisible(true);
+            }
+        else
+            {
+            //this is required for flash plugin to clear the EGL surface
+            //when the plugin window is outside the view port
+            m_pluginwin->makeVisible(false);
+            }
+        }
+
+    }

@@ -97,7 +97,6 @@ public:
     void notifyPluginOfPositionChange(PluginSkin* plg);
     PluginSkin* focusedPlugin();
     WebFrame* frameAtPoint(const TPoint& pt_);
-    void PlayPausePlugins(bool pause);
     void reCreatePlugins();
     
     // utility functions
@@ -109,8 +108,9 @@ public:
     void makeVisiblePlugins(TBool visible);
     bool executeScript(const WebCore::String& script);
     WebCore::Node* getClosestAnchorElement(const TPoint& pt, TPoint& newPos);
-    
-    
+
+	void ScrollOrPinchStatus(bool status);
+
 private:
     WebFrame(const WebFrame&);                    // not implemented
     WebFrame& operator=(const WebFrame&);         // not implemented    

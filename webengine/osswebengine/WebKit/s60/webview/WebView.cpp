@@ -211,7 +211,6 @@ m_brctl(brctl)
 , m_pinchZoomHandler(NULL)
 , m_isPinchZoom(false)
 , m_drawsMissed(0)
-, m_scroll(false)
 , m_thumbnailGenerator(NULL)
 , m_checkerBoardBitmap(NULL)
 , m_checkerBoardDevice(NULL)
@@ -234,8 +233,6 @@ WebView::~WebView()
     m_pageZoomHandler = NULL;
 
     m_zoomLevelArray.Close();
-    m_visiblePlugins.Reset();
-    m_visiblePlugins.Close();
 
     // prevent frameViews to access members when topView is
     // closing down.
@@ -399,7 +396,6 @@ void WebView::ConstructL( CCoeControl& parent )
     CleanupStack::PopAndDestroy(2); // userAgent8, usrAgnt
 
     MakeViewVisible(ETrue);
-    m_isPluginsVisible=ETrue;
     CCoeControl::SetFocus(ETrue);
     
     cache()->setCapacities(0, 0, defaultCacheCapacity);
@@ -407,7 +403,6 @@ void WebView::ConstructL( CCoeControl& parent )
     m_waiter = new(ELeave) CActiveSchedulerWait();
     
     m_checkerBoardDestroyTimer = CPeriodic::NewL(CActive::EPriorityIdle);
-    m_visiblePlugins.Reset();
     
 }
 
@@ -640,7 +635,6 @@ void WebView::doLayout()
             }
 #endif         
     }
-    mainFrame()->notifyPluginsOfPositionChange();
 }
 //-------------------------------------------------------------------------------
 // WebView::syncRepaint
@@ -2154,6 +2148,18 @@ void WebView::notifyMetaData(String& name, String& value)
             m_brctl->settings()->setNavigationType(SettingsContainer::NavigationTypeNone);
         }
     }
+    else if (name == "widgetAppBackgroundColour") {
+        if (value == "black") {
+            WebCore::Frame *frame = core(mainFrame());
+            if (frame) {
+                WebCore::FrameView* frameView = frame->view();
+                if (frameView) {
+                    WebCore::Color bc = Color::black;
+                    frameView->setBaseBackgroundColor(bc);
+                }
+            }
+        }
+    }
 }
 
 //-------------------------------------------------------------------------------
@@ -2265,8 +2271,6 @@ void WebView::setBitmapZoomLevel(int zoomLevel)
     if (!view) return;
 
     m_dirtyZoomMode = true;
-    m_isPluginsVisible = false;
-    mainFrame()->makeVisiblePlugins(false);
 
     if (zoomLevel > m_startZoomLevel) {
 
@@ -2320,10 +2324,9 @@ void WebView::restoreZoomLevel(int zoomLevel)
     m_dirtyZoomMode = false;
     clearOffScreenBitmap();
     zoomLevelChanged(zoomLevel);
-    mainFrame()->notifyPluginsOfPositionChange();
-    m_isPluginsVisible = false;
-    mainFrame()->makeVisiblePlugins(true);
-    m_isPluginsVisible = true;
+	//update the position position after the relayout is completed, 
+	//This will minimize the plugins flickering
+    scrollStatus(false);
 }
 
 //-------------------------------------------------------------------------------
@@ -2872,9 +2875,7 @@ void WebView::setFastScrollingMode(bool fastScrolling)
 {
   if (fastScrolling != m_viewIsFastScrolling) {
   setViewIsFastScrolling (fastScrolling);
-  m_isPluginsVisible = false;
   mainFrame()->makeVisiblePlugins(!m_viewIsFastScrolling);
-  m_isPluginsVisible = !m_viewIsFastScrolling;
 
   if (!m_viewIsFastScrolling) {
     mainFrame()->notifyPluginsOfPositionChange();
@@ -3050,9 +3051,20 @@ void WebView::waitTimerCB(WebCore::Timer<WebView>* t)
 void WebView::setPinchBitmapZoomLevelL(int zoomLevel)
 {
     m_zoomLevelChangedByUser = true;
-    m_dirtyZoomMode = true;
-    m_isPluginsVisible = false;
+
     m_isPinchZoom = true;
+    if(!m_dirtyZoomMode)
+    {
+    //If panning or scroll is in progress, we will be notifiying to plugins for collecting bitmap
+    //in case of pinchZoom, we need to deactivate the plugins which are not supported for bitmap
+    //sharing.
+    if(m_scrollingstatus)
+        {
+        m_scrollingstatus = false;
+        }
+    scrollStatus(true);
+	}
+    m_dirtyZoomMode = true;
 
     if (zoomLevel > m_startZoomLevel) {
         setPinchBitmapZoomIn(zoomLevel);
@@ -3063,11 +3075,7 @@ void WebView::setPinchBitmapZoomLevelL(int zoomLevel)
     }
     m_currentZoomLevel = zoomLevel;
     DrawNow();
-    PluginSkin* pluginskin = mainFrame()->focusedPlugin();
-    if(pluginskin)
-     {
-        pluginskin->deActivate();
-    }
+
 }
 
 //-------------------------------------------------------------------------------
@@ -3144,11 +3152,6 @@ void WebView::setPinchBitmapZoomOutL(int zoomLevel)
         createCheckerBoardL();
 }
 
-void WebView::setScrolling(bool scroll)
-{
-    m_scroll = scroll;
-    mainFrame()->PlayPausePlugins(m_scroll);
-}
 
 void drawCheckerBoard(CBitmapContext *gc,const TRect &rect)
 {
@@ -3286,3 +3289,23 @@ void WebView::resumeJsTimers()
     }
 }
 // END OF FILE
+void WebView::scrollStatus(bool status)
+    {
+    if(m_scrollingstatus != status)
+        {
+        m_scrollingstatus = status;
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+        mainFrame()->ScrollOrPinchStatus(m_scrollingstatus);
+#endif         
+        }
+    }
+
+
+void WebView::setViewIsScrolling(bool scrolling)
+    {
+    m_viewIsScrolling = scrolling;
+    if(!scrolling)
+        {
+        scrollStatus(scrolling);
+        }
+    };

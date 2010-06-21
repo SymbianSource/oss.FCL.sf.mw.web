@@ -440,9 +440,17 @@ _NW_ImageCH_Epoc32ContentHandler_PartialNextChunk(NW_HED_ContentHandler_t* conte
             NW_ASSERT(NW_Object_IsInstanceOf(thisObj->image,
                                              &NW_Image_Epoc32Simple_Class));    
             simpleImage = NW_Image_Epoc32SimpleOf(thisObj->image);
-            // pass chunk to the decoded
-            status = NW_Image_Epoc32Simple_PartialNextChunk(NW_Image_AbstractImageOf(simpleImage),
+             //Checking is simpleimage valid for decoding
+                
+            if( simpleImage->imageType == ERecognizedImage ||
+                simpleImage->imageType == EWbmpImage || 
+                simpleImage->imageType == EOtaImage )
+                {
+                // pass chunk to the decoded
+                status = NW_Image_Epoc32Simple_PartialNextChunk(NW_Image_AbstractImageOf(simpleImage),
                                                             response->body);
+                }
+				
             // NW_Image_Epoc32Simple_PartialNextChunk takes body ownership
             response->body = NULL;
             

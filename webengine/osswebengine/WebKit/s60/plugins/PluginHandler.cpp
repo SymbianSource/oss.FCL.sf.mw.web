@@ -415,6 +415,7 @@ void PluginHandler::ConstructL()
 {
     m_idle = CIdle::NewL(CActive::EPriorityLow);
     m_idle->Start(TCallBack(initialize, this));
+    m_visiblePlugins.Reset();
 }
 
 
@@ -441,6 +442,8 @@ PluginHandler* PluginHandler::NewL(TBool enablePlugins)
 //
 PluginHandler::~PluginHandler()
 {
+    m_visiblePlugins.Reset();
+    m_visiblePlugins.Close();
     m_pluginInfoArray.ResetAndDestroy();
     m_pluginInfoArray.Close();
     m_pluginObjects.clear();

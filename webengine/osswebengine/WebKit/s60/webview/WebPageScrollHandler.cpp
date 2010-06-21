@@ -43,7 +43,12 @@ const int KMicroInterval = 300000;
 const int KPageOverviewScrollStart = 1000;
 const int KCancelDecelerationTimeout = 200000; //Decelerate only if flicked KCancelDecelerationTimeout microsec after last drag event.
 
+#ifdef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
+const int KScrollIntervalTimeout = 30000; // scroll timer interval in microseconds
+#else
 const int KScrollIntervalTimeout = 40000; // scroll timer interval in microseconds
+#endif
+
 const int KAngularDeviationThreshold = 160; // % deviation ignored from minor axis of motion(120 means 20 %)
 const int KScrollThresholdPixels = 10; // scrolls only if delta is above this threshold
 const int KScrollDirectionBoundary = 30; // Bound around focal point within which scrolling locks in X or Y states
@@ -696,12 +701,19 @@ bool WebPageScrollHandler::startDeceleration(const TStmGestureEvent& aGesture)
     }
     
     if ((Abs(gstSpeed.iX) > 0) || (Abs(gstSpeed.iY) > 0)) {
-       m_decelGH->startDecel(gstSpeed, m_scrollbarDrawer); 
-       started = true;
+        started = m_decelGH->startDecel(gstSpeed, m_scrollbarDrawer); 
     }
-    
-    
     return started;
 }
 
+void WebPageScrollHandler::stopScrolling()
+{
+    if (m_scrollTimer && m_scrollTimer->IsActive()) {
+        m_scrollTimer->Cancel();
+   }
+   if (m_scrollbarDrawer) { 
+       m_scrollbarDrawer->fadeScrollbar();
+   }
+   m_webView->setViewIsScrolling(false);
+}
 //  End of File

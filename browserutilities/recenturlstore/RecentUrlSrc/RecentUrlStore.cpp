@@ -244,8 +244,21 @@ EXPORT_C void CRecentUrlStore::SaveDataL (const TDesC& aUrl, const TDesC& aTitle
 				
 			HBufC* domain = aUrl.Mid(domainStart,domainLength).AllocLC();
 			domain->Des().LowerCase();
-			HBufC* title = aTitle.Left(titleLength).AllocLC();
-	
+			
+			HBufC* title;
+			TInt pos = aTitle.Find(_L("'"));
+			if(pos >= 0)
+                {
+                TBuf<KTitleSize> buf;
+                TChar ch = '\'';
+                TInt nwLen = InsertEscapeSequence(ch,(TUint16*)buf.Ptr(),aTitle);
+                title = HBufC::NewLC(nwLen);
+                TPtr myPtr = title->Des();
+                myPtr.Copy(buf.Ptr(),nwLen);
+                }
+			else
+			    title = aTitle.Left(titleLength).AllocLC();
+			
 			// delete and re-insert
 			iSQLStatement.Format(KSQLDelete, &aUrl);
 			dataBase.Execute(iSQLStatement);
@@ -256,7 +269,35 @@ EXPORT_C void CRecentUrlStore::SaveDataL (const TDesC& aUrl, const TDesC& aTitle
 			}
 		}
 	}
-	
+
+//-----------------------------------------------------------------------------
+// CRecentUrlStore::InsertEscapeSequence
+// Insert the EscapeSequence.
+//-----------------------------------------------------------------------------
+TInt CRecentUrlStore::InsertEscapeSequence(TChar aChar,TUint16* aDestPtr,const TDesC& aString)
+    {
+    TUint16* src_ptr = (TUint16*)aString.Ptr();
+    
+    TInt src_iter = 0;
+    TInt dest_iter = 0;
+    TInt len = aString.Length();
+    
+    while((src_iter <= len) && (dest_iter <= KTitleSize))
+        {
+        *aDestPtr++ = *src_ptr++;
+        src_iter++;
+        dest_iter++;
+        if(*(src_ptr-1)==aChar && dest_iter<=KTitleSize)
+            {
+            *aDestPtr++ = aChar;
+            dest_iter++;
+            }
+        }
+    --src_iter;
+    return (--dest_iter);
+    
+    }
+
 //-----------------------------------------------------------------------------
 // CRecentUrlStore::ClearData
 // Clear the store.

@@ -32,6 +32,7 @@
 #include "WebFrameView.h"
 #include "WebView.h"
 #include <MemoryManager.h>
+#include <npruntime.h>
 //#include <Element.h>
 
 // FORWARD DECLARATIONS
@@ -416,9 +417,9 @@ class PluginSkin : public CBase,
         void setElement(WebCore::Element* aElement) {m_element = aElement;}
         void reCreatePlugin();
         TInt activeStreams() { return m_streams.size(); }
-        void PlayPauseNotify(bool pause);
         TPluginLoadMode getLoadMode(){return m_loadmode;}
         void setLoadMode(TPluginLoadMode mode){m_loadmode = mode;}
+        void NotifyPluginsForScrollOrPinch(bool status);
   public:  // from MMemoryCollector
         TUint Collect(unsigned int aRequired);
         void Restore()                          {}
@@ -436,6 +437,8 @@ class PluginSkin : public CBase,
             return iGenericElementArray;
         }
         void setPluginWinClipedRect();
+        TBool IsCollectBitmapSupported();
+        WebFrame* getWebFrame() const {return m_frame;}
   private:  // private member data
         
         TRect frameVisibleRect() const;
@@ -444,6 +447,7 @@ class PluginSkin : public CBase,
         const TDesC& GetExecutionMode();
         void setupGenericElementArrrayL();
         void addWidgetAttributesL();
+        void activateVisiblePlugins();
         // Window-owning CoeControl which wraps the CoeControl created by the plugin
         PluginWin* m_pluginwin;
         WebFrame* m_frame; // not owned
@@ -480,6 +484,7 @@ class PluginSkin : public CBase,
         TRect   m_oldRect;
         TRect    m_oldViewport;
         TPluginLoadMode m_loadmode;
+        NPObject* m_NPObject;
         
 public:
         TInt m_handle;

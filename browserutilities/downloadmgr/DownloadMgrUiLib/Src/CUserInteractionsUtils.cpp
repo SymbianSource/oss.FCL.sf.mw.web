@@ -1673,22 +1673,6 @@ void CUserInteractionsUtils::LaunchPdAppL( RHttpDownload& aDownload, const TBool
     
     if ( pdSupported )
         {
-        
-        TInt downloadCnt = iRegistryModel.DownloadCount();
-        TBool isProg(EFalse);
-        
-        const CDownloadArray& downloads = iRegistryModel.DownloadMgr().CurrentDownloads();
-        
-        for ( TInt i = 0; i < downloadCnt ;i++ )
-			{
-        	RHttpDownload* dl = downloads.At(i); //current download
-        	dl->GetBoolAttribute( EDlAttrProgressive, isProg );
-        	if (isProg ) 
-				{
-                dl->SetBoolAttribute( EDlAttrProgressive, EFalse );
-                }
-			}
-      
         TInt32 numMediaObjects = 0;
         User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrNumMediaObjects, numMediaObjects ) );
         

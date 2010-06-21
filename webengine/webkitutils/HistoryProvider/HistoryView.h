@@ -209,6 +209,15 @@ class HistoryView : public CCoeControl
         * @return void
         */
         void loadUrl();
+        
+        /**
+         * Create a mask bitmap for the thumbnail of left and right entry
+         * left and right entry will use the same mask 
+         * @param aSize The size of the mask bitmap which will be cteated
+         * @param aDisplayMode The display mode of the mask bitmap
+         * @param aRgb The color filled in the bitmap
+         */
+        void CreateMaskBitmapForLeftRightThumbnailL(TSize& aSize, TDisplayMode aDisplayMode, TRgb aRgb);
 
     private:    // Data
 
@@ -258,8 +267,9 @@ class HistoryView : public CCoeControl
         THistoryViewComponent    m_historyViewComponent;
         // Timer for repeated scrolling
         CPeriodic*               m_autoScrollPeriodic;
-
-        TPoint m_lastpointerposition;
+        TPoint                   m_lastpointerposition;
+        //Mask bitmap for the thumbnail of left and right entry
+        CFbsBitmap*              m_maskBitmap;
     };
 
 #endif      // HISTORYVIEW_H

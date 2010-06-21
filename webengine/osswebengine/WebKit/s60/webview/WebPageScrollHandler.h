@@ -186,6 +186,7 @@ class WebPageScrollHandler: public CBase
         void handleTouchDownGH(const TStmGestureEvent& aGesture);
         void handleTouchUpGH(const TStmGestureEvent& aGesture);
         void updateScrollbars(const TPoint& scrollPos, TPoint& newscrollDelta);
+        void stopScrolling();
 
      private:
         void calculateScrollDirection(int absX, int absY);

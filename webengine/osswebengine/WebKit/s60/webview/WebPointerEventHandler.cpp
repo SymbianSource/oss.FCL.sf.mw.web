@@ -111,10 +111,11 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
     
     bool pluginConsumable = isPluginConsumable(uid);
+    PluginHandler* pluginHandler = StaticObjectsContainer::instance()->pluginHandler();
     
-    if (pluginConsumable && m_webview->getVisiblePlugins().Count() > 0) {
-        for ( int i=0; i < m_webview->getVisiblePlugins().Count(); i++) {
-             PluginSkin* plugin = m_webview->getVisiblePlugins()[i];
+    if (pluginConsumable && pluginHandler->getVisiblePlugins().Count() > 0) {
+        for ( int i=0; i < pluginHandler->getVisiblePlugins().Count(); i++) {
+             PluginSkin* plugin = pluginHandler->getVisiblePlugins()[i];
              if (plugin && plugin->pluginWin() && plugin->pluginWin()->containsPoint(*m_webview,aGesture.CurrentPos())) {
                  if (plugin->pluginWin()->HandleGesture(aGesture)) {
                      if(!plugin->isActive()) {
@@ -170,6 +171,7 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
             m_ignoreTap = false;
             handleTouchUp(aGesture);
 			m_webview->resumeJsTimers(); // resume js timers
+			m_webview->setViewIsScrolling(false); 
             break;
         }
 
@@ -179,8 +181,6 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
             if(!m_webview->jsTimersPaused()) 
                 m_webview->pauseJsTimers();
 
-            if(!m_webview->isScrolling())
-                m_webview->setScrolling(true);
             handleMove(aGesture);
             break;
         }
@@ -199,6 +199,9 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
 
         case stmGesture::EGestureUidPinch:
         {
+        if (m_webview->viewIsScrolling()) {
+            m_webview->pageScrollHandler()->stopScrolling();
+        }
         if(!m_webview->inPageViewMode())
             {
             handlePinchZoomL(aGesture);
@@ -621,9 +624,11 @@ void  WebPointerEventHandler::handlePinchZoomL(const TStmGestureEvent& aGesture)
 bool WebPointerEventHandler::isPluginConsumable(const TStmGestureUid uid)
 {
     //  Gestures which a Plugin can consume
-    return (uid == stmGesture::EGestureUidRelease ||
-            uid == stmGesture::EGestureUidTap ||
-            uid == stmGesture::EGestureUidTouch ||
-            uid == stmGesture::EGestureUidLongPress ||
-            (uid == stmGesture::EGestureUidPan && m_webview->widgetExtension())); // Currently Pan is consumed in Widget mode
+    return ( uid == stmGesture::EGestureUidRelease ||
+             uid == stmGesture::EGestureUidTap ||
+             uid == stmGesture::EGestureUidTouch ||
+             uid == stmGesture::EGestureUidLongPress ||
+             (uid == stmGesture::EGestureUidPan && m_webview->widgetExtension()) ||     // Currently Pan is consumed in Widget mode
+             (uid == stmGesture::EGestureUidFlick && m_webview->widgetExtension())
+           ); 
 }

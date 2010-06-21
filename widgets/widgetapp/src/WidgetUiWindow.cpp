@@ -56,9 +56,7 @@ static const TUint32 KDummyCommand = 0;
 
 const TUint KWmlNoDefaultAccessPoint = KMaxTUint; // see cenrep setting default -1 as int, here as uint
 const TUint KWmlNoDefaultSnapId = KMaxTUint; // see cenrep setting default -1 as int, here as uint
-#ifdef BRDO_OCC_ENABLED_FF
-const TInt KRetryConnectivityTimeout( 2*1000*1000 ); // 2 seconds
-#endif
+
 
 // MACROS
 
@@ -206,12 +204,6 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
     // determine initial widget online/offline network state
     DetermineNetworkState();
     iAsyncCallBack = new (ELeave) CAsyncCallBack(TCallBack(DeleteItself,this),CActive::EPriorityUserInput);
-#ifdef BRDO_OCC_ENABLED_FF
-    iConnStageNotifier = CConnectionStageNotifierWCB::NewL();
-    //this is required, browser's connection oberver should be hit first. (incase of netscape plgins, transactions will be closed.)
-    iConnStageNotifier->SetPriority(CActive::EPriorityHigh);
-    iRetryConnectivity = CPeriodic::NewL(CActive::EPriorityStandard);
-#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -231,14 +223,6 @@ CWidgetUiWindow::~CWidgetUiWindow()
         iEngine->RemoveLoadEventObserver( iWidgetUiObserver );
         iEngine->RemoveStateChangeObserver( iWindowManager.View() );
         }
-#ifdef BRDO_OCC_ENABLED_FF 
-    if ( iRetryConnectivity)
-        {
-        iRetryConnectivity->Cancel();
-        delete iRetryConnectivity;
-        iRetryConnectivity = NULL;
-        }
-#endif
     delete iEngine;
     delete iWidgetUiObserver;
     delete iUrl;
@@ -942,11 +926,12 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
         if(iWindowManager.GetNetworkMode() == EOfflineMode)
         	{
             iWindowManager.GetConnection()->CancelConnection();
-            iWindowManager.GetConnection()->StopConnectionL();        		
+            iWindowManager.GetConnection()->StopConnectionL();
+            User::Leave( KErrAccessDenied );
         	}      
 #ifdef BRDO_OCC_ENABLED_FF        
 		else
-        	TRAP_IGNORE(ConnNeededStatusL(KErrNone)); 
+        	TRAP_IGNORE(iWindowManager.ConnNeededStatusL(KErrNone)); 
 #endif        
         }
     }
@@ -963,7 +948,7 @@ void CWidgetUiWindow::NetworkConnectionNeededL( TInt* aConnectionPtr,
 
     {
 #ifdef BRDO_OCC_ENABLED_FF
-    TBool retryFlag = GetRetryFlag();
+    TBool retryFlag = iWindowManager.GetRetryFlag();
     if( retryFlag )
         {
         return;
@@ -1335,115 +1320,6 @@ TInt CWidgetUiWindow::DeleteItself(TAny* aPtr)
     }
     
 #ifdef BRDO_OCC_ENABLED_FF
-// -----------------------------------------------------------------------------
-// CWidgetUiWindow::ConnectionStageAchievedL()
-// -----------------------------------------------------------------------------
-//
-void CWidgetUiWindow::ConnectionStageAchievedL()
-    {
-    iWindowManager.GetConnection()->Disconnect();
-    
-    TNifProgressBuf buf = iConnStageNotifier->GetProgressBuffer();
-    if( buf().iError == KErrDisconnected )
-        {
-        TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
-        SetRetryFlag(ETrue);    
-    
-        TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandCancelQueuedTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
-    
-        if( iRetryConnectivity && iRetryConnectivity->IsActive())
-            {
-            iRetryConnectivity->Cancel();
-            }
-        iRetryConnectivity->Start(KRetryConnectivityTimeout, 0,TCallBack(RetryConnectivity,this));
-        }
-    else
-        {
-        TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandCancelFetch + (TInt)TBrCtlDefs::ECommandIdBase ) );
-        }
-    }  
-
-void CWidgetUiWindow::ConnNeededStatusL( TInt aErr )
-    {
-    StopConnectionObserving(); //Need to stop the connection observer first
-
-
-    if ( !iConnStageNotifier->IsActive() )
-        {
-        TName* connectionName = iWindowManager.GetConnection()->ConnectionNameL();
-        CleanupStack::PushL( connectionName );
-
-        iConnStageNotifier->StartNotificationL(connectionName, KLinkLayerClosed, this);
-
-        CleanupStack::PopAndDestroy();  //connectionName
-        }
-    } 
-void CWidgetUiWindow::StopConnectionObserving()
-    {
-    
-    if ( iConnStageNotifier )
-        {
-        iConnStageNotifier->Cancel();
-        }
-    } 
-
-// -----------------------------------------------------------------------------
-// CWidgetUiWindow::SetRetryFlag
-// -----------------------------------------------------------------------------
-//
-void CWidgetUiWindow::SetRetryFlag(TBool flag)
-     {
-     reConnectivityFlag = flag;
-     }
-// -----------------------------------------------------------------------------
-// CWidgetUiWindow::RetryConnectivity
-// -----------------------------------------------------------------------------
-//
-TInt CWidgetUiWindow::RetryConnectivity(TAny* aWidgetUiWindow)
-    {
-
-    TInt err = ((CWidgetUiWindow*)aWidgetUiWindow)->RetryInternetConnection();
-    return err;
-    }
-TInt CWidgetUiWindow::RetryInternetConnection()
-    {
-    //First cancel the timer
-    if ( iRetryConnectivity && iRetryConnectivity->IsActive() )
-    {
-        iRetryConnectivity->Cancel();
-    }
-    TInt err = KErrNone;
-    if ( !iWindowManager.GetConnection()->Connected() )
-       {
-       TRAP_IGNORE( err = iWindowManager.GetConnection()->StartConnectionL( ETrue ) );
-       }
-    if( err == KErrNone )
-       { 
-   
-       TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandUnSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
-       SetRetryFlag(EFalse);
-       
-       TRAP_IGNORE(ConnNeededStatusL(err)); //Start the observer again
-       TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandRetryTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
-       }
-    else
-        {
-        TRAP_IGNORE( Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandUnSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
-        SetRetryFlag(EFalse);
-        TRAP_IGNORE(Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandClearQuedTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
-        }
-    
-    return err;
-    }
-// -----------------------------------------------------------------------------
-// CWidgetUiWindow::GetRetryFlag
-// -----------------------------------------------------------------------------
-//
- TBool CWidgetUiWindow::GetRetryFlag()
-      {
-      return reConnectivityFlag;
-      } 
- 
  void CWidgetUiWindow::CancelAllDialogs()
      {
      if( iDialogsProvider)

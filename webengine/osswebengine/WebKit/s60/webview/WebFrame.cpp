@@ -583,13 +583,24 @@ Node* WebFrame::getClosestAnchorElement(const TPoint& viewPt, TPoint& newPos)
     return 0;
 }
 
-void WebFrame::PlayPausePlugins(bool pause)
+void WebFrame::ScrollOrPinchStatus(bool status)
 {
     PluginHandler* plghandler = StaticObjectsContainer::instance()->pluginHandler();
-    WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
-    for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it ) {
-        static_cast<PluginSkin*> (*it)->PlayPauseNotify(pause);
-    }
+       WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
+       for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it )
+           {
+           PluginSkin* plg = static_cast<PluginSkin*> (*it);
+           WebFrame* plgWebFrame = plg->getWebFrame();
+           CBrCtl*   plbrCtl = control(plg->frame());
+           CBrCtl*   pgbrCtl = control(this);
+
+           if(plbrCtl == pgbrCtl)
+               {
+               plg->NotifyPluginsForScrollOrPinch(status);
+               }
+       }
+
+
 }
 
 void WebFrame::reCreatePlugins()

@@ -3818,41 +3818,51 @@ void CHttpDownload::RunL()
 			//but we again send the progress state as EHttpProgContentFileMoved because we need to display
 			//where file is saved(saved to gallery)
 			//Change Dl State to Download Completed if not already           
+          
+            if( iStatus ==KErrNone )
+                {
+		          if(_OMADLOTA2_MULTI_DOWNLOAD)
+				     {
+				      TPtrC fileNamePtr = ((*iCodDlData)[iMOMoved])->DestFilename();
+				      NotifyMediaGalleryL(fileNamePtr);
 
-		    if(_OMADLOTA2_MULTI_DOWNLOAD)
-				{
-				TPtrC fileNamePtr = ((*iCodDlData)[iMOMoved])->DestFilename();
-				NotifyMediaGalleryL(fileNamePtr);
+             	      // Initiate async move for the next media object
+				      iMOMoved++;
+				      if(iMOMoved <= iCodDlData->Count())
+					     {
+					      MoveDownloadedMediaObjectL(iMOMoved);
+					      break;
+					     }
+				      }
 
-				// Initiate async move for the next media object
-				iMOMoved++;
-				if(iMOMoved <= iCodDlData->Count())
-					{
-					MoveDownloadedMediaObjectL(iMOMoved);
-					break;
-					}
-				}
-
-            SetDownloadStatus( iDlNameChanged ? EHttpProgContentFileMovedAndDestFNChanged : EHttpProgContentFileMoved, 
+                  SetDownloadStatus( iDlNameChanged ? EHttpProgContentFileMovedAndDestFNChanged : EHttpProgContentFileMoved, 
                                iDlState = EHttpDlMultipleMOCompleted, 
                                iStatus == KErrNone ? ENoError : EMoveFailed,
                                iStatus.Int() );
             
-            if(iStatus == KErrNone)
-            	{
-            	iMoveInProgress = EFalse;	
-            	CLOG_WRITE("setting iMoveInProgress false when move is completed");
-            	}
+                  if(iStatus == KErrNone)
+            	      {
+            	       iMoveInProgress = EFalse;	
+            	       CLOG_WRITE("setting iMoveInProgress false when move is completed");
+            	      }
             
+                  delete iFileMan; iFileMan = NULL;
             
-            delete iFileMan; iFileMan = NULL;
-            
-			if( !_OMADLOTA2_MULTI_DOWNLOAD)
-				{
-				TPtr fileNamePtr(iStorage->DestFilename()->Des());
-				NotifyMediaGalleryL(fileNamePtr);
-				}
-            }
+                  if( !_OMADLOTA2_MULTI_DOWNLOAD)
+				     {
+				      TPtr fileNamePtr(iStorage->DestFilename()->Des());
+				      NotifyMediaGalleryL(fileNamePtr);
+				     }
+                }
+            else
+                {
+                CLOG_WRITE("Move Operation Failed ");
+                CLOG_WRITE("setting progress state to EHttpProgNone when move is Failing");
+                SetDownloadStatus( EHttpProgNone, iDlState );
+                CLOG_WRITE("setting iMoveInProgress false when move is Failing");
+                iMoveInProgress = EFalse;
+                }
+            } 
             break;
 
         default:

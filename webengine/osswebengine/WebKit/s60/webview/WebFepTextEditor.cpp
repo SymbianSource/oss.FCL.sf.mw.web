@@ -54,6 +54,8 @@
 #include <aknutils.h>
 #include "Text.h"
 
+#include <e32const.h>
+
 #define KLineEnterChar 0x21b2
 
 using namespace WebCore;
@@ -158,6 +160,10 @@ void CWebFepTextEditor::UpdateEditingMode()
                     state->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG_LATIN_ONLY);
                     state->SetNumericKeymap(EAknEditorStandardNumberModeKeymap);
                     state->SetCcpuState(NULL);
+                    TLanguage language = User::Language();
+                    if (language == ELangPrcChinese ) {
+                       TRAP_IGNORE( state->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate ) );
+                    }
                 }
             }
             else {

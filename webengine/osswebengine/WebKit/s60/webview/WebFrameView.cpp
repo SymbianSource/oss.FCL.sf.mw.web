@@ -81,8 +81,7 @@ void WebFrameView::draw(WebCoreGraphicsContext& gc, const TRect& r)
     
     TRect vr(visibleRect());
     TRect rect(r);
-    if (isScaled() || m_frame->isFrameSet())
-        rect.Grow(1,1);             // eliminate rounding errors
+
     TRect frameRect(m_frameRect);
 
     rect.Move(-frameRect.iTl);
@@ -109,6 +108,10 @@ void WebFrameView::draw(WebCoreGraphicsContext& gc, const TRect& r)
         
         gc.setClippingRect( clip );
 
+		//Converting To Doc and View co-ordinates calculation will loose 1 px 
+		//if the scalling is other than default level
+        if (isScaled() || m_frame->isFrameSet())
+               rect.Grow(2,2);             // eliminate rounding errors
         // draw frame content
         m_frame->paintRect(gc, rect);
         gc.cancelClipping();
@@ -287,6 +290,9 @@ TRect WebFrameView::visibleRect() const
 
 void WebFrameView::scrollTo(const TPoint& aPoint)
 {
+
+    m_topView->scrollStatus(ETrue);
+
     if (m_parent) {
         // tot:fixme frame scrolling when frame-flat is off
         if (m_frame->isIframe()) {
@@ -438,9 +444,9 @@ void WebFrameView::moveFocus()
         Node* node = focusedFrame->document()->focusedNode();
 	 	if (node) {
             TRect rect = node->getRect().Rect();
-            TPoint viewpoint = kit(focusedFrame)->frameView()->frameCoordsInViewCoords(rect.iTl);
+            TPoint viewPoint = kit(focusedFrame)->frameView()->frameCoordsInViewCoords(rect.iTl);
             WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
-            cursor->updatePositionAndElemType(viewpoint);
+            cursor->setPosition(viewPoint);
 	 	}
 	 }
 }

@@ -87,6 +87,7 @@
 #include "PluginSkin.h"
 #include "HttpUiCallbacks.h"
 #include "PluginWin.h"
+#include "GCController.h"
 #include <BrowserVersion.h>
 #include <cuseragent.h>
 
@@ -806,7 +807,10 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
 #endif
 
                 //Disable the zooming bar when it goes to background
-                m_webView->hideZoomSliderL();                
+                m_webView->hideZoomSliderL();
+                
+                // Instruct JS to garbage collect
+                WebCore::gcController().garbageCollectSoon();                
                 break;
             }
         case TBrCtlDefs::ECommandClearAutoFormFillData:

@@ -124,7 +124,9 @@ class MPluginNotifier
        EPluginActivated,
        EPluginDeactivated,
        EMenuOptionEnableDecider,
-       EPluginPause
+       EPluginPause, 
+       ECollectBitmap,
+       ECollectBitmapSupported
     };
 
 
