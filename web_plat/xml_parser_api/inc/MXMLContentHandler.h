@@ -38,7 +38,7 @@
 #ifndef __MXMLCONTENTHANDLER_H
 #define __MXMLCONTENTHANDLER_H
 
-#warning The XML API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+#warning The XML API has been deprecated
 
 
 //  INCLUDES

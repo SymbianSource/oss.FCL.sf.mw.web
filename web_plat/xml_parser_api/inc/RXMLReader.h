@@ -41,7 +41,7 @@
 #ifndef __RXMLREADER_H
 #define __RXMLREADER_H
 
-#warning The XML API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+#warning The XML API has been deprecated
 
 
 //  INCLUDES
