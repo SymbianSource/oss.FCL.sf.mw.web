@@ -434,7 +434,7 @@ union  NPN_GenericParam {
         }
             
     NPN_GenericParam(const TDesC& aStrValue)
-    :strValue(aStrValue)
+    :strValue(&aStrValue)
         {
         
         }
@@ -446,7 +446,7 @@ union  NPN_GenericParam {
         }
     int intValue;
     bool   boolValue;
-    const TDesC& strValue;
+    const TDesC* strValue;
     void*  voidValue;
 };
 
