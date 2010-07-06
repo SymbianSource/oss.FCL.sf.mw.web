@@ -17,8 +17,8 @@
 
 #include "../browserdialogsprovider/Group/bld.inf"
 #include "../recenturlstore/group/bld.inf"
-#include "../xmlparser/group/bld.inf"
-#include "../cxmllibrary/group/BLD.INF"
+//#include "../xmlparser/group/bld.inf"
+//#include "../cxmllibrary/group/BLD.INF"
 #include "../downloadmgr/Group/bld.inf"
 #include "../connectionmanager/Group/bld.inf"
 #include "../browsertelservice/group/bld.inf"

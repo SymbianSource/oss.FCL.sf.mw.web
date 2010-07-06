@@ -26,7 +26,7 @@
 #include "PackedFolder.h"
 #include "ServerHttpConnection.h"
 #include "Logger.h"
-#include "XmlUtils.h"
+#include "XMLUtils.h"
 #include "BackRestoreHandler.h"
 #include "UpdateManager.h" 
 

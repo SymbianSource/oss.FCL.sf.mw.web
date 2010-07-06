@@ -23,7 +23,7 @@
 #include "NwUtil.h"
 #include "CodError.h"
 #include "CodPanic.h"
-#include <nw_dom_document.h>
+#include <xml/cxml/nw_dom_document.h>
 
 // ================= LOCAL FUNCTIONS =======================
 

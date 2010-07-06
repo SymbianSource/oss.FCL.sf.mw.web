@@ -37,7 +37,6 @@ PRJ_MMPFILES
 #else
     gnumakefile schemeappaificonsdc.mk
 #endif
-../group/SchemeApp.mmp
 
 #else
 

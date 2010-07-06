@@ -68,7 +68,7 @@
 #include <BrowserUiSDKCRKeys.h>
 #include <centralrepository.h>
 
-#include <nwx_status.h>
+#include <xml/cxml/nwx_status.h>
 
 #include <DialUtils.h>
 
