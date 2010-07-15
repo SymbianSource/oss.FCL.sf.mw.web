@@ -1076,17 +1076,11 @@ void CBrowserTelService::FindAndRipVoipParametersL( TDes& aNumber )
     {
     TELSERVICE_ENTERFN( "FindAndRipVoipParametersL()" )
 
-    HBufC* buf = NULL;    
     TInt offset = aNumber.Locate( TChar( '@' ) );
     if( offset > 0 ) // Separator is not allowed to be a first char
         {
-        __ASSERT_DEBUG( offset <= aNumber.Length(), User::Leave( KErrGeneral ) );
-        buf = aNumber.Mid( offset ).AllocL();         
+        __ASSERT_DEBUG( offset <= aNumber.Length(), User::Leave( KErrGeneral ) );         
         aNumber.SetLength( offset );           
-        }
-    else
-        {
-        buf = HBufC::NewL( 0 );
         }
 
     TELSERVICE_LEAVEFN( "FindAndRipVoipParametersL()" )
@@ -1600,7 +1594,7 @@ EXPORT_C TInt CBrowserTelService::SendEmailMessageL(
            loopCounter = 1;
         }
                    
-        for(loopCounter; loopCounter<len; loopCounter++)
+        for(; loopCounter<len; loopCounter++)
         {
             if( (*ptr >= '0' && *ptr <= '9') || *ptr == ',')
             {

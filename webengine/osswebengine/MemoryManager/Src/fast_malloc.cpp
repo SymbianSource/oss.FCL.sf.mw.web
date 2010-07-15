@@ -3677,7 +3677,7 @@ static void* tmalloc_large(mstate m, size_t nb) {
         return chunk2mem(v);
       }
     }
-    CORRUPTION_ERROR_ACTION(m);
+//    CORRUPTION_ERROR_ACTION(m);
   }
   return 0;
 }
@@ -3716,9 +3716,8 @@ static void* tmalloc_small(mstate m, size_t nb) {
       return chunk2mem(v);
     }
   }
-
-  CORRUPTION_ERROR_ACTION(m);
-  return 0;
+  //CORRUPTION_ERROR_ACTION(m);
+  //return 0;
 }
 
 /* --------------------------- realloc support --------------------------- */

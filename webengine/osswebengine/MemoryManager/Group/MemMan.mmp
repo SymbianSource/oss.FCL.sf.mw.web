@@ -26,8 +26,10 @@ TARGETTYPE      dll
 OPTION ARMCC -O3 -Otime
 UID 0x1000008D  0x10281B6D
 
+// Define these macros for OOM logs
 //MACRO OOM_LOGGING
-//MACRO DL_CHUNK_MEM_DEBUG
+//#define OOM_LOGGING 1
+
 
 MACRO USE_FAST_MALLOC
 MACRO NOKIA_CHANGES
@@ -61,4 +63,7 @@ LIBRARY   oommonitor.lib
 LIBRARY   aknnotify.lib
 LIBRARY   commonengine.lib
 
-DEBUGLIBRARY flogger.lib
+#ifdef OOM_LOGGING
+LIBRARY flogger.lib
+LIBRARY efsrv.lib
+#endif

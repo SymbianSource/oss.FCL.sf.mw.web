@@ -32,7 +32,7 @@ RSymbianDlAllocatorWrapper::RSymbianDlAllocatorWrapper(CNewSymbianHeapPool* aPoo
 RSymbianDlAllocatorWrapper::~RSymbianDlAllocatorWrapper()
 {
 #ifdef OOM_LOGGING
-    iPool->DumpHeapLogs();
+    iPool->DumpHeapLogs(0);
 #endif
 }
 

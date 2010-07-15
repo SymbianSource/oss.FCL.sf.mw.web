@@ -41,6 +41,8 @@ _LIT8( KNoCache, "no-cache" );
 _LIT8( KOnlyIfCached, "only-if-cached" );
 _LIT8( KQHalfValue, ";q=0.5" );
 _LIT8( KQWholeValue, ";q=1.0" );
+_LIT8( KAccept, "Accept" );
+_LIT ( AcceptHeader, "text/xml,application/xml,application/xhtml+xml,text/html;q=0.9,image/png,*/*;q=0.5" );
 const TUint KDefBufSize = 512;
 const TInt KLangStrLen = 10;
 const TUint KCharsetUidDef = KCharacterSetIdentifierIso88591;
@@ -543,7 +545,51 @@ void HttpRequestHeaderManager::AddXMLHttpHeadersL(RHTTPHeaders& aHeaders,
         strValueBuf->Des().Copy(strValuePtr);
         RStringF strValue = m_StringPool.OpenFStringL( strValueBuf->Des() );
         CleanupClosePushL(strValue );
+        
+        HBufC8* headerBuf = NULL;
 
+        // Check for Accept Header
+        if ((strNameBuf->Des().Compare(KAccept)) == 0)
+            {
+            THTTPHdrVal headerVal;
+            // Store the Accept Header value from aHeaders in headerVal
+            aHeaders.GetField(strName, 0, headerVal);
+            headerBuf = HBufC8::NewLC( headerVal.StrF().DesC().Length() );
+            // Copy accept header value from headerVal
+            headerBuf->Des().Copy(headerVal.StrF().DesC());
+            TPtrC httpAccept(AcceptHeader);
+            TInt httpAcceptLen(httpAccept.Length());
+            if (httpAcceptLen) 
+                {
+                // Find the Hardcoded accept header value in the header value received from aRequest
+                TInt httpAcceptPos = strValuePtr.Find(httpAccept);
+                TBool deleted(EFalse);
+                if(httpAcceptPos != KErrNotFound)
+                	{ 
+					// Delete the Accept header from the header Value of aRequest to avoid duplication
+					strValueBuf->Des().Delete( httpAcceptPos, httpAcceptLen);
+					deleted =ETrue;
+                    }
+                //Incase the aRequest header value is different from the hardcoded accept header value
+                //Compare the aRequest accept header value with accept header value of headerVal
+                //
+                if((deleted && strValueBuf->Length()) || (strValueBuf->Length() && strValueBuf->Compare(headerVal.StrF().DesC()) != 0))
+                	{
+						CleanupStack::Pop(headerBuf);
+						//Reallocate the buffer size based on strValueBuf value
+						//and append content of strValueBuf to headerBuf
+						headerBuf = headerBuf->ReAllocL( headerVal.StrF().DesC().Length() + strValueBuf->Length() + 1);
+						CleanupStack::PushL(headerBuf);
+						headerBuf->Des().Append(KCommaSeperator);
+						headerBuf->Des().Append(strValueBuf->Des());
+                	
+                    }
+                // Store the full accept header value to strValue
+                strValue = m_StringPool.OpenFStringL( headerBuf->Des() );
+                }
+            }
+
+        // Remove the Accept header value from aHeaders to avoid duplication
         aHeaders.RemoveField(strName);
 
         if (strName == m_StringPool.StringF(HTTP::EIfModifiedSince, RHTTPSession::GetTable()) ||
@@ -557,9 +603,17 @@ void HttpRequestHeaderManager::AddXMLHttpHeadersL(RHTTPHeaders& aHeaders,
             }
         else
             {
-            aHeaders.SetFieldL(strName, strValue);    
+            aHeaders.SetFieldL(strName, strValue);
             }
-        CleanupStack::PopAndDestroy(4);
+        if ( headerBuf )
+            {
+            CleanupStack::PopAndDestroy(headerBuf);
+            }
+
+        CleanupStack::PopAndDestroy(&strValue);
+        CleanupStack::PopAndDestroy(strValueBuf);
+        CleanupStack::PopAndDestroy(&strName);
+        CleanupStack::PopAndDestroy(strNameBuf);
         }
 }
 //  End of File

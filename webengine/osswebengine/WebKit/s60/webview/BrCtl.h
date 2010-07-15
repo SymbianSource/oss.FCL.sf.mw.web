@@ -57,6 +57,7 @@ class CPageScaler;
 class CWmlDispatcher;
 class CWmlContentInterface;
 class CUserAgent;
+class CWidgetExtension;
 
 namespace WebCore {
     class FormData;
@@ -160,6 +161,7 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         TBrCtlWmlServiceOption* firstPrevDoElement() const { return m_firstPrevDoElement; }
         HBufC* fileNameToUrlLC(const TDesC& aFileName);
         void SetScriptLogMode(TInt aMode);
+        CWidgetExtension* getWidgetExt();
         
     public: // Methods from CBrCtlInterface
 

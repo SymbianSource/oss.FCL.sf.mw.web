@@ -17,6 +17,8 @@
 */
 
 #include "common.h"
+#include "StopScheduler.h"
+#include <hal.h>
 
 #ifdef TRACE_CHUNK_USAGE
 void TraceChunkUsage(TInt aChunkHandle, TUint8* aBase, TInt aChunkSize)
@@ -263,20 +265,22 @@ UEXPORT_C RSymbianDLHeap::RSymbianDLHeap(TInt aMaxLength, TInt aAlign, TBool aSi
 		}
 	iPageSize = 0;
 	iFlags = aSingleThread ? (ESingleThreaded|EFixedSize) : EFixedSize;
+	isLowSystemMemory = 0;
 
 	Init(0, 0, 0);
 	}
 
 UEXPORT_C RSymbianDLHeap::RSymbianDLHeap(TInt aChunkHandle, TInt aOffset, TInt aMinLength, TInt aMaxLength, TInt aGrowBy,
 			TInt aAlign, TBool aSingleThread)
-		: iMinLength(aMinLength), iMaxLength(aMaxLength), iOffset(aOffset), iChunkHandle(aChunkHandle), iNestingLevel(0), iAllocCount(0),
-			iAlign(aAlign),iFailType(ENone), iTestData(NULL), iChunkSize(aMinLength)
+		: iMinLength(aMinLength), iMaxLength(aMaxLength), iOffset(aOffset), iChunkHandle(aChunkHandle), 
+		  iAlign(aAlign), iNestingLevel(0), iAllocCount(0), iFailType(ENone), iTestData(NULL), iChunkSize(aMinLength)
 	{
 	// TODO: Locked the page size to 4 KB - change this to pick up from the OS
 	GET_PAGE_SIZE(iPageSize);
 	__ASSERT_ALWAYS(aOffset >=0, User::Panic(KDLHeapPanicCategory, ETHeapNewBadOffset));
 	iGrowBy = _ALIGN_UP(aGrowBy, iPageSize);
 	iFlags = aSingleThread ? ESingleThreaded : 0;
+	isLowSystemMemory = 0;
 
 	// Initialise
 	// if the heap is created with aMinLength==aMaxLength then it cannot allocate slab or page memory
@@ -657,7 +661,7 @@ void* RSymbianDLHeap::tmalloc_large(mstate m, size_t nb) {
         return chunk2mem(v);
       }
     }
-    CORRUPTION_ERROR_ACTION(m);
+    //CORRUPTION_ERROR_ACTION(m);
   }
   return 0;
 }
@@ -703,8 +707,8 @@ void* RSymbianDLHeap::tmalloc_small(mstate m, size_t nb) {
       return chunk2mem(v);
     }
   }
-  CORRUPTION_ERROR_ACTION(m);
-  return 0;
+  //CORRUPTION_ERROR_ACTION(m);
+  //return 0;
 }
 
 inline void RSymbianDLHeap::init_top(mstate m, mchunkptr p, size_t psize)
@@ -795,7 +799,7 @@ void* RSymbianDLHeap::internal_realloc(mstate m, void* oldmem, size_t bytes)
       return newmem;
     }
   }
-  return 0;
+  //return 0;
 }
 /* ----------------------------- statistics ------------------------------ */
 mallinfo RSymbianDLHeap::internal_mallinfo(mstate m) {
@@ -808,7 +812,7 @@ mallinfo RSymbianDLHeap::internal_mallinfo(mstate m) {
       size_t mfree = m->topsize + TOP_FOOT_SIZE;
       size_t sum = mfree;
       msegmentptr s = &m->seg;
-      TInt tmp = (TUint8*)m->top - (TUint8*)s->base;
+    //  TInt tmp = (TUint8*)m->top - (TUint8*)s->base;
       while (s != 0) {
         mchunkptr q = align_as_chunk(s->base);
         chunkCnt++;
@@ -840,13 +844,11 @@ mallinfo RSymbianDLHeap::internal_mallinfo(mstate m) {
 
 void  RSymbianDLHeap::internal_malloc_stats(mstate m) {
 if (!PREACTION(m)) {
-  size_t maxfp = 0;
   size_t fp = 0;
   size_t used = 0;
   check_malloc_state(m);
   if (is_initialized(m)) {
     msegmentptr s = &m->seg;
-    maxfp = m->max_footprint;
     fp = m->footprint;
     used = fp - (m->topsize + TOP_FOOT_SIZE);
 
@@ -1738,7 +1740,7 @@ void* RSymbianDLHeap::dlmalloc(size_t bytes) {
     return mem;
   }
 
-  return 0;
+  //return 0;
 }
 
 void RSymbianDLHeap::dlfree(void* mem) {
@@ -1827,9 +1829,9 @@ void RSymbianDLHeap::dlfree(void* mem) {
 						else
 						{
                             size_t nsize = chunksize(next);
-                            int next_chunk_unmapped = 0;
+                            //int next_chunk_unmapped = 0;
                             if( page_not_in_memory(next, nsize) ) {
-                                next_chunk_unmapped = 1;
+                               // next_chunk_unmapped = 1;
                                 unmapped_pages += ((tchunkptr)next)->npages;
                             }
                             
@@ -2298,9 +2300,24 @@ void* RSymbianDLHeap::map(void* p,unsigned sz)
 // otherwise commit the pages specified
 //
 {
-ASSERT(p == floor(p, pagesize));
-ASSERT(sz == ceiling(sz, pagesize));
-ASSERT(sz > 0);
+    // Check for min threshold in system RAM to be left free
+    TInt sysFreeRAM = 0;
+    if(HAL::Get(HALData::EMemoryRAMFree, sysFreeRAM) == KErrNone)
+		{
+		if(sysFreeRAM < KStopThreshold) // 1MB
+        	return 0;
+	
+	    // check system memory level
+    	if(sysFreeRAM < KGoodMemoryThreshold)
+        	isLowSystemMemory = 1; 
+	    else
+    	    isLowSystemMemory = 0;
+		}
+
+    
+    ASSERT(p == floor(p, pagesize));
+    ASSERT(sz == ceiling(sz, pagesize));
+    ASSERT(sz > 0);
 
 	if (iChunkSize + sz > iMaxLength)
 		return 0;

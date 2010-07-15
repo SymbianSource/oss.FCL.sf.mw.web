@@ -66,9 +66,9 @@ TDownloadUiData::TDownloadUiData()
     iDownloadedSize( KErrNotFound ),
     iIconIndex( KErrNotFound ),
     iPausable( EFalse ),
-    iExternalMemoryStatus( KDriveAttLocal ),
     iProgressState( KErrNotFound ),
-    iNumMediaObjects( KErrNotFound )
+    iNumMediaObjects( KErrNotFound ),
+    iExternalMemoryStatus( KDriveAttLocal )
     {
     }
 

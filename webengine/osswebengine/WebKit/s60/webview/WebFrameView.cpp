@@ -420,8 +420,11 @@ void WebFrameView::resizeContent(const TSize &size)
         //maybe the content got smaller and we need to scroll back to view?
         TPoint p( nearestPointInFrame(m_contentPos) );
         if (p!=m_contentPos)
+        	{ 
             // this will also update scrollbars is necessary
             scrollTo(p);
+            m_topView->scrollStatus(false); 
+        	} 
         else if (!m_parent) {
             // top level
             m_topView->updateScrollbars(m_contentSize.iHeight, m_contentPos.iY, m_contentSize.iWidth, m_contentPos.iX);

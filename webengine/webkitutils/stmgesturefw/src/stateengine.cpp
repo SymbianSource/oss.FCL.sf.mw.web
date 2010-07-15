@@ -449,6 +449,7 @@ const STATE* const allStates[8] =
 /*!
  * stateNames are used in the logging
  */
+#ifdef GESTURE_LOGGING
 const char* const stateNames[8] =
 {
         "Ignore",
@@ -471,6 +472,7 @@ const char* const hweventNames[] = {
         "EHoldTimer",
         "ESuppressTimer"
 } ;
+#endif
 
 /*! CStateEngine contains the methods used in the state machine implementation.
  *

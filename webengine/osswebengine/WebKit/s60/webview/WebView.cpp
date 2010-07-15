@@ -397,8 +397,10 @@ void WebView::ConstructL( CCoeControl& parent )
 
     MakeViewVisible(ETrue);
     CCoeControl::SetFocus(ETrue);
-    
+
+#ifndef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
     cache()->setCapacities(0, 0, defaultCacheCapacity);
+#endif    
     
     m_waiter = new(ELeave) CActiveSchedulerWait();
     
@@ -1199,9 +1201,34 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
         consumed = downEventConsumed || handleTabbedNavigation(m_currentEventKey, m_currentEventCode);
     }
     else {  
-        consumed = (!m_isEditable &&  //avoid showing the cursor when we are in the input box 
-                    handleKeyNavigation(keyevent, eventcode, frame)) ||
-                    downEventConsumed;
+          //Check is editable node and couples of NULL checking  
+         if( m_isEditable && frame && frame->document() && frame->document()->focusedNode() ) {
+             //Is inputTag
+             TBool isInputTag = frame->document()->focusedNode()->hasTagName(inputTag); 
+             HTMLInputElement* ie = static_cast<HTMLInputElement*>(frame->document()->focusedNode());
+             TInt length  = 0;
+             //Null checking etc.
+             if( ie && isInputTag ) {
+                 //Get length of inputelement string
+                 length = ie->value().length();
+             }
+             //Check is there data in input field
+             if( length > 0 || !ie ) {
+                 //If there is data, do the old thing 
+                 consumed = ( !m_isEditable &&  //avoid showing the cursor when we are in the input box 
+                         handleKeyNavigation(keyevent, eventcode, frame)) ||
+                         downEventConsumed;
+             } 
+             else {
+                   //else continue navigation and avoid jamming in some inputboxes
+                   consumed = handleKeyNavigation( keyevent, eventcode, frame );    
+             }
+         } 
+         else {
+               consumed = ( !m_isEditable &&  //avoid showing the cursor when we are in the input box 
+                       handleKeyNavigation(keyevent, eventcode, frame)) ||
+                       downEventConsumed;    
+         }
     }
     return consumed;
 }

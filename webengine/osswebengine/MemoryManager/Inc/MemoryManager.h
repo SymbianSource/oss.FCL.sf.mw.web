@@ -306,7 +306,7 @@ class MemoryManager
         * @param
         * @return
         */        
-        IMPORT_C static void MemoryManager::CreateFastAllocator();
+        IMPORT_C static void CreateFastAllocator();
 
         /**
         * Initialize MemoryManager library. Special case if CreateFastAllocator is
@@ -316,7 +316,7 @@ class MemoryManager
         * @param
         * @return
         */
-        IMPORT_C static void MemoryManager::InitFastAllocator();
+        IMPORT_C static void InitFastAllocator();
 
         /**
         * initialize the OOM handler in the memorypool
@@ -337,7 +337,15 @@ class MemoryManager
         * @return
         */
         IMPORT_C static void ResetOOMDialogDisplayed();
-        
+
+        /**
+        * Dumps the memory logs i.e. heap allocated, heap free, system free, heap size etc to log
+        * file c:\logs\webcore\Memory.log
+        * @since 9.2
+        * @param
+        * @return
+        */
+        IMPORT_C static void DumpMemoryLogs();
     };
 
 #endif// !_MEMORYMANAGER_H_

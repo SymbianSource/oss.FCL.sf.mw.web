@@ -147,7 +147,9 @@ void WebFrameLoaderClient::makeRepresentation(DocumentLoader* docLoader)
                 brctl(m_webFrame)->setWmlDispatcher(m_WmlContentListener);
                 }
         }
-        TRAPD(err,m_WmlContentListener->HeadersL( 0, m_response ));
+        if ( m_WmlContentListener ) {
+          TRAPD(err,m_WmlContentListener->HeadersL( 0, m_response ));
+        }
     }
     else{
         if (m_WmlContentListener) {

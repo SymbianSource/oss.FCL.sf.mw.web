@@ -60,10 +60,10 @@ void WebScrollbarDrawer::ConstructL()
 
 
 WebScrollbarDrawer::WebScrollbarDrawer(): 
-                                        m_webView(NULL),
+                                        m_webView(NULL), m_spriteV(NULL),  m_spriteH(NULL),
                                         m_scrollBarTransparency(KMinScrollBarTransparency),
                                         m_scrollBarWidth(KMinScrollbarWidth),
-                                        m_dX(0), m_dY(0), m_spriteV(NULL), m_spriteH(NULL)
+                                        m_dY(0), m_dX(0)
 {
 }
 

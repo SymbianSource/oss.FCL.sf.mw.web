@@ -354,7 +354,6 @@ TBool CDownloadMgrUiUserInteractions::OkToExitL()
     THttpDownloadState state;
     THttpProgressState progState;
     TBool isHiddenDel = EFalse;
-    TBool isCodDownload( EFalse );
     TBool isProg (EFalse);
     // check if progressive download, if yes, will NOT delete from the list, otherwise will
     const CDownloadArray& downloadsDel = iRegistryModel.DownloadMgr().CurrentDownloads();

@@ -48,7 +48,6 @@
 #include "CodData.h"
 
 _LIT8( KDRMOldContentType, "x-drm-old-content-type");           // old content type header to be added
-_LIT8( KAcceptRangeHeader, "bytes");
 _LIT8( KAcceptRangeHeaderNone, "none");
 
 // ================= CONSTANTS =======================

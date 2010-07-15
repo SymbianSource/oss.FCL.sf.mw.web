@@ -1518,23 +1518,16 @@ bool FrameLoader::gotoAnchor(const String& name)
     RenderObject* renderer;
     IntRect rect;
     if (!anchorNode)
+        {
         renderer = m_frame->document()->renderer(); // top of document
+        rect = m_frame->document()->getRect();
+        }
     else {
         renderer = anchorNode->renderer();
         rect = anchorNode->getRect();
     }
     if (renderer)
-        {
-         if(!anchorNode)
-            {
-            renderer->enclosingLayer()->scrollRectToVisible(rect, RenderLayer::gAlignToEdgeIfNeeded, RenderLayer::gAlignToEdgeIfNeeded);
-            }
-         else
-             {
              renderer->enclosingLayer()->scrollRectToVisible(rect, RenderLayer::gAlignToEdgeIfNeeded, RenderLayer::gAlignTopAlways);                         
-             }
-       
-        }
 
     return true;
 }

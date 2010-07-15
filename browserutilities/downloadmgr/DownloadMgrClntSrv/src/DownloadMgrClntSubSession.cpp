@@ -2737,7 +2737,7 @@ EXPORT_C TInt RHttpDownload::SetBoolAttribute( const TUint aAttribute, TBool aVa
     		return KErrGeneral;
     		}
     		iDlExtension->SetBoolAttribute( aAttribute, aValue);
-    		return;
+    		return KErrNone;
     	}
     	
 	if (aAttribute == EDlAttrProgressive)

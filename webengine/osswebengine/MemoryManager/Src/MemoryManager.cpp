@@ -54,13 +54,13 @@ inline CMemoryPool* Pool()
 EXPORT_C void MemoryManager::CreateFastAllocator()
     {
     // create the right memory pool
-    MEM_LOGF(_L8("MemoryManager::CreateFastAllocator - s_pool=%x"), s_pool);
+    MEM_LOG_CREATE();    
 #ifdef __NEW_ALLOCATOR__
     CMemoryPool *pool = new CNewSymbianHeapPool();
     pool->Create();
     RSymbianDlAllocatorWrapper* allocator = new RSymbianDlAllocatorWrapper((CNewSymbianHeapPool*)pool);
-    MEM_LOGF(_L8("MemoryManager::CreateFastAllocator - new pool=%x, allocator=%x"), pool, allocator);
     User::SwitchAllocator(allocator);
+    MEM_LOGF(_L8("MemoryManager::CreateFastAllocator - new pool=%x, allocator=%x"), pool, allocator);
 #endif
     }
 
@@ -86,7 +86,7 @@ EXPORT_C void MemoryManager::InitFastAllocator()
 EXPORT_C RAllocator* MemoryManager::SwitchToFastAllocator()
     {
     // create the right memory pool
-    //__ASSERT_DEBUG( s_pool == 0, User::Panic( KMemManPanicDes, 0 ) );
+    __ASSERT_DEBUG( s_pool == 0, User::Panic( KMemManPanicDes, 0 ) );
     MEM_LOGF(_L8("MemoryManager::SwitchToFastAllocator - s_pool=%x"), s_pool);
 #ifdef __NEW_ALLOCATOR__
     s_pool = new CNewSymbianHeapPool();
@@ -143,7 +143,6 @@ EXPORT_C void MemoryManager::CloseFastAllocator(RAllocator* aDefaultAllocator)
 //-----------------------------------------------------------------------------
 EXPORT_C void MemoryManager::AddCollector( MMemoryCollector* aCollector )
     {
-    MEM_LOGF(_L8("MemoryManager::AddCollector - s_pool=%x"), s_pool);
     Pool()->AddCollector( aCollector );
     }
 
@@ -160,7 +159,6 @@ EXPORT_C void MemoryManager::RemoveCollector( MMemoryCollector* aCollector )
 //-----------------------------------------------------------------------------
 EXPORT_C void MemoryManager::AddStopper( MOOMStopper* aStopper )
     {
-    MEM_LOGF(_L8("MemoryManager::AddStopper - s_pool=%x"), s_pool);
     Pool()->AddStopper( aStopper );
     }
 
@@ -244,3 +242,11 @@ EXPORT_C TUint MemoryManager::MemorySize( TAny* aPtr )
     return Pool()->MemorySize( aPtr );
     }
 
+
+EXPORT_C void MemoryManager::DumpMemoryLogs()
+    {
+#if defined(OOM_LOGGING) && defined (__NEW_ALLOCATOR__)
+    CNewSymbianHeapPool *hPool = (CNewSymbianHeapPool *)Pool();
+    hPool->DumpHeapLogs(0);
+#endif    
+    }

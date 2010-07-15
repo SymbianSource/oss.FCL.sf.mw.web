@@ -357,7 +357,7 @@ void DocumentLoader::commitLoad(const char* data, int length)
     if (FrameLoader* frameLoader = DocumentLoader::frameLoader())
 #if PLATFORM(SYMBIAN)
     {
-    unsigned int needMemory = length * 16;
+    unsigned int needMemory = length * 4;
     if(needMemory >= 1024*1024) {
         OOM_PRE_CHECK(needMemory, 0, "DocumentLoader::commitLoad");
 #endif    

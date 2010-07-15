@@ -498,6 +498,11 @@ void PluginWin::resizePluginRect(TRect& rect)
 void PluginWin::HandleGainingForeground()
 {
     if (m_notifier) {
+        if(m_pluginHasBitmap)
+            { 
+            ClearPluginBitmap(); 
+            m_pluginskin->activateVisiblePlugins(); 
+            }
         TRAP_IGNORE(m_notifier->NotifyL(MPluginNotifier::EApplicationFocusChanged, (void*)1));
     }
 }
@@ -611,6 +616,7 @@ void PluginWin::moveWindow(const TPoint& aOffset)
 		    TPoint newPos ((aOffset.iX  * 100)/zoomlevel, (aOffset.iY  * 100)/zoomlevel);
 	        c->offsetCursor( aOffset );
             mf->frameView()->scrollTo(oldPos + newPos);
+            view->scrollStatus(false); 
             c->cursorUpdate(EFalse);        
         }
 

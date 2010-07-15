@@ -298,6 +298,7 @@ EXPORT_C void CFavouritesItem::SetContextId( TInt32 aContextId )
 EXPORT_C TBool CFavouritesItem::SetHidden(TBool aHidden) const
     {
     iImpl->SetHidden( aHidden );
+    return ETrue;
     }
 
 // ---------------------------------------------------------

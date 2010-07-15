@@ -32,6 +32,7 @@
 #include <avkon.rsg>
 #include <StringLoader.h>
 #include <WebKit.rsg>
+#include "MemoryLogger.h"
 
 // CONSTANTS
 
@@ -132,6 +133,7 @@ void CMemoryPool::SetStopping( TBool aStopping )
 //-----------------------------------------------------------------------------
 void CMemoryPool::CollectMemory(TUint aSize)
     {
+    MEM_LOG("CMemoryPool::CollectMemory - run");
     if( iIsCollecting ) return;
 
     iIsCollecting = ETrue;
@@ -139,11 +141,9 @@ void CMemoryPool::CollectMemory(TUint aSize)
       {
         iCollectors[i]->Collect(aSize);
       }
-
-    User::CompressAllHeaps();
     iIsCollecting = EFalse;
 	
-	if (iStopScheduler)
+	if (iStopScheduler && !iIsStopping )
 		iStopScheduler->Start( CStopScheduler::ECheckMemory, aSize );
     }
 
@@ -467,11 +467,19 @@ void CDefaultMemoryPool::RestoreRescueBuffer()
 //-----------------------------------------------------------------------------
 // CNewSymbianHeapPool::FreeMemory
 //-----------------------------------------------------------------------------
-TUint CNewSymbianHeapPool::FreeMemory(TFreeMem& /*aFree*/ )
+TUint CNewSymbianHeapPool::FreeMemory(TFreeMem& aFree )
     {
     // TODO: implement free_memory
-    return KMaxTUint;
-//    return free_memory( aFree.iPool, aFree.iHeap, aFree.iHal );
+    aFree.iPool = 0;
+    aFree.iHeap = 0;
+    
+    TInt freeRAM; 
+    if(HAL::Get(HALData::EMemoryRAMFree, freeRAM) == KErrNone) 
+        aFree.iHal = freeRAM;
+    else
+        aFree.iHal = 0;
+    
+    return KMaxTUint; // not fully implemented
     }
 
 //-----------------------------------------------------------------------------
@@ -480,8 +488,16 @@ TUint CNewSymbianHeapPool::FreeMemory(TFreeMem& /*aFree*/ )
 TAny* CNewSymbianHeapPool::DoAlloc( TUint aSize )
     {
     TAny *p = iAlloc->Alloc( aSize );
-    if (!p)
+    if(iAlloc->isLowSystemMemory && p) // use this a pre OOM indicator
+        {
+        iStopScheduler->Start( CStopScheduler::ECheckMemory, 0 );                
+        iAlloc->isLowSystemMemory = 0; // reset so that we don't check before next request for RAM
+        }
+        
+    if (!p) {
         ShowOOMDialog();
+        MEM_LOG("CNewSymbianHeapPool::DoAlloc - failed");
+    }
     return p;
     }
 
@@ -494,7 +510,12 @@ TAny* CNewSymbianHeapPool::ReAllocate( TAny* aPtr, TUint aSize )
     iMemStatus &= ~ERescueOOM;
 
     TAny* p = iAlloc->ReAlloc( aPtr, aSize );
-    
+    if(iAlloc->isLowSystemMemory && p) // use this a pre OOM indicator
+        {
+        iStopScheduler->Start( CStopScheduler::ECheckMemory, 0 );                
+        iAlloc->isLowSystemMemory = 0; // reset so that we don't check before next request for RAM
+        }
+
     // check memory manager status
     if( !p || iMemStatus & ERescueOOM )
         {
@@ -509,6 +530,11 @@ TAny* CNewSymbianHeapPool::ReAllocate( TAny* aPtr, TUint aSize )
 
         NotifyAndStop();
         }
+
+#ifdef OOM_LOGGING    
+    if(!p)
+        MEM_LOG("CNewSymbianHeapPool::ReAllocate - failed");
+#endif
 
     return p;
     }
@@ -585,6 +611,11 @@ TBool CNewSymbianHeapPool::PreCheck(TUint aTotalSize, TUint aMaxBufSize,
 		{
 		iMemStatus |= ECheckOOM;
 		NotifyAndStop();
+
+#ifdef OOM_LOGGING		
+		MEM_LOG("CNewSymbianHeapPool::PreCheck - failed !!");
+		DumpHeapLogs(aTotalSize);
+#endif		
 		return EFalse;
 		}
 	
@@ -711,6 +742,8 @@ void CNewSymbianHeapPool::InitOOMDialog()
 
 void CNewSymbianHeapPool::ShowOOMDialog()
     {
+    MEM_LOG("CNewSymbianHeapPool::ShowOOMDialog - called");
+    
     // Don't show it if we did once already
     if (iOOMDisplayed)
         return;
@@ -739,9 +772,9 @@ void CNewSymbianHeapPool::ResetOOMDialog()
     }
 
 #ifdef OOM_LOGGING   
-void CNewSymbianHeapPool::DumpHeapLogs()
+void CNewSymbianHeapPool::DumpHeapLogs(TInt aFailSize)
     {
-    iAlloc->dump_heap_logs(0);
+    iAlloc->dump_heap_logs(aFailSize);
     iAlloc->dump_dl_free_chunks();
     }
 #endif

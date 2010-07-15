@@ -77,10 +77,12 @@ _LIT(KMimeOTA, "image/vnd.nokia.ota-bitmap");
 _LIT(KMimeICO, "image/x-icon");
 _LIT(KMimeDRM, "application/vnd.oma.drm.content");
 
-//const TDisplayMode KMaxDepth = EColor64K;
-
 // FIXME: we should move this back to EColor64K after Symbian fix their Gif image decoder bug.
+#ifdef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
+const TDisplayMode KMaxDepth = EColor64K;
+#else
 const TDisplayMode KMaxDepth = EColor16M;
+#endif
 // CLASS DECLARATION
 /**
 *  CAnimationDecoderWrapped

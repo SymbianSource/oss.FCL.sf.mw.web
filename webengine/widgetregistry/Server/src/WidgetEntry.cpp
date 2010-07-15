@@ -125,9 +125,9 @@ CWidgetEntry* CWidgetEntry::NewL( RPointerArray<CWidgetPropertyValue>** aProps )
 //
 CWidgetEntry::CWidgetEntry()
     : iPropertyValues( EWidgetPropertyIdCount ),
-      iBlanketPermGranted ( EFalse),
+      iMiniView ( EFalse),
       iFullView ( EFalse),
-      iMiniView ( EFalse)
+      iBlanketPermGranted ( EFalse)
     {
     }
 
@@ -436,7 +436,6 @@ void CWidgetEntry::ExternalizeXmlL( RWriteStream& aWriteStream,
                                     CWidgetRegistryXml* aXmlProcessor,
                                     RFs& aFileSession )
     {
-    xmlDocPtr doc = NULL; // not really used
     TInt i = 0;
     // For each property, write an XML entry
     for ( ; i < EWidgetPropertyIdCount; ++i )
@@ -692,7 +691,8 @@ void CWidgetEntry::PropertyCleanupL()
             break;
         case KWidgetPropertyListVersion71:
             // Go from PropertlyListVersion71 to PropertyListVersion71CWRT
-            // 1) add ProcessUid for WRT (wgz) widgets
+           // 1) add ProcessUid for WRT (wgz) widgets
+            {
             (*this)[EProcessUid] = KUidWidgetUi.iUid;
 
              // 2) add MIMEType
@@ -703,6 +703,7 @@ void CWidgetEntry::PropertyCleanupL()
             CleanupStack::PopAndDestroy();
 
             currentVersion = KWidgetPropertyListVersion71CWRT;
+            }
             break;
         default:
             // Trouble

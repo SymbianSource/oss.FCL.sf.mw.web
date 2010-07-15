@@ -436,9 +436,8 @@ _NW_ImageCH_Epoc32ContentHandler_PartialNextChunk(NW_HED_ContentHandler_t* conte
             // make sure that the image has been created when the first 
             // chunk came in
             NW_THROW_ON_NULL(thisObj->image, status, KBrsrUnexpectedError);
-            
-            NW_ASSERT(NW_Object_IsInstanceOf(thisObj->image,
-                                             &NW_Image_Epoc32Simple_Class));    
+            if ( NW_Object_IsInstanceOf(thisObj->image, &NW_Image_Epoc32Simple_Class))
+            {	
             simpleImage = NW_Image_Epoc32SimpleOf(thisObj->image);
              //Checking is simpleimage valid for decoding
                 
@@ -450,7 +449,7 @@ _NW_ImageCH_Epoc32ContentHandler_PartialNextChunk(NW_HED_ContentHandler_t* conte
                 status = NW_Image_Epoc32Simple_PartialNextChunk(NW_Image_AbstractImageOf(simpleImage),
                                                             response->body);
                 }
-				
+            }  				
             // NW_Image_Epoc32Simple_PartialNextChunk takes body ownership
             response->body = NULL;
             

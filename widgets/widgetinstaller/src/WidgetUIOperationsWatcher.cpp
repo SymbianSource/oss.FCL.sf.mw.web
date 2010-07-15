@@ -305,7 +305,7 @@ void CWidgetUIOperationsWatcher::InstallSubfunctionL(
         if ( !iSilent ) { iUIHandler->DisplayCancelL(); }
 
         TRequestStatus* status = &aRequestStatus;
-        User::RequestComplete( status, KErrNone );
+        User::RequestComplete( status, KErrCancel );
         }
     }
 

@@ -157,7 +157,7 @@ void PluginInfo::copyMimeDescription(PluginInfo& pluginInfo)
 {
     TUint   i;
     TUint   count;
-    HBufC*  entry;
+    HBufC*  entry = NULL;
     
     m_mimeTypes.ResetAndDestroy();
     m_mimeExtensionToTypeMap.Reset();

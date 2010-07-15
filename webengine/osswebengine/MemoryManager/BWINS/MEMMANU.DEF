@@ -30,4 +30,5 @@ EXPORTS
 	?InitFastAllocator@MemoryManager@@SAXXZ @ 29 NONAME ; void MemoryManager::InitFastAllocator(void)
 	?InitOOMDialog@MemoryManager@@SAXXZ @ 30 NONAME ; void MemoryManager::InitOOMDialog(void)
 	?ResetOOMDialogDisplayed@MemoryManager@@SAXXZ @ 31 NONAME ; void MemoryManager::ResetOOMDialogDisplayed(void)
+	?DumpMemoryLogs@MemoryManager@@SAXXZ @ 32 NONAME ; void MemoryManager::DumpMemoryLogs(void)
 

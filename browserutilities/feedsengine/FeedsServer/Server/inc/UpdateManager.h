@@ -122,7 +122,7 @@ public:
      * @since 7.1
      * @return Integer.
      */
-    TInt StartL(); 
+    void StartL(); 
 
     /**
      * This method Stop the updation;

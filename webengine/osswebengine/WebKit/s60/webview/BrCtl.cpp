@@ -808,7 +808,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
 
                 //Disable the zooming bar when it goes to background
                 m_webView->hideZoomSliderL();
-                
+                m_webView->scrollStatus(false); 
                 // Instruct JS to garbage collect
                 WebCore::gcController().garbageCollectSoon();                
                 break;
@@ -1033,7 +1033,20 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
            {
            StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cancelQueuedTransactions();
 		   break;
-           }		   
+           }
+
+	   // Messages sent by OOM monitor
+       case TBrCtlDefs::ECommandFreeMemory:
+           {
+           //MemoryManager::FreeRam(); // invoke memory collect operation - enable later, causes BC break
+           break;
+           }
+       case TBrCtlDefs::ECommandMemoryGood:
+           {
+           //MemoryManager::RestoreCollectors(); // restore collectors - enable later, causes BC break
+           break;
+           }
+                  
       default:
             {
             if ( m_wmlEngineInterface &&
@@ -1241,7 +1254,7 @@ EXPORT_C void CBrCtl::AddOptionMenuItemsL(CEikMenuPane& aMenuPane, TInt aResourc
     }
 
     int after = aAfter == -1 ? aAfter :0;
-    TBrCtlDefs::TBrCtlElementType focusedElementType;
+    TBrCtlDefs::TBrCtlElementType focusedElementType = TBrCtlDefs::EElementNone;
     if(m_webView)
        focusedElementType = FocusedElementType();
 
@@ -2551,6 +2564,13 @@ void CBrCtl::SetScriptLogMode(TInt aMode)
     }
 }
 
+CWidgetExtension* CBrCtl::getWidgetExt()
+{
+    if ( m_webView) {
+        return m_webView->widgetExtension();
+    }
+    return NULL;
+}
 
 int CBrCtl::getMainScrollbarWidth() const
 {

@@ -29,7 +29,6 @@
 
 
 // TODO use global definitions!
-_LIT( KWidgetBitmap, "widget_bitmap" );
 _LIT8( KWidgetId, "widget_id");
 _LIT8( KBitmapHandle, "bitmap_handle");
 _LIT8( KDelete, "Delete" );

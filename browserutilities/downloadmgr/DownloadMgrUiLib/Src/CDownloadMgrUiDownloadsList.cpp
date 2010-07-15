@@ -2236,12 +2236,9 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
         {
         __ASSERT_DEBUG( 0<iListModel->Count(), Panic( EUiLibPanOptionsShownWhileNoDownloads ) );
 
-        TBool isCreated     = state == EHttpDlCreated;
         // The fix of PHAN-6KVK5R makes this line no longer necessary 
         // TBool isInProgress  = state == EHttpDlInprogress;
-        TBool isPaused      = state == EHttpDlPaused;
         TBool isCompleted   = state == EHttpDlMultipleMOCompleted;
-        TBool isFailed      = state == EHttpDlMultipleMOFailed;
         TBool isDrmDownload = EFalse;
         TBool isDrmRightsOnPhone = EFalse;
         TBool isPreviewRights = EFalse;
@@ -2281,7 +2278,10 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
         canProgHandled = docHandler->CanHandleProgressivelyL( dataType, pdPlayerUid );
         CleanupStack::PopAndDestroy( docHandler ); // docHandler              
 
-#ifndef BRDO_SINGLE_CLICK_ENABLED_FF        
+#ifndef BRDO_SINGLE_CLICK_ENABLED_FF 
+        TBool isCreated     = state == EHttpDlCreated;
+        TBool isPaused      = state == EHttpDlPaused;
+        TBool isFailed      = state == EHttpDlMultipleMOFailed;
         //delete open file manager when download is not complete
         if( !(isCompleted))
             {

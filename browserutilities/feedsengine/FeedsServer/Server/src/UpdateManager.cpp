@@ -152,7 +152,7 @@ void CUpdateManager::RunL()
 // 
 // Handles the Update of feed
 // -----------------------------------------------------------------------------     
-TInt CUpdateManager::StartL()
+void CUpdateManager::StartL()
     {
     iCurrentFeedCount = 0;
 
@@ -362,7 +362,7 @@ void CRoamingInfo::ConstructL()
 // -----------------------------------------------------------------------------
 //
 CRoamingInfo::CRoamingInfo(CUpdateManager *aUpdateManager)
-	:CActive(CActive::EPriorityStandard),iUpdateManager(aUpdateManager),iNetworkRegistrationV1Pckg(iNetworkRegistrationV1)
+	:CActive(CActive::EPriorityStandard),iNetworkRegistrationV1Pckg(iNetworkRegistrationV1),iUpdateManager(aUpdateManager)
     {
     }
 

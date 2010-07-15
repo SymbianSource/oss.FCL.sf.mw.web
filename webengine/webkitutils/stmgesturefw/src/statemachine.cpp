@@ -32,6 +32,7 @@ using namespace stmUiEventEngine ;
 
 GLREF_D const char* stateNames[8] ;
 
+#ifdef GESTURE_LOGGING
 const char* const ttypeNames[] = {  // for debugging purposes define the names of the pointer events
             "EButton1Down         ",
             "EButton1Up           ",
@@ -49,6 +50,7 @@ const char* const ttypeNames[] = {  // for debugging purposes define the names o
             "EEnterHighPressure   ",
             "EExitHighPressure    "
             };
+#endif
 
 /// Fast integer distance
 int stmUiEventEngine::Distance(int x, int y)
@@ -745,7 +747,9 @@ TPoint CStateMachine::screenCoordinates(const TPoint& aPos, void* aGestureTarget
             }
             else if (Rng(edge, wY, sz.iHeight - edge))
             {
+#ifdef GESTURE_LOGGING
                 int from = newPos.iY ;
+#endif
                 newPos.iY -= m_3mminpixels ;
                 if (m_loggingenabled)
                 {

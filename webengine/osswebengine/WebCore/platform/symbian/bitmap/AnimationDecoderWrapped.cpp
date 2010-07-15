@@ -548,7 +548,8 @@ void CAnimationDecoderWrapped::StartLoadAnimationBitmapL( TInt aFrameIndex )
     if( frameInfo.iFlags & TFrameInfo::ETransparencyPossible ) {
         if( frameInfo.iFlags & TFrameInfo::EAlphaChannel && (frameInfo.iFlags & TFrameInfo::ECanDither)) 
             maskDisplayMode = EGray256;
-        maskDisplayMode = EGray2;
+        else
+           maskDisplayMode = EGray2;
 
         User::LeaveIfError(animMask.Create(frameInfo.iOverallSizeInPixels, maskDisplayMode));
         iDecoder->Convert( &iStatus, animBitmap, animMask, aFrameIndex );

@@ -42,7 +42,8 @@ void FontData::platformInit()
 {
     const CFont& font( m_font );
     TLanguage language = User::Language();
-    if (language == ELangPrcChinese ) {
+    if (language == ELangTaiwanChinese || language == ELangHongKongChinese || language == ELangPrcChinese || 
+        language == ELangEnglish_Taiwan || language == ELangEnglish_HongKong || language == ELangEnglish_Prc) {
         m_ascent = font.AscentInPixels();
         m_descent = font.DescentInPixels();
     } else {

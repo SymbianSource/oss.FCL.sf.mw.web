@@ -154,8 +154,6 @@ CWidgetUiWindowContainer::~CWidgetUiWindowContainer()
 //
 void CWidgetUiWindowContainer::SizeChanged()
     {
-    TInt offset( 0 );
-
     if( Engine() && (Engine()->Rect() != Rect()) )
         {
         TRect rect( Rect() );
@@ -291,16 +289,12 @@ TKeyResponse CWidgetUiWindowContainer::OfferKeyEventL(
 
     if (Engine())
         {
-        TBool showStausPane(EFalse);
         TBrCtlDefs::TBrCtlElementType eType = Engine()->FocusedElementType();
         switch(eType)
             {
             case TBrCtlDefs::EElementInputBox:
             case TBrCtlDefs::EElementActivatedInputBox:
             case TBrCtlDefs::EElementTextAreaBox:
-                // status pane is needed for editing
-                showStausPane = ETrue;
-                // fall through
             case TBrCtlDefs::EElementObjectBox:
             case TBrCtlDefs::EElementActivatedObjectBox:
                 {

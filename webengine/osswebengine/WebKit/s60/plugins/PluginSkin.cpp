@@ -162,14 +162,14 @@ PluginSkin::PluginSkin( WebFrame& frame )
       m_canInteract( EFalse ),
       m_rect(TRect(0,0,0,0)),
       m_ref(1),
-      m_handle(-1),
-      m_instance(0),    
-      m_pluginfuncs(0),
-      m_resized(false),
       m_oldRect(TRect(0,0,0,0)),
       m_oldViewport(TRect(0,0,0,0)),
       m_loadmode(ELoadModeNone),
-      m_NPObject(0)
+      m_NPObject(0),
+      m_handle(-1),
+      m_instance(0),    
+      m_pluginfuncs(0),
+      m_resized(false)
   {
   }
 
@@ -409,7 +409,12 @@ void PluginSkin::Close()
     delete m_attributeNames; m_attributeNames = 0;
     delete m_attributeValues; m_attributeValues = 0;
     delete m_url; m_url = 0;
-    delete iJavascriptTimer; iJavascriptTimer = 0;
+    if(iJavascriptTimer)
+        { 
+        iJavascriptTimer->Cancel();
+        delete iJavascriptTimer; 
+        iJavascriptTimer = 0;
+        }
     m_pluginfuncs = 0;
     m_pluginSupported = EFalse;
     m_pluginClosed = true;
@@ -475,7 +480,9 @@ void PluginSkin::draw( WebCoreGraphicsContext& context,
 
     CFbsBitmap* bitmap = m_cannedimg.m_img;
     TSize bmpSize( bitmap->SizeInPixels() );
-    if ( !m_pluginwin && newRect.Height() >= bmpSize.iHeight && newRect.Width() >= bmpSize.iWidth )
+    CWidgetExtension* wdgtExt = control(this->frame()) ? control(this->frame())->getWidgetExt(): NULL;
+    
+    if ( !wdgtExt && !m_pluginwin && newRect.Height() >= bmpSize.iHeight && newRect.Width() >= bmpSize.iWidth )
         {
         // The inner rect is big enough, draw the placeholder image
         TPoint bitmapStartPoint( newRect.Center() );

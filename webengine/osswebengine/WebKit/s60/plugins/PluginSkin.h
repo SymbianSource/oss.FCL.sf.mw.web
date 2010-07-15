@@ -439,6 +439,8 @@ class PluginSkin : public CBase,
         void setPluginWinClipedRect();
         TBool IsCollectBitmapSupported();
         WebFrame* getWebFrame() const {return m_frame;}
+        void activateVisiblePlugins();
+
   private:  // private member data
         
         TRect frameVisibleRect() const;
@@ -447,7 +449,6 @@ class PluginSkin : public CBase,
         const TDesC& GetExecutionMode();
         void setupGenericElementArrrayL();
         void addWidgetAttributesL();
-        void activateVisiblePlugins();
         // Window-owning CoeControl which wraps the CoeControl created by the plugin
         PluginWin* m_pluginwin;
         WebFrame* m_frame; // not owned

@@ -1092,17 +1092,16 @@ void CEpoc32ImageDecoder::OpenComplete()
       {
        iFrameInfo = iImageConverter->FrameInfo( iCurrentFrame );
        if(iImage->bitmap == NULL ){
-         TInt error;
          NW_Bool actualSizing;
          TFrameInfo aFrameInfo = iImageConverter->FrameInfo(0);
          actualSizing = ImageSizeCheck(aFrameInfo.iOverallSizeInPixels, &currSize);
            
          CFbsBitmap* pDestBitmap = new (ELeave) CFbsBitmap();
          if(actualSizing == NW_TRUE) { 
-            error = pDestBitmap->Create( currSize, GetDisplayMode(aFrameInfo) );
+            pDestBitmap->Create( currSize, GetDisplayMode(aFrameInfo) );
          }
          else{
-             error = pDestBitmap->Create( aFrameInfo.iOverallSizeInPixels, GetDisplayMode(aFrameInfo) );
+            pDestBitmap->Create( aFrameInfo.iOverallSizeInPixels, GetDisplayMode(aFrameInfo) );
           }
          iImage->bitmap = pDestBitmap;
          if(iImage->mask == NULL && aFrameInfo.iFlags & TFrameInfo::ETransparencyPossible ){

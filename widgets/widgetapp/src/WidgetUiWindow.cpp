@@ -98,8 +98,8 @@ CWidgetUiWindow::CWidgetUiWindow( CWidgetUiWindowManager& aWindowManager, CCpsPu
     : iWindowManager( aWindowManager ), iCpsPublisher( aCpsPublisher ), iNetworkAccessGrant(EInvalid),
       iPreferredOrientation(TBrCtlDefs::EOrientationUndefined),
       iIsCurrent(EFalse), iShowSoftkeys(EFalse), iWidgetLoaded(EFalse),
-      iSchemeProcessing (EFalse),iClickCount(0), iWidgetLoadStarted(EFalse),
-      iNetworkState(ENetworkNotAllowed), iUserPermission(ETrue)
+      iSchemeProcessing (EFalse), iNetworkState(ENetworkNotAllowed), iUserPermission(ETrue), 
+      iClickCount(0), iWidgetLoadStarted(EFalse)
     {
     }
 
@@ -561,7 +561,7 @@ void CWidgetUiWindow::SetCurrentWindow( TBool aCurrent )
             UpdateCba();
             Engine()->MakeVisible( iWidgetLoaded );
             // redraw incase the orientation changed while in the background
-            RelayoutL();
+            RelayoutL(KEikDynamicLayoutVariantSwitch);
             }
         else
             {

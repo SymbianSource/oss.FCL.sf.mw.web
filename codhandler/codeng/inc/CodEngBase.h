@@ -588,6 +588,11 @@ NONSHARABLE_CLASS( CCodEngBase ): public CActive, public MCodSaverFactory
         * @return Saver object for this data type. Ownership not passed.
         */
         CCodSaver* CreateSaverL( const TDesC8& aType );
+        
+        /* Fota Saver Setting
+         * 
+         */
+       void FotaSaverSettingL();
 
     private:    // implementation
     

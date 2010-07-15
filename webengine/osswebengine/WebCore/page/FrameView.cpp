@@ -298,7 +298,7 @@ Node* FrameView::layoutRoot() const
 void FrameView::layout(bool allowSubtree)
 {
 #if PLATFORM(SYMBIAN)
-    OOM_PRE_CHECK(1024*1024*2, 0, "FrameView::layout")
+    OOM_PRE_CHECK(1024*1024, 0, "FrameView::layout")
 #endif
     if (d->midLayout)
         return;

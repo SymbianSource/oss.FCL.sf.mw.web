@@ -184,6 +184,9 @@ Default is WML support enabled
 //To enable performance improvements done in TB9.2
 #define BRDO_PERF_IMPROVEMENTS_ENABLED_FF
 
+//To enable modified cache-control = max-age feature
+#define BRDO_CACHE_MAX_AGE
+
 /*
 * ===================
 *        S60 3.23
@@ -276,6 +279,10 @@ Default is WML support enabled
 #define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
 #endif
 
+
+//To disable modified cache-control = max-age 
+#undef BRDO_CACHE_MAX_AGE
+
 /*
 * ===================
 *        S60 5.0 S60_50
@@ -360,6 +367,11 @@ Default is WML support enabled
 // Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
 //Flag need to be removed after this fix is supplied to Symbian 9.4
 #undef BRDO_HTTP_STACK_93
+
+
+//To disable modified cache-control = max-age 
+#undef BRDO_CACHE_MAX_AGE
+
 /*
 * ===================
 *        S60 5.0 PF5250+
@@ -418,6 +430,9 @@ Default is WML support enabled
 // Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
 //Flag need to be removed after this fix is supplied to Symbian 9.4
 #undef BRDO_HTTP_STACK_93
+
+//To enable modified cache-control = max-age 
+#define BRDO_CACHE_MAX_AGE
 /*
 * ===================
 *        S60 5.1
@@ -464,6 +479,10 @@ Default is WML support enabled
 // Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
 //Flag need to be removed after this fix is supplied to Symbian 9.4
 #undef BRDO_HTTP_STACK_93
+
+//To disable modified cache-control = max-age 
+#undef BRDO_CACHE_MAX_AGE
+
 /*
 * ===================
 *        S60 5.2
@@ -527,5 +546,9 @@ Default is WML support enabled
 #else
 #define BRDO_BROWSER_UPDATE_UI_FF 0
 #endif // KFeatureIdIAUpdate
+
+
+//To enable modified cache-control = max-age 
+#define BRDO_CACHE_MAX_AGE
 
 #endif // BROWSER_PLATFORM_VARIANT_HRH

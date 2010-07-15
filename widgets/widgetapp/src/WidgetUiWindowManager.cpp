@@ -228,8 +228,18 @@ CWidgetUiWindowManager::~CWidgetUiWindowManager()
     iCenrepNotifyHandler->DoCancel();
     delete iCenrepNotifyHandler;
 #endif
-      iActiveFsWindow = NULL;
-	  
+   
+    iActiveFsWindow = NULL;
+    
+#ifdef BRDO_OCC_ENABLED_FF 
+    if ( iRetryConnectivity)
+        {
+        iRetryConnectivity->Cancel();
+        delete iRetryConnectivity;
+        iRetryConnectivity = NULL;
+        }
+#endif
+	 
 	  iWindowList.ResetAndDestroy();
   
 #ifdef BRDO_WRT_HS_FF   
@@ -256,14 +266,6 @@ CWidgetUiWindowManager::~CWidgetUiWindowManager()
     delete iCpsPublisher;
 #endif
     delete iDb;
-#ifdef BRDO_OCC_ENABLED_FF 
-    if ( iRetryConnectivity)
-        {
-        iRetryConnectivity->Cancel();
-        delete iRetryConnectivity;
-        iRetryConnectivity = NULL;
-        }
-#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -764,9 +766,8 @@ TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWind
                 }             
             delete aWidgetWindow;
             }
-        return EFalse; 
         }
-    
+    return EFalse;
     }
 
 // =============================================================================
@@ -1616,9 +1617,9 @@ TInt CWidgetUiWindowManager::RetryInternetConnection()
 
 CRequestRAM::CRequestRAM(CWidgetUiWindowManager* aWidgetUiWindowManager, const TUid& aUid, TUint32 aOperation):
     CActive( EPriorityStandard ),
-    iOperation(aOperation),
+    iWidgetUiWindowManager(aWidgetUiWindowManager),
     iUid(aUid),
-    iWidgetUiWindowManager(aWidgetUiWindowManager)
+    iOperation(aOperation)
     {
 	}
 	
@@ -1780,7 +1781,7 @@ void CCenrepNotifyHandler::ConstructL()
     StartObservingL();
     }
          
-CCenrepNotifyHandler::CCenrepNotifyHandler(MCenrepWatcher& aObserver) : iObserver(aObserver), CActive (EPriorityLow)
+CCenrepNotifyHandler::CCenrepNotifyHandler(MCenrepWatcher& aObserver) : CActive (EPriorityLow),iObserver(aObserver) 
    {
          
    }

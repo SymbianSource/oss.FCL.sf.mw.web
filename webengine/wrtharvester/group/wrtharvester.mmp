@@ -70,5 +70,6 @@ LIBRARY		  cone.lib 		    // CoeControl
 LIBRARY		  CommonEngine.lib
 LIBRARY       ws32.lib
 LIBRARY       PlatformEnv.lib
+LIBRARY       oommonitor.lib
 
 //end of file

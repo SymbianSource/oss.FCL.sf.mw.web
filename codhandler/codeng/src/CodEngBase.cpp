@@ -1702,9 +1702,6 @@ void CCodEngBase::CapabilityCheckL()
     __ASSERT_DEBUG( iData->ActiveDownload(),CodPanic( ECodInternal ));
     // 1. Data type checking.
     TInt typeErr( KErrNone );    
-#ifdef __SYNCML_DM_FOTA
-    TBool fota( EFalse );
-#endif /*def __SYNCML_DM_FOTA */
     for ( TInt i = 0; i < (*iData)[iData->ActiveDownload()]->Types().MdcaCount() && !iContentTypeCheck; i++ )
         {
         const TDataType& type( (*iData)[iData->ActiveDownload()]->Types().MdcaPoint( i ) );
@@ -1745,7 +1742,6 @@ void CCodEngBase::CapabilityCheckL()
             {
             // Accept FOTA download. Special storage (not saved to FS).
             CLOG(( ECodEng, 4, _L8("  <%S> FOTA OK"), &mime ));
-            fota = ETrue;
             }
 #endif /*def __SYNCML_DM_FOTA */
         else 
@@ -1879,10 +1875,7 @@ CCodSaver* CCodEngBase::CreateSaverL( const TDesC8& aType )
             CodUtil::GetIntParam( pkgId, EGenericParamFotaPkgId, *iParams );
             }
         iSaver = CFotaSaver::NewL( aType, pkgId );
-        iSaver->SetObserver( iObserver );
-        iSaver->SetParams( iParams );
-        iSaver->SetMaxSize( iData->Size() );
-        iSaver->OpenStoreL();   // TODO unneeded method, put to construction.
+        FotaSaverSettingL();
         }
 #endif /*def __SYNCML_DM_FOTA */
     else
@@ -1891,9 +1884,15 @@ CCodSaver* CCodEngBase::CreateSaverL( const TDesC8& aType )
         //__ASSERT_DEBUG( iFsUsed, CodPanic( ECodInternal ) );
 
         TBool contentTypeMisMatch ( ETrue );
+        TBool fotadownload(EFalse);
         for ( TInt i = 0; i < (*iData)[iData->ActiveDownload()]->Types().MdcaCount(); i++ )
             {
             const TDataType& type( (*iData)[iData->ActiveDownload()]->Types().MdcaPoint( i ) );
+            if( type.Des8().Find(KFotaPackageDataType) !=KErrNotFound )
+                {
+                 fotadownload = ETrue;
+                 break;
+                }
             if((aType.Find (type.Des8()) != KErrNotFound) || iDocHandler->CanOpenL(TDataType(aType)) || 
                             ( (type.Des8().Find(KOma1DrmMessageContentType)!= KErrNotFound) && (aType.Find(KOma1DcfContentType)!= KErrNotFound )  ))             
                 {
@@ -1901,7 +1900,18 @@ CCodSaver* CCodEngBase::CreateSaverL( const TDesC8& aType )
                 break;
                 }                
             }
-        if(contentTypeMisMatch)
+        if (fotadownload)
+            {
+             TInt pkgId( KCodDefaultFotaPkgId );
+             if ( iParams )
+                {
+                 CodUtil::GetIntParam( pkgId, EGenericParamFotaPkgId, *iParams );
+                }
+             iSaver = CFotaSaver::NewL(KFotaPackageDataType(), pkgId );
+             FotaSaverSettingL();
+             return iSaver;
+           }
+       if(contentTypeMisMatch)
             {
             User::Leave(KErrCodAttributeMismatch);
             }
@@ -1954,6 +1964,18 @@ CCodSaver* CCodEngBase::CreateSaverL( const TDesC8& aType )
 
     CLOG(( ECodEng, 2, _L("<- CCodEngBase::CreateSaverL") ));
     return iSaver;
+    }
+
+// ---------------------------------------------------------
+// CCodEngBase::FotaSaverSettingL
+// ---------------------------------------------------------
+//
+void CCodEngBase::FotaSaverSettingL()
+    {
+    iSaver->SetObserver( iObserver );
+    iSaver->SetParams( iParams );
+    iSaver->SetMaxSize( iData->Size() );
+    iSaver->OpenStoreL();   // TODO unneeded method, put to construction.
     }
 
 // ---------------------------------------------------------

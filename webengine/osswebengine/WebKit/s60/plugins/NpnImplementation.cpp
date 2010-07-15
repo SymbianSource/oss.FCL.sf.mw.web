@@ -332,13 +332,13 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
         
         case NPNVPluginElementNPObject: {
 		PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
-        WebCore::Element* pluginElement;
+        WebCore::Element* pluginElement = NULL;
         if (pluginWin) {
         	pluginElement = pluginWin->pluginSkin()->getElement();
         }
             
         NPObject* pluginScriptObject = 0;
-        if (pluginElement->hasTagName(appletTag) || pluginElement->hasTagName(embedTag) || pluginElement->hasTagName(objectTag))
+        if (pluginElement && (pluginElement->hasTagName(appletTag) || pluginElement->hasTagName(embedTag) || pluginElement->hasTagName(objectTag)))
 			pluginScriptObject = static_cast<WebCore::HTMLPlugInElement*>(pluginElement)->getNPObject();
             
         if (pluginScriptObject)
@@ -369,13 +369,14 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
         case NPNVisOfflineBool:     // Tells whether offline mode is enabled;
                                     // true=offline mode enabled, false=not enabled
             
-        case NPNNetworkAccess:
+        case NPNNetworkAccess: {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             TInt apId = -1;
             if (pluginWin) {
                 apId = pluginWin->pluginSkin()->handleNetworkAccess();
             }
             *((TInt*) aRetValue) = apId;
+        }
             break;
             
        case NPNVGenericParameter: {   
@@ -478,6 +479,7 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
             break;
             }
         case NPPVPluginBitmap :
+            {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             if (pluginWin) {
                 TInt* bitMapHandle = (TInt*)aSetValue;
@@ -489,6 +491,7 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
                     { 
                     pluginWin->SetBitmapFromPlugin(KErrNone);
                     }
+               }
             }
             break; 
         case NPPVPluginDeactivate:

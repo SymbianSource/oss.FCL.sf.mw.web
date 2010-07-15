@@ -42,7 +42,11 @@ const int KScrollIntervalTimeout = 30000; // scroll timer interval in microsecon
 const int KScrollIntervalTimeout = 60000; // scroll timer interval in microseconds
 #endif
 
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+const float KDecceleration = -1300.0;
+#else 
 const float KDecceleration = -750.0;
+#endif 
 const float KSpeedHigh = 2000.0;
 
 int decelTimerCB(TAny* ptr);

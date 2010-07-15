@@ -364,7 +364,7 @@ NONSHARABLE_CLASS(CNewSymbianHeapPool) : public CMemoryPool
         void InitOOMDialog();
         void ResetOOMDialog();
 #ifdef OOM_LOGGING         
-        void DumpHeapLogs();
+        void DumpHeapLogs(TInt aFailSize);
 #endif        
     private:
     	void InitLocal();

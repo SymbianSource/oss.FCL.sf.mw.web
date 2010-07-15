@@ -166,7 +166,7 @@ void CHttpCacheEntry::SetFileNameL( const TFileName& aFileName )
     delete iFileName;
     iFileName = NULL;
 
-    iFileName = aFileName.AllocL();
+    iFileName = aFileName.AllocL(); 
     }
 
 

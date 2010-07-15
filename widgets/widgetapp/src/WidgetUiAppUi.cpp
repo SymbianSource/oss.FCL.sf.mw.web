@@ -304,6 +304,16 @@ void CWidgetUiAppUi::HandleWsEventL(
 
     if ( aEvent.Type() == KAknUidValueEndKeyCloseEvent )
         {
+        	
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+        if( IsDisplayingDialog() ) 
+        	   {
+             //Get the top dialog
+             CCoeControl* control = TopFocusedControl();
+             delete control;
+             control = NULL;
+             }
+#endif
         // Close the current active widget
         iWindowManager->CloseWindowsAsync(EFalse);
         return;
@@ -378,7 +388,7 @@ void CWidgetUiAppUi::HandleApplicationSpecificEventL(TInt aEventType, const TWsE
             {            
 #ifdef OOM_WIDGET_CLOSEALL            
             CloseAllWidgetsAndExit();
-#else if    // OOM_WIDGET_CLOSEALL        
+#else //if    OOM_WIDGET_CLOSEALL        
             iWindowManager->HandleOOMEventL(iIsForeground);
             CloseAndExitIfNoneLeft();
 #endif            
@@ -558,7 +568,7 @@ void CWidgetUiAppUi::ProcessMessageArgumentsL(
     TUint32& aOperation )
     {
     __UHEAP_MARK;
-    TUint32 version( -1 );
+    TUint32 version( 0 );
     TPtrC ptr( NULL, 0 );
     
     RDesReadStream stream( aLine );

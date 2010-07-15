@@ -29,8 +29,6 @@ void CDlStylusPopupMenu::ConstructL()
 {
     ilongtapRunning = EFalse;
     iLongTapDetector = CAknLongTapDetector::NewL(this);
-    TResourceReader readerFolder;
-    TResourceReader readerItem;
 }
 
 // -----------------------------------------------------------------------------
@@ -97,7 +95,7 @@ void CDlStylusPopupMenu::HandleLongTapEventL( const TPoint& aPenEventLocation, c
        iStylusPopupMenu->SetItemDimmed(EDownloadsListCmdCancel,ETrue);
        iStylusPopupMenu->SetItemDimmed(EDownloadsListCmdResume,ETrue);
        }
-    if (state == EHttpDlPaused)
+    if (state == EHttpDlPaused || state == EHttpDlMultipleMOFailed)
         {
         isAiwcall = ETrue;
         iStylusPopupMenu->SetItemDimmed(EAiwCmdContact,ETrue);
