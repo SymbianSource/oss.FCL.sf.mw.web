@@ -22,6 +22,8 @@
 #ifndef AP_CHANGE_OBSERVER_H
 #define AP_CHANGE_OBSERVER_H
 
+#warning The Connection Manager API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //This class specifies a protocol for observing the AP changes
 class MApChangeObserver
 	{

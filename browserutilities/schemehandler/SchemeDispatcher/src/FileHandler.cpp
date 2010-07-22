@@ -22,7 +22,7 @@
 
 #include "FileHandler.h"
 #include "SchemeDispLogger.h"
-#include <ecom.h>		// For REComSession
+#include <ecom/ecom.h>		// For REComSession
 #include <eikenv.h>
 #include <apmstd.h>
 #include <apparc.h>

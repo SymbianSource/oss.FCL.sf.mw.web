@@ -19,6 +19,8 @@
 #ifndef FEEDS_SERVER_FOLDER_ITEM_H
 #define FEEDS_SERVER_FOLDER_ITEM_H
 
+#warning The Feeds Engine API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // INCLUDES
 #include <e32base.h>
 #include <e32std.h>

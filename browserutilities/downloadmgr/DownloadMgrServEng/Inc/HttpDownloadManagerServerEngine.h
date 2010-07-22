@@ -158,7 +158,7 @@ NONSHARABLE_CLASS( CHttpDownloadManagerServerEngine ) : public CBase
         * @param ?arg1 ?description
         * @return ?description
         */
-        EXPORT_C TInt ActiveDownloads() const;
+        IMPORT_C TInt ActiveDownloads() const;
 
         /**
         * Calculates the total size of all on-going downloads in the 

@@ -19,6 +19,8 @@
 #ifndef TRANSACTION_H
 #define TRANSACTION_H
 
+#warning The Feeds Engine API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // INCLUDES
 #include <e32base.h>
 #include <e32std.h>

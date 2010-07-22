@@ -66,7 +66,7 @@ namespace KJS {
 
   class NumberImp : public JSCell {
     friend class ConstantValues;
-    friend JSValue *jsNumberCell(double);
+IMPORT    friend JSValue *jsNumberCell(double);
   public:
     double value() const { return val; }
 
@@ -135,7 +135,7 @@ namespace KJS {
       isAborted = false;
     }
 
-    void abort() { isAborted = true; }
+IMPORT    void abort() { isAborted = true; }
     bool aborted() const { return isAborted; }
 
     AttachedInterpreter *interps;

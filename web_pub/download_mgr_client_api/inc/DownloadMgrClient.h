@@ -19,6 +19,8 @@
 #ifndef __DOWNLOADMGR_CLIENT_H__
 #define __DOWNLOADMGR_CLIENT_H__
 
+#warning This Download Manager Client API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <e32base.h>
 #include <f32file.h>
@@ -1113,4 +1115,5 @@ NONSHARABLE_CLASS( RHttpDownload ): public RSubSessionBase
 	};
 
 #endif /* __DOWNLOADMGR_CLIENT_H__ */
+
 

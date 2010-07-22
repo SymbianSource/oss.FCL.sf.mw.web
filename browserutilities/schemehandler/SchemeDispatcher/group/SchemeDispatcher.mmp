@@ -63,7 +63,7 @@ LIBRARY     apgrfx.lib
 LIBRARY     apmime.lib
 LIBRARY     apparc.lib
 LIBRARY     efsrv.lib
-LIBRARY     BROWSERTELSERVICE.LIB
+LIBRARY     BrowserTelService.lib
 LIBRARY     INETPROTUTIL.LIB
 LIBRARY     estor.lib
 LIBRARY     ws32.lib

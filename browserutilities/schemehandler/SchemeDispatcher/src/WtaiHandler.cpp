@@ -22,7 +22,7 @@
 
 #include "WtaiHandler.h"
 #include "SchemeDispLogger.h"
-#include <ecom.h>		// For REComSession
+#include <ecom/ecom.h>		// For REComSession
 #include <eikenv.h>
 #include <apparc.h>
 #include <apgcli.h>

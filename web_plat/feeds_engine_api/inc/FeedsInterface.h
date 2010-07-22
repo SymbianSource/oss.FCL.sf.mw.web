@@ -19,6 +19,8 @@
 #ifndef FEED_INTERFACE_H
 #define FEED_INTERFACE_H
 
+#warning The Feeds Engine API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // INCLUDES
 #include <e32std.h>
 #include <e32base.h>

@@ -38,6 +38,9 @@
 #ifndef __MXMLCONTENTHANDLER_H
 #define __MXMLCONTENTHANDLER_H
 
+#warning The XML API has been deprecated
+
+
 //  INCLUDES
 #include <MXMLAttributes.h>
 #include <cxml_nw2cxmltypes.h>

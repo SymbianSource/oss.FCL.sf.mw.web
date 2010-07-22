@@ -38,7 +38,7 @@
 #include <deflatefilterinterface.h>
 #include <httperr.h>
 #include <bldvariant.hrh>
-#include <ecom.h>
+#include <ecom/ecom.h>
 #include <es_sock.h>
 #include <escapeutils.h>
 #include <http/rhttpheaders.h>

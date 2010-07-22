@@ -20,6 +20,8 @@
 #ifndef DOWNLOADSLISTDLGOBSERVER_H
 #define DOWNLOADSLISTDLGOBSERVER_H
 
+#warning This Download Manager UI API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <e32def.h>
 #include <coedef.h>
@@ -68,4 +70,5 @@ NONSHARABLE_CLASS( MDownloadsListDlgObserver )
     };
 
 #endif /* DOWNLOADSLISTDLGOBSERVER_H */
+
 

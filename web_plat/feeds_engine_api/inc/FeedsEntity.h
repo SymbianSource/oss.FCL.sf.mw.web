@@ -19,6 +19,8 @@
 #ifndef __FEEDSENTITY_H
 #define __FEEDSENTITY_H
 
+#warning The Feeds Engine API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // INCLUDES
 #include <e32std.h>
 #include <e32base.h>
@@ -244,5 +246,6 @@ private: // Private data members.
     };
 
 #endif	//__FEEDSENTITY_H__
+
 
 

@@ -19,6 +19,9 @@
 #ifndef FAVOURITES_HANDLE_INL
 #define FAVOURITES_HANDLE_INL
 
+#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
+
 /**
  * Implementation of RFavouritesHandle::RFavouritesHandle()
  * @since 0.9       

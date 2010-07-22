@@ -24,6 +24,8 @@
 #ifndef CXML_STR_H
 #define CXML_STR_H
 
+#warning The CXML API has been deprecated
+
 #ifdef __cplusplus
 extern "C" {
 #endif

@@ -321,7 +321,7 @@ void Node::handleException(ExecState* exec, JSValue* exceptionValue)
     if (dbg && !dbg->hasHandledException(exec, exceptionValue)) {
         bool cont = dbg->exception(exec, currentSourceId(exec), m_line, exceptionValue);
         if (!cont)
-            dbg->imp()->abort();
+    ;  //      dbg->imp()->abort();
     }
 }
 

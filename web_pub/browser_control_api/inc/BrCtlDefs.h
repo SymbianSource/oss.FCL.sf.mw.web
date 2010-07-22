@@ -19,6 +19,9 @@
 #ifndef BRCTLDEFS_H
 #define BRCTLDEFS_H
 
+#warning The Browser Control API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
+
 //  INCLUDES
 
 // DATA TYPES

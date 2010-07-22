@@ -19,6 +19,8 @@
 #ifndef  __CUSERAGENT_H
 #define  __CUSERAGENT_H
 
+#warning The Web Utils API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // INCLUDES
 #include <centralrepository.h>
 #include <sysversioninfo.h>

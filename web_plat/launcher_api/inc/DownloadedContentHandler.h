@@ -22,6 +22,8 @@
 #include <e32std.h>
 #include <apmstd.h>
 
+#warning The Browser Launcher API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // FORWARD DECLARATIONS
 
 class RFile;

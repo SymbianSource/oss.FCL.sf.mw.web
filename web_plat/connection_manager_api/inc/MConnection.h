@@ -22,6 +22,8 @@
 #ifndef M_Connection_H
 #define M_Connection_H
 
+#warning The Connection Manager API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 // INCLUDES
 
 #include <ApEngineConsts.h> // TEMP

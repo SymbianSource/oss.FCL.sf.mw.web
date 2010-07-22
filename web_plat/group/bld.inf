@@ -23,7 +23,7 @@
 #include "../browser_platform_api/group/bld.inf"
 #include "../cod_handler_api/group/bld.inf"
 #include "../connection_manager_api/group/bld.inf"
-#include "../cxml_library_api/group/bld.inf"
+//#include "../cxml_library_api/group/bld.inf"
 #include "../download_mgr_client_api_extn/group/bld.inf"
 #include "../feeds_engine_api/group/bld.inf"
 #include "../launcher_api/group/bld.inf"
@@ -36,7 +36,7 @@
 #include "../scriptable_plugin_api/group/bld.inf"
 #include "../webutils_api/group/bld.inf"
 #include "../widget_registry_api/group/bld.inf"
-#include "../xml_parser_api/group/bld.inf"
+//#include "../xml_parser_api/group/bld.inf"
 
 PRJ_PLATFORMS
 DEFAULT

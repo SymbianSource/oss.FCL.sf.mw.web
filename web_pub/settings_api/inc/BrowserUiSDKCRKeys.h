@@ -17,6 +17,8 @@
 #ifndef BROWSERUISDKCRKEYS_H
 #define BROWSERUISDKCRKEYS_H
 
+#warning The Browser UI SDK keys will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 const TUid KCRUidBrowserUiLV = {0x101F861B};
 const TUid KCRUidBrowser   = {0x10008D39};
 

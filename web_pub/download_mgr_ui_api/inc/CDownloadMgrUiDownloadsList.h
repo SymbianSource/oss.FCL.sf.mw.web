@@ -20,6 +20,8 @@
 #ifndef CDOWNLOADMGRUIDOWNLOADSLIST_H
 #define CDOWNLOADMGRUIDOWNLOADSLIST_H
 
+#warning This Download Manager UI API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <CDownloadMgrUiBase.h>
 #include <DownloadMgrClient.h>

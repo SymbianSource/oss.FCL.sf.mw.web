@@ -34,17 +34,17 @@
 extern "C" {
 #endif
 
-extern void _NPN_ReleaseVariantValue(NPVariant *variant);
-extern NPIdentifier _NPN_GetStringIdentifier(const NPUTF8 *name);
+extern IMPORT void _NPN_ReleaseVariantValue(NPVariant *variant);
+extern IMPORT NPIdentifier _NPN_GetStringIdentifier(const NPUTF8 *name);
 extern void _NPN_GetStringIdentifiers(const NPUTF8 **names, int32_t nameCount, NPIdentifier *identifiers);
-extern NPIdentifier _NPN_GetIntIdentifier(int32_t intid);
+extern IMPORT NPIdentifier _NPN_GetIntIdentifier(int32_t intid);
 extern bool _NPN_IdentifierIsString(NPIdentifier identifier);
 extern NPUTF8 *_NPN_UTF8FromIdentifier(NPIdentifier identifier);
 extern int32_t _NPN_IntFromIdentifier(NPIdentifier identifier);    
-extern NPObject *_NPN_CreateObject(NPP npp, NPClass *aClass);
-extern NPObject *_NPN_RetainObject(NPObject *obj);
-extern void _NPN_ReleaseObject(NPObject *obj);
-extern void _NPN_DeallocateObject(NPObject *obj);
+extern IMPORT NPObject *_NPN_CreateObject(NPP npp, NPClass *aClass);
+extern IMPORT NPObject *_NPN_RetainObject(NPObject *obj);
+extern IMPORT void _NPN_ReleaseObject(NPObject *obj);
+extern IMPORT void _NPN_DeallocateObject(NPObject *obj);
 extern bool _NPN_Invoke(NPP npp, NPObject *npobj, NPIdentifier methodName, const NPVariant *args, uint32_t argCount, NPVariant *result);
 extern bool _NPN_InvokeDefault(NPP npp, NPObject *npobj, const NPVariant *args, uint32_t argCount, NPVariant *result);
 extern bool _NPN_Evaluate(NPP npp, NPObject *npobj, NPString *script, NPVariant *result);

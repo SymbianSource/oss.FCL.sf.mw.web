@@ -42,6 +42,7 @@ END
 
 USERINCLUDE     ../Inc
 USERINCLUDE     ../../WidgetInstaller/inc
+USERINCLUDE     ../../../inc
 
 MW_LAYER_SYSTEMINCLUDE
 

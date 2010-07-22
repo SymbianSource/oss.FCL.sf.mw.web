@@ -22,6 +22,9 @@
 #ifndef Connection_Observers_H
 #define Connection_Observers_H
 
+#warning The Connection Manager API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
+
 //System includes
 #include <es_sock.h>
 #include <es_enum.h> 

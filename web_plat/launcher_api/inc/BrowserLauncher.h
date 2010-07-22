@@ -21,6 +21,8 @@
 #ifndef BROWSERLAUNCHER_H
 #define BROWSERLAUNCHER_H
 
+#warning The Browser Launcher API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>

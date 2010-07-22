@@ -274,7 +274,8 @@ namespace WTF {
             ASSERT(newCapacity >= m_capacity);
             m_capacity = newCapacity;
             if (newCapacity > std::numeric_limits<size_t>::max() / sizeof(T))
-                abort();
+            //    abort()
+            ;
             m_buffer = static_cast<T*>(fastMalloc(newCapacity * sizeof(T)));
         }
 

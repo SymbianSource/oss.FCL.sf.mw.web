@@ -839,7 +839,7 @@ bool Collector::collect()
 
   ASSERT(heap.operationInProgress == NoOperation);
   if (heap.operationInProgress != NoOperation)
-    abort();
+  ; //  abort();
 
   heap.operationInProgress = Collection;
 

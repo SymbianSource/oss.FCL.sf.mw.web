@@ -32,7 +32,6 @@
 #include "../widgetinstaller/group/bld.inf"
 #include "../widgetregistry/group/BLD.INF"
 #include "../osswebengine/WebKit/s60/group/bld.inf"
-#include "../wmlengine/group/BLD.INF"
 
 #include "../device/group/bld.inf"
 

@@ -48,6 +48,8 @@
 #ifndef _NPAPI_H_
 #define _NPAPI_H_
 
+#warning This NP API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 #define GENERIC_CONTEXTS
 
 #ifdef INCLUDE_JAVA

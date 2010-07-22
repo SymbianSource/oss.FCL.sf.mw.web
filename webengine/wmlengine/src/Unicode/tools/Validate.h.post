@@ -1,7 +1,0 @@
-
-extern NW_Bool Validate (void);
-extern NW_Bool ValidateCode (NW_Ucs4 code,
-                             const NW_Object_Class_t* categoryClass);
-
-
-#endif /* _Validate_h_ */

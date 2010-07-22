@@ -15,6 +15,7 @@
 *
 */
 
+#warning The CXML API has been deprecated
 
 /** ----------------------------------------------------------------------- **
     @package:     NW_WBXML

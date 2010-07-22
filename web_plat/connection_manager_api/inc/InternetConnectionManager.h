@@ -21,6 +21,8 @@
 #ifndef INTERNET_CONNECTION_MANAGER_H
 #define INTERNET_CONNECTION_MANAGER_H
 
+#warning The Connection Manager API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //FORWARD DECLARATIONS
 class CIntConnectionInitiator;
 class CApUtils;
