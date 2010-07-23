@@ -135,7 +135,7 @@ IMPORT    friend JSValue *jsNumberCell(double);
       isAborted = false;
     }
 
-IMPORT    void abort() { isAborted = true; }
+    void abort() { isAborted = true; }
     bool aborted() const { return isAborted; }
 
     AttachedInterpreter *interps;
