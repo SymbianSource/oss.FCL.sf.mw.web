@@ -209,8 +209,6 @@ void WebPagePinchZoomHandler::updateBitmap(void)
 {
     m_bitmapUpdateTimer->Cancel();
     m_webView->restoreZoomLevel(m_webView->scalingFactor());
-    //update the plugin rect after pinch zoom exit
-    m_webView->mainFrame()->notifyPluginsOfPositionChange();
     m_webView->startCheckerBoardDestroyTimer();
 }
 

@@ -7,4 +7,5 @@ EXPORTS
 	?RenameIconFile@CWidgetInstaller@@QAEHAAVRFs@@PAV?$RPointerArray@VCWidgetPropertyValue@@@@@Z @ 6 NONAME ; int CWidgetInstaller::RenameIconFile(class RFs &, class RPointerArray<class CWidgetPropertyValue> *)
 	?RunError@CWidgetInstaller@@QAEHH@Z @ 7 NONAME ; int CWidgetInstaller::RunError(int)
 	?WidgetPropertiesFromInstalledWidgetL@CWidgetInstaller@@QAEPAV?$RPointerArray@VCWidgetPropertyValue@@@@AAVRFs@@ABVTDesC16@@1VTUid@@@Z @ 8 NONAME ; class RPointerArray<class CWidgetPropertyValue> * CWidgetInstaller::WidgetPropertiesFromInstalledWidgetL(class RFs &, class TDesC16 const &, class TDesC16 const &, class TUid)
+	?DeregisterWidgetsL@CWidgetInstaller@@QAEXABV?$RArray@VTUid@@@@@Z @ 9 NONAME ; void CWidgetInstaller::DeregisterWidgetsL(class RArray<class TUid> const &)
 

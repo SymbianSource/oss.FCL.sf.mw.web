@@ -98,11 +98,31 @@ void CWidgetRegistrationManager::DeregisterWidgetL( const TUid& aUid )
     User::LeaveIfError( apparcSession.Connect() );
 
     apparcSession.PrepareNonNativeApplicationsUpdatesL();
-    apparcSession.DeregisterNonNativeApplicationL( aUid );
-    apparcSession.DeregisterNonNativeApplicationTypeL( aUid );
+    apparcSession.DeregisterNonNativeApplicationL( aUid );    
     apparcSession.CommitNonNativeApplicationsUpdatesL();
     apparcSession.Close();
     }
+    
+// ============================================================================
+// CWidgetRegistrationManager::DeregisterWidgetL()
+// Deregister installed widgets as non native app
+//
+// @since 5.1
+// ============================================================================
+//    
+void CWidgetRegistrationManager::DeregisterWidgetsL( const RArray<TUid>& aUidList )
+	{	
+	RApaLsSession apparcSession;
+    User::LeaveIfError( apparcSession.Connect() );
+
+    apparcSession.PrepareNonNativeApplicationsUpdatesL();
+    for(TInt i = 0;i<aUidList.Count();i++)
+    	{
+    	apparcSession.DeregisterNonNativeApplicationL( aUidList[i] );    	
+    	}    
+    apparcSession.CommitNonNativeApplicationsUpdatesL();
+    apparcSession.Close();
+	}
 
 // ============================================================================
 // CWidgetRegistrationManager::RegisterWidgetL()

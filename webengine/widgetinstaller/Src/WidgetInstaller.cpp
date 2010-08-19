@@ -874,6 +874,11 @@ EXPORT_C void CWidgetInstaller::DeregisterWidgetL( const TUid& aUid )
     iAppManager->DeregisterWidgetL( aUid );
     }
 
+EXPORT_C void CWidgetInstaller::DeregisterWidgetsL( const RArray<TUid>& aUidList)
+	{
+	iAppManager->DeregisterWidgetsL( aUidList );
+	}
+	
 // ============================================================================
 // CWidgetInstaller::RunError()
 // It is called by WidgetActiveCallback when InstallL leaves.

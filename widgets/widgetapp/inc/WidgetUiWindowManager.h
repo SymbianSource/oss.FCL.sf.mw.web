@@ -54,6 +54,7 @@ class MLiwInterface;
 class CInternetConnectionManager;
 class CSchemeHandler;
 class CWidgetUiNetworkListener;
+class CWidgetUiPSNotifier;
 
 #ifdef BRDO_WRT_HS_FF
 class CCpsPublisher;
@@ -293,7 +294,7 @@ class CWidgetUiWindowManager : public CBase,
         * @param none
         * @return CArrayPtrFlat<CWidgetUiWindow>*
         */
-        void WindowList( RPointerArray<CWidgetUiWindow>& )  { /*return iWindowList; */ User::Invariant(); }
+        void WindowList( RPointerArray<CWidgetUiWindow>&  aWindowList)  { aWindowList = iWindowList; }
 
         /**
         * WidgetUIClientSession
@@ -647,7 +648,9 @@ class CWidgetUiWindowManager : public CBase,
         TBool                               iNetworkConnected;  // ETrue if there is an active network connection, else EFalse
         TBrCtlDefs::TCursorSettings                     iWidgetCursorMode;
         TBrCtlDefs::TEnterKeySettings       iWidgetEnterKeyMode;
-        
+        CWidgetUiPSNotifier*                iWidgetNotifier;
+        CWidgetUiPSNotifier*                iWidgetSapiNotifier;
+        CWidgetUiPSNotifier*                iWidgetSapiClearNotifier;
 #ifdef BRDO_WRT_HS_FF       
         CCpsPublisher*                      iCpsPublisher;      // Owned, interface to publish bitmap to CPS
         CCenrepNotifyHandler*               iCenrepNotifyHandler;  

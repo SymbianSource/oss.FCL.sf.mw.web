@@ -366,7 +366,7 @@ bool RenderPartObject::isFocusable() const
 
 int RenderPartObject::calcReplacedWidth() const
 {
-    if (m_widget && (m_widget->getView())->hasResized())  {        
+    if (m_widget && m_widget->getView() && (m_widget->getView())->hasResized())  {        
         IntRect newRect = m_widget->frameGeometry();
         int newWidth = newRect.width();
         if (newWidth > 0) {
@@ -378,7 +378,7 @@ int RenderPartObject::calcReplacedWidth() const
 
 int RenderPartObject::calcReplacedHeight() const
 {
-    if (m_widget && (m_widget->getView())->hasResized())  {        
+    if (m_widget && m_widget->getView() && (m_widget->getView())->hasResized())  {        
         IntRect newRect = m_widget->frameGeometry();
         int newHeight = newRect.height();
         if (newHeight > 0) {

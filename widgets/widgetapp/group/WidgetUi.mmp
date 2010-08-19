@@ -33,7 +33,7 @@ epocstacksize 0x14000
 //EPOCHEAPSIZE 0x5000 0x1000000
 
 VENDORID    VID_DEFAULT
-CAPABILITY CAP_APPLICATION NetworkControl
+CAPABILITY CAP_APPLICATION NetworkControl WriteDeviceData
 
 EpocAllowDllData
 
@@ -65,6 +65,7 @@ SOURCE  WidgetUiWindow.cpp
 SOURCE  WidgetUiAsyncExit.cpp
 SOURCE  WidgetUiDialogsProviderProxy.cpp
 SOURCE	WidgetUiNetworkListener.cpp
+source  WidgetUiPSNotifier.cpp
 #ifdef BRDO_WRT_HS_FF
 SOURCE  cpspublisher.cpp
 #endif

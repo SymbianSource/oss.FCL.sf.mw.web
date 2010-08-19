@@ -611,6 +611,8 @@ class CBrCtlInterface : public CCoeControl
         * @return void. 
         */
         IMPORT_C virtual void TakeSnapshotL(CFbsBitmap& snapshot) = 0; 
+        
+        IMPORT_C virtual TBool IsSynchRequestPending()= 0 ;
     };
 
 

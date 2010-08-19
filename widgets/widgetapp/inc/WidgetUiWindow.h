@@ -515,12 +515,20 @@ class CWidgetUiWindow :  public CBase,
         
         static TInt DeleteItself(TAny* aPtr);
 
+		void DeleteItself();
+		
 #ifdef BRDO_OCC_ENABLED_FF        
         void CancelAllDialogs();
         
         
         TBool IsDialogsLaunched();        
 #endif
+        void  setSapiPromptCleared(TBool aPrompt){ iSapiPromptCleared = aPrompt; }
+        TBool getSapiPromptCleared(){ return iSapiPromptCleared; }
+        TInt  getNeedToIgnoreSapiNtfn(){ return iNeedToIgnoreSapiNtfn; }
+        void  setNeedToIgnoreSapiNtfn ( TInt aVal){ iNeedToIgnoreSapiNtfn = iNeedToIgnoreSapiNtfn + aVal;}
+        TInt  getNeedToIgnoreSapiClearNtfn(){ return iNeedToIgnoreSapiClearNtfn;}
+        void  setNeedToIgnoreSapiClearNtfn ( TInt aVal) { iNeedToIgnoreSapiClearNtfn = iNeedToIgnoreSapiClearNtfn + aVal;}
 
         
     protected:
@@ -628,6 +636,10 @@ class CWidgetUiWindow :  public CBase,
         TBool                           iDeleteItself;
         CAsyncCallBack*                 iAsyncCallBack;    
         CBrowserDialogsProvider*        iDialogsProvider;// owned, responsible for deleting
+        // For sapi prmompt counts
+        TBool                           iSapiPromptCleared;
+        TInt                            iNeedToIgnoreSapiNtfn;
+        TInt                            iNeedToIgnoreSapiClearNtfn;
 
    };
 

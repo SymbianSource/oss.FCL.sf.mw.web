@@ -478,6 +478,17 @@ TBool CHttpCacheStreamHandler::FlushL( CHttpCacheEntry& aCacheEntry )
     }
 
 // -----------------------------------------------------------------------------
+// CHttpCacheStreamHandler::CancelFlush
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheStreamHandler::CancelFlush(CHttpCacheEntry& aEntry)
+    {
+    aEntry.CancelBodyWrite();
+    }
+
+
+// -----------------------------------------------------------------------------
 // CHttpCacheStreamHandler::FlushAsync
 //
 // -----------------------------------------------------------------------------

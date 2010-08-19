@@ -83,7 +83,7 @@ CMaskedBitmap::CMaskedBitmap()
 
 
 CMaskedBitmap::CMaskedBitmap(CFbsBitmap* aBitmap, CFbsBitmap* aMask)
-: iBitmap(aBitmap),iMask(aMask)
+: iBitmap(aBitmap),iMask(aMask),i_DecodingCompleted(ETrue)
     {
     }
 
@@ -186,6 +186,8 @@ TInt CMaskedBitmap::Copy( const CFbsBitmap& aBitmap, TBool aDuplicate )
             err = BitmapUtil::CopyBitmap( aBitmap, *iBitmap );
             }
         }
+    if(!err)
+        SetInitialisationCompletionStatus(ETrue);
     return err;
     }
 
@@ -232,6 +234,8 @@ TInt CMaskedBitmap::Copy( const CFbsBitmap& aBitmap, const CFbsBitmap& aMask, TB
             iBitmap->Reset();
             }
         }
+    if(!err)
+        SetInitialisationCompletionStatus(ETrue);
     return err;
     }
 
@@ -250,6 +254,7 @@ void CMaskedBitmap::Reset()
     {
     iBitmap->Reset();
     if(iMask) iMask->Reset();
+    SetInitialisationCompletionStatus(EFalse);
     }
 
 
@@ -487,7 +492,12 @@ void CMaskedBitmap::TileInBitmapRect( CFbsBitGc& gc, const TRect& bmpRect, const
 void CMaskedBitmap::TileInBitmapRect( CFbsBitmap* trgBmp, const TRect& aTrgRect, const TPoint& aOffset )
     {
     trgBmp->LockHeap();
-
+    
+    if ( aTrgRect.Width() < 0 || aTrgRect.Height() < 0 )
+        {
+        trgBmp->UnlockHeap();
+        return; 
+        }
     TSize sz = trgBmp->SizeInPixels();
     TUint32* buf = (TUint32*)(trgBmp->DataAddress());
 
@@ -634,16 +644,15 @@ void CMaskedBitmap::CompressInBackground( )
         
     }
 
-CMaskedBitmap* CMaskedBitmap::ScaleImageToSize( TSize newSize )
+CMaskedBitmap* CMaskedBitmap::ScaleImageToSize( TSize newSize, bool storeScaledImage)
 {
-    if (iScaledBitmap && iScaledBitmap->SizeInPixels() == newSize)
+    
+    if (storeScaledImage && iScaledBitmap && iScaledBitmap->SizeInPixels() == newSize)
         return iScaledBitmap;
 
-    delete iScaledBitmap;
-    iScaledBitmap = NULL;
-    iScaledBitmap = CMaskedBitmap::NewL();
+    CMaskedBitmap* scaledBitmap = CMaskedBitmap::NewL();
 
-    CFbsBitmap& bmp = iScaledBitmap->BitmapModifyable();
+    CFbsBitmap& bmp = scaledBitmap->BitmapModifyable();
     bmp.Create(newSize, iBitmap->DisplayMode());
 
     // scale the image quickly
@@ -655,7 +664,7 @@ CMaskedBitmap* CMaskedBitmap::ScaleImageToSize( TSize newSize )
     bitGc->DrawBitmap(TRect(TPoint(0,0), newSize), iBitmap, iBitmap->SizeInPixels());
     CleanupStack::PopAndDestroy(2);
 
-    CFbsBitmap& msk = iScaledBitmap->MaskModifyable();
+    CFbsBitmap& msk = scaledBitmap->MaskModifyable();
     if( HasMask() ) {
         msk.Create(newSize, iMask->DisplayMode());
 
@@ -668,8 +677,24 @@ CMaskedBitmap* CMaskedBitmap::ScaleImageToSize( TSize newSize )
         bitGc->DrawBitmap(TRect(TPoint(0,0), newSize), iMask, iMask->SizeInPixels());
         CleanupStack::PopAndDestroy(2);
     }
-
-    return iScaledBitmap;
+    if (storeScaledImage) {
+        delete iScaledBitmap;
+        iScaledBitmap = NULL;
+        iScaledBitmap = scaledBitmap;
+    }
+    return scaledBitmap;
 }
+
+void CMaskedBitmap::SetInitialisationCompletionStatus(TBool aDecodingCompleted)
+{
+    i_DecodingCompleted = aDecodingCompleted;
+}
+
+
+TBool CMaskedBitmap::IsCompletlyInitialised()
+{
+    return i_DecodingCompleted;
+}
+
 
 //  End of File

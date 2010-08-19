@@ -187,7 +187,8 @@ void CachedImage::data(PassRefPtr<SharedBuffer> data, bool allDataReceived)
     // Have the image update its data from its internal buffer.
     // It will not do anything now, but will delay decoding until 
     // queried for info (like size or specific image frames).
-    sizeAvailable = m_image->setData(m_data, allDataReceived);
+    if(m_image)
+        sizeAvailable = m_image->setData(m_data, allDataReceived);
 
     // Go ahead and tell our observers to try to draw if we have either
     // received all the data or the size is known.  Each chunk from the

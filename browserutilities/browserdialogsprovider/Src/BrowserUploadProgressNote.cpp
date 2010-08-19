@@ -86,6 +86,10 @@ CBrowserUploadProgressNote* CBrowserUploadProgressNote::NewLC(
 //
 void CBrowserUploadProgressNote::UpdateL( TInt aChunkSize )
 	{ 
+    //In access point roaming scenarios, aChunkSize will come as "0" (zero) in between uploading files, as we start upload again from begining.
+    if( aChunkSize == 0) 
+        iUploaded = 0;
+
     iUploaded+=aChunkSize; // Set the uploaded size.
 
     // ...Length() + 20 because if we substitute the uploaded, 

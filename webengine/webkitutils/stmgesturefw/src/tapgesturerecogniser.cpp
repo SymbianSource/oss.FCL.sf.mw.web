@@ -67,10 +67,10 @@ CTapGestureRecogniser* CTapGestureRecogniser::NewL(MGestureListener* aListener)
 CTapGestureRecogniser::CTapGestureRecogniser(MGestureListener* aListener) :
     CTimer(EPriorityRealTime - 1)
 {
-    m_powner = aListener->getOwner() ;
     // if a listener is given here, then it is both tap and doubletap listener
     if (aListener)
     {
+        m_powner = aListener->getOwner() ;
         addTapListener(aListener, m_powner) ;
         addDoubleTapListener(aListener, m_powner) ;
     }

@@ -56,7 +56,7 @@ void PluginStream::close()
     m_loaderclient->stop();
 }
 
-void PluginStream::createNPStreamL(TPtrC8 url, TPtrC16 mimetype, long long length)
+void PluginStream::createNPStreamL(TPtrC8 url, TPtrC16 mimetype, long long length, const char* headers)
 {
     
     NPError error( NPERR_NO_ERROR );
@@ -84,7 +84,8 @@ void PluginStream::createNPStreamL(TPtrC8 url, TPtrC16 mimetype, long long lengt
             m_stream->url = url16->AllocL();
             m_stream->end = length;
             m_stream->lastmodified = 0; 
-            m_stream->notifyData = m_notifydata;    
+            m_stream->notifyData = m_notifydata;
+            m_stream->headers = headers;
 
             
             error = m_pluginskin->getNPPluginFucs()->newstream ( m_pluginskin->getNPP(), 

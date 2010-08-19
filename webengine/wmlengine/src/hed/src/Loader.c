@@ -680,6 +680,24 @@ NW_HED_Loader_StartRequest (NW_HED_Loader_t* thisObj,
   (void)NW_HED_ILoaderListener_LoadProgressOn(thisObj->loaderListener, *transactionId);
 
   NW_CATCH (status) {
+    NW_ADT_Vector_Metric_t numLoadQEntries,index;
+    NW_ADT_DynamicVector_t* loadQueue = NULL;
+    NW_HED_Loader_LoadQEntry_t* entry = NULL;
+    loadQueue = GetNW_HED_Loader_LoadQueue();
+    if (loadQueue == NULL)
+        {
+        return KBrsrNotFound;
+        }
+    numLoadQEntries = NW_ADT_Vector_GetSize (loadQueue);
+    for(index=0;index<numLoadQEntries;index++)
+        {
+        entry = (NW_HED_Loader_LoadQEntry_t*)NW_ADT_Vector_ElementAt(loadQueue,index);
+        if(entry && entry->clientData == context)
+            {
+            entry->clientData = NULL;
+            break;
+            }
+        }
     NW_Mem_Free(context);
   }
 

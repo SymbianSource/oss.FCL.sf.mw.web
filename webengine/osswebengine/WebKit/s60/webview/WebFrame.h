@@ -110,6 +110,11 @@ public:
     WebCore::Node* getClosestAnchorElement(const TPoint& pt, TPoint& newPos);
 
 	void ScrollOrPinchStatus(bool status);
+	
+	/**
+    * Notify Flash Plugin FocusChangeEvent 
+    */
+	void notifyPluginFocusChangeEvent(TBool visible);
 
 private:
     WebFrame(const WebFrame&);                    // not implemented

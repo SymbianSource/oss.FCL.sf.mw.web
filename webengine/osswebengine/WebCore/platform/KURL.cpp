@@ -223,6 +223,9 @@ static inline int hexDigitValue(unsigned char c)
     return (c - 'A' + 10) & 0xF; // handle both upper and lower case without a branch
 }
 
+static const unsigned maximumValidPortNumber = 0xFFFE; 
+static const unsigned invalidPortNumber = 0xFFFF;
+
 // KURL
 
 KURL::KURL() : m_isValid(false)
@@ -544,14 +547,16 @@ unsigned short int KURL::port() const
     if (!m_isValid) {
         return 0;
     }
+	int result;
 
     if (hostEndPos != portEndPos) {
-        bool ok;
-        unsigned short result = urlString.mid(hostEndPos + 1, portEndPos - hostEndPos - 1).toUShort(&ok);
-        if (!ok) {
-            result = 0;
-        }
-        return result;
+
+        result = urlString.mid(hostEndPos + 1, portEndPos - hostEndPos - 1).toInt();
+
+		if (0 >= result || result > maximumValidPortNumber) { 
+ 	        return invalidPortNumber;
+		}
+        return (unsigned short int)result;
     }
 
     return 0;

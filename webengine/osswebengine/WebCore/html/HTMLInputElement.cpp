@@ -492,40 +492,40 @@ int HTMLInputElement::selectionEnd() const
     return static_cast<RenderTextControl*>(renderer())->selectionEnd();
 }
 
+static bool isTextFieldWithRenderer(HTMLInputElement* element) 
+{ 
+    if (!element->isTextField()) 
+        return false; 
+ 
+    element->document()->updateLayoutIgnorePendingStylesheets(); 
+    if (!element->renderer()) 
+        return false; 
+ 
+    return true; 
+} 
+
 void HTMLInputElement::setSelectionStart(int start)
 {
-    if (!isTextField())
-        return;
-    if (!renderer())
-        return;
-    static_cast<RenderTextControl*>(renderer())->setSelectionStart(start);
+	if (isTextFieldWithRenderer(this))
+        static_cast<RenderTextControl*>(renderer())->setSelectionStart(start);
 }
 
 void HTMLInputElement::setSelectionEnd(int end)
 {
-    if (!isTextField())
-        return;
-    if (!renderer())
-        return;
-    static_cast<RenderTextControl*>(renderer())->setSelectionEnd(end);
+	if (isTextFieldWithRenderer(this))
+        static_cast<RenderTextControl*>(renderer())->setSelectionEnd(end);
 }
 
 void HTMLInputElement::select()
 {
-    if (!isTextField())
-        return;
-    if (!renderer())
-        return;
-    static_cast<RenderTextControl*>(renderer())->select();
+	if (isTextFieldWithRenderer(this))
+        static_cast<RenderTextControl*>(renderer())->select();
 }
 
 void HTMLInputElement::setSelectionRange(int start, int end)
 {
-    if (!isTextField())
-        return;
-    if (!renderer())
-        return;
-    static_cast<RenderTextControl*>(renderer())->setSelectionRange(start, end);
+	if (isTextFieldWithRenderer(this))
+        static_cast<RenderTextControl*>(renderer())->setSelectionRange(start, end);
 }
 
 void HTMLInputElement::accessKeyAction(bool sendToAnyElement)

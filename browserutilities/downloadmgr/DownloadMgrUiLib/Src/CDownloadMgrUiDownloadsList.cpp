@@ -1867,8 +1867,12 @@ void CDownloadMgrUiDownloadsList::ProcessCommandL
             TFindFile file(fs);
             TPtrC ptr(KNullDesC);
             TInt found = file.FindByPath(fileNamePtr1,&ptr); //when second parameter to the API is Null then the it searches for the file in the Dir specified in the first parameter
+            TBool isFileOpen(EFalse);
+            TInt fileopenstatus = fs.IsFileOpen(fileNamePtr1,isFileOpen);
             CleanupStack::PopAndDestroy(&fs);
             CleanupStack::PopAndDestroy(fileName1);
+            if(fileopenstatus ==KErrNone && isFileOpen)
+                User::Leave(KErrInUse);
             // Delete in DMgr
             TBool deleted = iUiUtils->DeleteWithUserConfirmL( currDownload );
             if ( deleted )

@@ -1183,7 +1183,6 @@ void CWmlFormattedEditor::UpdateStateL( TWmlEdNavigation aNaviType,
                 ;
             }
 
-        SetCursorPosL( 0 );
         iText->Reset();
         CEikRichTextEditor::SetTextL( iHandler->TextLC());
         CleanupStack::PopAndDestroy(); // return value of iHandler->TextLC 

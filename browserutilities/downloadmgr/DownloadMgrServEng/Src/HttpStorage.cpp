@@ -70,6 +70,58 @@ const TInt KDefaultStorageBufferSizePD = 16 * 1024;
 // FORWARD DECLARATIONS
 //class ?FORWARD_CLASSNAME;
 
+//Music Store Warning Level Feature Flag
+#ifdef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
+
+#include <uiklafinternalcrkeys.h>
+#include <centralrepository.h>
+
+//Beside the OOD threshold value, we need to reserve extra disk space
+//for harvest server do the harvest, set this as 1M
+const TInt KFreeSpaceExtraReserved(1024*1024);
+
+static TBool CheckFreeSpaceWarningThreshold( RFs& aFs, TInt aBytesToWrite, TInt aDrive )
+    {
+    TBool isSpace = EFalse;
+    CRepository* repository = NULL;
+    TInt64 thresholdValue( 0 );
+    TVolumeInfo volumeInfo;
+    TInt err = aFs.Volume( volumeInfo, aDrive );
+    if ( err == KErrNone ) // get warning threshold
+        {
+        TRAP( err, repository = CRepository::NewL( KCRUidUiklaf ) );
+        }
+    if ( err == KErrNone )
+        {
+        if ( volumeInfo.iDrive.iDriveAtt & KDriveAttRemovable ) // for E and F
+            {
+            TInt warningValue( 0 );
+            err = repository->Get( KUikOODDiskFreeSpaceWarningNoteLevelMassMemory, warningValue );
+            if ( err == KErrNone )
+                {
+                thresholdValue = warningValue + KFreeSpaceExtraReserved;
+                }
+            }
+        else
+            {
+            TInt warningUsagePercent( 0 );
+            err = repository->Get( KUikOODDiskFreeSpaceWarningNoteLevel, warningUsagePercent );
+            if ( err == KErrNone )
+                {
+                thresholdValue = ( ( volumeInfo.iSize * ( 100 - warningUsagePercent ) ) / 100 )
+                    + KFreeSpaceExtraReserved;
+                }
+            }
+        delete repository;
+        }
+    if ( err == KErrNone ) // Check warning threshold
+        {
+        isSpace = volumeInfo.iFree > thresholdValue + aBytesToWrite;
+        }
+    return isSpace;
+    }
+#endif
+
 // ============================ MEMBER FUNCTIONS ===============================
 
 // -----------------------------------------------------------------------------
@@ -792,6 +844,7 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
         if (bytesToWrite < 0)
             bytesToWrite = 0;
         
+        // Let client handle warning level check, client may want to write until critical level
 	    TRAP( err, isSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
                                                 &iDownload->ClientApp()->Engine()->Fs(),
 			                                    bytesToWrite,
@@ -805,29 +858,54 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
 #else
         TPtrC drives( iDownload->ClientApp()->Engine()->iDriveLettersCenRep );
 #endif
-        
-        // drive letters are separated by semicolons
-        for( TInt i = 0; i < drives.Length() && (err || !isSpace); i = i + 2 )
+//Music Store Warning Level Feature Flag
+#ifdef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF        
+        // Check warning or critical level and change drive if warning or critical level would get crossed
+        // On first round, check warning level only
+        // On second round (all drives are about to cross warning level), check critical level
+        // When crossing warning level, user will see warning note regarding low disk space
+        for( TInt j = 0; j < 2 && (err || !isSpace); ++j )
             {
-            if( (err = fs.CharToDrive( drives[i], drive )) == KErrNone )
+#endif
+            // drive letters are separated by semicolons
+            for( TInt i = 0; i < drives.Length() && (err || !isSpace); i = i + 2 )
                 {
-                currentDownloadsLen = DMSrvEngine->AllDownloadsSizeInDriveL(iDownload, drive);
+                if( (err = fs.CharToDrive( drives[i], drive )) == KErrNone )
+                    {
+                    currentDownloadsLen = DMSrvEngine->AllDownloadsSizeInDriveL(iDownload, drive);
+                    // Check if there's enough memory in the phone
+                    bytesToWrite = iLength + currentDownloadsLen;
+                    if (bytesToWrite < 0)
+                        bytesToWrite = 0;
+//Music Store Warning Level Feature Flag
+#ifdef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
 
-                // Check if there's enough memory in the phone
-                bytesToWrite = iLength + currentDownloadsLen;
-                if (bytesToWrite < 0)
-                    bytesToWrite = 0;
-                
-        	    TRAP( err, isSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
-                                                        &fs,
-        			                                    bytesToWrite,
-                                                        drive ));
+                    if ( !j ) // check warning level on first round
+                        {
+                        isSpace = CheckFreeSpaceWarningThreshold( fs, bytesToWrite, drive );
+                        }
+                    else // check critical level when all drives are about to cross warning level
+                        {
+                	    TRAP( err, isSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
+                            &fs, bytesToWrite, drive ));
+                        }
+                    CLOG_WRITE8_4( "Free space check type %d drive %d isSpace %d, bytesToWrite %d",
+                        j,drive,isSpace,bytesToWrite);
+#else if
+                       	    TRAP( err, isSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
+                            &fs, bytesToWrite, drive ));
+
+#endif
+                    }
+                else
+                    {
+                    CLOG_WRITE8_1( "Bad drive letter [%c]", drives[i] );
+                    }
                 }
-            else
-                {
-                CLOG_WRITE8_1( "Bad drive letter [%c]", drives[i] );
-                }            
+//Music Store Warning Level Feature Flag
+#ifdef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
             }
+#endif
 #ifdef RD_MULTIPLE_DRIVE
         CleanupStack::PopAndDestroy( drivesDynList );
 #endif

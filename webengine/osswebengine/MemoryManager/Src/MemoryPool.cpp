@@ -82,6 +82,10 @@ void CMemoryPool::RemoveStopper( MOOMStopper* aStopper )
     TInt idx = iStoppers.Find( aStopper );
     if( idx != KErrNotFound )
         iStoppers.Remove( idx );
+    
+    if(iStoppers.Count() == 0 && iStopScheduler->IsActive()) // cancel stop if nobody is interested
+        iStopScheduler->Cancel();
+        
     }
 
 //-----------------------------------------------------------------------------
@@ -490,7 +494,7 @@ TAny* CNewSymbianHeapPool::DoAlloc( TUint aSize )
     TAny *p = iAlloc->Alloc( aSize );
     if(iAlloc->isLowSystemMemory && p) // use this a pre OOM indicator
         {
-        iStopScheduler->Start( CStopScheduler::ECheckMemory, 0 );                
+        if(iStopScheduler) iStopScheduler->Start( CStopScheduler::ECheckMemory, 0 );                
         iAlloc->isLowSystemMemory = 0; // reset so that we don't check before next request for RAM
         }
         
@@ -512,7 +516,7 @@ TAny* CNewSymbianHeapPool::ReAllocate( TAny* aPtr, TUint aSize )
     TAny* p = iAlloc->ReAlloc( aPtr, aSize );
     if(iAlloc->isLowSystemMemory && p) // use this a pre OOM indicator
         {
-        iStopScheduler->Start( CStopScheduler::ECheckMemory, 0 );                
+        if(iStopScheduler) iStopScheduler->Start( CStopScheduler::ECheckMemory, 0 );                
         iAlloc->isLowSystemMemory = 0; // reset so that we don't check before next request for RAM
         }
 

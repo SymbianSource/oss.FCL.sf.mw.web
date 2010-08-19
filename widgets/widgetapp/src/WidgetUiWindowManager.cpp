@@ -26,6 +26,7 @@
 #include "SWInstWidgetUid.h"
 #include "widgetappdefs.rh"
 #include "browser_platform_variant.hrh"
+#include "WidgetUiPSNotifier.h"
 #ifdef BRDO_WRT_HS_FF
 #include "cpspublisher.h"
 #endif
@@ -197,6 +198,14 @@ void CWidgetUiWindowManager::ConstructL()
     iConnStageNotifier->SetPriority(CActive::EPriorityHigh);
     iRetryConnectivity = CPeriodic::NewL(CActive::EPriorityStandard);
 #endif
+    
+        //Creating observer WidgetWindowsObeserver
+    iWidgetNotifier = CWidgetUiPSNotifier::NewL(*this, EWidgetRegAltered);
+    	
+#ifdef BRDO_SAPINTFN_ENABLED_FF
+    iWidgetSapiNotifier = CWidgetUiPSNotifier::NewL(*this, ESapiPrompt);
+    iWidgetSapiClearNotifier = CWidgetUiPSNotifier::NewL(*this, ESapiPromptCleared);
+#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -266,6 +275,12 @@ CWidgetUiWindowManager::~CWidgetUiWindowManager()
     delete iCpsPublisher;
 #endif
     delete iDb;
+    delete iWidgetNotifier;
+    
+#ifdef BRDO_SAPINTFN_ENABLED_FF
+    delete iWidgetSapiNotifier;
+    delete iWidgetSapiClearNotifier;
+#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -474,8 +489,13 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
                     }
                 iActiveFsWindow->SetCurrentWindow( ETrue ); 
           	   
-            }else
-         	    Exit( EEikCmdExit, aUid );
+                }
+            else if (window->getSapiPromptCleared())
+                {
+                Exit( EEikCmdExit, aUid );
+                }
+                       
+         	    
 #else
                 Exit( EEikCmdExit, aUid );
 #endif
@@ -764,7 +784,13 @@ TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWind
 #endif
                 iConnection->StopConnectionL();
                 }             
-            delete aWidgetWindow;
+            if(!aWidgetWindow->Engine()->IsSynchRequestPending())
+            	delete aWidgetWindow;
+			else
+				{
+				//Let sync request complete and then delete					
+				aWidgetWindow->DeleteItself();
+				}
             }
         }
     return EFalse;
@@ -1423,6 +1449,13 @@ TBool  CWidgetUiWindowManager::CloseAllWidgetsUnderOOM()
     TBool bAllWindowsClosed = ETrue;
       
     TInt nWidgetsCount = iWindowList.Count();
+    if(nWidgetsCount > 0)
+        { 
+        CWidgetUiWindow* window = iWindowList[0];
+        TRAP_IGNORE( window->Engine()->HandleCommandL( 
+                    (TInt)TBrCtlDefs::ECommandIdBase +
+                    (TInt)TBrCtlDefs::ECommandOOMExit ) );
+        } 
     for ( TInt i = (nWidgetsCount-1); i >= 0; i-- )
         {
         CWidgetUiWindow* window = iWindowList[i];        
@@ -1586,6 +1619,12 @@ TInt CWidgetUiWindowManager::RetryInternetConnection()
        {
        TRAP_IGNORE( err = iConnection->StartConnectionL( ETrue ) );
        }
+    
+    //Root cause needs to be identified..
+    //Fix for Array out of bound crash..
+    if(!iWindowList.Count())   
+    	return err;
+    	
     CWidgetUiWindow* window( iWindowList[0] );
     if( err == KErrNone )
        { 

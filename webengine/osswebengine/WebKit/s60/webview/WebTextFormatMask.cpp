@@ -61,7 +61,7 @@ WebTextFormatMask::~WebTextFormatMask()
 void WebTextFormatMask::buildMaskList(const String& str)
 {
     // *M or *m
-    if (str.isEmpty() || str=="*M" || str=="*m") {
+    if (str.isEmpty() || str=="*m") {
         m_acceptAll = true;
         return;
     }
@@ -221,17 +221,22 @@ MaskBase* WebTextFormatMask::getMask(int aOffset)
 
 int WebTextFormatMask::getMultitude()
 {
+    int length = 0;
     int count = 0;
     MaskBase* m = m_masks;
     while (m) {
-
-        if (m->multitude() == kInfinite){
-            return kInfinite;    
-        }        
-        else {
-            count += m->multitude();           
-        }
-        m = m->nextMask();                
+         length = m->multitude();
+         if (length == kInfinite){
+             return kInfinite;    
+         }        
+         else if(length > 1){
+             count += length;
+             break;
+         }
+         else{
+             count += length;           
+         }
+         m = m->nextMask();   
     }
         
     return (count)?count:kInfinite;    

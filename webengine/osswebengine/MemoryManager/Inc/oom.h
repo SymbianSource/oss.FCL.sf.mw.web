@@ -57,7 +57,7 @@
 //      OOM_POST_CHECK_FAILED { return_with_oom; }
 //      .... your normal return.
 #define OOM_PRE_CHECK(s, m, c)  { _LIT8(__temp, c); if( MemoryManager::PreCheck( s, m, __temp ) ) { 
-#define OOM_POST_CHECK_FAILED(__r)    } } if( MemoryManager::PostCheck() != ENoOOM ) { __r;}
+#define OOM_POST_CHECK_FAILED(__r)    }  else { __r;} }
 
 #else // __OOM__
 

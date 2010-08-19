@@ -201,6 +201,18 @@ class PluginSkin : public CBase,
         TBool isBrowserScheme(const TPtrC8& url);
         
         /**
+        * HandleLosingForeground
+        * Handles losing Foreground event 
+        */
+        void HandleLosingForeground();
+                 
+        /**
+        * HandleLosingForeground
+        * Handles Gaining Foreground event 
+        */
+        void HandleGainingForeground();
+        
+        /**
         *
         * GetLoadMode
         * Returns the load mode associated with the "window-type".
@@ -417,8 +429,6 @@ class PluginSkin : public CBase,
         void setElement(WebCore::Element* aElement) {m_element = aElement;}
         void reCreatePlugin();
         TInt activeStreams() { return m_streams.size(); }
-        TPluginLoadMode getLoadMode(){return m_loadmode;}
-        void setLoadMode(TPluginLoadMode mode){m_loadmode = mode;}
         void NotifyPluginsForScrollOrPinch(bool status);
   public:  // from MMemoryCollector
         TUint Collect(unsigned int aRequired);
@@ -437,6 +447,9 @@ class PluginSkin : public CBase,
             return iGenericElementArray;
         }
         void setPluginWinClipedRect();
+        TBool isFlashPlugin(){
+          return m_flashContent;
+        }
         TBool IsCollectBitmapSupported();
         WebFrame* getWebFrame() const {return m_frame;}
         void activateVisiblePlugins();
@@ -484,7 +497,6 @@ class PluginSkin : public CBase,
         RArray<NPN_GenericElement>*  iGenericElementArray;
         TRect   m_oldRect;
         TRect    m_oldViewport;
-        TPluginLoadMode m_loadmode;
         NPObject* m_NPObject;
         
 public:

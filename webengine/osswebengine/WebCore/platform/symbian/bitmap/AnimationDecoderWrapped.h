@@ -78,11 +78,7 @@ _LIT(KMimeICO, "image/x-icon");
 _LIT(KMimeDRM, "application/vnd.oma.drm.content");
 
 // FIXME: we should move this back to EColor64K after Symbian fix their Gif image decoder bug.
-#ifdef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
-const TDisplayMode KMaxDepth = EColor64K;
-#else
 const TDisplayMode KMaxDepth = EColor16M;
-#endif
 // CLASS DECLARATION
 /**
 *  CAnimationDecoderWrapped
@@ -113,6 +109,7 @@ class CAnimationDecoderWrapped  : public CActive
         */
         void OpenL( WebCore::SharedBuffer* aData, TDesC* aMIMEType, TBool aIsComplete );
         void OpenAndDecodeSyncL( const TDesC8& aData );
+        static void closeSyncDecodeThread();
 
         /*
         * From MIHLFileImage, see base class header.
@@ -263,7 +260,7 @@ class CAnimationDecoderWrapped  : public CActive
         
         // Is invalid because the cache got cleared in the middle of decoding
         TBool iIsInvalid;
-        TBool iCanBeDeleted;
+        TBool iCanBeDeleted;                
     };
 
 

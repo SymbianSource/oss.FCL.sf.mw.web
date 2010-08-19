@@ -101,6 +101,7 @@ using namespace HTMLNames;
 #include "Editor.h"
 #include "ThumbnailGenerator.h"
 #include <kjs_window.h>
+#include "PluginHandler.h"
 
 using namespace WebCore;
 using namespace EventNames;
@@ -224,7 +225,8 @@ m_brctl(brctl)
 WebView::~WebView()
 {
     StaticObjectsContainer::instance()->webCursor()->stopTransparencyTimer();
-
+    if ( StaticObjectsContainer::instance()->webCursor()->getCursorWebView() == this)
+         StaticObjectsContainer::instance()->webCursor()->setCurrentView(NULL);
     // the zoom handler is a client of WebView (also owned by
     // WebView--a circular dependency) so it must be deleted before
     // the WebView object is destroyed because in its destructor it
@@ -242,7 +244,7 @@ WebView::~WebView()
     if (m_fastScrollTimer)
         m_fastScrollTimer->Cancel();
     delete m_fastScrollTimer;
-
+    delete m_webpointerEventHandler;
 	delete m_pinchZoomHandler;
     delete m_repainttimer;
     delete m_webfeptexteditor;
@@ -258,7 +260,7 @@ WebView::~WebView()
     delete m_toolbar;
     delete m_toolbarinterface;
     delete m_widgetextension;
-    delete m_webpointerEventHandler;
+    
     delete m_pageScrollHandler;
     delete m_pluginplayer;
     delete m_fepTimer;
@@ -533,7 +535,7 @@ void WebView::MakeViewVisible(TBool visible)
     WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
     if (cursor) {
         if (visible) {
-            cursor->setCurrentView(*this);
+            cursor->setCurrentView(this);
             //Reset the iFocusedElementType to be the same as before the second window is opened.
             cursor->setPosition(m_savedCursorPosition);
             cursor->updatePositionAndElemType(m_savedCursorPosition);
@@ -775,6 +777,11 @@ void WebView::collectOffscreenbitmapL(CFbsBitmap& snapshot)
         mainFrame()->frameView()->draw( *gc, mainFrame()->frameView()->visibleRect() );
 
    CleanupStack::PopAndDestroy(2);
+   	
+   PluginHandler* pluginHandler = StaticObjectsContainer::instance()->pluginHandler();
+   if (!m_widgetextension->IsWidgetPublising() && pluginHandler && pluginHandler->getVisiblePlugins().Count() > 0) {
+       (snapshot).Reset();
+   } 
 
 }
 
@@ -785,6 +792,10 @@ void WebView::collectOffscreenbitmapL(CFbsBitmap& snapshot)
 void WebView::scheduleRepaint(
                               const TRect& rect )
 {
+    // prevent frameViews to access members when topView is closing down.
+    if( m_isClosing )
+        return;
+
     m_repaints.AddRect( rect );
     if(   m_widgetextension && m_widgetextension->IsWidgetPublising())
         {
@@ -1935,9 +1946,12 @@ TSize WebView::maxBidiSize() const
 
 void WebView::clearOffScreenBitmap()
 {
-    if( !IsVisible() )
+    if ( (!IsVisible()) || ( StaticObjectsContainer::instance()->webSurface()->topView() != this ) ) 
       return;
-    
+    TSize bmSize = StaticObjectsContainer::instance()->webSurface()->offscreenBitmap()->SizeInPixels();
+    if (bmSize.iWidth != Rect().Width() || bmSize.iHeight != Rect().Height()) {
+        return; 
+    }
     m_webcorecontext->gc().Reset();
     m_webcorecontext->gc().Clear();
 }
@@ -3000,10 +3014,15 @@ void WebView::setShowCursor(TBool showCursor)
 
 void WebView::focusedElementChanged(Element* element)
 {
+    if (!element || !element->document() ||!element->renderer()) return;
+    
     Frame* frame = element->document()->frame();
+    if(!frame || !kit(frame)) return;
+    
     WebFrameView* fv = kit(frame)->frameView();
+    if(!fv) return;
+    
     if (m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed || m_brctl->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone) {
-        if (!element || !element->document() ||!element->renderer()) return;
         if (element->hasTagName(textareaTag) || (element->hasTagName(inputTag) && (reinterpret_cast<HTMLInputElement*>(element))->isTextField())) {
             TPoint point = TRect(element->getRect()).iTl;
             point = fv->frameCoordsInViewCoords(point);

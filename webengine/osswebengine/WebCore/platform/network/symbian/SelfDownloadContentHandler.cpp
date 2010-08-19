@@ -266,6 +266,7 @@ void SelfDownloadContentHandler::MHFRunL(
         case KErrAbort:
         default: {
             HandleError(httpEvent.iStatus);
+            httpTransaction.Close();
             break;
         }
     }
@@ -410,6 +411,7 @@ TInt SelfDownloadContentHandler::ResponseCompleteL(RHTTPTransaction httpTransact
                                     HttpFilterCommonStringsExt::GetTable()) );
     }
 	StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->ResetOutstandingSelfDl();
+    httpTransaction.Close();
     return status;
 }
 
@@ -436,9 +438,30 @@ TBool SelfDownloadContentHandler::IsSelfDownloadContent(
 {
     // Check if the Host Application included this MIME type in the self-download
     // content types
-    TInt index(m_SelfDlMimeTypes->FindF(contentType));
-    return (index != KErrNotFound);
-    }
+    TInt cTLength = contentType.Length();
+    TBool isSelfDownloadContentType = EFalse;
+    TInt index = KErrNotFound;
+    const TChar KBrowserSpecLoadObsSemicolon = ';';
+    TPtrC selfDownloadCTs=m_SelfDlMimeTypes->Des();
+    index = selfDownloadCTs.FindF( contentType );
+    while( index != KErrNotFound )
+          {
+          // check for ';' on the left KSemicolon
+          if ( index == 0 ||selfDownloadCTs[ index - 1 ] == KBrowserSpecLoadObsSemicolon )
+              {
+              // check for ';' on the right
+              index += cTLength;
+              if ( index == selfDownloadCTs.Length() || selfDownloadCTs[ index ] == KBrowserSpecLoadObsSemicolon )
+                  {
+                  isSelfDownloadContentType = ETrue;
+                  break;
+                  }
+              }
+          selfDownloadCTs.Set( selfDownloadCTs.Mid( index ) );
+          index = selfDownloadCTs.FindF( contentType );
+          }
+    return (isSelfDownloadContentType);
+}
 
 // -----------------------------------------------------------------------------
 // SelfDownloadContentHandler::ReinitializeSpecialLoadObserver

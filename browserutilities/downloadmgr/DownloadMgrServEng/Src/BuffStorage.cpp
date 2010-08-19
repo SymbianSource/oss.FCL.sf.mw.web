@@ -79,6 +79,7 @@ void CBuffStorage::ConstructL()
     {
     LOGGER_ENTERFN( "ConstructL" );
     CActiveScheduler::Add( this );
+    iWait = new (ELeave) CActiveSchedulerWait;
     }
 
 // -----------------------------------------------------------------------------
@@ -108,6 +109,11 @@ CBuffStorage::~CBuffStorage()
 	ResetBuffers();
 	
 	delete iWritePtr; iWritePtr = 0;
+	if(iWait)
+	    {
+	     delete iWait;
+	     iWait = NULL;
+	    }
     }
 
 
@@ -134,10 +140,10 @@ void CBuffStorage::RunL()
     	CLOG_WRITE_2( "(%08X) CBuffStorage::RunL DH-iStat: %d, ", this, iStatus.Int() );
     	}
     	
-    if(iWait.IsStarted())
+    if(iWait && iWait->IsStarted())
 		{
 		CLOG_WRITE_1 ( "(%08X) CBuffStorage::RunL() Stopping iWait", this );
-		iWait.AsyncStop();
+		iWait->AsyncStop();
 		}
     }
 
@@ -157,10 +163,10 @@ void CBuffStorage::ResetBuffers()
 	{	
 	CLOG_WRITE_1("(%08X) CBuffStorage::ResetBuffers >>", this);
 	
-	if(IsActive())
+	if(IsActive()&& iWait && !iWait->IsStarted())
 		{
 		// Make sure async writes are finished
-		iWait.Start();
+		iWait->Start();
 		}
 	
 	// Cleanup
@@ -225,10 +231,10 @@ void CBuffStorage::FlushBuffersL()
 	CLOG_WRITE_1("(%08X) CBuffStorage::FlushBuffersL >>", this);
 	
 	// Make sure async writes are finished before doing anything
-	if(IsActive())
+	if(IsActive() && iWait && !iWait->IsStarted())
 		{
 		CLOG_WRITE_1("(%08X) CBuffStorage::FlushBuffersL: stalling >>", this);
-	 	iWait.Start();
+	 	iWait->Start();
 	 	CLOG_WRITE_1("(%08X) CBuffStorage::FlushBuffersL: stalling <<", this);
 		}
 	
@@ -335,10 +341,10 @@ void CBuffStorage::DoBufferingWriteL(const TDesC8& aBuf)
 	    
 	    // Check if previous async write is still ongoing
 	    // Done here so if somebody switched on progressive download midway through we don't mix buffers
-		if(IsActive())
+		if(IsActive()&& iWait && !iWait->IsStarted())
 			{
 			CLOG_WRITE_1("(%08X) CBuffStorage::DoBufferingWriteL: stalling >>", this);
-		 	iWait.Start();
+		 	iWait->Start();
 		 	CLOG_WRITE_1("(%08X) CBuffStorage::DoBufferingWriteL: stalling <<", this);
 			}
 		
@@ -415,10 +421,10 @@ void CBuffStorage::DoNonbufferingWriteL(const TDesC8& aBuf)
 	{
 	CLOG_WRITE_2("(%08X) CBuffStorage::DoNonbufferingWriteL: %d bytes", this, aBuf.Length());
 	
-	if(IsActive())
+	if(IsActive() && iWait && !iWait->IsStarted())
 		{
 		CLOG_WRITE_1("(%08X) CBuffStorage::DoNonbufferingWriteL: stalling >>", this);
-		iWait.Start();
+		iWait->Start();
 		CLOG_WRITE_1("(%08X) CBuffStorage::DoNonbufferingWriteL: stalling <<", this);
 		}
 		

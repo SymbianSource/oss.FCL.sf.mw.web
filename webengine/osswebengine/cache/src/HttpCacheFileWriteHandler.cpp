@@ -435,6 +435,8 @@ void CHttpCacheFileWriteHandler::BeginWriting()
 //
 void CHttpCacheFileWriteHandler::DoCancel()
     {
+    if(iObjectFlushing)
+        iCacheStreamHandler->CancelFlush(*iObjectFlushing);
     }
 
 // -----------------------------------------------------------------------------

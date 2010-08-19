@@ -164,7 +164,6 @@ PluginSkin::PluginSkin( WebFrame& frame )
       m_ref(1),
       m_oldRect(TRect(0,0,0,0)),
       m_oldViewport(TRect(0,0,0,0)),
-      m_loadmode(ELoadModeNone),
       m_NPObject(0),
       m_handle(-1),
       m_instance(0),    
@@ -421,6 +420,25 @@ void PluginSkin::Close()
     
  }
 
+// ----------------------------------------------------------------------------
+// PluginSkin::HandleLosingForeground()
+// PluginSkin function to handle Losing foreground event
+// ----------------------------------------------------------------------------
+void PluginSkin::HandleLosingForeground()
+{
+    if(m_pluginwin) 
+        m_pluginwin->HandleLosingForeground();
+}
+ 
+// ----------------------------------------------------------------------------
+// PluginSkin::HandleGainingForeground()
+// PluginSkin function to handle Gaining foreground event
+// ----------------------------------------------------------------------------
+void PluginSkin::HandleGainingForeground()
+{
+    if(m_pluginwin)
+        m_pluginwin->HandleGainingForeground();
+}
 
 // ----------------------------------------------------------------------------
 // PluginSkin::pluginFocusChanged()
@@ -724,11 +742,9 @@ void PluginSkin::loadPluginL( const TDesC8& mimetype )
         NPError error( NPERR_NO_ERROR );
         
         m_instance = (NPP) User::AllocL(sizeof(NPP_t));
-        m_instance->ndata = pluginWin();
-        m_instance->pdata = NULL;
-
         if (m_instance) {
-            
+            m_instance->ndata = pluginWin();
+            m_instance->pdata = NULL;            
             PluginHandler* pluginhandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
             if ( pluginhandler ) {
                 pluginhandler->loadPluginL( m_handle, &m_pluginfuncs );
@@ -745,8 +761,8 @@ void PluginSkin::loadPluginL( const TDesC8& mimetype )
                 }
                 if (m_pluginwin) {
                     m_pluginwin->ConstructL(*(control(m_frame)->webView()));
+                }
             }
-        }
         }
 
         switch ( error ) {
@@ -758,13 +774,11 @@ void PluginSkin::loadPluginL( const TDesC8& mimetype )
                 User::Leave( KErrNotSupported );
                 break;
             }
-        }    
+        }
         
         if (m_pluginwin)
-        m_pluginwin->SetExtent( TPoint(0,0), TSize(0,0) );
-            
+            m_pluginwin->SetExtent( TPoint(0,0), TSize(0,0) );
     }
-
 }
 
 // -----------------------------------------------------------------------------
@@ -874,7 +888,6 @@ TBool PluginSkin::RunScript()
 int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,const TDesC* aWindowType)
 {
     TPluginLoadMode loadmode = GetLoadMode(aWindowType);
-    setLoadMode(loadmode);
     
     if (url.Ptr() == NULL ) {                        
         return KErrArgument;
@@ -1275,37 +1288,46 @@ TWindowType PluginSkin::GetWindowType(const TDesC* aWindowType)
 
 void PluginSkin::reCreatePlugin()
 {
-    //destroy the plugin
+    TBuf16<4> apId;
+    apId.Format( _L("%d"), m_frame->frameView()->topView()->accessPointId() );
     
-    Vector<PluginStream*> streams;
-    for (HashSet<PluginStream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it) {
-        streams.append(*it);
-    }    
-    for (int i=0; i<streams.size(); ++i) {
-        streams[i]->close();
+    if (m_pluginwin ) {
+        m_pluginwin->notifyAPChange((void*)&apId);
     }
-    m_streams.clear();
-
-    if (m_instance && m_pluginfuncs && m_pluginfuncs->destroy) {        
-        m_pluginfuncs->destroy(m_instance, NULL);
-    }
-    User::Free(m_instance); m_instance = 0;
-    delete m_pluginwin; m_pluginwin = 0;
-    delete iJavascriptTimer; iJavascriptTimer = 0;
     
-    RFs& rfs = StaticObjectsContainer::instance()->fsSession();
-    for(TInt i=0; i < m_tempFilesArray.Count(); i++)
-        {
-          rfs.Delete(m_tempFilesArray[i]->Des());
+    if (m_streams.size() > 0) {
+        
+        //destroy the plugin
+    
+        Vector<PluginStream*> streams;
+        for (HashSet<PluginStream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it) {
+            streams.append(*it);
+        }    
+        for (int i=0; i<streams.size(); ++i) {
+            streams[i]->close();
         }
-    m_tempFilesArray.ResetAndDestroy();
-       
-    //create/load the destroyed plugin again
+        m_streams.clear();
     
-    NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(m_url->Des(), this, core(m_frame));
-    if (pluginloader) {
-        pluginloader->start();                            
-    }    
+        if (m_instance && m_pluginfuncs && m_pluginfuncs->destroy) {        
+            m_pluginfuncs->destroy(m_instance, NULL);
+        }
+        User::Free(m_instance); m_instance = 0;
+        delete m_pluginwin; m_pluginwin = 0;
+        delete iJavascriptTimer; iJavascriptTimer = 0;
+        
+        RFs& rfs = StaticObjectsContainer::instance()->fsSession();
+        for(TInt i=0; i < m_tempFilesArray.Count(); i++) {
+            rfs.Delete(m_tempFilesArray[i]->Des());
+        }
+        m_tempFilesArray.ResetAndDestroy();
+           
+        //create/load the destroyed plugin again
+                    
+        NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(m_url->Des(), this, core(m_frame));
+        if (pluginloader) {
+            pluginloader->start();                            
+        }                                                
+    }
 }
 
 // -----------------------------------------------------------------------------

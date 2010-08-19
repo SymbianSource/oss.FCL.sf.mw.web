@@ -394,14 +394,6 @@ void PluginWin::makeVisible( TBool visible )
     {
         CCoeControl::MakeVisible(visible);
     }
-    TPluginLoadMode loadmode = m_pluginskin->getLoadMode();
-    if(loadmode == ELoadModeNew ){
-        m_pluginskin->setLoadMode(ELoadModeNone);
-        if(visible)
-            HandleGainingForeground();
-        else
-            HandleLosingForeground();
-    }
     
     PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
     int index = pluginHandler->getVisiblePlugins().Find(m_pluginskin);
@@ -584,11 +576,12 @@ void PluginWin::forceRedraw(bool drawNow)
     }
     else {
         WebFrame* mf = (m_pluginskin->frame());
-        WebFrameView* fv = mf->frameView();
-        TRect rect(Rect());
-        rect = TRect(fv->viewCoordsInFrameCoords(Rect().iTl), fv->viewCoordsInFrameCoords(Rect().iBr));
-    if (mf && mf->frameView())
-            mf->frameView()->invalidateRect(rect, drawNow);
+        if (mf && mf->frameView()) {
+            WebFrameView* fv = mf->frameView();
+            TRect rect(Rect());
+            rect = TRect(fv->viewCoordsInFrameCoords(Rect().iTl), fv->viewCoordsInFrameCoords(Rect().iBr));
+            fv->invalidateRect(rect, drawNow);
+        }
     }
 }
 
@@ -772,7 +765,24 @@ void PluginWin::GetBitmapFromPlugin (bool status)
     {
     if(m_notifier) {
          if (status) {
+             //if plugin fails to send bitmap even though the "ECollectBitmapSupported"
+             CBrCtl*   brCtl = control(m_pluginskin->frame());    
+             WebView*  view = brCtl->webView();
+             
+             if(view && view->isPinchZoom())
+                 m_PluginInvisibleOnPinchZoom = ETrue; 
              m_notifier->NotifyL( MPluginNotifier::ECollectBitmap, (void*)1 );
+			 
+			 //if Notify CollectBitmap failed to send bitmap to SetBitmapFromPlugin, 
+			 //Then forcefully make the plugin window invisible for pinch zoom 
+             if(m_PluginInvisibleOnPinchZoom)
+                 { 
+                 m_PluginInvisibleOnPinchZoom = EFalse; 
+                 if (IsVisible())
+                     {
+                     MakeVisible(false);
+                     }
+                 }
          }
          else {
              m_notifier->NotifyL( MPluginNotifier::ECollectBitmap, (void*)0 );
@@ -927,8 +937,7 @@ bool PluginWin::containsPoint(WebView& view, const TPoint& pt)
 // -----------------------------------------------------------------------------
 void PluginWin::SetBitmapFromPlugin(TInt aHandle)
     {
-
-//    m_pluginfocus = 1;
+    m_PluginInvisibleOnPinchZoom = EFalse;
 
     if (aHandle)
         {
@@ -994,3 +1003,11 @@ void PluginWin::drawBitmapToWebCoreContext()
     gc.DrawBitmap(plWinRect, m_pausedBitmap);
     context->restore(saved);
     }
+
+// Notify Plugins about the change in Access Point during Upgrade / Downgrade
+void PluginWin::notifyAPChange(void* ap)
+{
+    if (m_notifier) {
+        m_notifier->NotifyL( MPluginNotifier::EAccesPointChanged, ap );
+    }
+}

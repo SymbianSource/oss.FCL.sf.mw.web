@@ -414,6 +414,8 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         */
         IMPORT_C void TakeSnapshotL(CFbsBitmap& snapshot);
         
+        IMPORT_C TBool IsSynchRequestPending();
+        
         /**
         * From CBrCtlInterface
         * Register an observer for state change changes
@@ -731,7 +733,7 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         MBrCtlDownloadObserver*                 m_brCtlDownloadObserver;
         CPeriodic* m_windoCloseTimer;       //new timer for managing browser window close
         bool m_didFirstLayout;
-        
+        bool m_NotifyPluginFocusChangeEvent;
 };
 
 #endif      // BRCTL_H

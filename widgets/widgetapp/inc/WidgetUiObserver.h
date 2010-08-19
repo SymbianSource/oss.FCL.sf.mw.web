@@ -318,6 +318,7 @@ class CWidgetUiObserver : public CBase,
         //Active Object to collect bitmap
         CIdle* iCollectBitmapTimer;
         RFs iFs;
+        RFile iFile;
     };
 
 #endif      // WIDGEUIOBSERVER_H

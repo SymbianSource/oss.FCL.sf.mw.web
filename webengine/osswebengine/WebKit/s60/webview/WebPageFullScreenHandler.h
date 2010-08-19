@@ -61,6 +61,8 @@ private:  // Constructors
     void ConstructL();
     
     TPoint CalculatePosition();
+    
+    TSize CalculateSize();
 
 public: // New functions
 

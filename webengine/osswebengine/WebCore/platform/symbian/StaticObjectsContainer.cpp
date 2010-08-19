@@ -71,6 +71,8 @@
 #include "TextBreakIteratorSymbian.h"
 #include "ImageSymbian.h"
 #include "HTMLElementFactory.h"
+#include "GCController.h"
+#include "bitmap\AnimationDecoderWrapped.h"
 #include <eikenv.h>
 
 #include "WidgetEngineBridge.h"
@@ -128,9 +130,11 @@ StaticObjectsContainer::StaticObjectsContainer() :
 
 StaticObjectsContainer::~StaticObjectsContainer()
 {
-    // Run KJS collector to cleanup any remaining references
-    // This must be run before Cache::deleteStaticCache to properly free resources
-    KJS::Collector::collect();
+    // Instruct garbage collect for destruction in progress and to stop garbage collection
+    gcController().startedExit(true); 
+    KJS::Collector::startedExit(true);
+    CAnimationDecoderWrapped::closeSyncDecodeThread();
+        
     delete m_oomHandler;
     delete m_oomStopper;
     FontCache::deleteFontDataCache();

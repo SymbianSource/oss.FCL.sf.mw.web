@@ -160,10 +160,7 @@ void CWebFepTextEditor::UpdateEditingMode()
                     state->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG_LATIN_ONLY);
                     state->SetNumericKeymap(EAknEditorStandardNumberModeKeymap);
                     state->SetCcpuState(NULL);
-                    TLanguage language = User::Language();
-                    if (language == ELangPrcChinese ) {
-                       TRAP_IGNORE( state->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate ) );
-                    }
+                    TRAP_IGNORE( state->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate ) );
                 }
             }
             else {
@@ -259,7 +256,7 @@ TCoeInputCapabilities CWebFepTextEditor::InputCapabilities()
 
             if ( sc->isInPasswordField() ) {
                 caps |= TCoeInputCapabilities::ESecretText;
-                UpdateFlagsState(EAknEditorFlagNoT9);
+                UpdateFlagsState(EAknEditorFlagNoT9 | EAknEditorFlagLatinInputModesOnly);
             }
             else {
 
@@ -445,7 +442,7 @@ void CWebFepTextEditor::SetCursorSelectionForFepL(const TCursorSelection& aCurso
     // see WebEditorClient::handleKeypress
     Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
     Node*  focusedNode = frame->document()->focusedNode();
-    if ( frame && focusedNode) {
+    if ( focusedNode ) {
         TInt lowPos = aCursorSelection.LowerPos();
         TInt highPos = aCursorSelection.HigherPos();
         if (focusedNode->hasTagName(HTMLNames::textareaTag)) {
@@ -472,7 +469,7 @@ void CWebFepTextEditor::GetCursorSelectionForFep(TCursorSelection& aCursorSelect
 
     Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
     Node*  focusedNode = frame->document()->focusedNode();
-    if (frame && focusedNode) {
+    if (focusedNode) {
         if (focusedNode->hasTagName(HTMLNames::textareaTag)) {
             HTMLTextAreaElement* textArea = static_cast<HTMLTextAreaElement*>(focusedNode);
             TInt anchorPos = textArea->selectionStart();
@@ -555,13 +552,13 @@ if (frame &&
 		if ( sc ){
 			IntRect rect = sc->caretRect();
 			Node* editNode = sc->focusNode();
-			TPoint viewPoint = kit(frame)->frameView()->frameCoordsInViewCoords(editNode->getRect().Rect().iBr);
-			xPos = viewPoint.iX;
-			yPos = frame->document()->focusedNode()->getRect().bottomLeft().y() + rect.height();
-			String str;
-			if ( editNode &&
-				 editNode->isTextNode() ) {
-				WebCore::Text* aText = (WebCore::Text*)editNode;
+			if ( editNode && editNode->isTextNode() ) {
+                TPoint viewPoint = kit(frame)->frameView()->frameCoordsInViewCoords(editNode->getRect().Rect().iBr);
+	            xPos = viewPoint.iX;
+	            yPos = frame->document()->focusedNode()->getRect().bottomLeft().y() + rect.height();
+	            
+	            String str;				
+	            WebCore::Text* aText = (WebCore::Text*)editNode;
 				str = aText->data();
 				aDocumentPosition =  aText->length();
 				TInt position = aDocumentPosition - ( str.reverseFind(KBlankDesC(), aDocumentPosition )+1);
@@ -1125,7 +1122,7 @@ bool CWebFepTextEditor::IsTextAreaFocused() const
 // -----------------------------------------------------------------------------
 TBool CWebFepTextEditor::CcpuIsFocused() const
 {
-    return ETrue;
+    return (IsTextAreaFocused() || IsInputElementFocused());
 }
 
 // -----------------------------------------------------------------------------

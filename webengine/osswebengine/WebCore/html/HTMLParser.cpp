@@ -380,7 +380,7 @@ bool HTMLParser::handleError(Node* n, bool flat, const AtomicString& localName, 
             }
         } else if (h->hasLocalName(htmlTag)) {
             if (!current->isDocumentNode() ) {
-                if (document->documentElement()->hasTagName(htmlTag)) {
+                if (document->documentElement()->hasTagName(htmlTag) && !m_isParsingFragment) {
                     reportError(RedundantHTMLBodyError, &localName);
                     // we have another <HTML> element.... apply attributes to existing one
                     // make sure we don't overwrite already existing attributes
@@ -422,7 +422,7 @@ bool HTMLParser::handleError(Node* n, bool flat, const AtomicString& localName, 
                 return false;
             }
         } else if (h->hasLocalName(bodyTag)) {
-            if (inBody && document->body()) {
+            if (inBody && document->body() && !m_isParsingFragment) {
                 // we have another <BODY> element.... apply attributes to existing one
                 // make sure we don't overwrite already existing attributes
                 // some sites use <body bgcolor=rightcolor>...<body bgcolor=wrongcolor>
@@ -677,7 +677,7 @@ bool HTMLParser::framesetCreateErrorCheck(Token* t, RefPtr<Node>& result)
         // we can't implement that behaviour now because it could cause too many
         // regressions and the headaches are not worth the work as long as there is
         // no site actually relying on that detail (Dirk)
-        if (document->body())
+        if (document->body() && !m_isParsingFragment)
             document->body()->setAttribute(styleAttr, "display:none");
         inBody = false;
     }
@@ -1162,7 +1162,8 @@ void HTMLParser::handleResidualStyleCloseTagAcrossBlocks(HTMLStackElem* elem)
             prevMaxElem->next = elem;
             ASSERT(newNodePtr);
             prevMaxElem->node = newNodePtr;
-            prevMaxElem->didRefNode = false;
+            newNodePtr->ref(); 
+            prevMaxElem->didRefNode = true;
         } else
             delete elem;
     }
@@ -1392,6 +1393,10 @@ void HTMLParser::createHead()
         return;
 
     head = new HTMLHeadElement(document);
+    
+	if (m_isParsingFragment)
+        return;
+
     HTMLElement* body = document->body();
     ExceptionCode ec = 0;
     document->documentElement()->insertBefore(head, body, ec);

@@ -42,6 +42,8 @@
 #include "DeviceLiwIterable.h"
 #include "DeviceLiwResult.h"
 
+
+
 using namespace KJS;
 using namespace LIW;
 
@@ -125,7 +127,7 @@ void CDeviceLiwBinding::ConstructL()
             }
 #ifdef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
 		m_scriptSession->SetPromptOption(RTPROMPTUI_PROVIDER);   //  This is for setting the new prompting method
-#endif
+#endif 
         CleanupStack::PopAndDestroy( trust );
     }
 
@@ -164,6 +166,7 @@ TInt CDeviceLiwBinding::LoadServiceProvider( ExecState* exec, const List& args )
     if ( argcount > 0 && args[0]->type() == StringType &&
         args[0]->toString( exec ).size() > 0 )
         {
+       	  
             TRAP( error,
             {
             // Get service name
@@ -211,7 +214,7 @@ TInt CDeviceLiwBinding::LoadServiceProvider( ExecState* exec, const List& args )
                 switch ( widgetregistry.WidgetSapiAccessState(m_Uid))
                     {
                     case SAPISECURITYPROMPTNEEDED :
-                        load_err = m_serviceHandler->AttachL( crit_arr, *m_scriptSession );
+                        load_err = sapiPromptNeededL(crit_arr);
                         break;
                     case SAPIPROMPTLESS :
                         load_err = m_serviceHandler->AttachL( crit_arr );
@@ -254,7 +257,21 @@ TInt CDeviceLiwBinding::LoadServiceProvider( ExecState* exec, const List& args )
 
     return error;
     }
-
+    
+// ---------------------------------------------------------------------------
+// attachL called if sapi prompt is needed
+// return TInt - load error
+// ---------------------------------------------------------------------------
+//
+TInt CDeviceLiwBinding::sapiPromptNeededL(RCriteriaArray aCrit_arr)
+    {
+#ifdef BRDO_SAPINTFN_ENABLED_FF
+        return m_serviceHandler->AttachL( aCrit_arr, *m_scriptSession, m_Uid.iUid );
+#else
+        return m_serviceHandler->AttachL( aCrit_arr, *m_scriptSession );
+#endif
+    }
+    
 // ---------------------------------------------------------------------------
 // Convert Unload service provider
 // return JSValue - javascript list

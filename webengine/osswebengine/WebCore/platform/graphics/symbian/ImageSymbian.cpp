@@ -447,7 +447,7 @@ void BitmapImage::drawPattern(GraphicsContext* ctxt, const FloatRect& srcRect, c
     WebCoreGraphicsContext* context = ctxt->platformContext();
     
     CMaskedBitmap* bm = frameAtIndex(m_currentFrame);
-    if(!bm || bm->IsFullyTransparent()) 
+    if(!bm ||!bm->IsCompletlyInitialised()|| bm->IsFullyTransparent()) 
         return;
 
     IntSize intrinsicImageSize = size();
@@ -489,21 +489,24 @@ void BitmapImage::drawPattern(GraphicsContext* ctxt, const FloatRect& srcRect, c
 
         TWebCoreSavedContext savedContext = context->save();
         context->setClippingRect(bmpRect);
-        bm->TileInBitmapRect(context->gc(), bmpRect, point);
-        context->restore(savedContext);
-
-        /*bmpRect.Move( orig );
-        if( bmpRect.Intersects( TRect( TPoint(0,0), sz ) ) ) {
+        if ( (bm->HasMask()) && (bm->SizeInPixels() == TSize(1,1)) && 
+                ((bm->Bitmap().DisplayMode() == EColor64K) || (bm->Bitmap().DisplayMode() == EColor16MU))) 
+            { 
+            bmpRect.Move( orig );
+            bmpRect.Intersection( TRect( TPoint(0,0), sz ) );
             // offscreen bitmap space to aRect space
             TPoint so( bmpRect.iTl );
             so -= (trgRect.iTl + orig);
             so += off;
-
             // tiling the image
-            //bm->TileInBitmapRect( dstBmp, bmpRect, so );
+            bm->TileInBitmapRect( dstBmp, bmpRect, so );
+            }
+        else 
+            {               
             bm->TileInBitmapRect(context->gc(), bmpRect, point);
-        }*/
-    }
+            }
+        context->restore(savedContext);
+     }
 }
 
 void Image::drawPattern(GraphicsContext* ctxt, const FloatRect& tileRect, const AffineTransform& patternTransform,

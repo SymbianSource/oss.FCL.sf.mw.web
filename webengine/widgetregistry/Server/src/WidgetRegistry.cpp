@@ -2084,7 +2084,7 @@ TBool CWidgetRegistry::IsEntryInstalled(
             if ( !((aInstalledListForDriveFlags)[i] & EInstallListFlagEntry ))
                 {
                 TEntry dirEntry = (*aInstalledListForDrive)[i];
-                if ( 0 == bundleIdentifier.Compare( dirEntry.iName ) )
+                if ( 0 == bundleIdentifier.CompareF( dirEntry.iName ) )
                     {
                     (aInstalledListForDriveFlags)[i] |= EInstallListFlagEntry;
                     result = ETrue;
@@ -2347,7 +2347,9 @@ void CWidgetRegistry::InstallDirConsistency(
 void CWidgetRegistry::AppArchListConsistency( const RArray<TUid>& aAppArchList,
                                               RArray<TInt>& aAppArchListFlags )
     {
-    LOG( "AppArchListConsistency" );
+    LOG( "AppArchListConsistency" );      
+    RArray<TUid> deRegisterList( KDefaultWidgetCount );  
+    CleanupClosePushL(deRegisterList);
     for ( TInt i = 0; i < aAppArchList.Count(); i++ )
         {
         if ( !( aAppArchListFlags[i] & EAppListFlagEntry ) )
@@ -2355,9 +2357,14 @@ void CWidgetRegistry::AppArchListConsistency( const RArray<TUid>& aAppArchList,
             LOG_CODE( TInt uidIntLog = aAppArchList[i].iUid );
             LOG2( " deregistered widget 0x%x (%d)",
                       uidIntLog, uidIntLog );
-            TRAP_IGNORE( iInstaller->DeregisterWidgetL( aAppArchList[i] ) );
+			deRegisterList.Append(aAppArchList[i]);          
             }
         }
+    if(deRegisterList.Count())
+    	{
+		TRAP_IGNORE( iInstaller->DeregisterWidgetsL( deRegisterList ) );      		
+    	}    
+    CleanupStack::PopAndDestroy(&deRegisterList);
     LOG( "AppArchListConsistency done" );
     }
 

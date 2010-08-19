@@ -89,7 +89,7 @@ class CookieHandler
         */
         virtual ~CookieHandler();
         void destroy();
-
+        inline RCookieManager* cookieManager(){return m_cookieManager;}
     private :    // constructors
         /**
         * Constructor.

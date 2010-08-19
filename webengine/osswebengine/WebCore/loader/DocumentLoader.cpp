@@ -248,7 +248,8 @@ void DocumentLoader::mainReceivedError(const ResourceError& error, bool isComple
     if (!frameLoader())
         return;
     setMainDocumentError(error);
-    if (isComplete)
+    //During LWS for invalid webpage framloader was returning Null which is causing Dataabort panic 
+    if (isComplete && frameLoader())
         frameLoader()->mainReceivedCompleteError(this, error);
 }
 
@@ -418,7 +419,8 @@ void DocumentLoader::setupForReplaceByMIMEType(const String& newMIMEType)
 void DocumentLoader::updateLoading()
 {
     ASSERT(this == frameLoader()->activeDocumentLoader());
-    setLoading(frameLoader()->isLoading());
+    if(m_frame)
+        setLoading(frameLoader()->isLoading());
 }
 
 void DocumentLoader::setFrame(Frame* frame)

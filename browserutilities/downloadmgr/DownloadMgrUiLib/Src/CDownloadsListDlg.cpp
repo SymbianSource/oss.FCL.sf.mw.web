@@ -659,12 +659,31 @@ void CDownloadsListDlg::HandleListBoxEventL(CEikListBox* aListBox, TListBoxEvent
             case MEikListBoxObserver::EEventItemSingleClicked:
 #endif			
                 {
+                TDownloadUiData& dlData = iDownloadsListArray->DlUiData( CurrentItemIndex() );
+                TInt32 state( dlData.iProgressState );
+                if(state == EHttpProgContentFileMoved)
+                    {
+                      if (!ButtonGroupContainer()->IsCommandVisible(EAknSoftkeyOpen))
+                          {
+                          ButtonGroupContainer()->MakeCommandVisible(EAknSoftkeyOpen,ETrue);
+                          }
+                    }
                 // If EAknSoftkeyOpen is visible, then we can activate the selected download
                 if (ButtonGroupContainer()->IsCommandVisible(EAknSoftkeyOpen))
                     {
                     ProcessCommandL(EAknSoftkeyOpen);
                     }
                 }
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
+            case MEikListBoxObserver::EEventPenDownOnItem:
+                {
+                if ( iPointerEvent.iType == TPointerEvent::EButton1Down)
+                    {
+                    iStylusMenu->HandlePointerEventL(iPointerEvent, this);	
+                    }
+                 break;
+                }
+#endif
             default:
                 {
                 break;
@@ -728,10 +747,10 @@ void CDownloadsListDlg::HandlePointerEventL(const TPointerEvent& aPointerEvent)
     if ( aPointerEvent.iType == TPointerEvent::EButton1Down)
         {
         iPointerEvent =  aPointerEvent;
-        iStylusMenu->HandlePointerEventL(aPointerEvent, this);
         }
     else if ( aPointerEvent.iType == TPointerEvent::EButton1Up )
         {
+        iPointerEvent =  aPointerEvent;
         iStylusMenu->cancelLongTapL();
             if(iStylusMenu->islongtapRunning())
                 {

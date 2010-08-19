@@ -136,21 +136,27 @@ void WebCursor::ConstructL()
 // -----------------------------------------------------------------------------
 // WebCursor::setCurrentView
 // -----------------------------------------------------------------------------
-void WebCursor::setCurrentView(WebView& view)
+void WebCursor::setCurrentView(WebView* view)
     {
-    if (!m_view)
-    {
-        m_view = &view;
-        TRAP_IGNORE( constructSpriteL() );
-    }
+    
+    if( !view )
+        {
+        m_view = view;
+        m_sprite->Hide();
+        m_sprite->SetParent(NULL);
+        return ;  
+        }
     //switching between diffrent webviews, set current webview as the parent to m_sprite
-    if( m_sprite->Parent() != &view)
-    {
-        m_view = &view;
-        CCoeControl* parent = static_cast<CCoeControl*>(m_view);
+    if( (m_sprite && m_sprite->Parent() != view) || !m_sprite)
+        {
+        m_view = view;
+        if( !m_sprite )
+            constructSpriteL();
+        CCoeControl* parent = static_cast<CCoeControl*>(view);
         m_sprite->SetParent(parent);
-    }
-    m_view = &view;
+        m_sprite->Show(); 
+        }
+    m_view = view;
     setOpaqueUntil(KTransparencyTime);
     m_transcount = 0;
     }
@@ -190,9 +196,10 @@ void WebCursor::constructSpriteL()
     CleanupStack::PopAndDestroy();
     /////////////////////////////////
  
-    CCoeControl* parent = static_cast<CCoeControl*>(m_view);
     TPoint pos = TPoint(KInitialOffset,KInitialOffset);
-    m_sprite = CWebSprite::NewL(parent, pos, m_arrow.m_img, m_arrow.m_msk, ETrue);
+    CCoeControl* parent = static_cast<CCoeControl*>(m_view);
+    m_sprite = CWebSprite::NewL(parent,pos, m_arrow.m_img, m_arrow.m_msk, ETrue);
+    m_sprite->Hide();
     }
 
 // -----------------------------------------------------------------------------

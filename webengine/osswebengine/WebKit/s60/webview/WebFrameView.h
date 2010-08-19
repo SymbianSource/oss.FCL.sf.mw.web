@@ -41,7 +41,7 @@ public:
     // from MScrollView
     void draw(WebCoreGraphicsContext&, const TRect&);
     void invalidateRect(const TRect&, TBool);
-    void scrollTo(const TPoint&);
+    void scrollTo(const TPoint&, TBool aNotifyPlugins=EFalse);
     TRect visibleRect() const;
     TSize contentSize() const;
     void resizeContent(const TSize& /*aSize*/);

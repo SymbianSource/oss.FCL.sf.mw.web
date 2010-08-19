@@ -287,6 +287,11 @@ static TInt64 remainingMicro = 0;
 static bool shutdownInProgress = false;
 static CPeriodic* sharedTimer;
 
+void shutdownJSTimer()
+    {
+    JTimerBase::shutdownSharedTimer();
+    }
+
 void setDeferringJSTimers(bool defer)
     {
     JTimerBase::setDeferringTimers(defer);

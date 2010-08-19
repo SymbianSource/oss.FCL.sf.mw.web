@@ -29,7 +29,7 @@
 using namespace WebCore;
 
 const int KFullScreenButtonOffset = 50;
-const int KFullScreenButtonBuff  = 5;
+const int KFullScreenButtonBuff  = 15;
 
 // -----------------------------------------------------------------------------
 // WebPageFullScreenHandler::NewL
@@ -91,6 +91,13 @@ TPoint WebPageFullScreenHandler::CalculatePosition()
     return pos;
 }
 
+TSize WebPageFullScreenHandler::CalculateSize()
+{
+    TSize size = m_buttonIcon.m_img->SizeInPixels();
+    size += TSize(KFullScreenButtonBuff, KFullScreenButtonBuff);
+    return size;
+}
+
 //-------------------------------------------------------------------------------
 // WebPageFullScreenHandler::showEscBtnL
 // Draws the full screen button on the screen
@@ -125,6 +132,8 @@ void WebPageFullScreenHandler::SizeChanged(void)
     if (AknLayoutUtils::PenEnabled()) {
         TPoint pos = CalculatePosition();
         SetPos(pos);
+        TSize size = CalculateSize();
+        SetSizeWithoutNotification(size);
     }
 }
 
@@ -150,7 +159,7 @@ void WebPageFullScreenHandler::HandlePointerEventL(const TPointerEvent& aPointer
        case TPointerEvent::EButton1Up:
            {
            	TPoint fsPostion = PositionRelativeToScreen();
-            TRect fsRect = TRect(fsPostion,m_buttonIcon.m_img->SizeInPixels());
+            TRect fsRect = TRect(fsPostion,Size());
             fsRect = TRect(fsRect.iTl - TPoint(KFullScreenButtonOffset,KFullScreenButtonOffset), fsRect.iBr);
            	TPoint pointerPosition = fsPostion + aPointerEvent.iPosition;
            	if( fsRect.Contains(pointerPosition))

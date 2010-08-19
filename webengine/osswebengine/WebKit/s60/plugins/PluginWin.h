@@ -490,6 +490,7 @@ public: // Functions from MPluginAdapter
 	void ClearPluginBitmap();
 	TBool IsCollectBitmapSupported();
 	void drawBitmapToWebCoreContext();
+	void notifyAPChange(void* ap);
     protected: // New functions
 
         /**
@@ -519,6 +520,7 @@ public: // Functions from MPluginAdapter
         CFbsBitmap*                         m_pausedBitmap;       //Plugin paused Bitmap
         bool                                m_pluginHasBitmap;
         bool                                m_BitmapSupported;
+        bool                                m_PluginInvisibleOnPinchZoom; 
     };
 
 

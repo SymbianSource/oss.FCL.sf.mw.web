@@ -185,7 +185,10 @@ void WebChromeClient::addMessageToConsoleL(const WebCore::String& message, Messa
     delete rep;
 
     if ( scriptLogType == TBrCtlDefs::EScriptLogDisable )
+	{
+	    fsSession.Close();
         return;
+	}
     TBool needLogFile = EFalse, needLogConsole = EFalse;
 
     // construct the log message

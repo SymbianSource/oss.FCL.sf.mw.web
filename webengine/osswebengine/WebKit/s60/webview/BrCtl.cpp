@@ -90,6 +90,7 @@
 #include "GCController.h"
 #include <BrowserVersion.h>
 #include <cuseragent.h>
+#include "kjs_window.h" 
 
 #ifndef BRDO_WML_DISABLED_FF
 #include "wmlinterface.h"
@@ -422,6 +423,7 @@ CBrCtl::CBrCtl(
    , m_brCtlDownloadObserver(aBrCtlDownloadObserver)
    , m_windoCloseTimer(NULL)
    , m_didFirstLayout(false)
+   , m_NotifyPluginFocusChangeEvent(false)
 {
     m_documentHeight = 0;
     m_displayHeight = 0;
@@ -675,6 +677,13 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
         case TBrCtlDefs::ECommandCancelFetch:
             {
                 m_webView->Stop();
+                break;
+            }
+
+        case TBrCtlDefs::ECommandOOMExit:
+            {
+                WebCore::gcController().startedExit(true); 
+                KJS::setDeferringJSTimers(true); 
                 break;
             }
 
@@ -1038,12 +1047,17 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
 	   // Messages sent by OOM monitor
        case TBrCtlDefs::ECommandFreeMemory:
            {
-           //MemoryManager::FreeRam(); // invoke memory collect operation - enable later, causes BC break
+           MemoryManager::FreeRam(); // invoke memory collect operation
            break;
            }
        case TBrCtlDefs::ECommandMemoryGood:
            {
-           //MemoryManager::RestoreCollectors(); // restore collectors - enable later, causes BC break
+           MemoryManager::RestoreCollectors(); // restore collectors
+           break;
+           }
+       case TBrCtlDefs::ECommandNotifyPluginFocusChangeEvent:
+           {
+           m_NotifyPluginFocusChangeEvent = true;
            break;
            }
                   
@@ -1078,6 +1092,13 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
             }
         }
 }
+
+
+EXPORT_C TBool CBrCtl::IsSynchRequestPending()
+    {
+    return m_webView->isSynchRequestPending();
+    }
+
 
 // -----------------------------------------------------------------------------
 // CBrCtl::HandleDownloadCommandL
@@ -1282,9 +1303,11 @@ EXPORT_C void CBrCtl::AddOptionMenuItemsL(CEikMenuPane& aMenuPane, TInt aResourc
     // tot fixme
     //TPluginControl pluginControl(*iWebKitControl);
     //pluginControl.AddPluginOptionMenuItemsL(aMenuPane, TBrCtlDefs::ECommandIdPluginBase, aAfter);
-    PluginSkin* plugin = m_webView->mainFrame()->focusedPlugin();
-    if(plugin && plugin->pluginWin())
-        plugin->pluginWin()->addPluginOptionsL(aMenuPane, TBrCtlDefs::ECommandIdPluginBase, aAfter );
+    if(m_webView) {
+        PluginSkin* plugin = m_webView->mainFrame()->focusedPlugin();
+        if(plugin && plugin->pluginWin())
+            plugin->pluginWin()->addPluginOptionsL(aMenuPane, TBrCtlDefs::ECommandIdPluginBase, aAfter );
+    }
 
 }
 
@@ -1886,6 +1909,11 @@ void CBrCtl::MakeVisible(TBool visible)
         }
         else if(m_webView->mainFrame()->frameLoader()->checkScheduledRedirection())
           m_webView->mainFrame()->frameLoader()->startRedirectionTimerNow();
+        
+        if( m_NotifyPluginFocusChangeEvent ) {
+           m_NotifyPluginFocusChangeEvent = false; 
+           webView()->mainFrame()->notifyPluginFocusChangeEvent(visible);
+          }
         m_webView->MakeVisible(visible);
     }
 

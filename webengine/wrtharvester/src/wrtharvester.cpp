@@ -335,7 +335,10 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
           }
       return; 
       }
-             
+      
+	if(!iCanAccessRegistry)
+		return;             
+		
     TWidgetOperations operation( Uninitialized );
     if( aTrigger == KActive )
         {
@@ -771,7 +774,10 @@ void CWrtHarvester::QueueOperationL( TWidgetOperations aOperation, TUid aUid )
     //Hack to find out if WidgetUi exist as Queue keeps filling up
     SWidgetOperation op = { aOperation, aUid };
     
-    if((iHSCount*3 <= iWidgetOperations.Count() && !CheckTaskExistsL() ) || (aOperation == WidgetSelect))
+    TInt value = KErrNone;
+    TInt error = iWidgetUIListener->GetValue(value);
+    
+    if((iHSCount*3 <= iWidgetOperations.Count() && !CheckTaskExistsL() ) || (aOperation == WidgetSelect && !CheckTaskExistsL() && value ) )
         {        
         ClearAllOperations();
         iWidgetUIListener->SetValue(1);
@@ -831,13 +837,17 @@ void CWrtHarvester::TryLaunchNextOperationL()
     {
     TInt value = KErrNone;
     TInt error = iWidgetUIListener->GetValue(value);
-    if( error == KErrNone && value == 1 && iWidgetOperations.Count() != 0 )
+    if( error == KErrNone && value == 1 && iWidgetOperations.Count() != 0 && iCanAccessRegistry )
         {
         // Set value to 0 so that next widget is not launched before Widget App sets value to 1.
         iWidgetUIListener->SetValue( 0 );
         //Always launch the first in operation
         LaunchWidgetOperationL( iWidgetOperations[0] );
-        iWidgetOperations.Remove( 0 );
+        
+        if(iWidgetOperations[0].iOperation == WidgetSelect)
+        	ClearAllOperations();        
+        else
+        	iWidgetOperations.Remove( 0 );
         }
     }
 

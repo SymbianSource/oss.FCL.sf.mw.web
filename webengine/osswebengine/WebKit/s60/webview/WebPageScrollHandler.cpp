@@ -404,7 +404,7 @@ void WebPageScrollHandler::scrollContent(TPoint& aScrollDelta)
             
             if (shouldScrollVertically || shouldScrollHorizontally){
                 if (m_scrollableView.m_frameView->needScroll(scrollPos)) {
-                    frame->frameView()->scrollTo(scrollPos);
+                    frame->frameView()->scrollTo(scrollPos, ETrue);
                     updateScrollbars(scrollPos, newscrollDelta);
                     core(frame)->sendScrollEvent();
                 }
@@ -431,8 +431,8 @@ void WebPageScrollHandler::scrollContent(TPoint& aScrollDelta)
                 m_currentNormalizedPosition.iY = m_scrollableView.contentPos().iY * 100;
             }
             else {
-          
-                m_scrollableView.m_frameView->scrollTo(scrollPos);
+
+                m_scrollableView.m_frameView->scrollTo(scrollPos, ETrue);
                 m_lastPosition = m_currentPosition;
 #ifndef BRDO_USE_GESTURE_HELPER                
                 m_decel->updatePos();

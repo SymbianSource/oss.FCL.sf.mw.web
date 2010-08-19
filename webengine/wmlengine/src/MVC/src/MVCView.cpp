@@ -137,7 +137,8 @@ NW_LMgr_Box_DumpBoxTree(NW_LMgr_Box_t* box);
 #endif /* DEBUG */
 #endif /* WINS */
 
-
+//CONSTANT
+const TInt KPeriodicTimerStartInterval2Sec(750000);
 // ============================= PRIVATE FUNCTIONS ===============================
 NW_Bool
 CView::ProcessFontSizeChangeEvent ()
@@ -1907,6 +1908,8 @@ void CView::ConstructL (CCoeControl* aParent, TRect& aRect, CWmlControl* aWmlCon
     EnableDragEvents();
     }
   
+  iPeriodicTimer = CPeriodic::NewL(CActive::EPriorityHigh);
+  
   ActivateL();
   }
 
@@ -1929,6 +1932,12 @@ CView* CView::NewL (CCoeControl* aParent,
 // Destructor
 CView::~CView()
 {
+    if(iPeriodicTimer)
+    {
+        // Calling Cancel without checking if the timer is active is safe
+        iPeriodicTimer->Cancel();
+        delete iPeriodicTimer;
+    }
   // remove observer
   //CBrowserSettings::Instance()->RemoveObserver();
 
@@ -4320,6 +4329,14 @@ void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
                 {
                     if((!iDrag))
                     {
+                        if(!iPeriodicTimer->IsActive() )
+                        {
+                            iPeriodicTimer->Start(KPeriodicTimerStartInterval2Sec, NULL, TCallBack(PeriodicTimerCallBack, this));
+                        }
+                        else
+                        {
+                            continue;
+                        }
                         NW_Evt_ActivateEvent_t actEvent;
                         NW_Evt_ActivateEvent_Initialize (&actEvent);
                         ProcessEvent (NW_Evt_EventOf(&actEvent));
@@ -5580,5 +5597,16 @@ void CView::ScrollTo(TPoint aPoint)
     Draw(NW_TRUE);
     }
 
+void CView::CancelPeriodicTimer()
+    {
+    if(iPeriodicTimer) 
+        iPeriodicTimer->Cancel();
+    }
 
+TInt CView::PeriodicTimerCallBack(TAny* aAny)
+    {
+    CView* self = static_cast<CView*>( aAny );
+    self->CancelPeriodicTimer();
+    return KErrNone;
+    }
 // ============================ MEMBER FUNCTIONS ===============================

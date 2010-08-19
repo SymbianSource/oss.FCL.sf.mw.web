@@ -288,10 +288,11 @@ TRect WebFrameView::visibleRect() const
     return TRect(m_contentPos, s );
 }
 
-void WebFrameView::scrollTo(const TPoint& aPoint)
+void WebFrameView::scrollTo(const TPoint& aPoint, TBool aPluginPause)
 {
-
-    m_topView->scrollStatus(ETrue);
+    
+    if(aPluginPause)
+        m_topView->scrollStatus(ETrue);
 
     if (m_parent) {
         // tot:fixme frame scrolling when frame-flat is off
@@ -423,7 +424,6 @@ void WebFrameView::resizeContent(const TSize &size)
         	{ 
             // this will also update scrollbars is necessary
             scrollTo(p);
-            m_topView->scrollStatus(false); 
         	} 
         else if (!m_parent) {
             // top level

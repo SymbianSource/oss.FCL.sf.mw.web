@@ -85,7 +85,7 @@ class MScrollView: public MWebCoreWidget
     virtual TSize sizeHint() const { return TSize(); }
     virtual void draw(WebCoreGraphicsContext&, const TRect&) { }
     virtual void invalidateRect(const TRect&, TBool) = 0;
-    virtual void scrollTo(const TPoint&) = 0;
+    virtual void scrollTo(const TPoint&, TBool aNotifyPlugins=EFalse) = 0;
     virtual TRect visibleRect() const = 0;
     virtual TSize contentSize() const = 0;
     virtual void resizeContent(const TSize&) = 0;

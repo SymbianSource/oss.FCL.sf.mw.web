@@ -68,9 +68,15 @@ namespace
   }
 
 using namespace WebCore;
-CSynDecodeThread *CAnimationDecoderWrapped::iSyncDecodeThread  = NULL;
 const TInt KDownScaleFactor = 2; // scaling is done by a factor of 2.For ex.2,4,8...( similar to ImageViewer )
 const TInt KMaxDownScaleFactor = 8; // limit scaling to 8
+
+CSynDecodeThread *CAnimationDecoderWrapped::iSyncDecodeThread  = NULL;
+void CAnimationDecoderWrapped::closeSyncDecodeThread()
+    {
+    delete iSyncDecodeThread;
+    iSyncDecodeThread = NULL; // it shoudn't be dandling in case of DLL load/unload at runtime 
+    }
 
 // ============================ MEMBER FUNCTIONS ===============================
 // -----------------------------------------------------------------------------
@@ -600,6 +606,7 @@ void CAnimationDecoderWrapped::CompleteLoadL()
         // Normal image ready
         //iDestination = NULL;
         iImageState = EInactive;
+        iDestination->SetInitialisationCompletionStatus(ETrue);
         iObserver->imageReady(sizeinBytes);
         delete iDecoder, iDecoder = NULL;
         m_data = NULL;

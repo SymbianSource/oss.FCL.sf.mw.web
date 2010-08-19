@@ -126,7 +126,11 @@ public: // New functions
      * @since 5.0
      */
     IMPORT_C void DeregisterWidgetL( const TUid& aUid );
-
+    
+    /**
+     * @since 5.0
+     */
+	IMPORT_C void DeregisterWidgetsL( const RArray<TUid>& aUidList);
 
 private:
     /**

@@ -31,11 +31,8 @@ class CFbsBitmap;
 class CBitmapContext;
 class WebView;
 
-#ifdef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
-const TDisplayMode KDisplayMode = EColor64K;
-#else
+
 const TDisplayMode KDisplayMode = EColor16MU;
-#endif
 
 class WebSurface : public CBase
 {

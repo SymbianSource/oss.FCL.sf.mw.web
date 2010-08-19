@@ -99,7 +99,8 @@ CWidgetUiWindow::CWidgetUiWindow( CWidgetUiWindowManager& aWindowManager, CCpsPu
       iPreferredOrientation(TBrCtlDefs::EOrientationUndefined),
       iIsCurrent(EFalse), iShowSoftkeys(EFalse), iWidgetLoaded(EFalse),
       iSchemeProcessing (EFalse), iNetworkState(ENetworkNotAllowed), iUserPermission(ETrue), 
-      iClickCount(0), iWidgetLoadStarted(EFalse)
+      iClickCount(0), iWidgetLoadStarted(EFalse), iSapiPromptCleared(ETrue),iNeedToIgnoreSapiNtfn(0),
+      iNeedToIgnoreSapiClearNtfn(0)
     {
     }
 
@@ -203,7 +204,7 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
     iNeedToNotifyNetworkState = EFalse;
     // determine initial widget online/offline network state
     DetermineNetworkState();
-    iAsyncCallBack = new (ELeave) CAsyncCallBack(TCallBack(DeleteItself,this),CActive::EPriorityUserInput);
+    iAsyncCallBack = new (ELeave) CAsyncCallBack(TCallBack(DeleteItself,this),CActive::EPriorityLow);
     }
 
 // -----------------------------------------------------------------------------
@@ -1303,6 +1304,12 @@ TBool CWidgetUiWindow::CanBeDeleted()
     return !iConnecting;
     }
     
+
+void CWidgetUiWindow::DeleteItself()    
+	{	
+	iAsyncCallBack->CallBack();    
+	}
+
 // -----------------------------------------------------------------------------
 // CWidgetUiWindow::DeleteItself()
 // -----------------------------------------------------------------------------
@@ -1311,6 +1318,12 @@ TInt CWidgetUiWindow::DeleteItself(TAny* aPtr)
     {
     CWidgetUiWindow* self = (CWidgetUiWindow*)aPtr;
     CWidgetUiWindowManager* p = &self->iWindowManager;
+    //if sync request start another event loop
+    if(self->Engine()->IsSynchRequestPending())
+    	{
+    	self->DeleteItself();
+    	return KErrNone;
+    	}
     delete self;
     //The Correct fix is to call AppUI::Exit()
     //But that is leaving

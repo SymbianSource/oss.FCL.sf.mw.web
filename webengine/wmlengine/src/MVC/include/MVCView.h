@@ -442,6 +442,8 @@ private:
     TBrowserStatusCode UpdateScrollBars () const;
 
 	void GetParentBox(NW_LMgr_Box_t* parentBox, NW_LMgr_Box_t** pReturnedParentBox);
+    void CancelPeriodicTimer();
+    static TInt PeriodicTimerCallBack(TAny* aAny);
 private:
     CBitmapContext* iBitmapContext;
     CBitmapDevice* iBitmapDevice;
@@ -506,6 +508,7 @@ private:
   CWmlControl*           iWmlControl;
   TBool iShouldActivate;
   TBool iDrag;
+  CPeriodic* iPeriodicTimer;
 };
 
 #endif  // EPOC32VIEW_H

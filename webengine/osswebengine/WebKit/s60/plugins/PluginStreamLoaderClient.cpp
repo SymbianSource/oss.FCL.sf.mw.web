@@ -167,11 +167,20 @@ void NetscapePlugInStreamLoaderClient::didReceiveResponse(const ResourceResponse
         cancelWithError(ResourceError(String(response.url()), KErrGeneral, String(response.url()), String(response.httpStatusText())));        
         return;
     }
-        
+    
+    // Currently we fill only response encoding type in the header field of NPStream structure, as url,MimeType and content-Length
+    // are already a part of NPStream Structure
+    
+    HBufC8* headerPtr = HBufC8::NewLC(response.textEncodingName().length() + 1);
+    headerPtr->Des().Copy(response.textEncodingName().des());
+    headerPtr->Des().Append('\0');
+    const char* headers = (const char*)headerPtr->Ptr();
+    
     if (m_pluginstream) {
-        TRAP(m_error, m_pluginstream->createNPStreamL(response.url().des(), response.mimeType().des(), response.expectedContentLength()));
+        TRAP(m_error, m_pluginstream->createNPStreamL(response.url().des(), response.mimeType().des(), response.expectedContentLength(), headers));
     }
-        
+    
+    CleanupStack::PopAndDestroy(headerPtr);
 }
 
 void NetscapePlugInStreamLoaderClient::didReceiveData(const char* data, int length, long long lengthReceived)

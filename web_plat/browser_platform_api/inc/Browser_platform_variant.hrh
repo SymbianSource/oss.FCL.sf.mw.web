@@ -163,12 +163,18 @@ Default is WML support enabled
 
 // Flag for Multi touch enable 
 #define BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification 
+#define BRDO_SAPINTFN_ENABLED_FF
+
 //To provide WidgetSIDChecker support 
 #define APP_SID_CHECK_SUPPORT_FF
 
 //AT&T DownloadMgr path support flag
 #define DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
 
+//Music Store Warning Level Feature Flag
+#define DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
 // One Click Connectivity support flag
 #define BRDO_OCC_ENABLED_FF
 
@@ -204,6 +210,9 @@ Default is WML support enabled
 //AT&T DownloadMgr path support flag
 #undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
 
+//Music Store Warning Level Feature Flag
+#undef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
+
 //Single click support
 #undef BRDO_SINGLE_CLICK_ENABLED_FF
 
@@ -218,6 +227,9 @@ Default is WML support enabled
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification 
+#undef BRDO_SAPINTFN_ENABLED_FF
 
 //Flag for performance improvements in TB9.2
 #undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
@@ -300,6 +312,9 @@ Default is WML support enabled
 //AT&T DownloadMgr path support flag
 #undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
 
+//Music Store Warning Level Feature Flag
+#undef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
+
 //Single click support
 #undef BRDO_SINGLE_CLICK_ENABLED_FF
 
@@ -308,6 +323,9 @@ Default is WML support enabled
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification  
+#undef BRDO_SAPINTFN_ENABLED_FF
 
 //Flag for performance improvements in TB9.2
 #undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
@@ -383,7 +401,10 @@ Default is WML support enabled
 #undef BRDO_VIDEOPLAYER2_ENABLED_FF
 
 //AT&T DownloadMgr path support flag
-#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+
+//Music Store Warning Level Feature Flag
+#undef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF 
 
 //OCC support
 #undef BRDO_OCC_ENABLED_FF
@@ -397,6 +418,9 @@ Default is WML support enabled
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification 
+#undef BRDO_SAPINTFN_ENABLED_FF
 
 //Flag for performance improvements in TB9.2
 #undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
@@ -444,7 +468,10 @@ Default is WML support enabled
 #undef BRDO_VIDEOPLAYER2_ENABLED_FF
 
 //AT&T DownloadMgr path support flag
-#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+
+//Music Store Warning Level Feature Flag
+#undef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF 
 
 //OCC support
 #undef BRDO_OCC_ENABLED_FF
@@ -456,6 +483,9 @@ Default is WML support enabled
 
 // Flag for Multi touch enable 
 #undef BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification 
+#undef BRDO_SAPINTFN_ENABLED_FF
 
 //Flag for performance improvements in TB9.2
 #undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
@@ -503,6 +533,9 @@ Default is WML support enabled
 
 //AT&T DownloadMgr path support flag
 #define DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
+//Music Store Warning Level Feature Flag
+#define DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
 
 //Single click support
 #define BRDO_SINGLE_CLICK_ENABLED_FF

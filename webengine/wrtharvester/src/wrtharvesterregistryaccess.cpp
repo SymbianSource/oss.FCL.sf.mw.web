@@ -66,11 +66,13 @@ void WrtHarvesterRegistryAccess::WidgetInfosL(
         	   IsNokiaWidget( session, widgetInfo->iUid ))
             {
             CWrtInfo* info = new CWrtInfo();
+            CleanupStack::PushL(info);
             info->iUid = widgetInfo->iUid;
             info->iBundleId = WidgetPropertyL( session, widgetInfo->iUid, EBundleIdentifier );
             info->iDisplayName = WidgetPropertyL( session, widgetInfo->iUid, EBundleDisplayName );
             info->iType = KS60Widget;
             aWidgetInfoArray.AppendL( info );
+            CleanupStack::Pop(info);
             }
         }
     CleanupStack::PopAndDestroy( &session );

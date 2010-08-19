@@ -893,7 +893,7 @@ void RenderLayer::resize(const PlatformMouseEvent& evt, const IntSize& oldOffset
     ExceptionCode ec;
 
     if (difference.width()) {
-        if (element && element->isControl()) {
+        if (element->isControl()) {
             // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
             style->setProperty(CSS_PROP_MARGIN_LEFT, String::number(renderer->marginLeft()) + "px", false, ec);
             style->setProperty(CSS_PROP_MARGIN_RIGHT, String::number(renderer->marginRight()) + "px", false, ec);
@@ -904,7 +904,7 @@ void RenderLayer::resize(const PlatformMouseEvent& evt, const IntSize& oldOffset
     }
 
     if (difference.height()) {
-        if (element && element->isControl()) {
+        if (element->isControl()) {
             // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
             style->setProperty(CSS_PROP_MARGIN_TOP, String::number(renderer->marginTop()) + "px", false, ec);
             style->setProperty(CSS_PROP_MARGIN_BOTTOM, String::number(renderer->marginBottom()) + "px", false, ec);

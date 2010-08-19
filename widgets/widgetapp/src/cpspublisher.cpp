@@ -671,6 +671,11 @@ void CCpsPublisher::RemoveScreenshotFromCpsL(const TDesC& aWidget)
     {
     CLiwGenericParamList& inparam = iServiceHandler->InParamListL();
     CLiwGenericParamList& outparam = iServiceHandler->OutParamListL();
+    
+    TLiwGenericParam cptype( KType, TLiwVariant( KCpData ));
+    cptype.PushL();
+
+    inparam.AppendL( cptype );
 
     CLiwDefaultMap* cpdatamap = CLiwDefaultMap::NewLC();
     
@@ -688,6 +693,7 @@ void CCpsPublisher::RemoveScreenshotFromCpsL(const TDesC& aWidget)
  
     CleanupStack::PopAndDestroy( &item );
     CleanupStack::PopAndDestroy( cpdatamap );
+    CleanupStack::PopAndDestroy( &cptype );
 
     outparam.Reset();
     inparam.Reset();

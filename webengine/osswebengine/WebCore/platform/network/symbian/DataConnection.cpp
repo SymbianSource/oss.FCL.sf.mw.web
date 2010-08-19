@@ -159,7 +159,8 @@ void DataConnection::parseUrlLC(HBufC8*& contentType, HBufC8*& encoding, HBufC8*
             }
         }
     }
-    m_maxSize = body->Length();
+    if(body != NULL)
+        m_maxSize = body->Length();
 }
 
 void DataConnection::cancel()
@@ -202,12 +203,17 @@ void DataConnection::sendResponseL()
     HBufC8* encoding = NULL;
     HBufC8* body = NULL;
     parseUrlLC(contentType, encoding, body);
-
-    ResourceResponse response(m_handle->request().url().des(), contentType->Des(), body->Length(), encoding->Des(), String() );
-    CResourceHandleManager::self()->receivedResponse(m_handle, response, this);
-    CResourceHandleManager::self()->receivedData(m_handle, body->Des(), body->Length(), this);
+    if(body != NULL)
+        {
+        ResourceResponse response(m_handle->request().url().des(), contentType->Des(), body->Length(), encoding->Des(), String() );
+        CResourceHandleManager::self()->receivedResponse(m_handle, response, this);
+        CResourceHandleManager::self()->receivedData(m_handle, body->Des(), body->Length(), this);
+        }
     CResourceHandleManager::self()->receivedFinished(m_handle, KErrNone, this);
-    CleanupStack::PopAndDestroy(3); // contentType, encoding, body
+    if(body != NULL)
+        CleanupStack::PopAndDestroy(3); // contentType, encoding, body
+    else
+        CleanupStack::PopAndDestroy(2); // contentType, encoding
     derefHandle();
     }
 

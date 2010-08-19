@@ -22,7 +22,7 @@
 #include <e32std.h>
 #include <e32base.h>
 #include <Timer.h>
-
+#include <kjs_window.h>
 static TInt64 remainingMicro = 0;
 static bool shutdownInProgress = false;
 
@@ -123,6 +123,8 @@ void shutdownSharedTimer()
     shutdownInProgress = true;
     stopSharedTimer();
     TimerBase::deleteTimerHeap();
+        
+    KJS::shutdownJSTimer();
     }
 
 void initSharedTimer()

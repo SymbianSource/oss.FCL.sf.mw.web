@@ -104,7 +104,7 @@ void CDlStylusPopupMenu::HandleLongTapEventL( const TPoint& aPenEventLocation, c
         iStylusPopupMenu->SetItemDimmed(EDownloadsListCmdFileManager,ETrue);
         }
    
-    if(typeAudio != 1) //Not an audio type 
+    if(typeAudio != 1 || (typeAudio == 1 && dlData.iNumMediaObjects > 1)) //Not an audio type or multiple audio type objects.
         {
         isAiwcall = ETrue;
         iStylusPopupMenu->SetItemDimmed(EAiwCmdContact,ETrue);

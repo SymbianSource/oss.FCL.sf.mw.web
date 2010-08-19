@@ -790,14 +790,6 @@ _NW_FBox_Epoc32InputSkin_SetVKB(NW_FBox_InputSkin_t* aSkin)
     thisObj->cppEpoc32InputBox->ActivateVKB();
   }
   
-  // also try to launch async in case dialog is up
-  if (thisObj->vkbTimer == NULL) 
-    {
-      thisObj->vkbTimer = NW_System_Timer_New (NW_FBox_InputSkin_VKBCallback,
-                                                 thisObj, 4000, NW_FALSE);
-    }
-
-
   return KBrsrSuccess;
 }
 

@@ -38,14 +38,17 @@
 #include "StaticObjectsContainer.h"
 #include "WebFrame.h"
 #include "ResourceHandleClient.h"
-
+#include <FeatMgr.h>
 // CONSTANTS
 _LIT8( KHttpProtString, "HTTP/TCP" );
 _LIT (KNullStr, "");
 const TInt KResetRetryFlagTimeOut = 5*1000*1000;
 TInt doResetFlag(TAny*);
 class MBrCtlSpecialLoadObserver;
-
+//FIXME: Below constant need to be properly set or removed after wk30 platform, since it will be defined by platform
+#define KFeatureIdBrowserGracefulSocketShutdown 361
+//Below is socket lingering timeout
+#define SOCKET_LINGERING_TIMEOUT 100000
 using namespace WebCore;
 
 HttpSessionManager::HttpSessionManager()
@@ -61,6 +64,7 @@ HttpSessionManager::HttpSessionManager()
     m_SelfDownloadContentHandler = NULL;
     m_SelfDownloadContentTypes = KNullStr().Alloc();
     retryConnectivityFlag = EFalse;
+    m_inSecConnection = EFalse;
     m_resetTimer = NULL;
 }
 
@@ -98,11 +102,31 @@ void HttpSessionManager::openHttpSessionIfNeededL()
         RStringPool strP = m_httpSession.StringPool();
         const TStringTable& stringTable = RHTTPSession::GetTable();
         RHTTPConnectionInfo connInfo = m_httpSession.ConnectionInfo();
-
-        // set shutdown
-        THTTPHdrVal immediateShutdown = strP.StringF( HTTP::ESocketShutdownImmediate, stringTable );
-        connInfo.SetPropertyL ( strP.StringF( HTTP::ESocketShutdownMode, stringTable ), immediateShutdown );
-
+        
+        TBool gracefulShutdown = false;
+        RStringF retStr;
+        TInt err( KErrNone );
+        
+#ifdef BRDO_OCC_ENABLED_FF 
+        FeatureManager::InitializeLibL();
+        gracefulShutdown = FeatureManager::FeatureSupported( KFeatureIdBrowserGracefulSocketShutdown );
+        FeatureManager::UnInitializeLib();
+        retStr = strP.StringF( HTTP::EHttpEnableOptimalPipelining + 3, stringTable );
+        
+#endif
+        
+        if( err == KErrNone && gracefulShutdown && retStr != RStringF())
+            {
+            //Property exists
+            THTTPHdrVal setValue(SOCKET_LINGERING_TIMEOUT);
+            connInfo.SetPropertyL ( strP.StringF( HTTP::EHttpEnableOptimalPipelining + 3, stringTable ), setValue );
+            }
+        else 
+            {
+            // set shutdown
+            THTTPHdrVal immediateShutdown = strP.StringF( HTTP::ESocketShutdownImmediate, stringTable );
+            connInfo.SetPropertyL ( strP.StringF( HTTP::ESocketShutdownMode, stringTable ), immediateShutdown );
+            }
         // set pipelining
         RStringF maxConnection = strP.StringF( HTTP::EMaxNumTransportHandlers , stringTable );
         connInfo.SetPropertyL( maxConnection, THTTPHdrVal( KHttpMaxConnectionNum ) );
@@ -130,6 +154,11 @@ void HttpSessionManager::openHttpSessionIfNeededL()
 		//set HTTP socket prioritis to high
 		THTTPHdrVal enableTranspHndlrPriority(strP.StringF(HTTP::EEnableTranspHndlrPriority, RHTTPSession::GetTable()));
 		connInfo.SetPropertyL(strP.StringF(HTTP::ETranspHndlrPriority, RHTTPSession::GetTable()), enableTranspHndlrPriority);
+
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+        RStringF strictHeaders = strP.StringF(HTTP::EEnableStrictConnectHeaders, RHTTPSession::GetTable());
+        connInfo.SetPropertyL(strP.StringF(HTTP::EStrictConnectHeaders, RHTTPSession::GetTable()), strictHeaders);
+#endif
 
         strP.OpenL( HttpFilterCommonStringsExt::GetTable() );
         strP.OpenL( HttpFilterCommonStringsExt::GetLanguageTable() );
@@ -344,6 +373,7 @@ void HttpSessionManager::downloadL(ResourceHandle* handle, const ResourceRequest
                                   const ResourceResponse& response, HttpConnection* connection)
 {
     RHTTPTransaction* connTransaction = connection->takeOwnershipHttpTransaction();
+    removeRequest(connection);
     WebFrame* webFrame = kit(connection->frame());
     if (!m_SelfDownloadContentHandler) {
         m_SelfDownloadContentHandler = SelfDownloadContentHandler::NewL(
@@ -355,6 +385,7 @@ void HttpSessionManager::downloadL(ResourceHandle* handle, const ResourceRequest
 		!= KErrNotSupported) {
 		if (m_OutstandingSelfDl) {
 			// only one outstanding self download is supported
+            connTransaction->Close();
 			User::Leave(KErrCancel);
 		}
 		else {
@@ -520,7 +551,6 @@ void HttpSessionManager::cancelQueuedTransactions()
 
 void HttpSessionManager::startTimer()
 {
-	RDebug::Printf("hamish HttpSessionManager::startTimer()");
     if(m_resetTimer)
         deleteTimer();
     m_resetTimer = CPeriodic::NewL(CActive::EPriorityStandard);
@@ -536,7 +566,6 @@ void HttpSessionManager::deleteTimer()
     
 TInt doResetFlag(TAny* ptr)
 {
-	RDebug::Printf("hamish doResetFlag");
     HttpSessionManager* tmp = static_cast<HttpSessionManager*>(ptr);
     tmp->unSetRetryConnectivityFlag();
     tmp->deleteTimer();  

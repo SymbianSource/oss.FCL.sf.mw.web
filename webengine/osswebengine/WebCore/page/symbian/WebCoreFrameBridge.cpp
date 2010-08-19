@@ -142,7 +142,7 @@ void WebCoreFrameBridge::close()
 
 void WebCoreFrameBridge::addData(const char* data, int length)
 {
-    Document *doc = m_frame->document();
+    Document *doc = m_frame ? m_frame->document() : NULL;
     
     // Document may be nil if the part is about to redirect
     // as a result of JS executing during load, i.e. one frame
@@ -177,8 +177,8 @@ void WebCoreFrameBridge::clearFrame()
 void WebCoreFrameBridge::createFrameViewWithScrollView(MWebCoreWidget* view, int marginWidth, int marginHeight)
 {
     // If we own the view, delete the old one - otherwise the render m_frame will take care of deleting the view.
-    if (m_frame)
-        m_frame->setView(NULL);
+    ASSERT(m_frame); 
+    m_frame->setView(NULL);
 
     FrameView* frameView = new FrameView(m_frame);
     m_frame->setView(frameView);

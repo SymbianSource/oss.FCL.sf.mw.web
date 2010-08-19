@@ -247,6 +247,10 @@ void FormFillController::saveFormData(HTMLFormElement* form, MFormFillCallback* 
                         if (!m_passwdDB->saveAllowed(realm))
                             ignorefield = true;
 
+                        // check if username, password value is missing
+                        if(!passwd->value() || !input->value())
+                            ignorefield = true;
+
                         // if login info is already saved, don't save again
                         if (!ignorefield && m_passwdDB->contains(realm, input->name(), input->value(), passwd->name(), passwd->value())) {
                             ignorefield = true;

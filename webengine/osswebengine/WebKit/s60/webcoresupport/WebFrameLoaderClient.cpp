@@ -115,14 +115,13 @@ void WebFrameLoaderClient::makeDocumentView()
     //NSView <WebDocumentView> *documentView = [v _makeDocumentViewForDataSource:ds];
     //if (!documentView)
     //    return;
-
-    if (m_webFrame && 
-        m_webFrame->frameView() && 
-        m_webFrame->frameView()->topView()&&
-        !m_webFrame->parentFrame()) {
-
-        m_webFrame->frameView()->topView()->setEditable(false);
-    }
+    if(m_webFrame) {
+        if (m_webFrame->frameView() && 
+            m_webFrame->frameView()->topView()&&
+           !m_webFrame->parentFrame()) {
+            m_webFrame->frameView()->topView()->setEditable(false);
+        }
+        
     WebFrameBridge *bridge = m_webFrame->bridge();
 
     // FIXME: We could save work and not do this for a top-level view that is not a WebHTMLView.
@@ -130,6 +129,7 @@ void WebFrameLoaderClient::makeDocumentView()
     bridge->createFrameViewWithScrollView(v, v->marginWidth(), v->marginHeight());
     //m_webFrame.get() _updateBackground];
     bridge->installInFrame(v);
+    }
 
     // Call setDataSource on the document view after it has been placed in the view hierarchy.
     // This what we for the top-level view, so should do this for views in subframes as well.

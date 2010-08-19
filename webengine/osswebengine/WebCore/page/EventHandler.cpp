@@ -531,14 +531,24 @@ void EventHandler::setAutoscrollRenderer(RenderObject* renderer)
 
 void EventHandler::allowDHTMLDrag(bool& flagDHTML, bool& flagUA) const
 {
-    if (!m_frame || !m_frame->document()) {
-        flagDHTML = false;
-        flagUA = false;
-    }
+    flagDHTML = false;
+    flagUA = false;
     
-    unsigned mask = m_frame->page()->dragController()->delegateDragSourceAction(m_frame->view()->contentsToWindow(m_mouseDownPos));
+    if (!m_frame)
+        return;
+    
+    Page* page = m_frame->page();
+    if(!page)
+        return;
+    
+    FrameView* view = m_frame->view();
+    if(!view)
+        return;
+    
+    unsigned mask = page->dragController()->delegateDragSourceAction(view->contentsToWindow(m_mouseDownPos));
     flagDHTML = (mask & DragSourceActionDHTML) != DragSourceActionNone;
     flagUA = ((mask & DragSourceActionImage) || (mask & DragSourceActionLink) || (mask & DragSourceActionSelection));
+    
 }
     
 HitTestResult EventHandler::hitTestResultAtPoint(const IntPoint& point, bool allowShadowContent)
@@ -686,7 +696,11 @@ Cursor EventHandler::selectCursor(const MouseEventWithHitTestResults& event, Pla
             if (cimage->image()->isNull())
                 break;
             if (!cimage->errorOccurred())
-                return Cursor(cimage->image(), hotSpot);
+          //The implementation for Cursor(cimage->image(), hotSpot) is not present.So calling this method will create a partially constructed object
+          //where PlatformCursor pointer points to nothing.This will cause crashes when cursor.Imp()->Type will be called.
+          //So better to call nonecursor instead of Cursor(cimage->image(), hotSpot).
+          //return Cursor(cimage->image(), hotSpot).
+          return noneCursor();
         }
     }
 

@@ -112,8 +112,8 @@ int NumberOfPendingOrLoadingRequests(DocLoader*) { return 0; }
 
 void GraphicsContext::setShadow(IntSize const&,int,Color const&) { }
 void GraphicsContext::clearShadow() { }
-void GraphicsContext::beginTransparencyLayer(float) { }
-void GraphicsContext::endTransparencyLayer() { }
+/*void GraphicsContext::beginTransparencyLayer(float) { }
+void GraphicsContext::endTransparencyLayer() { }*/
 void GraphicsContext::clearRect(const FloatRect&) { }
 void GraphicsContext::strokeRect(const FloatRect&, float) { }
 void GraphicsContext::setLineCap(LineCap) { }

@@ -282,6 +282,12 @@ TKeyResponse CWidgetUiWindowContainer::OfferKeyEventL(
         return EKeyWasConsumed;
         }
 
+    //Ignore application keys(EKeyApplication0-EKeyApplication1F)
+    if( (aKeyEvent.iCode>=EKeyApplication0 && aKeyEvent.iCode<= EKeyApplicationF) || 
+        (aKeyEvent.iCode>=EKeyApplication10 && aKeyEvent.iCode<= EKeyApplication1F) )
+        {
+        return EKeyWasNotConsumed;
+        }
     TKeyResponse resp(EKeyWasNotConsumed);
     TBool editing(EFalse);
 	//Reset the iIsOptionsMenuActivated if enabled

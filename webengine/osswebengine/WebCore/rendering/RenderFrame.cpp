@@ -74,8 +74,7 @@ void RenderFrame::layoutWithFlattening(bool flexibleWidth, bool flexibleHeight)
     if (!m_width || !m_height || !childRoot) {
         updateWidgetPosition();
         if (childFrameView)
-            while (childFrameView->layoutPending())
-                childFrameView->layout();
+            childFrameView->layout();
         setNeedsLayout(false);
         return;
     }
@@ -96,9 +95,9 @@ void RenderFrame::layoutWithFlattening(bool flexibleWidth, bool flexibleHeight)
     // update again to pass the width to the child frame
     updateWidgetPosition();
      
-    do
-        childFrameView->layout();
-    while (childFrameView->layoutPending() || childRoot->needsLayout());
+
+    childFrameView->layout();
+
         
     if (scrolling || flexibleHeight || childFrameView->frame()->isFrameSet())
         m_height = max(m_height, childFrameView->contentsHeight());

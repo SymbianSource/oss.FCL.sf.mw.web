@@ -154,7 +154,7 @@ NONSHARABLE_CLASS( CBuffStorage ) : public CActive
     
     // For stalling condition handling
     TInt iLastWriteErrorCode;
-    CActiveSchedulerWait iWait;
+    CActiveSchedulerWait* iWait;
     
     // References to CHttpStorage data
     RFile*& iFile;

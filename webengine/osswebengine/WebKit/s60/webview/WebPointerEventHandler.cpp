@@ -118,13 +118,16 @@ void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGestu
              PluginSkin* plugin = pluginHandler->getVisiblePlugins()[i];
              if (plugin && plugin->pluginWin() && plugin->pluginWin()->containsPoint(*m_webview,aGesture.CurrentPos())) {
                  if (plugin->pluginWin()->HandleGesture(aGesture)) {
-                     if(!plugin->isActive()) {
-                         plugin->activate();
-                     }
-                     else {
-                         m_webview->mainFrame()->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
-                         m_webview->page()->focusController()->setFocusedNode(plugin->getElement(), m_webview->page()->focusController()->focusedOrMainFrame());                        
-                         m_webview->brCtl()->updateDefaultSoftkeys();
+                     // Above call can end up in the deletion of the plugin, so check if the plugin is still alive
+                     if (pluginHandler->getVisiblePlugins().Find(plugin) != KErrNotFound) {
+                         if(!plugin->isActive()) {
+                             plugin->activate();
+                         }
+                         else {
+                             m_webview->mainFrame()->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
+                             m_webview->page()->focusController()->setFocusedNode(plugin->getElement(), m_webview->page()->focusController()->focusedOrMainFrame());                        
+                             m_webview->brCtl()->updateDefaultSoftkeys();
+                         }
                      }
                      return;
                  }
@@ -470,14 +473,13 @@ void WebPointerEventHandler::doTapL()
      m_lastTapEvent.iType = TPointerEvent::EButton1Up;
      m_lastTapEvent.iModifiers = 0;
 
-    // don't pass the event if the text input is not in valid format
-    if (m_webview->fepTextEditor()->validateTextFormat()) {
-        if (!IS_NAVIGATION_NONE) {
-            // in case of navigation none button down was sent in buttonDownTimerCB()
-            m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
-        }
-        m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Up,  m_highlightPos, coreFrame);
-    }
+     m_webview->fepTextEditor()->validateTextFormat();
+     
+     if (!IS_NAVIGATION_NONE) {
+         // in case of navigation none button down was sent in buttonDownTimerCB()
+         m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
+     }
+     m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Up,  m_highlightPos, coreFrame);
 
     // special handling for broken image (why is this here??)
     if (elType == TBrCtlDefs::EElementBrokenImage) {

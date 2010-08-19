@@ -164,6 +164,14 @@ class CHttpCacheStreamHandler : public CBase
         * @return
         */
         TBool FlushAsync( CHttpCacheEntry& aCacheEntry , TRequestStatus& aStatus);
+        
+        /**
+        * CancelFlush
+        * @since 7.2
+        * @param
+        * @return
+        */
+        void CancelFlush(CHttpCacheEntry& aEntry);
 
         /**
         *

@@ -34,6 +34,8 @@
 
 namespace WebCore {
 
+static const unsigned invalidPortNumber = 0xFFFF;
+
 ResourceHandle::ResourceHandle(const ResourceRequest& request, ResourceHandleClient* client, bool defersLoading,
          bool shouldContentSniff, bool mightDownloadFromHandle)
     : d(new ResourceHandleInternal(this, request, client, defersLoading, shouldContentSniff, mightDownloadFromHandle))
@@ -72,7 +74,8 @@ void ResourceHandle::fireBlockedFailure(Timer<ResourceHandle>* timer)
 ResourceHandleClient* ResourceHandle::client() const
 {
     if(d && d->m_client)
-    return d->m_client;
+      return d->m_client;
+	return 0;
 }
 
 void ResourceHandle::setClient(ResourceHandleClient* client)
@@ -164,17 +167,33 @@ bool ResourceHandle::portAllowed(const ResourceRequest& request)
         2049, // NFS
         4045, // lockd
         6000, // X11
+        6665, // Alternate IRC [Apple addition] 
+        6666, // Alternate IRC [Apple addition] 
+        6667, // Standard IRC [Apple addition] 
+        6668, // Alternate IRC [Apple addition] 
+        6669, // Alternate IRC [Apple addition] 
+        invalidPortNumber, // Used to block all invalid port numbers
     };
     const unsigned short* const blockedPortListEnd = blockedPortList
         + sizeof(blockedPortList) / sizeof(blockedPortList[0]);
 
-// fixme use the template
 #if PLATFORM(SYMBIAN)
-    return true;
+	bool found = false;
+
+    for (int i = 0; i < sizeof(blockedPortList) / sizeof(blockedPortList[0]); ++i) {
+        if (blockedPortList[i] == port) {
+           found = true;
+		   break;
+        }
+	}
+    // If the port is not in the blocked port list, allow it.
+	if(!found) return true;
+
 #else
     // If the port is not in the blocked port list, allow it.
     if (!std::binary_search(blockedPortList, blockedPortListEnd, port))
         return true;
+#endif
 
     // Allow ports 21 and 22 for FTP URLs, as Mozilla does.
     if ((port == 21 || port == 22) && request.url().url().startsWith("ftp:", false))
@@ -185,7 +204,6 @@ bool ResourceHandle::portAllowed(const ResourceRequest& request)
         return true;
 
     return false;
-#endif
 }
   
 } // namespace WebCore

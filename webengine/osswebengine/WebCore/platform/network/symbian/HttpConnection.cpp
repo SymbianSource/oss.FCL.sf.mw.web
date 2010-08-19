@@ -180,6 +180,8 @@ HttpConnection::~HttpConnection()
     delete m_unknownContentHandler;
     delete m_cacheSupply;
     delete m_postDataSupplier;
+    if(m_transaction)
+        m_transaction->Close();
     delete m_transaction;
 }
 
@@ -715,7 +717,6 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                 uriParser.UriWithoutFragment( uriNoFrag );
                 TUriParser8 parserNoFrag;
                 parserNoFrag.Parse( uriNoFrag );
-                m_transaction->Request().SetURIL( parserNoFrag );
                 // now save the fragment for later use
                 const TDesC8& fragment = uriParser.Extract( EUriFragment );
                 delete m_frag;
@@ -726,6 +727,7 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                     {
                      m_frag = fragment.AllocL();
                     }
+                m_transaction->Request().SetURIL( parserNoFrag );
                 }
             HandleSpecialEvent(aEvent.iStatus);
             break;
