@@ -61,18 +61,13 @@ void WrtHarvesterRegistryAccess::WidgetInfosL(
         {
         CWidgetInfo* widgetInfo( widgetInfoArr[i] );
         
-
-        if ( SupportsMiniviewL( session, widgetInfo->iUid ) &&
-        	   IsNokiaWidget( session, widgetInfo->iUid ))
+        if ( SupportsMiniviewL( session, widgetInfo->iUid ) )
             {
             CWrtInfo* info = new CWrtInfo();
-            CleanupStack::PushL(info);
             info->iUid = widgetInfo->iUid;
             info->iBundleId = WidgetPropertyL( session, widgetInfo->iUid, EBundleIdentifier );
             info->iDisplayName = WidgetPropertyL( session, widgetInfo->iUid, EBundleDisplayName );
-            info->iType = KS60Widget;
             aWidgetInfoArray.AppendL( info );
-            CleanupStack::Pop(info);
             }
         }
     CleanupStack::PopAndDestroy( &session );
@@ -99,25 +94,6 @@ TBool WrtHarvesterRegistryAccess::SupportsMiniviewL(
     }
     
 // ---------------------------------------------------------------------------
-// Check if it is wgz widget  .
-// ---------------------------------------------------------------------------
-//
-TBool WrtHarvesterRegistryAccess::IsNokiaWidget( 
-    RWidgetRegistryClientSession& aSession,
-    const TUid& aUid )
-    {
-    TBool res( EFalse );
-    
-    CWidgetPropertyValue* value( NULL );
-    value = aSession.GetWidgetPropertyValueL( aUid, ENokiaWidget );
-    
-    res = value && ( *value == 0 || *value == 1 );
-    
-    delete value;
-    return res;
-    }
-    
-// ---------------------------------------------------------------------------
 // Get the widget property as string.
 // ---------------------------------------------------------------------------
 //
@@ -136,5 +112,4 @@ HBufC* WrtHarvesterRegistryAccess::WidgetPropertyL(
     }
     
  //  End of File
-
 

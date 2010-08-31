@@ -31,10 +31,10 @@
 #include "RenderMenuList.h"
 #include "WebFrame.h"
 #include "WebView.h"
-#include "brctl.h"
+#include "BrCtl.h"
 
 #include <e32base.h>
-#include <brctldialogsprovider.h>
+#include <BrCtlDialogsProvider.h>
 
 const TInt KDefaultSize(1);
 namespace WebCore {

@@ -14,6 +14,9 @@
 // * Description:  This is the project specification file for WebCore.
 // *
 
+#include <platform_paths.hrh>
+#include <data_caging_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 #include "../../common.mmpi"
 
 TARGET  WebCorehtml.lib
@@ -107,4 +110,4 @@ SOURCE HTMLTitleElement.cpp
 SOURCE HTMLTokenizer.cpp
 SOURCE HTMLUListElement.cpp
 SOURCE HTMLViewSourceDocument.cpp
-SOURCE PreLoadScanner.cpp
+SOURCE PreloadScanner.cpp

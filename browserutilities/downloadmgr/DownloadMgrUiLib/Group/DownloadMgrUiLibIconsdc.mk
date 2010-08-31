@@ -62,8 +62,7 @@ RESOURCE :
 	mifconv $(ICONTARGETFILENAME) /h$(HEADERFILENAME) \
 		/c8,1 qgn_menu_unknown_lst.bmp \
 		/c8,1 qgn_indi_paused.bmp \
-        /c8,1 qgn_indi_browser_mmc_add.bmp \
-        /c8,1 qgn_prop_memc_ms_tab.bmp
+		/c8,1 qgn_indi_browser_mmc_add.bmp
 
 FREEZE : do_nothing
 

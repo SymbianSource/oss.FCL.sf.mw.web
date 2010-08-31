@@ -22,7 +22,7 @@
 #include "CodView.h"
 #include "CodUi.hrh"
 #include "CodUiPanic.h"
-#include <AknAppUi.h>
+#include <aknappui.h>
 #include <CodUi.rsg>
 
 // ================= MEMBER FUNCTIONS =======================

@@ -23,8 +23,8 @@
 #warning This header file has been deprecated. Will be removed in one of the next SDK releases.
 
 // INCLUDES
-#include <feedsservermsg.h>
-#include <feedsserverrequesthandler.h>
+#include <FeedsServerMsg.h>
+#include <FeedsServerRequestHandler.h>
 
 
 // CONSTANTS

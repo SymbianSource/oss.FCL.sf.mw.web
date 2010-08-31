@@ -25,35 +25,26 @@
 #include "WidgetInstallerInternalCRKeys.h"
 #include "SWInstWidgetUid.h"
 #include "widgetappdefs.rh"
-#include "browser_platform_variant.hrh"
-#include "WidgetUiPSNotifier.h"
+#include "Browser_platform_variant.hrh"
 #ifdef BRDO_WRT_HS_FF
 #include "cpspublisher.h"
 #endif
 
 #include <WidgetUi.rsg>
 #include <brctlinterface.h>
-#include <widgetregistryconstants.h>
+#include <WidgetRegistryConstants.h>
 #include <centralrepository.h>
 #include <StringLoader.h>
-#include <AknNoteDialog.h>
-#include <S32FILE.H>
+#include <aknnotedialog.h>
+#include <BrowserDialogsProvider.h>
+#include <s32file.h>
 #include <aknnotewrappers.h>
 #include "cpglobals.h" // CPS string definitions.
 
-#include <internetconnectionmanager.h>
+#include <InternetConnectionManager.h>
 #include <ActiveApDb.h>
 #include <oommonitorsession.h>
-#include <aknglobalnote.h>
-
-#ifdef BRDO_MULTITOUCH_ENABLED_FF  
-#include<akntranseffect.h>
-#include<gfxtranseffect/GfxTransEffect.h>
-#endif
-
-#ifdef BRDO_OCC_ENABLED_FF
-#include <extendedconnpref.h>
-#endif
+#include <AknGlobalNote.h>
 
 // LOCAL FUNCTION PROTOTYPES
 TInt doDestructOOMNotifyTimer( TAny* ptr );
@@ -68,10 +59,6 @@ const TInt KOOMNotificationDialogIntervalTimeOut = 60000000;
 const TInt KOOMNotificationDialogTimeOut = 2000000;
 const TInt KOOMHarvesterNotificationTimeOut = 5000000;
 const TInt KOOMWidgetCloseTimeOut = 15;//Do not close the widget that was started after OOM within 15 sec
-
-#ifdef BRDO_OCC_ENABLED_FF
-const TInt KRetryConnectivityTimeout( 2*1000*1000 ); // 2 seconds
-#endif
 
 class CRequestRAM : public CActive
     {
@@ -178,34 +165,16 @@ void CWidgetUiWindowManager::ConstructL()
         delete cenRep;
         }
         
+    iDialogsProvider = CBrowserDialogsProvider::NewL( NULL );
     iHandler = CDocumentHandler::NewL(CEikonEnv::Static()->Process());
 
     iDb = CActiveApDb::NewL( EDatabaseTypeIAP );
-    #ifdef BRDO_OCC_ENABLED_FF
-    iConnection = CInternetConnectionManager::NewL( iDb->Database(), ETrue );
-    #else
     iConnection = CInternetConnectionManager::NewL( iDb->Database(), EFalse );
-    #endif
-    
 #ifdef BRDO_WRT_HS_FF    
     iCpsPublisher = CCpsPublisher::NewL();
-    iCenrepNotifyHandler = CCenrepNotifyHandler::NewL( *this );
+#endif
+    
     iNetworkListener = CWidgetUiNetworkListener::NewL( *this );
-#endif
-    
-#ifdef BRDO_OCC_ENABLED_FF
-    iConnStageNotifier = CConnectionStageNotifierWCB::NewL();
-    iConnStageNotifier->SetPriority(CActive::EPriorityHigh);
-    iRetryConnectivity = CPeriodic::NewL(CActive::EPriorityStandard);
-#endif
-    
-        //Creating observer WidgetWindowsObeserver
-    iWidgetNotifier = CWidgetUiPSNotifier::NewL(*this, EWidgetRegAltered);
-    	
-#ifdef BRDO_SAPINTFN_ENABLED_FF
-    iWidgetSapiNotifier = CWidgetUiPSNotifier::NewL(*this, ESapiPrompt);
-    iWidgetSapiClearNotifier = CWidgetUiPSNotifier::NewL(*this, ESapiPromptCleared);
-#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -233,27 +202,9 @@ CWidgetUiWindowManager* CWidgetUiWindowManager::NewL( CWidgetUiAppUi& aAppUi )
 //
 CWidgetUiWindowManager::~CWidgetUiWindowManager()
     {
-#ifdef BRDO_WRT_HS_FF 
-    iCenrepNotifyHandler->DoCancel();
-    delete iCenrepNotifyHandler;
-#endif
-   
-    iActiveFsWindow = NULL;
+    iWindowList.ResetAndDestroy();
     
-#ifdef BRDO_OCC_ENABLED_FF 
-    if ( iRetryConnectivity)
-        {
-        iRetryConnectivity->Cancel();
-        delete iRetryConnectivity;
-        iRetryConnectivity = NULL;
-        }
-#endif
-	 
-	  iWindowList.ResetAndDestroy();
-  
-#ifdef BRDO_WRT_HS_FF   
     delete iNetworkListener;
-#endif
 
     // TODO Why there is a "Disconnect" method in the first place...
     // RHandleBase::Close() should be enough?
@@ -265,6 +216,8 @@ CWidgetUiWindowManager::~CWidgetUiWindowManager()
     iClientSession.Close();
     
     delete iHandler;
+    delete iDialogsProvider;
+
     if ( iConnection )
         {
         TRAP_IGNORE( iConnection->StopConnectionL() );
@@ -275,12 +228,6 @@ CWidgetUiWindowManager::~CWidgetUiWindowManager()
     delete iCpsPublisher;
 #endif
     delete iDb;
-    delete iWidgetNotifier;
-    
-#ifdef BRDO_SAPINTFN_ENABLED_FF
-    delete iWidgetSapiNotifier;
-    delete iWidgetSapiClearNotifier;
-#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -298,20 +245,12 @@ TBool CWidgetUiWindowManager::DeactivateMiniViewL( const TUid& aUid )
     wdgt_window->SetWindowStateMiniViewL( EMiniViewEnabled );
 
     // TODO also other states are possible when we should react?
-    
+
     // Removing . Miniview, shall remove full view as well. For blanket permissions
     // will be revoked for miniview
 
- 
+    iClientSession.SetBlanketPermissionL( aUid, EBlanketUnknown );
     iClientSession.SetMiniViewL( aUid, EFalse );
-#ifdef BRDO_OCC_ENABLED_FF
-    wdgt_window->CancelAllDialogs();
-        
-     if ( wdgt_window->IsDialogsLaunched() )
-        {
-        return EFalse;
-        }
-#endif    
     return CloseWindow( wdgt_window );
     }
 
@@ -389,9 +328,6 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
             {            	
             // If we don't have window we know that WidgetUI has died
             // We must enable miniview state
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-            GfxTransEffect::BeginFullScreen(AknTransEffect::EApplicationStart,TRect(0,0,0,0),AknTransEffect::EParameterType,AknTransEffect::GfxTransParam(TUid::Uid(KWidgetAppUid)));
-#endif
             if( !GetWindow(aUid))
                 {        
                 needToNotify = EFalse;
@@ -401,106 +337,48 @@ void CWidgetUiWindowManager::HandleWidgetCommandL(
             //WidgetLauncher modified to bring app to foreground
             GetWindow( aUid)->IncrementClickCount();
             OpenOrCreateWindowL( aUid, LaunchFullscreen );            
-#ifdef BRDO_MULTITOUCH_ENABLED_FF            
-            GfxTransEffect::EndFullScreen();
-#endif            
             }
             break;
         case WidgetOnline:
             {
             iNetworkMode = EOnlineMode;
             CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
-            if (wdgt_window)
-                {
 #ifdef BRDO_WRT_HS_FF
-                if ( wdgt_window->NetworkModeWait()->IsStarted() )
-                    {
-                    wdgt_window->NetworkModeWait()->AsyncStop();
-                    }
-#endif
-                if(wdgt_window->IsWidgetLoaded())
-                    wdgt_window->DetermineNetworkState();
-                else
-                    wdgt_window->NeedToNotifyNetworkState(ETrue);
+            if ( wdgt_window->NetworkModeWait()->IsStarted() )
+                {
+                wdgt_window->NetworkModeWait()->AsyncStop();
                 }
+#endif
+            wdgt_window->DetermineNetworkState();
             }
             break;
        case WidgetOffline:
             {
             iNetworkMode = EOfflineMode;
             CWidgetUiWindow* wdgt_window( GetWindow( aUid ) );
-            if (wdgt_window)
-                {
 #ifdef BRDO_WRT_HS_FF
-                 if ( wdgt_window->NetworkModeWait()->IsStarted() )
-                     {
-                     wdgt_window->NetworkModeWait()->AsyncStop();
-                     }
+            if ( wdgt_window->NetworkModeWait()->IsStarted() )
+                {
+                wdgt_window->NetworkModeWait()->AsyncStop();
+                }
 #endif
-                 if ( iConnection->Connected())
-                     {
-                     for ( TInt i = 0; i < iWindowList.Count(); i++ )
-                         {
-                         CWidgetUiWindow* window = iWindowList[i];
-                         if ( window && 
-                     	       (window->WidgetMiniViewState() == EPublishStart ||
-                     	       window->WidgetMiniViewState() == EPublishSuspend) 
-                     	      )
-                             //Send cancelFetch to all windows
-                             TRAP_IGNORE( window->Engine()->HandleCommandL( 
-                                (TInt)TBrCtlDefs::ECommandIdBase +
-                                (TInt)TBrCtlDefs::ECommandCancelFetch ) );
-                         }
-                     TRAP_IGNORE( wdgt_window->Engine()->HandleCommandL( 
+            // if no full view widgets open, then close the network connection
+            if ( ( !FullViewWidgetsOpen() ) && ( iConnection->Connected() ) )
+                {
+                wdgt_window->Engine()->HandleCommandL( 
                         (TInt)TBrCtlDefs::ECommandIdBase +
-                        (TInt)TBrCtlDefs::ECommandDisconnect ) );                     
-                      }
-                // if no full view widgets open, then close the network connection
-                if ( !FullViewWidgetsOpen() && iConnection->Connected() )
-                    {
-
-                     iConnection->StopConnectionL();
-#ifdef BRDO_OCC_ENABLED_FF                    
-                     StopConnectionObserving();
-#endif
-                   }
-                if(wdgt_window->IsWidgetLoaded())
-                    wdgt_window->DetermineNetworkState();
-                else
-                    wdgt_window->NeedToNotifyNetworkState(ETrue);
+                        (TInt)TBrCtlDefs::ECommandDisconnect );
+                iConnection->StopConnectionL();
                 }
+            wdgt_window->DetermineNetworkState();
             }
-            break; 
-        case WidgetFullViewClose:
-        	{
-        	needToNotify = EFalse ;
-#ifdef BRDO_OCC_ENABLED_FF 
-        	CWidgetUiWindow* window( GetWindow( aUid ) );
-            if( !window )
-                return;
-            else if ( window->IsDialogsLaunched() )
-                {
-          	    iActiveFsWindow = window;
-          	    // Bring app to foreground
-          	    iAppUi.SendAppToForeground(); 
-          	    if ( iActiveFsWindow->Engine()->Rect() != View()->ClientRect())
-                    {
-                    iActiveFsWindow->Engine()->SetRect( View()->ClientRect() );
-                    }
-                iActiveFsWindow->SetCurrentWindow( ETrue ); 
-          	   
-                }
-            else if (window->getSapiPromptCleared())
-                {
-                Exit( EEikCmdExit, aUid );
-                }
-                       
-         	    
-#else
-                Exit( EEikCmdExit, aUid );
-#endif
-        	}
-        	break;
+            break;
+       case WidgetRestart:
+           {
+           OpenOrCreateWindowL( aUid, LaunchMiniview );
+           ResumeWidgetL( aUid );
+           }
+           break;
         }
     if(needToNotify)
     // Widget is up and running, notify that next one can be launched    
@@ -728,13 +606,13 @@ TBool CWidgetUiWindowManager::CloseWindow( CWidgetUiWindow* aWidgetWindow )
 TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWindow )
     {
     __ASSERT_DEBUG( aWidgetWindow, User::Invariant() );
-    TBool count(EFalse);
-  
+    if ( iDialogsProvider->IsDialogLaunched() )
+        {
+        return EFalse;
+        }
+
     if ( iClientSession.IsWidgetInFullView ( aWidgetWindow->Uid()))
         {
-#ifdef BRDO_WRT_HS_FF
-          iCpsPublisher->ClearScreenshotL(*(aWidgetWindow->WidgetBundleId()), aWidgetWindow->Uid().iUid);
-#endif
         HideWindow( aWidgetWindow );
         if (aWidgetWindow == iActiveFsWindow)
             iActiveFsWindow = NULL;
@@ -755,43 +633,16 @@ TBool CWidgetUiWindowManager::RemoveFromWindowList( CWidgetUiWindow* aWidgetWind
             (TInt)TBrCtlDefs::ECommandCancelFetch ) );   
     if ( lastOne )
         {
-        if(aWidgetWindow->CanBeDeleted())
-            {
-#ifdef BRDO_OCC_ENABLED_FF            
-            StopConnectionObserving();
-#endif
-            iConnection->StopConnectionL();
-            delete aWidgetWindow;
-            return ETrue;
-            }
+        TRAP_IGNORE( aWidgetWindow->Engine()->HandleCommandL( 
+                (TInt)TBrCtlDefs::ECommandIdBase +
+                (TInt)TBrCtlDefs::ECommandDisconnect ) );
+
+        delete aWidgetWindow;
+        return ETrue;
         }
     else
         {
-        if(aWidgetWindow->CanBeDeleted())
-            {
-            for ( TInt i = 0; i < iWindowList.Count(); ++i )
-                {
-                CWidgetUiWindow* window( iWindowList[i] );
-                if(window->WidgetMiniViewState() == EMiniViewEnabled || window->WidgetMiniViewState() == EMiniViewNotEnabled)
-                    {
-                    count = ETrue;
-                    break;
-                    }
-                }         
-            if(!count && iNetworkMode == EOfflineMode){
-#ifdef BRDO_OCC_ENABLED_FF                                    
-                StopConnectionObserving();
-#endif
-                iConnection->StopConnectionL();
-                }             
-            if(!aWidgetWindow->Engine()->IsSynchRequestPending())
-            	delete aWidgetWindow;
-			else
-				{
-				//Let sync request complete and then delete					
-				aWidgetWindow->DeleteItself();
-				}
-            }
+        delete aWidgetWindow;
         }
     return EFalse;
     }
@@ -884,20 +735,13 @@ void CWidgetUiWindowManager::SendWidgetToBackground( const TUid& aUid )
     CWidgetUiWindow* window( GetWindow( aUid ) );
     if( !window )
         return;
-        
-#ifdef BRDO_WRT_HS_FF
-          iCpsPublisher->ClearScreenshotL(*(GetWindow(aUid )->WidgetBundleId()), aUid.iUid);
-#endif
-#ifdef BRDO_MULTITOUCH_ENABLED_FF      
-    GfxTransEffect::BeginFullScreen(AknTransEffect::EApplicationExit,TRect(0,0,0,0),AknTransEffect::EParameterType,AknTransEffect::GfxTransParam(TUid::Uid(KWidgetAppUid)));
-#endif    
+
     // make widgets act like separate applications by pushing to background
     // this way user is sent back to app shell or idle to run another widget
     iAppUi.SendAppToBackground();
     if ( window == iActiveFsWindow )
         {
         //make the active window NULL and also CurrentWindow as False
-        iActiveFsWindow->SetCurrentWindow(EFalse);
         iActiveFsWindow->SetIsCurrentWindow(EFalse);
         iActiveFsWindow = NULL;        
         }        
@@ -1012,22 +856,6 @@ void CWidgetUiWindowManager::HandleForegroundEvent( TBool aForeground )
         }
     else
         {
-#ifdef BRDO_OCC_ENABLED_FF
-        if(iActiveFsWindow)
-            iActiveFsWindow->CancelAllDialogs();
-#endif    
-        
-#ifdef BRDO_WRT_HS_FF  
-        CFbsBitmap* bitmap( new CFbsBitmap() );
-        if ( bitmap && iCpsPublisher)
-            {
-            if(iActiveFsWindow)
-                {
-                TRAP_IGNORE(iActiveFsWindow->Engine()->TakeSnapshotL( *bitmap ));
-                TRAP_IGNORE(iCpsPublisher->PublishScreenshotL(*iActiveFsWindow->WidgetBundleId(),iActiveFsWindow->Uid().iUid, bitmap));
-                }
-             }
-#endif
         HideWindow( iActiveFsWindow );
         }
     }
@@ -1155,12 +983,6 @@ void CWidgetUiWindowManager::ResumeWidgetL( const TUid& aUid )
         (wdgt_window->WidgetMiniViewState() == EPublishSuspend) )
         {
         //Widgets on HS cannnot be active
-        if (iActiveFsWindow )
-            {
-            iActiveFsWindow->Engine()->MakeVisible( EFalse );
-            iActiveFsWindow->SetIsCurrentWindow( EFalse );
-            iActiveFsWindow->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase);
-            }
         iActiveFsWindow = NULL;
         // Publish should start only after widget is resumed.
         wdgt_window->SetWindowStateMiniViewL(EPublishStart);
@@ -1174,11 +996,7 @@ void CWidgetUiWindowManager::ResumeWidgetL( const TUid& aUid )
             (TInt)TBrCtlDefs::ECommandIdBase);
 #ifdef BRDO_WRT_HS_FF 
         wdgt_window->Engine()->MakeVisible( EFalse );
-        wdgt_window->SetIsCurrentWindow( EFalse );
         wdgt_window->Engine()->SetRect( iCpsPublisher->BitmapSize());
-        //When HS comes to foreground show the latest updatd content on HS.
-        //Relayout can sometimes happen only when widget in FullView.
-        wdgt_window->PublishSnapShot();
 #endif
         }
     }
@@ -1440,6 +1258,7 @@ void CWidgetUiWindowManager::NotifyConnecionChange( TBool aConn )
 // ------------------------------------------------------------------------
 TBool  CWidgetUiWindowManager::CloseAllWidgetsUnderOOM()
     {
+    TInt temp(0);
     TInt err(KErrNone);
     CWidgetUiWindow* windowToBeClosed(NULL);
     TTime currentTime;
@@ -1449,13 +1268,6 @@ TBool  CWidgetUiWindowManager::CloseAllWidgetsUnderOOM()
     TBool bAllWindowsClosed = ETrue;
       
     TInt nWidgetsCount = iWindowList.Count();
-    if(nWidgetsCount > 0)
-        { 
-        CWidgetUiWindow* window = iWindowList[0];
-        TRAP_IGNORE( window->Engine()->HandleCommandL( 
-                    (TInt)TBrCtlDefs::ECommandIdBase +
-                    (TInt)TBrCtlDefs::ECommandOOMExit ) );
-        } 
     for ( TInt i = (nWidgetsCount-1); i >= 0; i-- )
         {
         CWidgetUiWindow* window = iWindowList[i];        
@@ -1487,17 +1299,7 @@ void CWidgetUiWindowManager::CloseAllWidgets()
    TInt nWidgetsCount = iWindowList.Count();  
        for ( TInt i = (nWidgetsCount-1); i >= 0; i-- )  
            {  
-           CWidgetUiWindow* window = iWindowList[i];   
-           TRAP_IGNORE( window->Engine()->HandleCommandL( 
-                   (TInt)TBrCtlDefs::ECommandIdBase +
-                   (TInt)TBrCtlDefs::ECommandCancelFetch ) ); 
-           if(i == 0)
-           	    {
-#ifdef BRDO_OCC_ENABLED_FF                       
-                StopConnectionObserving();
-#endif                       
-                iConnection->StopConnectionL();
-                }
+           CWidgetUiWindow* window = iWindowList[i];    
            delete window;  
            }  
    iWindowList.Reset();
@@ -1530,135 +1332,11 @@ TBool CWidgetUiWindowManager::AnyWidgetPublishing()
     return EFalse;
     }
 
-
-void CWidgetUiWindowManager::ExitNow()
-    {
-    iAppUi.Exit();
-    }
-#ifdef BRDO_OCC_ENABLED_FF
-// -----------------------------------------------------------------------------
-// CWidgetUiWindowManager::ConnectionStageAchievedL()
-// -----------------------------------------------------------------------------
-//
-void CWidgetUiWindowManager::ConnectionStageAchievedL()
-    {
-    iConnection->Disconnect();
-    
-    TNifProgressBuf buf = iConnStageNotifier->GetProgressBuffer();
-    CWidgetUiWindow* window( iWindowList[0] );
-    if( buf().iError == KErrDisconnected )
-        {
-        TRAP_IGNORE( window->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
-        SetRetryFlag(ETrue);    
-    
-        TRAP_IGNORE( window->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandCancelQueuedTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
-    
-        if( iRetryConnectivity && iRetryConnectivity->IsActive())
-            {
-            iRetryConnectivity->Cancel();
-            }
-        iRetryConnectivity->Start(KRetryConnectivityTimeout, 0,TCallBack(RetryConnectivity,this));
-        }
-    else
-        {
-        TRAP_IGNORE( window->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandCancelFetch + (TInt)TBrCtlDefs::ECommandIdBase ) );
-        }
-    }  
-
-void CWidgetUiWindowManager::ConnNeededStatusL( TInt aErr )
-    {
-    StopConnectionObserving(); //Need to stop the connection observer first
-
-
-    if ( !iConnStageNotifier->IsActive() )
-        {
-        TName* connectionName = iConnection->ConnectionNameL();
-        CleanupStack::PushL( connectionName );
-
-        iConnStageNotifier->StartNotificationL(connectionName, KLinkLayerClosed, this);
-
-        CleanupStack::PopAndDestroy();  //connectionName
-        }
-    } 
-void CWidgetUiWindowManager::StopConnectionObserving()
-    {
-    
-    if ( iConnStageNotifier )
-        {
-        iConnStageNotifier->Cancel();
-        }
-    } 
-
-// -----------------------------------------------------------------------------
-// CWidgetUiWindow::SetRetryFlag
-// -----------------------------------------------------------------------------
-//
-void CWidgetUiWindowManager::SetRetryFlag(TBool flag)
-     {
-     reConnectivityFlag = flag;
-     }
-// -----------------------------------------------------------------------------
-// CWidgetUiWindow::RetryConnectivity
-// -----------------------------------------------------------------------------
-//
-TInt CWidgetUiWindowManager::RetryConnectivity(TAny* aWindowManager)
-    {
-
-    TInt err = ((CWidgetUiWindowManager*)aWindowManager)->RetryInternetConnection();
-    return err;
-    }
-TInt CWidgetUiWindowManager::RetryInternetConnection()
-    {
-    //First cancel the timer
-    if ( iRetryConnectivity && iRetryConnectivity->IsActive() )
-    {
-        iRetryConnectivity->Cancel();
-    }
-    TInt err = KErrNone;
-    if ( !iConnection->Connected() )
-       {
-       TRAP_IGNORE( err = iConnection->StartConnectionL( ETrue ) );
-       }
-    
-    //Root cause needs to be identified..
-    //Fix for Array out of bound crash..
-    if(!iWindowList.Count())   
-    	return err;
-    	
-    CWidgetUiWindow* window( iWindowList[0] );
-    if( err == KErrNone )
-       { 
-   
-       TRAP_IGNORE( window->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandUnSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
-       SetRetryFlag(EFalse);
-       
-       TRAP_IGNORE(ConnNeededStatusL(err)); //Start the observer again
-       TRAP_IGNORE( window->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandRetryTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
-       }
-    else
-        {
-        TRAP_IGNORE( window->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandUnSetRetryConnectivityFlag + (TInt)TBrCtlDefs::ECommandIdBase ) );
-        SetRetryFlag(EFalse);
-        TRAP_IGNORE(window->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandClearQuedTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
-        }
-    
-    return err;
-    }
-// -----------------------------------------------------------------------------
-// CWidgetUiWindowManager::GetRetryFlag
-// -----------------------------------------------------------------------------
-//
- TBool CWidgetUiWindowManager::GetRetryFlag()
-      {
-      return reConnectivityFlag;
-      } 
-#endif // BRDO_OCC_ENABLED_FF
-
 CRequestRAM::CRequestRAM(CWidgetUiWindowManager* aWidgetUiWindowManager, const TUid& aUid, TUint32 aOperation):
     CActive( EPriorityStandard ),
-    iWidgetUiWindowManager(aWidgetUiWindowManager),
+    iOperation(aOperation),
     iUid(aUid),
-    iOperation(aOperation)
+    iWidgetUiWindowManager(aWidgetUiWindowManager)
     {
 	}
 	
@@ -1675,7 +1353,7 @@ void CRequestRAM::ConstructL()
     {
     User::LeaveIfError(iOomSession.Connect());
     CActiveScheduler::Add( this );
-#ifdef BRDO_OOM_MONITOR2_COMPONENT_FF
+#ifdef FF_OOM_MONITOR2_COMPONENT
     iOomSession.RequestOptionalRam(KMemoryToCreateWidgetWindow, KMemoryToCreateWidgetWindow, KUidWidgetOOMPlugin, iStatus);
     SetActive();
 #else
@@ -1693,7 +1371,6 @@ void CRequestRAM::RunL()
     if(iStatus >= 0)
         {        
         iWidgetUiWindowManager->OpenOrCreateWindowL( iUid, LaunchMiniview );
-        iWidgetUiWindowManager->GetWindow(iUid)->NeedToNotifyNetworkState(ETrue);
         iWidgetUiWindowManager->ResumeWidgetL( iUid );
         iWidgetUiWindowManager->GetWindow(iUid)->SetTime();
 #ifdef OOM_WIDGET_CLOSEALL        
@@ -1720,11 +1397,6 @@ void CRequestRAM::RunL()
     else
         {
         NotifyCommandHandled();
-        TBool lastOne( iWidgetUiWindowManager->WindowListCount() == 0 );
-        if( lastOne )
-            {
-            iWidgetUiWindowManager->AppUi().Exit();
-            }
         iWidgetUiWindowManager->SendAppToBackground();  
         iWidgetUiWindowManager->WidgetUIClientSession().SetActive( iUid, EFalse );
         }        
@@ -1741,131 +1413,5 @@ void CRequestRAM::DoCancel()
     {
     iOomSession.CancelRequestFreeMemory();
     }    
-void CWidgetUiWindowManager::CenrepChanged(TInt aHSModeOnline)
-    {
-    if(iWindowList.Count())
-        {
-        CWidgetUiWindow* window = iWindowList[0];
-        if( window &&
-        	(window->WidgetMiniViewState() == EPublishStart ||
-          window->WidgetMiniViewState() == EPublishSuspend) )
-            {
-            if ( window->NetworkModeWait()->IsStarted() &&  window->WidgetMiniViewState() == EPublishSuspend)
-                {
-                window->NetworkModeWait()->AsyncStop();
-                }
-		        if(aHSModeOnline)
-		            {
-		  	        iNetworkMode = EOnlineMode;
-		            }
-		        else
-		  	        {
-		  	        iNetworkMode = EOfflineMode;
-		  	        
-		  	        if ( iConnection->Connected() )
-		  	            {
-                        for ( TInt i = 0; i < iWindowList.Count(); i++ )
-                            {
-                            CWidgetUiWindow* wdg_window = iWindowList[i];
-                            //send CancelFetch to all windows
-                            TRAP_IGNORE( window->Engine()->HandleCommandL( 
-                                    (TInt)TBrCtlDefs::ECommandIdBase +
-                                    (TInt)TBrCtlDefs::ECommandCancelFetch ) );
-                            }                        
-                        TRAP_IGNORE( window->Engine()->HandleCommandL( 
-                                 (TInt)TBrCtlDefs::ECommandIdBase +
-                                 (TInt)TBrCtlDefs::ECommandDisconnect ) );                        
-                        }
-                    }
-            if(window->IsWidgetLoaded())
-                window->DetermineNetworkState();
-            else
-                window->NeedToNotifyNetworkState(ETrue);
-        
-            }
-        }
-      if ( ( !FullViewWidgetsOpen() ) && iConnection->Connected() && iNetworkMode == EOfflineMode)
-          {          
-#ifdef BRDO_OCC_ENABLED_FF                    
-          StopConnectionObserving();
-#endif
-          iConnection->StopConnectionL();
-          }
-  }        
 
-
-//cenrep notification handling
-
-CCenrepNotifyHandler * CCenrepNotifyHandler::NewL(
-    MCenrepWatcher& aObserver)
-    {
-    CCenrepNotifyHandler* o =  CCenrepNotifyHandler::NewLC(aObserver);
-    CleanupStack:: Pop(o);
-    return o;
-    }
-CCenrepNotifyHandler*  CCenrepNotifyHandler::NewLC(
-    MCenrepWatcher& aObserver) 
-    {
-    CCenrepNotifyHandler* self( new( ELeave ) CCenrepNotifyHandler( aObserver) );
-    CleanupStack:: PushL(self);
-    self->ConstructL();
-    return self;
-    }    
-void CCenrepNotifyHandler::ConstructL()
-    {
-    iUid = TUid::Uid( KCRUidActiveIdleLV ); 
-    iKey = KAIWebStatus;
-    iRepository = CRepository::NewL( iUid );
-    CActiveScheduler::Add(this);
-    StartObservingL();
-    }
-         
-CCenrepNotifyHandler::CCenrepNotifyHandler(MCenrepWatcher& aObserver) : CActive (EPriorityLow),iObserver(aObserver) 
-   {
-         
-   }
-     
-CCenrepNotifyHandler::~CCenrepNotifyHandler()
-    {
-    Cancel(); //first cancel because iRepository is used there
-    delete iRepository;
-    iRepository=NULL;
-    }
-    
-void CCenrepNotifyHandler::StartObservingL()
-    {
-    if( IsActive() )
-        {
-        return; //do nothing if allready observing
-        }
-    User::LeaveIfError(
-                   iRepository->NotifyRequest( iKey, iStatus ) );
-    SetActive();
-    }
-    
-void CCenrepNotifyHandler::StopObserving()
-    {
-    Cancel();
-    }
-    
-void CCenrepNotifyHandler::DoCancel()
-    {
-    iRepository->NotifyCancel(iKey);
-    }
-
-void CCenrepNotifyHandler::RunL()
-    {
-    TInt value = 0;
-    TInt error = iRepository->Get( iKey, value);
-    if( error == KErrNone )
-        {
-        iObserver.CenrepChanged(value);
-        }
-    // Re-subscribe
-   error = iRepository->NotifyRequest( iKey, iStatus );
-   if( error == KErrNone )
-       {
-       SetActive();
-       }
-    }
 // End of file

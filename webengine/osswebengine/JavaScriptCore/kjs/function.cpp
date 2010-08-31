@@ -101,7 +101,7 @@ JSValue* FunctionImp::callAsFunction(ExecState* exec, JSObject* thisObj, const L
 
     bool cont = dbg->callEvent(&newExec,sid,lineno,this,args);
     if (!cont) {
-      dbg->imp()->abort();
+   //   dbg->imp()->abort();
       return jsUndefined();
     }
   }
@@ -135,7 +135,7 @@ JSValue* FunctionImp::callAsFunction(ExecState* exec, JSObject* thisObj, const L
 
     int cont = dbg->returnEvent(&newExec,sid,lineno,this);
     if (!cont) {
-      dbg->imp()->abort();
+   //   dbg->imp()->abort();
       return jsUndefined();
     }
   }

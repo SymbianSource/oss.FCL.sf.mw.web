@@ -17,13 +17,14 @@
 *
 */
 
+
 #ifndef DOWNLOAD_DATA_CLIENT_H
 #define DOWNLOAD_DATA_CLIENT_H
 
 // INCLUDES
 
 #include <e32base.h>
-#include <httpdownloaddata.h>
+#include "HttpDownloadData.h"
 
 // ================= CONSTANTS =======================
 
@@ -200,7 +201,7 @@ NONSHARABLE_CLASS( CMediaDataClient ) : public CMediaDataBase
         * Set destination removable attribute.
         * @param aDesRemovable Whether removable media drive.
         */
-        void SetDesRemovable( TInt32 aDesRemovable );
+        void SetDesRemovable( TBool aDesRemovable );
         
         /**
         * Set last error id attribute.

@@ -255,10 +255,6 @@ public:
     void dump_large_chunk(mstate m, tchunkptr t);
     size_t iUnmappedChunkSize;
 #endif
-    
- 	// Indicates if allocator is running under low memory.
-	// It is set(TRUE) only when acquiring new pages from system.
-    TInt isLowSystemMemory; 
 private:
      /* Dubug checks for chunk page support*/
 #ifdef DL_CHUNK_MEM_DEBUG

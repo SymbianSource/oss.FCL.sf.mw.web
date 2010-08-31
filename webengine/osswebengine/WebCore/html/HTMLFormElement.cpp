@@ -26,7 +26,7 @@
 #include "HTMLFormElement.h"
 
 #include "Base64.h"
-#include "CSSHelper.h"
+#include "csshelper.h"
 #include "CString.h"
 #include "Event.h"
 #include "EventNames.h"
@@ -39,7 +39,7 @@
 #include "HTMLImageElement.h"
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
-#include "MIMETypeRegistry.h"
+#include "MimeTypeRegistry.h"
 #include "RenderTextControl.h"
 
 #if PLATFORM(QT)

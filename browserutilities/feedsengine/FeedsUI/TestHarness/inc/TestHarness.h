@@ -15,18 +15,20 @@
 *
 */
 
+
 #ifndef TEST_HARNESS_H
 #define TEST_HARNESS_H
+
 
 // INCLUDES
 #include <e32base.h>
 #include <e32std.h>
 #include <f32file.h>
 
-#include <feedsserverclient.h>
-#include <feedsserverfeed.h>
-#include <feedsserverfolderitem.h>
-#include <feedsserversettings.h>
+#include <FeedsServerClient.h>
+#include <FeedsServerFeed.h>
+#include <FeedsServerFolderItem.h>
+#include <FeedsServerSettings.h>
 #include "FeedsWaitDialog.h"
 
 // CONSTANTS

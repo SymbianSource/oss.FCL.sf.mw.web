@@ -19,7 +19,7 @@
 
 //  INCLUDES
 #include "BrowserDialogsProvider.hrh"
-#include <browserdialogsprovider.loc>
+#include <BrowserDialogsProvider.loc>
 
 #include <avkon.rsg>
 #include <avkon.rh>	
@@ -27,7 +27,7 @@
 #include <eikon.rh>
 #include <uikon.rh>
 #include <CommonDialogs.rh>
-#include <PathConfiguration.hrh>
+#include <pathconfiguration.hrh>
 
 NAME    BRDP // for Browser Dialogs Provider
 

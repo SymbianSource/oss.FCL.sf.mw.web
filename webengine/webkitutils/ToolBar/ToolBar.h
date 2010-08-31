@@ -15,18 +15,19 @@
 *
 */
 
+
 #ifndef __TOOLBAR
 #define __TOOLBAR
 
 //  INCLUDES
 #include <e32base.h>
 #include <bitstd.h>
-#include <W32STD.H>
-#include <COEDEF.H>
+#include <w32std.h>
+#include <coedef.h>
 #include <AknsConstants.h>
 #include <AknsItemID.h>
 #include <AknsConstants.h>
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include <eikmobs.h>
 #include <webkitutils.rsg>
 // CONSTANTS

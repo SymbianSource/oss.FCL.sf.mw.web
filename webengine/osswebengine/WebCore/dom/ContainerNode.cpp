@@ -671,10 +671,11 @@ void ContainerNode::cloneChildNodes(Node *clone)
 
 bool ContainerNode::getUpperLeftCorner(int &xPos, int &yPos) const
 {
+    if (!renderer())
+        return false;
     RenderObject *o = renderer();
-    if (!o)   return false;
-    
     RenderObject *p = o;
+
     xPos = yPos = 0;
     if (!o->isInline() || o->isReplaced()) {
         o->absolutePosition(xPos, yPos);
@@ -731,9 +732,10 @@ bool ContainerNode::getUpperLeftCorner(int &xPos, int &yPos) const
 
 bool ContainerNode::getLowerRightCorner(int &xPos, int &yPos) const
 {
-    RenderObject *o = renderer();
-    if (!o)   return false;
+    if (!renderer())
+        return false;
 
+    RenderObject *o = renderer();
     xPos = yPos = 0;
     if (!o->isInline() || o->isReplaced())
     {

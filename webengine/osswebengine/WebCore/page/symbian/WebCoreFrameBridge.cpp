@@ -18,7 +18,7 @@
 #include <../bidi.h>
 #include "config.h"
 #include "WebCoreFrameBridge.h"
-#include "frame.h"
+#include "Frame.h"
 #include "FrameLoader.h"
 #include "FrameTree.h"
 #include "FrameView.h"
@@ -26,8 +26,8 @@
 #include "runtime.h"
 #include "kjs_window.h"
 #include "DOMWindow.h"
-#include "document.h"
-#include "documentloader.h"
+#include "Document.h"
+#include "DocumentLoader.h"
 #include "RenderPart.h"
 #include "HTMLNames.h"
 #include "EventNames.h"
@@ -35,8 +35,8 @@
 #include "WebFrameView.h"
 #include "WebView.h"
 #include "WebUtil.h"
-#include "brctl.h"
-#include "settingsContainer.h"
+#include "BrCtl.h"
+#include "SettingsContainer.h"
 #include "RenderView.h"
 #include "Page.h"
 #include "HTMLImageElement.h"
@@ -98,7 +98,6 @@ WebCoreFrameBridge::WebCoreFrameBridge() :
 
 {
     m_focusableNodeList.clear();    
-    m_rtl = FALSE ;
 }
 
 WebCoreFrameBridge::~WebCoreFrameBridge() 
@@ -142,7 +141,7 @@ void WebCoreFrameBridge::close()
 
 void WebCoreFrameBridge::addData(const char* data, int length)
 {
-    Document *doc = m_frame ? m_frame->document() : NULL;
+    Document *doc = m_frame->document();
     
     // Document may be nil if the part is about to redirect
     // as a result of JS executing during load, i.e. one frame
@@ -163,8 +162,7 @@ void WebCoreFrameBridge::receivedData(const char* data, int length, String textE
     bool userChosen = !encoding.isNull() && !encoding.isEmpty();
     if (encoding.isNull()||encoding.isEmpty())
         encoding = textEncodingName;
-    if (m_frame && m_frame->loader())
-        m_frame->loader()->setEncoding(encoding, userChosen);
+    m_frame->loader()->setEncoding(encoding, userChosen);
     addData(data, length);
 }
 
@@ -177,8 +175,8 @@ void WebCoreFrameBridge::clearFrame()
 void WebCoreFrameBridge::createFrameViewWithScrollView(MWebCoreWidget* view, int marginWidth, int marginHeight)
 {
     // If we own the view, delete the old one - otherwise the render m_frame will take care of deleting the view.
-    ASSERT(m_frame); 
-    m_frame->setView(NULL);
+    if (m_frame)
+        m_frame->setView(NULL);
 
     FrameView* frameView = new FrameView(m_frame);
     m_frame->setView(frameView);
@@ -318,10 +316,9 @@ int WebCoreFrameBridge::maxBidiWidth()
 
 void WebCoreFrameBridge::setWritingDirectionRtl(bool isRtl)
 {
-    m_rtl = isRtl;
     // update rtl only for mainframe
     if (m_frame && m_frame == m_frame->page()->mainFrame()) {
-        if (control(m_frame)->brCtlLayoutObserver() && m_rtl)
+        if (control(m_frame)->brCtlLayoutObserver())
             control(m_frame)->brCtlLayoutObserver()->NotifyLayoutChange(isRtl ? EOriginTopRight : EOriginTopLeft);
         if (kit(m_frame->page())->pageScaler())
             kit(m_frame->page())->pageScaler()->SetRelativePosition(0, 3, isRtl ? CPageScaler::ETopLeft : CPageScaler::ETopRight);

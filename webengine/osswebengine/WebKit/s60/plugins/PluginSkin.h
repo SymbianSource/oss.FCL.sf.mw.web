@@ -31,8 +31,7 @@
 #include "WebFrame.h"
 #include "WebFrameView.h"
 #include "WebView.h"
-#include <MemoryManager.h>
-#include <npruntime.h>
+#include "MemoryManager.h"
 //#include <Element.h>
 
 // FORWARD DECLARATIONS
@@ -199,18 +198,6 @@ class PluginSkin : public CBase,
         * @return 
         */        
         TBool isBrowserScheme(const TPtrC8& url);
-        
-        /**
-        * HandleLosingForeground
-        * Handles losing Foreground event 
-        */
-        void HandleLosingForeground();
-                 
-        /**
-        * HandleLosingForeground
-        * Handles Gaining Foreground event 
-        */
-        void HandleGainingForeground();
         
         /**
         *
@@ -427,9 +414,7 @@ class PluginSkin : public CBase,
         TInt handleNetworkAccess() const;
         WebCore::Element* getElement() {return m_element;}
         void setElement(WebCore::Element* aElement) {m_element = aElement;}
-        void reCreatePlugin();
-        TInt activeStreams() { return m_streams.size(); }
-        void NotifyPluginsForScrollOrPinch(bool status);
+
   public:  // from MMemoryCollector
         TUint Collect(unsigned int aRequired);
         void Restore()                          {}
@@ -446,16 +431,8 @@ class PluginSkin : public CBase,
         RArray<NPN_GenericElement>*  genericElementArray(){
             return iGenericElementArray;
         }
-        void setPluginWinClipedRect();
-        TBool isFlashPlugin(){
-          return m_flashContent;
-        }
-        TBool IsCollectBitmapSupported();
-        WebFrame* getWebFrame() const {return m_frame;}
-        void activateVisiblePlugins();
-
   private:  // private member data
-        
+        void setPluginWinClipedRect();
         TRect frameVisibleRect() const;
         void Close();
         
@@ -497,8 +474,8 @@ class PluginSkin : public CBase,
         RArray<NPN_GenericElement>*  iGenericElementArray;
         TRect   m_oldRect;
         TRect    m_oldViewport;
-        NPObject* m_NPObject;
         
+
 public:
         TInt m_handle;
         NPP m_instance;    

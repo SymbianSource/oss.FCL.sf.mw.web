@@ -18,16 +18,15 @@
 // INCLUDE FILES
 #include "HttpCacheUtil.h"
 #include <http/rhttpheaders.h>
-#include <http/RHTTPTransaction.h>
+#include <http/rhttptransaction.h>
 #include <http.h>
 #include <stdlib.h>
 #include <string.h>
 #include <stringpool.h>
 #include <flogger.h>
-#include "TInternetdate.h"
+#include "tinternetdate.h"
 #include "httpfiltercommonstringsext.h"
 #include "HttpCacheEntry.h"
-#include <browser_platform_variant.hrh>
 
 // EXTERNAL DATA STRUCTURES
 
@@ -1641,11 +1640,6 @@ TInt HttpCacheUtil::GetCacheControls(
     // init the field name
     fieldName = aStrP.StringF( HTTP::ECacheControl, RHTTPSession::GetTable() );
     TRAP( status, cacheCount = aHeaders.FieldPartsL( fieldName ) );
-    
-#ifdef __CACHELOG__
-            HttpCacheUtil::WriteLog(0,_L("cacheCount ="),cacheCount);
-#endif
-            
     if( status == KErrNone )
         {
         for( i = 0; i < cacheCount; i++ )
@@ -1728,38 +1722,12 @@ TInt HttpCacheUtil::GetCacheControlDirective(
 
     // Get the cache-control from the headers
     fieldName = aStrP.StringF( HTTP::ECacheControl, RHTTPSession::GetTable() );
-
     aHeaders.GetField( fieldName, aIndex, hdrVal );
-    
-#ifdef __CACHELOG__
-    HttpCacheUtil::WriteLog(0,_L("In GetCacheControlDirective Printing fieldName"));
-    HttpCacheUtil::WriteUrlToLog( 0, fieldName.DesC().Left(fieldName.DesC().Length()) );
-#endif
-    
+
     if( hdrVal.Type() == THTTPHdrVal::KStrVal || hdrVal.Type() == THTTPHdrVal::KStrFVal )
         {
         RStringF cacheDir = hdrVal.StrF();
-        
-#ifdef __CACHELOG__
-        HttpCacheUtil::WriteLog(0,_L("In GetCacheControlDirective Printing hdrVal.StrF()"));
-        HttpCacheUtil::WriteUrlToLog( 0, hdrVal.StrF().DesC().Left(hdrVal.StrF().DesC().Length()) );
-        
-        HttpCacheUtil::WriteLog(0,_L("In GetCacheControlDirective Printing cacheDir"));
-        HttpCacheUtil::WriteUrlToLog( 0, cacheDir.DesC().Left(cacheDir.DesC().Length()) );
-#endif
-        
-#ifdef BRDO_CACHE_MAX_AGE
-        
-        //If the cache-control is key value pair
-        if(cacheDir.DesC().Length() == NULL)
-            {
-        
-            err = ExtractCacheControlDirectivePairValue(aHeaders,aStrP,aDirective,aDirectiveValue,aIndex);
-#ifdef __CACHELOG__
-            HttpCacheUtil::WriteLog(0,_L("In GetCacheControlDirective Printing aDirective"));
-            HttpCacheUtil::WriteUrlToLog(0, aDirective.DesC().Left(aDirective.DesC().Length()) );
-#endif
-#else
+
         TInt endPos;
         _LIT8(KFind, "=");
 
@@ -1773,29 +1741,16 @@ TInt HttpCacheUtil::GetCacheControlDirective(
                 }
             TPtrC8 value = cacheDir.DesC().Right( cacheDir.DesC().Length() - endPos - 1 );
             err = ExtractCacheControlDirectiveValue( aStrP, aDirective, value, aDirectiveValue, aExtraValue );
-
-#ifdef __CACHELOG__
-            HttpCacheUtil::WriteLog(0,_L("In GetCacheControlDirective Printing aDirective"));
-            HttpCacheUtil::WriteUrlToLog(0, aDirective.DesC().Left(aDirective.DesC().Length()) );
-#endif
-            
             if( err != KErrNone )
                 {
                 aDirective.Close();
                 return err;
                 }
-#endif 
             }
-        //If the cache-control is a normal value
         else
             {
             aDirective = cacheDir.Copy();
-            
-#ifdef __CACHELOG__
-            HttpCacheUtil::WriteLog(0,_L("In GetCacheControlDirective Printing aDirective"));
-            HttpCacheUtil::WriteUrlToLog(0, aDirective.DesC().Left(aDirective.DesC().Length()) );
-#endif
-            
+            // Directives which MUST have values
             if( ( aDirective == aStrP.StringF( HTTP::EMaxAge, RHTTPSession::GetTable() ) ) ||
                 ( aDirective == aStrP.StringF( HTTP::EMinFresh, RHTTPSession::GetTable() ) ) ||
                 ( aDirective == aStrP.StringF( HTTP::ESMaxAge, RHTTPSession::GetTable() ) ) )
@@ -1803,142 +1758,16 @@ TInt HttpCacheUtil::GetCacheControlDirective(
                 aDirective.Close();
                 return KErrGeneral;
                 }
-#ifdef BRDO_CACHE_MAX_AGE
-            err = KErrNone;
-            }
-        }
-    return err;
-#else
             }
         }
     return KErrNone;
-#endif
     }
 
-#ifdef BRDO_CACHE_MAX_AGE
-// -----------------------------------------------------------------------------
-// HttpCacheUtil::ExtractCacheControlDirectivePairValue
-//
-// -----------------------------------------------------------------------------
-//
-
-TInt HttpCacheUtil::ExtractCacheControlDirectivePairValue(
-    const RHTTPHeaders& aHeaders,
-    RStringPool aStrP,
-    RStringF& aDirective,
-    TInt64* aDirectiveValue,
-    TInt aIndex)
-    {
-    RStringF fieldName;
-    THTTPHdrVal hdrVal;
-
-    // Get the cache-control from the headers
-    fieldName = aStrP.StringF( HTTP::ECacheControl, RHTTPSession::GetTable() );
-    
-#ifdef __CACHELOG__
-    HttpCacheUtil::WriteLog(0,_L("In ExtractCacheControlDirectivePairValue Printing fieldName"));
-    HttpCacheUtil::WriteUrlToLog(0, fieldName.DesC().Left(fieldName.DesC().Length()) );
-#endif
-    
-    //Get the param name
-    RStringF paramName = aStrP.StringF( HTTP::EMaxAge, RHTTPSession::GetTable() );
-    
-    if(KErrNone != ExtractCacheControlDirectiveValueforParam(aHeaders,aStrP,aDirectiveValue,paramName,aDirective,aIndex))
-        {
-        paramName.Close();
-        paramName = aStrP.StringF( HTTP::EMaxStale, RHTTPSession::GetTable() );
-        if(KErrNone != ExtractCacheControlDirectiveValueforParam(aHeaders,aStrP,aDirectiveValue,paramName,aDirective,aIndex))
-            {
-            paramName.Close();
-            paramName = aStrP.StringF( HTTP::EMinFresh, RHTTPSession::GetTable() );
-            if(KErrNone != ExtractCacheControlDirectiveValueforParam(aHeaders,aStrP,aDirectiveValue,paramName,aDirective,aIndex))
-                {
-                paramName.Close();
-                paramName = aStrP.StringF( HTTP::EMustRevalidate, RHTTPSession::GetTable() );
-                if(KErrNone != ExtractCacheControlDirectiveValueforParam(aHeaders,aStrP,aDirectiveValue,paramName,aDirective,aIndex))
-                    {
-                    paramName.Close();
-                    paramName = aStrP.StringF( HTTP::ENoCache, RHTTPSession::GetTable() );
-                    if(KErrNone != ExtractCacheControlDirectiveValueforParam(aHeaders,aStrP,aDirectiveValue,paramName,aDirective,aIndex))
-                        {
-                        paramName.Close();
-                        paramName = aStrP.StringF( HTTP::ENoStore, RHTTPSession::GetTable() );
-                        if(KErrNone != ExtractCacheControlDirectiveValueforParam(aHeaders,aStrP,aDirectiveValue,paramName,aDirective,aIndex))
-                            {
-                            return KErrGeneral;
-                            }
-                        }
-                    }
-                }
-            }
-        }
-  
-    return KErrNone;
-    }
-// -----------------------------------------------------------------------------
-// HttpCacheUtil::ExtractCacheControlDirectiveValueforParam
-//
-// -----------------------------------------------------------------------------
-//
-TInt HttpCacheUtil::ExtractCacheControlDirectiveValueforParam(
-    const RHTTPHeaders& aHeaders,
-    RStringPool aStrP,
-    TInt64* aDirectiveValue,
-    RStringF& aFieldParam,
-    RStringF& aDirective,
-    TInt aIndex)
-    {
-    
-    RStringF fieldName;
-    THTTPHdrVal hdrVal;
-    
-    // Get the cache-control from the headers
-    fieldName = aStrP.StringF( HTTP::ECacheControl, RHTTPSession::GetTable() );
-    
-    aHeaders.GetParam(fieldName,aFieldParam,hdrVal,aIndex);
-#ifdef __CACHELOG__
-    HttpCacheUtil::WriteLog(0,_L("In ExtractCacheControlDirectiveValueforParam Printing fieldName"));
-    HttpCacheUtil::WriteUrlToLog( 0, fieldName.DesC().Left(fieldName.DesC().Length()) );
-    HttpCacheUtil::WriteLog(0,_L("In ExtractCacheControlDirectiveValueforParam Printing aFieldParam"));
-    HttpCacheUtil::WriteUrlToLog( 0, aFieldParam.DesC().Left(aFieldParam.DesC().Length()) );
-#endif
-    
-    //If the field param does not exist
-    if(hdrVal.Type() == THTTPHdrVal::KNoType)
-        {
-        return KErrGeneral;
-        }
-    else if( hdrVal.Type() == THTTPHdrVal::KTIntVal )
-        {
-        if( !(( aFieldParam == aStrP.StringF( HTTP::EMaxAge, RHTTPSession::GetTable() ) ) ||
-            ( aFieldParam == aStrP.StringF( HTTP::EMinFresh, RHTTPSession::GetTable() ) ) ||
-            ( aFieldParam == aStrP.StringF( HTTP::ESMaxAge, RHTTPSession::GetTable() ) ) ) )
-            {
-                return KErrGeneral;
-            }
-        TInt value = hdrVal.Int();
-        *aDirectiveValue = (TInt64)value;
-        }
-    else
-        {
-        if( !(( aFieldParam == aStrP.StringF( HTTP::ENoCache, RHTTPSession::GetTable() ) ) ||
-              ( aFieldParam == aStrP.StringF( HTTP::EPrivate, RHTTPSession::GetTable() ) ) ||
-              ( aFieldParam == aStrP.StringF( HTTP::EMustRevalidate, RHTTPSession::GetTable() ) )) )
-            {
-                return KErrGeneral;
-            }
-        }
-        aDirective = aFieldParam.Copy();
-        return KErrNone;
-    }
-
-#else
 // -----------------------------------------------------------------------------
 // HttpCacheUtil::ExtractCacheControlDirectiveValue
 //
 // -----------------------------------------------------------------------------
 //
-
 TInt HttpCacheUtil::ExtractCacheControlDirectiveValue(
     RStringPool aStrP,
     RStringF& aDirective,
@@ -1950,10 +1779,6 @@ TInt HttpCacheUtil::ExtractCacheControlDirectiveValue(
     TInt temp;
     char* errorIfNull;
 
-#ifdef __CACHELOG__
-    HttpCacheUtil::WriteLog(0,_L("In ExtractCacheControlDirectiveValue "));
-#endif
-    
     *aDirectiveValue = -1;
     *aExtraValue = NULL;
     char* valuestr = (char*)User::Alloc( aValue.Length() + 1 );
@@ -2004,7 +1829,8 @@ TInt HttpCacheUtil::ExtractCacheControlDirectiveValue(
     User::Free( valuestr );
     return status;
     }
-#endif
+
+
 // -----------------------------------------------------------------------------
 // FilePathHash
 // Hash function for Symbian file paths: discards case first

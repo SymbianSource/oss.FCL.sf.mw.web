@@ -15,6 +15,7 @@
 *
 */
 
+
 /** ----------------------------------------------------------------------- **
     @package:     NW_Encoder
 
@@ -27,8 +28,8 @@
 #ifndef NW_TINYDOM2WBXML_H
 #define NW_TINYDOM2WBXML_H
 
-#include <nw_encoder_wbxmlwriter.h>
-#include <nw_dom_attribute.h>
+#include "nw_encoder_wbxmlwriter.h"
+#include "nw_dom_attribute.h"
 
 #ifdef __cplusplus
 extern "C" {

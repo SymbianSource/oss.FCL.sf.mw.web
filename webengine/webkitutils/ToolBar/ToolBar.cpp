@@ -15,6 +15,7 @@
 *
 */
 
+
 // INCLUDE FILES
 #include <AknUtils.h>
 #include <StringLoader.h>
@@ -30,8 +31,10 @@
 
 #include "ToolBar.h"
 #include "ToolBarButton.h"
+#include "BrCtlDefs.h"
 
 #include "eikon.hrh"
+
 
 // EXTERNAL DATA STRUCTURES
 

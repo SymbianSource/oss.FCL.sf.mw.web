@@ -1,3 +1,0 @@
-EXPORTS
-	?NewWmlEngineL@@YAPAVMWmlEngineInterface@@XZ @ 1 NONAME ; class MWmlEngineInterface * NewWmlEngineL(void)
-

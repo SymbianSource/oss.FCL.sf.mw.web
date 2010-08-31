@@ -14,7 +14,10 @@
 // * Description:  This is the project specification file for WebCore.
 // *
 
+#include <platform_paths.hrh>
+#include <data_caging_paths.hrh>
 #include "../../common.mmpi"
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET  WebCoreplatform.lib
 
@@ -22,7 +25,7 @@ TARGETTYPE  lib
 
 VENDORID    VID_DEFAULT
 
-START RESOURCE ../../../data/webkit.rss
+START RESOURCE ../../../data/Webkit.rss
 DEPENDS avkon.rsg
 DEPENDS eikon.rsg
 HEADER
@@ -45,8 +48,9 @@ START BITMAP webkit.mbm
 	
 	// Masks 
 	SOURCEPATH .
-	SOURCE 1 	../../../data/SelectMultimask.bmp
+	SOURCE 1 	../../../data/SelectMultiMask.bmp
 END
+
 
 //OPTION CW -prefix pragmas.pref
 

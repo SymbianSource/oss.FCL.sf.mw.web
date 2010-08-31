@@ -15,18 +15,20 @@
  *
 */
 
+
 #ifndef FEED_INTERFACE_H
 #define FEED_INTERFACE_H
+
+#warning The Feeds Engine API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
 
 // INCLUDES
 #include <e32std.h>
 #include <e32base.h>
 #include <ApEngineconsts.h>
-//#include <transaction.h>
-#include <feedsentity.h>
-#include <feedattributes.h>
-#include <folderattributes.h>
-
+//#include "Transaction.h"
+#include "FeedsEntity.h"
+#include "FeedAttributes.h"
+#include "FolderAttributes.h"
 // CONSTANTS
 
 // MACROS

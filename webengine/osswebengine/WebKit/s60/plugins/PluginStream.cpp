@@ -15,7 +15,7 @@
 *
 */
 
-#include <SysUtil.h>
+#include <sysutil.h>
 #include "../../bidi.h"
 
 #include "Frame.h"
@@ -56,7 +56,7 @@ void PluginStream::close()
     m_loaderclient->stop();
 }
 
-void PluginStream::createNPStreamL(TPtrC8 url, TPtrC16 mimetype, long long length, const char* headers)
+void PluginStream::createNPStreamL(TPtrC8 url, TPtrC16 mimetype, long long length)
 {
     
     NPError error( NPERR_NO_ERROR );
@@ -84,8 +84,7 @@ void PluginStream::createNPStreamL(TPtrC8 url, TPtrC16 mimetype, long long lengt
             m_stream->url = url16->AllocL();
             m_stream->end = length;
             m_stream->lastmodified = 0; 
-            m_stream->notifyData = m_notifydata;
-            m_stream->headers = headers;
+            m_stream->notifyData = m_notifydata;    
 
             
             error = m_pluginskin->getNPPluginFucs()->newstream ( m_pluginskin->getNPP(), 
@@ -204,7 +203,7 @@ void PluginStream::writeStreamToFileL(const char* data, int length)
 
 }
 
-void PluginStream::destroyStream(int reason, TDesC* failedUrl)
+void PluginStream::destroyStream(int reason)
 {
     if (m_streamDestroyed) return;
         m_streamDestroyed = true;
@@ -236,17 +235,8 @@ void PluginStream::destroyStream(int reason, TDesC* failedUrl)
     }
 
 
-    if ( m_pluginskin->getNPPluginFucs() ) {
-    
-        if (m_stream && m_pluginskin->getNPPluginFucs()->destroystream){
-            m_pluginskin->getNPPluginFucs()->destroystream( m_pluginskin->getNPP(), m_stream,  npreason);
-            if (m_loaderclient->notify() && m_pluginskin->getNPPluginFucs()->urlnotify)
-                m_pluginskin->getNPPluginFucs()->urlnotify( m_pluginskin->getNPP(), m_stream->url->Des(), npreason, m_notifydata);                
-        }
-        
-        if(!m_stream && m_loaderclient->notify() && failedUrl && m_pluginskin->getNPPluginFucs()->urlnotify){
-            m_pluginskin->getNPPluginFucs()->urlnotify( m_pluginskin->getNPP(), *failedUrl, npreason, m_notifydata);
-        }
+    if ( m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->destroystream ) {            
+        m_pluginskin->getNPPluginFucs()->destroystream( m_pluginskin->getNPP(), m_stream,  npreason);
     }
     
     if (reason == KErrNone) {

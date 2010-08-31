@@ -31,7 +31,7 @@
 
 //  INCLUDES
 #include "WebCorePluginHandler.h"
-#include "NPNImplementation.h"
+#include "NpnImplementation.h"
 #include "PluginHandler.h"
 
 // CONSTANTS
@@ -157,7 +157,7 @@ void PluginInfo::copyMimeDescription(PluginInfo& pluginInfo)
 {
     TUint   i;
     TUint   count;
-    HBufC*  entry = NULL;
+    HBufC*  entry;
     
     m_mimeTypes.ResetAndDestroy();
     m_mimeExtensionToTypeMap.Reset();
@@ -415,7 +415,6 @@ void PluginHandler::ConstructL()
 {
     m_idle = CIdle::NewL(CActive::EPriorityLow);
     m_idle->Start(TCallBack(initialize, this));
-    m_visiblePlugins.Reset();
 }
 
 
@@ -442,8 +441,6 @@ PluginHandler* PluginHandler::NewL(TBool enablePlugins)
 //
 PluginHandler::~PluginHandler()
 {
-    m_visiblePlugins.Reset();
-    m_visiblePlugins.Close();
     m_pluginInfoArray.ResetAndDestroy();
     m_pluginInfoArray.Close();
     m_pluginObjects.clear();
@@ -480,15 +477,6 @@ TBool PluginHandler::initialize(TAny* pluginHandler)
 // Loads all the plugins and query them for details.
 // -----------------------------------------------------------------------------
 //
-static void CleanupPluginInfoArray( TAny* aObj )
-    {
-    if ( aObj )
-        {
-        static_cast<RImplInfoPtrArray*>( aObj )->ResetAndDestroy();
-        static_cast<RImplInfoPtrArray*>( aObj )->Close();
-        }
-    }
- 
 TBool PluginHandler::loadPluginsL()
 {
     
@@ -501,7 +489,6 @@ TBool PluginHandler::loadPluginsL()
 
     // Create the ECom info array, contains the plugin information
     RImplInfoPtrArray ecomPluginInfoArray;
-    CleanupStack::PushL(TCleanupItem(CleanupPluginInfoArray, &ecomPluginInfoArray ) );
 
     // Get list of ECOM plugins that match the KNBrowserPluginInterfaceUid
     REComSession::ListImplementationsL(KBrowserPluginInterfaceUid, ecomPluginInfoArray);
@@ -532,7 +519,8 @@ TBool PluginHandler::loadPluginsL()
     }
 
     // Clean up the ECom info array
-    CleanupStack::PopAndDestroy( &ecomPluginInfoArray );
+    ecomPluginInfoArray.ResetAndDestroy();
+    ecomPluginInfoArray.Close();
     
     m_pluginsLoaded = ETrue;
     return EFalse;

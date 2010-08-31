@@ -113,7 +113,6 @@
 #define KBrowserLastErrorCode		                -26999
 
 // HTTP status codes
-#define KBrowserHTTPStatusCodes                    -25000
 #define KBrowserHTTP100                            -25100
 #define KBrowserHTTP101                            -25101
 #define KBrowserHTTP102                            -25102

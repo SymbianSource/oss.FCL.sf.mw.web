@@ -28,7 +28,7 @@
 #include "HTMLPlugInElement.h"
 #include "JSAttr.h"
 #include "JSNode.h"
-#include "XMLHttpRequest.h"
+#include "xmlhttprequest.h"
 #include "kjs_events.h"
 #include "kjs_window.h"
 

@@ -16,14 +16,14 @@
 */
 
 // INCLUDE FILES
-#include "brctlapitestcontainer.h"
+#include "BrCtlApiTestContainer.h"
 
 #include <eiklabel.h>  // for example label control
 #include <aknview.h>
 #include <AknGlobalConfirmationQuery.h>
-#include <brctlinterface.h>
+#include <BrCtlInterface.h>
 #include <CHARCONV.H>
-#include "brctlapitestobserver.h"
+#include "BrCtlApiTestObserver.h"
 #include <e32std.h>
 
 _LIT8( KContentDataType, "text/html" );

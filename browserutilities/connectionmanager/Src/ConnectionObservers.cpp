@@ -18,12 +18,15 @@
 *
 */
 
+
+
 #include <nifman.h>
 #include <nifvar.h>
 #include <in_sock.h>
-#include <browser_platform_variant.hrh>
-#include <connectionobservers.h>
+
+#include "ConnectionObservers.h"
 #include "ConnectionManagerLogger.h"
+
 
 //--------------------------------------------------------------------------
 //CConnectionStageNotifierWCB::NewL()
@@ -106,13 +109,11 @@ void CConnectionStageNotifierWCB::RunL()
 	{
 	CLOG_ENTERFN("CConnectionStageNotifierWCB::RunL()");
     CLOG_WRITE_1( "CConnectionStageNotifierWCB Stage: %d", iProgressBuf().iStage );
-    CLOG_WRITE_1( "CConnectionStageNotifierWCB Stage Error id: %d", iProgressBuf().iError );
 
     if( !iMultiObserver )
         {
-        CLOG_WRITE( "CConnectionStageNotifierWCB Browser UI" );
-        if ( iProgressBuf().iStage == iStageToObserve )
-            {
+	    if ( iProgressBuf().iStage == iStageToObserve )
+		    {
             CLOG_WRITE( "Stage achived" );
 		    DoCloseAgent();
 		    iObserver->ConnectionStageAchievedL();
@@ -126,7 +127,6 @@ void CConnectionStageNotifierWCB::RunL()
         }
     else
         {
-        CLOG_WRITE( "CConnectionStageNotifierWCB Connection Manager" );
         if( IsAnyStageReached( iProgressBuf().iStage ) )
             {
             iMultiObserver->ConnectionStageAchievedL( iProgressBuf().iStage );
@@ -231,7 +231,6 @@ void CConnectionStageNotifierWCB::DoOpenAgentL( TName* aConnName )
     if( (err = iServer.Connect()) == KErrNone )
         {
         err = iConnection.Open( iServer, *aConnName );
-#ifndef BRDO_OCC_ENABLED_FF
         if( !err )
             {
             TBuf<64> query;
@@ -259,9 +258,8 @@ void CConnectionStageNotifierWCB::DoOpenAgentL( TName* aConnName )
                     }
                 }
             }
-#endif
         }
-    CLOG_WRITE_1( "CConnectionStageNotifierWCB::DoOpenAgentL Any error: %d", err );
+
     if( err )
         {
         iConnection.Close();
@@ -296,14 +294,4 @@ TBool CConnectionStageNotifierWCB::IsAnyStageReached( TInt aCurrentStage )
     return EFalse;
     }
 
-//--------------------------------------------------------------------------
-//CConnectionStageNotifierWCB::GetProgressBuffer()
-//--------------------------------------------------------------------------
-EXPORT_C TNifProgressBuf
-    CConnectionStageNotifierWCB::GetProgressBuffer()
-    {
-    CLOG_ENTERFN( "CConnectionStageNotifierWCB::GetProgressBuffer()" );
-    return iProgressBuf;
-    }
-    
 //EOF

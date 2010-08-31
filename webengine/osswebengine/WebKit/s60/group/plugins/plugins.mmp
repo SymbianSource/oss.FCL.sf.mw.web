@@ -14,24 +14,25 @@
 * Description:  
 *
 */
-
 #include "../common.mmpi"
 
 TARGET          plugins.lib
 TARGETTYPE      lib
 
+
 VENDORID        VID_DEFAULT
 
+MW_LAYER_SYSTEMINCLUDE
 SYSTEMINCLUDE	../../../../../../inc
 SYSTEMINCLUDE	../../../../WebCore/html
 SYSTEMINCLUDE	../../../../WebCore/dom
 SYSTEMINCLUDE	../../../../DerivedSources/WebCore
 
-SOURCEPATH      ../../Plugins
+SOURCEPATH      ../../plugins
 SOURCE          PluginHandler.cpp
 SOURCE          PluginSkin.cpp
 SOURCE          PluginStream.cpp
 SOURCE          PluginPlayer.cpp
-SOURCE          PlugInStreamLoaderClient.cpp
+SOURCE          PluginStreamLoaderClient.cpp
 SOURCE          NpnImplementation.cpp
 SOURCE          PluginWin.cpp

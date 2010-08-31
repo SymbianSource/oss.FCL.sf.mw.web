@@ -20,8 +20,8 @@
 
 #include <Avkon.rsg>
 #include <WidgetInstallerUI.rsg>
-#include <stringloader.h>
-#include <PathInfo.h>
+#include <StringLoader.h>
+#include <pathinfo.h>
 #include <aknnotewrappers.h>
 #include "SWInstWidgetUid.h"
 #include "WidgetInstallerInternalCRKeys.h"

@@ -18,21 +18,22 @@
 // INCLUDE FILES
 #include <e32std.h>
 #include <AknUtils.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 #include "ToolBarButton.h"
 #include "ToolBar.h"
-#include "W32STD.H"
-#include <recenturlstore.h>
-#include <Uri16.h>
-#include <GULICON.H>
+#include "w32std.h"
+#include "RecentUrlStore.h"
+#include <uri16.h>
+#include <gulicon.h>
 #include <AknBidiTextUtils.h>
-#include <brctlinterface.h>
-#include <favouritesitem.h>
-#include <favouritesitemlist.h>
-#include <favouritessession.h>
-#include <favouritesdb.h>
+#include "brctlinterface.h"
+#include <FavouritesItem.h>
+#include <FavouritesItemList.h>
+#include <FavouritesSession.h>
+#include <FavouritesDb.h>
 
 #include "eikon.hrh"
+
 
 // EXTERNAL DATA STRUCTURES
 
@@ -861,8 +862,6 @@ void CToolBarButton::ShowToolTip(TBool aVisible)
             }
         else
             {
-            if(iToolTipMaskContext)
-            {
             iToolTipMaskContext->SetPenColor(KRgbBlack);
             iToolTipMaskContext->SetBrushColor(KRgbBlack);
             iToolTipMaskContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
@@ -920,7 +919,6 @@ void CToolBarButton::ShowToolTip(TBool aVisible)
                 iToolTipSprite.AppendMember(spriteMem);
                 iToolTipSprite.Activate();
                 delete visualText;//visual text
-                }
                 }
             }
         }

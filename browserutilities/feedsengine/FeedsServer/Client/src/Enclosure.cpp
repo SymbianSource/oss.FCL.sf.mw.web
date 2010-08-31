@@ -15,8 +15,9 @@
 *
 */
 
-#include <feedattributes.h>
-#include <feedsserverfeed.h>
+
+#include "FeedAttributes.h"
+#include "FeedsServerFeed.h"
 #include "Logger.h"
 
 // -----------------------------------------------------------------------------

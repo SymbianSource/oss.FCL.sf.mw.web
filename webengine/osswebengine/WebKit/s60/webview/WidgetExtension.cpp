@@ -209,8 +209,8 @@ TBool CWidgetExtension::HandleCommandL( TInt aCommandId )
 //From WidgetEngineCallbacks
 void CWidgetExtension::drawWidgetTransition()
 {
-    WebSurface* surface = WebCore::StaticObjectsContainer::instance()->webSurface();   
-    if (surface && surface->topView()) { 
+    WebSurface* surface = WebCore::StaticObjectsContainer::instance()->webSurface();
+    if (surface) {
         surface->topView()->DrawDeferred();
     }
 }

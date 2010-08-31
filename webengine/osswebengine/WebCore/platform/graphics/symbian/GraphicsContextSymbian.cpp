@@ -203,14 +203,7 @@ static inline void setPenColor(WebCoreGraphicsContext* aContext, const Color& co
 
 static inline void setBrushColor(WebCoreGraphicsContext* aContext, const Color& col)
 {
-    TRgb b(col.red(),col.green(),col.blue());
-       
-    // set 'alpha' value according to opacity
-    float opacity = aContext->opacity();
-    TInt alphaToSet = (TInt) (opacity * 255);
-    b.SetAlpha(alphaToSet);
-    
-    aContext->gc().SetBrushColor(b);
+    aContext->gc().SetBrushColor(TRgb(col.red(),col.green(),col.blue()));
     aContext->gc().SetPenStyle(CGraphicsContext::ENullPen);
     aContext->gc().SetBrushStyle(CGraphicsContext::ESolidBrush);
 }
@@ -525,7 +518,6 @@ void GraphicsContext::drawFocusRing(const Color& color)
 
     const Vector<IntRect>& rects = focusRingRects();
     RectPolygon* rectContour = new RectPolygon();
-    if(!rectContour)   return;
 
     // prepare the contour of polygons
     for( int i=0; i<rects.size(); ++i ) {
@@ -534,10 +526,8 @@ void GraphicsContext::drawFocusRing(const Color& color)
     }
 
     WebCoreGraphicsContext* context = m_data->iContext;
-    if (!context) {
-        delete rectContour;
+    if (!context)
         return;
-    }
 
     CFbsBitGc& gc = context->gc();
     
@@ -823,25 +813,5 @@ void GraphicsContext::drawLineForMisspellingOrBadGrammar(const IntPoint&, int, b
     
     notImplemented();
 }
-
-void GraphicsContext::beginTransparencyLayer(float opacity) 
-{
-    if (paintingDisabled())
-            return;
-
-    // set opacity value
-    m_data->iContext->setOpacity(opacity);
-    
-}
-
-void GraphicsContext::endTransparencyLayer() 
-{
-    if (paintingDisabled())
-        return;
-    
-    // Re-set opacity to default "1.0f" i.e. fully opaque
-    m_data->iContext->setOpacity(1.0f);
-}
-
 
 }

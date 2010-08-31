@@ -48,12 +48,8 @@
 
 // INCLUDES
 
-#include <browser_platform_variant.hrh>
-#include <../bidi.h>
-#include "config.h"
 #include <e32base.h>
 #include <imageconversion.h> // TFrameInfo
-#include <RefPtr.h>
 
 // FORWARD DECLARATIONS
 class CMaskedBitmap;
@@ -61,8 +57,8 @@ class CBufferedImageDecoder;
 class CSynDecodeThread;
 namespace WebCore {
     class ImageObserver;
-    class SharedBuffer;
-};
+}
+// CONSTANTS
 
 _LIT(KMimeJPEG, "image/jpeg");
 _LIT(KMimeJPG, "image/jpg");
@@ -77,8 +73,11 @@ _LIT(KMimeOTA, "image/vnd.nokia.ota-bitmap");
 _LIT(KMimeICO, "image/x-icon");
 _LIT(KMimeDRM, "application/vnd.oma.drm.content");
 
+//const TDisplayMode KMaxDepth = EColor64K;
+
 // FIXME: we should move this back to EColor64K after Symbian fix their Gif image decoder bug.
 const TDisplayMode KMaxDepth = EColor16M;
+
 // CLASS DECLARATION
 /**
 *  CAnimationDecoderWrapped
@@ -107,9 +106,13 @@ class CAnimationDecoderWrapped  : public CActive
         /*
         * From MIHLFileImage, see base class header.
         */
-        void OpenL( WebCore::SharedBuffer* aData, TDesC* aMIMEType, TBool aIsComplete );
+        void OpenL( const TDesC8& aData, TDesC* aMIMEType, TBool aIsComplete );
         void OpenAndDecodeSyncL( const TDesC8& aData );
-        static void closeSyncDecodeThread();
+
+        /*
+        * From MIHLFileImage, see base class header.
+        */
+        void AddDataL( const TDesC8& aData, TBool aIsComplete );
 
         /*
         * From MIHLFileImage, see base class header.
@@ -119,8 +122,8 @@ class CAnimationDecoderWrapped  : public CActive
         /*
         * From MIHLFileImage, see base class header.
         */
-		TDisplayMode DisplayMode() const { 	return KMaxDepth;}
-		
+        TDisplayMode DisplayMode() const { return KMaxDepth; }
+
         /*
         * From MIHLFileImage, see base class header.
         */
@@ -205,7 +208,6 @@ class CAnimationDecoderWrapped  : public CActive
         void ErrorCleanup();
         void SelfComplete( TInt aError = KErrNone );
         HBufC8* DecodeDRMImageContentL(const TDesC8& aData);
-        TInt ScaleImageIfRequired();
 
   private: // Private constructors
 
@@ -222,14 +224,13 @@ class CAnimationDecoderWrapped  : public CActive
             };
 
   private: // Data
-        RefPtr<WebCore::SharedBuffer>  m_data;
-        TPtrC8  m_dataptr;
+
         // Image status & state
         TRequestStatus* iImageStatus;
         TImageState iImageState;
 
         // Own: Image decoder
-        CImageDecoder* iDecoder; // owned
+        CBufferedImageDecoder* iDecoder; // owned
 
         TFrameInfo iFrameInfo;
         TBool iAnimation;
@@ -260,7 +261,7 @@ class CAnimationDecoderWrapped  : public CActive
         
         // Is invalid because the cache got cleared in the middle of decoding
         TBool iIsInvalid;
-        TBool iCanBeDeleted;                
+        TBool iCanBeDeleted;
     };
 
 

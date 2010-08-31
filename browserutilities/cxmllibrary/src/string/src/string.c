@@ -15,6 +15,7 @@
 *
 */
 
+
 /*****************************************************************
 **  File: xml_string.c
 **
@@ -29,9 +30,9 @@
  * 
 *****************************************************************/
 #include "cxml_internal.h"
-#include <nw_string_string.h>
-#include <nw_string_char.h>
-#include <nw_wbxml_dictionary.h>
+#include "nw_string_string.h"
+#include "nw_string_char.h"
+#include "nw_wbxml_dictionary.h"
 
 static NW_Status_t
 StringUCS2Init(NW_String_UCS2String_t * string, void *storage)
@@ -49,6 +50,7 @@ StringUCS2Init(NW_String_UCS2String_t * string, void *storage)
   string->length = numBytes;
   return status;
 }
+
 
 /*  
  * TODO: The following functions need to have the allocator passed 

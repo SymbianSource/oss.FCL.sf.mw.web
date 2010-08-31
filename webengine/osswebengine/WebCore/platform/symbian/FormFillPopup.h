@@ -21,8 +21,6 @@
 
 #include <e32base.h>
 
-// FORWARD DECLARATIONS
-class CFont;
 namespace WebCore
 {
     class Frame;
@@ -36,7 +34,6 @@ public:
     virtual void clear() = 0;
     virtual void setLocationHintInDoc(const TRect& r, WebCore::Frame* frame) = 0;
     virtual ~MFormFillPopup() {}
-    virtual void setFont(CFont* font) {}
 };
 
 #endif //!__FORMFILLPOPUP_H__

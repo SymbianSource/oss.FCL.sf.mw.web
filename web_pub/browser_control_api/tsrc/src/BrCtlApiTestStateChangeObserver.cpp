@@ -17,8 +17,8 @@
 
 
 // INCLUDE FILES
-#include "brctlapitestcontainer.h"
-#include "brctlapiteststatechangeobserver.h"
+#include "BrCtlApiTestContainer.h"
+#include "BrCtlApiTestStateChangeObserver.h"
 
 // ================= MEMBER FUNCTIONS =======================
 

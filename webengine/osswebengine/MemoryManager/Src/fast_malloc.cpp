@@ -448,7 +448,7 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #include <e32hal.h>
 #include <hal.h>
 
-#include <MemoryManager.h>
+#include "MemoryManager.h"
 
 //#define OOM_LOGGING
 #include "MemoryLogger.h"
@@ -3677,7 +3677,7 @@ static void* tmalloc_large(mstate m, size_t nb) {
         return chunk2mem(v);
       }
     }
-//    CORRUPTION_ERROR_ACTION(m);
+    CORRUPTION_ERROR_ACTION(m);
   }
   return 0;
 }
@@ -3716,8 +3716,9 @@ static void* tmalloc_small(mstate m, size_t nb) {
       return chunk2mem(v);
     }
   }
-  //CORRUPTION_ERROR_ACTION(m);
-  //return 0;
+
+  CORRUPTION_ERROR_ACTION(m);
+  return 0;
 }
 
 /* --------------------------- realloc support --------------------------- */
@@ -5380,13 +5381,13 @@ void close_mem_pool()
 // global data and if closing util is not the last
 // one to be deleted, it will crash.  Luckly enough
 // , it seems to be working fine and no crash so far.
-/*
 struct ChunkClosingUtil
 {
     ~ChunkClosingUtil()     { rchunk.Close(); }
 };
+
 static ChunkClosingUtil __gx_closing;
-*/
+
 /* -----------------------------------------------------------------------
 History:
     C2.8.2 Sun Jun 12 16:01:10 2005  Doug Lea  (dl at gee)

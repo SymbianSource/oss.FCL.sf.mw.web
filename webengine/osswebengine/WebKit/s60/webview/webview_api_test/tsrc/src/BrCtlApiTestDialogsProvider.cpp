@@ -19,11 +19,11 @@
 // INCLUDE Files
 
 // System includes
-#include <browserdialogsproviderobserver.h>
-//#include <browserdialogsprovider.h>
+#include <BrowserDialogsProviderObserver.h>
+//#include <BrowserDialogsProvider.h>
 
 // User includes
-#include "brctlapitestdialogsprovider.h"
+#include "BrCtlApiTestDialogsProvider.h"
 
 
 // CONSTANTS

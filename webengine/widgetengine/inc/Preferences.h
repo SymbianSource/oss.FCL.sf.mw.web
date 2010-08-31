@@ -167,12 +167,7 @@ public:
     * Remove preference for a particular key
     */
     void removePreferenceL( const TDesC& akey, const TDesC& avalue);   
-    void externalizeL(RWriteStream& aStream) const;
-
-    void internalizeL(RReadStream& aStream);
-      
-    void deleteAllPrefFiles();
-    static TInt SavePref(TAny* aPtr);
+    
 
 private:
     RPtrHashMap<TDesC,PrefElement>* m_preferences;                
@@ -181,7 +176,6 @@ private:
     HBufC* m_widgetbundleid;
     HBufC* m_basepath;
     HBufC* m_filepath;
-    CAsyncCallBack* m_asynsave;
 
 };
     

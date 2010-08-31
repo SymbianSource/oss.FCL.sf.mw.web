@@ -19,7 +19,7 @@
 
 // INCLUDE FILES
 #include <bldvariant.hrh>
-#include <browser_platform_variant.hrh>
+#include <Browser_platform_variant.hrh>
 
 #include "FileExt.h"
 #include "HttpClientApp.h"
@@ -30,9 +30,9 @@
 #include "HeaderField.h"
 #include "BuffStorage.h"
 
-#include <SysUtil.h>
+#include <sysutil.h>
 #include <DocumentHandler.h>
-#include <APMSTD.H>
+#include <apmstd.h>
 
 #ifdef __SYNCML_DM_FOTA
 #include <fotaengine.h>
@@ -69,58 +69,6 @@ const TInt KDefaultStorageBufferSizePD = 16 * 1024;
 
 // FORWARD DECLARATIONS
 //class ?FORWARD_CLASSNAME;
-
-//Music Store Warning Level Feature Flag
-#ifdef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
-
-#include <uiklafinternalcrkeys.h>
-#include <centralrepository.h>
-
-//Beside the OOD threshold value, we need to reserve extra disk space
-//for harvest server do the harvest, set this as 1M
-const TInt KFreeSpaceExtraReserved(1024*1024);
-
-static TBool CheckFreeSpaceWarningThreshold( RFs& aFs, TInt aBytesToWrite, TInt aDrive )
-    {
-    TBool isSpace = EFalse;
-    CRepository* repository = NULL;
-    TInt64 thresholdValue( 0 );
-    TVolumeInfo volumeInfo;
-    TInt err = aFs.Volume( volumeInfo, aDrive );
-    if ( err == KErrNone ) // get warning threshold
-        {
-        TRAP( err, repository = CRepository::NewL( KCRUidUiklaf ) );
-        }
-    if ( err == KErrNone )
-        {
-        if ( volumeInfo.iDrive.iDriveAtt & KDriveAttRemovable ) // for E and F
-            {
-            TInt warningValue( 0 );
-            err = repository->Get( KUikOODDiskFreeSpaceWarningNoteLevelMassMemory, warningValue );
-            if ( err == KErrNone )
-                {
-                thresholdValue = warningValue + KFreeSpaceExtraReserved;
-                }
-            }
-        else
-            {
-            TInt warningUsagePercent( 0 );
-            err = repository->Get( KUikOODDiskFreeSpaceWarningNoteLevel, warningUsagePercent );
-            if ( err == KErrNone )
-                {
-                thresholdValue = ( ( volumeInfo.iSize * ( 100 - warningUsagePercent ) ) / 100 )
-                    + KFreeSpaceExtraReserved;
-                }
-            }
-        delete repository;
-        }
-    if ( err == KErrNone ) // Check warning threshold
-        {
-        isSpace = volumeInfo.iFree > thresholdValue + aBytesToWrite;
-        }
-    return isSpace;
-    }
-#endif
 
 // ============================ MEMBER FUNCTIONS ===============================
 
@@ -748,26 +696,19 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
             }
         CleanupStack::PopAndDestroy( drivesDynList );
         CLOG_WRITE_2( "Saving content to %d Drive with %d B free space", driveSpaceMax, freeSpaceMax );
-        TUint aStatus ;
-
-        if( KErrNone == DriveInfo::GetDriveStatus( iDownload->ClientApp()->Engine()->Fs(), driveSpaceMax , aStatus ))
-            {
-            iRemovableStatus = (aStatus & DriveInfo::EDriveExternallyMountable) ? aStatus : 0 ;
-            if( iRemovableStatus )
-                {
-                iRemovableStatus = (aStatus & DriveInfo::EDriveRemovable) ? KDriveAttRemovable : KDriveAttInternal ;	
-                }
-            else
-                {
-                iRemovableStatus = KDriveAttLocal  ;
-                }
-            CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
-            CLOG_WRITE_1( "DriveInfo Status [%d]", aStatus );        	
-            }
-        else
-            {
-            CLOG_WRITE("DriveStatus failed");
-            }
+        
+        TDriveInfo driveInfo;
+    
+    	if( !iDownload->ClientApp()->Engine()->Fs().Drive( driveInfo, driveSpaceMax) )
+        	{
+        	iRemovableDest = (driveInfo.iDriveAtt & KDriveAttRemovable);
+        	CLOG_WRITE_1( "Removable: [%d]", iRemovableDest );
+        	CLOG_WRITE_1( "driveInfo.iDriveAtt: [%d]", driveInfo.iDriveAtt );
+        	}
+    	else
+        	{
+        	CLOG_WRITE("DriveInfo failed");
+        	}
         	
         return driveSpaceMax;
 #else
@@ -781,7 +722,6 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
         			       ( &fs, bytesToWrite ); )
         if(!mmcOk)
         	{
-            iRemovableStatus = KDriveAttInternal ;
         	CLOG_WRITE( "no MMC present" );
         	return EDriveC;
         	}
@@ -792,9 +732,7 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
         fs.Volume(volInfoE,EDriveE);
         TInt64 freeC = volInfoC.iFree;//free memory available in that drive
         TInt64 freeE = volInfoE.iFree;
-        freeC = freeE?EDriveC:EDriveE;//put the file in which ever drive has more memory
-        iRemovableStatus = (EDriveC == freeC) ? KDriveAttInternal :  KDriveAttRemovable ;
-        return freeC;
+        return  freeC>=freeE?EDriveC:EDriveE;//put the file in which ever drive has more memory
 #endif
         }
 
@@ -844,7 +782,6 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
         if (bytesToWrite < 0)
             bytesToWrite = 0;
         
-        // Let client handle warning level check, client may want to write until critical level
 	    TRAP( err, isSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
                                                 &iDownload->ClientApp()->Engine()->Fs(),
 			                                    bytesToWrite,
@@ -858,98 +795,46 @@ TInt CHttpStorage::CheckFreeDiskSpaceL()
 #else
         TPtrC drives( iDownload->ClientApp()->Engine()->iDriveLettersCenRep );
 #endif
-//Music Store Warning Level Feature Flag
-#ifdef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF        
-        // Check warning or critical level and change drive if warning or critical level would get crossed
-        // On first round, check warning level only
-        // On second round (all drives are about to cross warning level), check critical level
-        // When crossing warning level, user will see warning note regarding low disk space
-        for( TInt j = 0; j < 2 && (err || !isSpace); ++j )
+        
+        // drive letters are separated by semicolons
+        for( TInt i = 0; i < drives.Length() && (err || !isSpace); i = i + 2 )
             {
-#endif
-            // drive letters are separated by semicolons
-            for( TInt i = 0; i < drives.Length() && (err || !isSpace); i = i + 2 )
+            if( (err = fs.CharToDrive( drives[i], drive )) == KErrNone )
                 {
-                if( (err = fs.CharToDrive( drives[i], drive )) == KErrNone )
-                    {
-                    currentDownloadsLen = DMSrvEngine->AllDownloadsSizeInDriveL(iDownload, drive);
-                    // Check if there's enough memory in the phone
-                    bytesToWrite = iLength + currentDownloadsLen;
-                    if (bytesToWrite < 0)
-                        bytesToWrite = 0;
-//Music Store Warning Level Feature Flag
-#ifdef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
+                currentDownloadsLen = DMSrvEngine->AllDownloadsSizeInDriveL(iDownload, drive);
 
-                    if ( !j ) // check warning level on first round
-                        {
-                        isSpace = CheckFreeSpaceWarningThreshold( fs, bytesToWrite, drive );
-                        }
-                    else // check critical level when all drives are about to cross warning level
-                        {
-                	    TRAP( err, isSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
-                            &fs, bytesToWrite, drive ));
-                        }
-                    CLOG_WRITE8_4( "Free space check type %d drive %d isSpace %d, bytesToWrite %d",
-                        j,drive,isSpace,bytesToWrite);
-#else if
-                       	    TRAP( err, isSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
-                            &fs, bytesToWrite, drive ));
-
-#endif
-                    }
-                else
-                    {
-                    CLOG_WRITE8_1( "Bad drive letter [%c]", drives[i] );
-                    }
+                // Check if there's enough memory in the phone
+                bytesToWrite = iLength + currentDownloadsLen;
+                if (bytesToWrite < 0)
+                    bytesToWrite = 0;
+                
+        	    TRAP( err, isSpace = !SysUtil::DiskSpaceBelowCriticalLevelL(
+                                                        &fs,
+        			                                    bytesToWrite,
+                                                        drive ));
                 }
-//Music Store Warning Level Feature Flag
-#ifdef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
+            else
+                {
+                CLOG_WRITE8_1( "Bad drive letter [%c]", drives[i] );
+                }            
             }
-#endif
 #ifdef RD_MULTIPLE_DRIVE
         CleanupStack::PopAndDestroy( drivesDynList );
 #endif
         }	
 
-#ifdef RD_MULTIPLE_DRIVE
-    TUint aStatus ;
-
-    if( KErrNone == DriveInfo::GetDriveStatus( iDownload->ClientApp()->Engine()->Fs(), drive , aStatus ))
-        {
-        iRemovableStatus = (aStatus & DriveInfo::EDriveExternallyMountable) ? aStatus : 0 ;
-        if( iRemovableStatus )
-            {
-            iRemovableStatus = (aStatus & DriveInfo::EDriveRemovable) ? KDriveAttRemovable : KDriveAttInternal ;				
-            }
-        else
-            {
-            iRemovableStatus = KDriveAttLocal ;
-            }
-        CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
-        CLOG_WRITE_1( "DriveInfo Status [%d]", aStatus );        	
-        }
-	else
-		{
-		CLOG_WRITE("DriveStatus failed");
-		}
-    
-#else
     TDriveInfo driveInfo;
     
     if( !iDownload->ClientApp()->Engine()->Fs().Drive( driveInfo, drive) )
         {
-        if (driveInfo.iDriveAtt & KDriveAttRemovable)
-            iRemovableStatus =  KDriveAttRemovable ;
-        else
-            iRemovableStatus = KDriveAttInternal ;
-        CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
+        iRemovableDest = (driveInfo.iDriveAtt & KDriveAttRemovable);
+        CLOG_WRITE_1( "Removable: [%d]", iRemovableDest );
         }
     else
-        {        
+        {
         CLOG_WRITE("DriveInfo failed");
         }
-#endif
-    
+
     if( err || !isSpace )
         {
         CLOG_WRITE8( "OOD1" );
@@ -1122,44 +1007,16 @@ void CHttpStorage::UpdateDestinationFilenameL( const TDesC16& aFilename, TBool a
     TInt drive;
     if( !iDownload->ClientApp()->Engine()->Fs().CharToDrive((*iDestFilename)[0], drive) )
         {
-#ifdef RD_MULTIPLE_DRIVE
-        TUint aStatus ;
-
-        if( KErrNone == DriveInfo::GetDriveStatus( iDownload->ClientApp()->Engine()->Fs(), drive , aStatus ))
-            {
-            iRemovableStatus = (aStatus & DriveInfo::EDriveExternallyMountable) ? aStatus : 0 ;
-            if( iRemovableStatus )
-                {
-                iRemovableStatus = (aStatus & DriveInfo::EDriveRemovable) ? KDriveAttRemovable : KDriveAttInternal ;				
-                }
-            else
-                {
-                iRemovableStatus = KDriveAttLocal ;
-                }
-            CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
-            CLOG_WRITE_1( "DriveInfo Status [%d]", aStatus );        	
-            }
-        else
-            {
-            CLOG_WRITE("DriveStatus failed");
-            }
-                
-#else        
         TDriveInfo driveInfo;
-        
         if( !iDownload->ClientApp()->Engine()->Fs().Drive( driveInfo, drive) )
             {
-            if (driveInfo.iDriveAtt & KDriveAttRemovable)
-            	iRemovableStatus = KDriveAttRemovable ;
-            else
-                iRemovableStatus = KDriveAttInternal ;
-            CLOG_WRITE_1( "Removable: [%d]", iRemovableStatus );
+            iRemovableDest = (driveInfo.iDriveAtt & KDriveAttRemovable);
+            CLOG_WRITE_1( "Removable: [%d]", iRemovableDest );
             }
         else
-            {        
+            {
             CLOG_WRITE("DriveInfo failed");
-            }        
-#endif
+            }
         }
     else
         {
@@ -1186,7 +1043,7 @@ void CHttpStorage::AppendStorageInfoL( TPtr8& aBuf ) const
     APPEND_BUF_INT( aBuf, iDownloadedSize);
     AppendBufL( aBuf, iDdFilename );    
     APPEND_BUF_INT( aBuf, iDownload->iMoLength );
-    APPEND_BUF_INT( aBuf, iRemovableStatus );
+    APPEND_BUF_INT( aBuf, iRemovableDest );
 
     }
 
@@ -1208,7 +1065,7 @@ void CHttpStorage::LoadStorageInfoL( RFile& aInFile )
     READ_INT_L( aInFile, iDownloadedSize );
     ReadHBufCL( aInFile, iDdFilename );
     READ_INT_L( aInFile, iDownload->iMoLength  );
-    READ_INT_L( aInFile, iRemovableStatus  );
+    READ_INT_L( aInFile, iRemovableDest  );
 
     }
 

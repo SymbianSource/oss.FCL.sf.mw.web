@@ -16,13 +16,13 @@
 */
 
 #include <platform_paths.hrh>
-#include "../../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT 
 
 PRJ_EXPORTS
-../inc/MemoryManager.h MW_LAYER_PUBLIC_EXPORT_PATH(MemoryManager.h)
+../Inc/MemoryManager.h MW_LAYER_PUBLIC_EXPORT_PATH(MemoryManager.h)
 
 PRJ_MMPFILES
 MemMan.mmp

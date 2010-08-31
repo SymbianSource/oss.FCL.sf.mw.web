@@ -21,7 +21,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 #include "HistoryInterface.h"
 
 // CONSTANTS
@@ -274,7 +274,6 @@ class HistoryController : public HistoryControllerInterface
 
         void performTransition(int direction);
 
-        virtual void rollBackIndex();
         
     private:
 

@@ -17,11 +17,12 @@
 
 #include <string.h>
 #include "cxml_internal.h"
-#include <nw_encoder_wbxmlwriter.h>
-#include <nw_xmlp_xmlparser.h>
-#include <nw_xmlp_xmlp2wbxml.h>
-#include <nw_encoder_stringtable.h>
+#include "nw_encoder_wbxmlwriter.h"
+#include "nw_xmlp_xmlparser.h"
+#include "nw_xmlp_xmlp2wbxml.h"
+#include "nw_encoder_stringtable.h"
 #include "cxml_xmlp_entity.h"
+
 
 typedef struct CXML_Encoding_String_s {
    NW_Int8* charSetStr;

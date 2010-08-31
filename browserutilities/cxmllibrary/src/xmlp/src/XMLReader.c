@@ -15,6 +15,7 @@
 *
 */
 
+
 /*
 This module provides a text (character) stream, pointers into the stream
 and operations on segments of the stream as though they were strings.
@@ -25,8 +26,8 @@ This particular version is for input from a single buffer.
 */
 
 #include "cxml_internal.h"
-#include <nw_string_char.h>
-#include <nw_xmlp_xmlreader.h>
+#include "nw_string_char.h"
+#include "nw_xmlp_xmlreader.h"
 
 static
 NW_Status_t

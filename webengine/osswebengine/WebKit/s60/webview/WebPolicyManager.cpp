@@ -29,14 +29,15 @@
 #include "WebUtil.h"
 #include "StaticObjectsContainer.h"
 #include "PlugInInfoStore.h"
-#include "MIMETypeRegistry.h"
-#include <Uri8.h>
+#include "MimeTypeRegistry.h"
+#include <uri8.h>
 #include <badesca.h>
 
 using namespace WebCore;
 
 // CONSTANTS
 const char* typeTextHtml = "text/html";
+const char* typeTextXml = "text/xml";
 const char* typeApplicationXhtml = "application/xhtml+xml";
 const char* typeTextPlain = "text/plain";
 const char* typeApplicationWapXhtml = "application/vnd.wap.xhtml+xml";
@@ -46,8 +47,6 @@ const char* typeImageSlash = "image/";
 const char* typeSvg = "svg";
 _LIT(KPathBegin,"<!--framePathBegin ");
 _LIT(KPathEnd," framePathEnd --!>");
-_LIT8(KFileSchema, "file://");
-_LIT8(KFileSchemaUnixStyle, "file:///");
 
 WebPolicyManager::WebPolicyManager(WebFrameLoaderClient* webFrameLoaderClient) :
 m_webFrameLoaderClient(webFrameLoaderClient)
@@ -162,7 +161,8 @@ bool WebPolicyManager::canShowMIMEType(const String& MIMEType) const
     if (MIMEType == typeTextHtml ||
         MIMEType == typeApplicationXhtml ||
         MIMEType == typeApplicationWapXhtml ||
-        MIMEType == typeMultipartMixed) {
+        MIMEType == typeMultipartMixed || 
+        MIMEType == typeTextXml) {
         found = true;
     }
     //Check if the image type can be handled by the browser. If not
@@ -181,19 +181,8 @@ bool WebPolicyManager::canShowMIMEType(const String& MIMEType) const
     else if( MIMEType == typeTextPlain ||
              MIMEType == typeApplicationOctetStream ) {
         TPtrC8 url = (core(m_webFrameLoaderClient->webFrame()))->loader()->activeDocumentLoader()->responseURL().des();
-       //Converting TPtrC8 to TPtr8 as Delete() is supported in TPtr8.
-       HBufC8* lUrl = HBufC8::NewLC(url.Length());
-       lUrl->Des().Copy( url );
-       TPtr8 tempurl = lUrl->Des();
-       //Truncate file:// or file:///(Unix style)  from the URI as the path
-       //file:\\c:\\...\\... is not recognised as a valid path by TUriParser
-         if(url.FindF(KFileSchema)!= KErrNotFound)
-             tempurl.Delete(0,KFileSchema().Length());
-       else if(url.FindF(KFileSchemaUnixStyle)!= KErrNotFound)
-           tempurl.Delete(0,KFileSchemaUnixStyle().Length());
-         
         TUriParser8 parser;
-        if( parser.Parse(tempurl) == KErrNone ) {
+        if( parser.Parse(url) == KErrNone ) {
             TPtrC8 path = parser.Extract( EUriPath );
             // path == 1 means only / (no filename)
             if( path.Length() > 1 ) {
@@ -205,7 +194,6 @@ bool WebPolicyManager::canShowMIMEType(const String& MIMEType) const
                          path.Find(_L8(".txt"))  != KErrNotFound);
             }
         }
-        CleanupStack::PopAndDestroy(lUrl);
     }
     // tot:fixme defaultcontenthandler is only for selfdownloadable, go through the list
     return found;

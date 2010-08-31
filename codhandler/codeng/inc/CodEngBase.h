@@ -28,7 +28,7 @@
 #include <apmrec.h>
 #include <apparc.h>
 #include "CodSaver.h"
-#include <coddownload.h>
+#include <CodDownload.h>
 
 // FORWARD DECLARATION
 
@@ -588,11 +588,6 @@ NONSHARABLE_CLASS( CCodEngBase ): public CActive, public MCodSaverFactory
         * @return Saver object for this data type. Ownership not passed.
         */
         CCodSaver* CreateSaverL( const TDesC8& aType );
-        
-        /* Fota Saver Setting
-         * 
-         */
-       void FotaSaverSettingL();
 
     private:    // implementation
     
@@ -684,7 +679,7 @@ NONSHARABLE_CLASS( CCodEngBase ): public CActive, public MCodSaverFactory
         TBool iMmcOk;
 #endif
         /// Paths on removable media?
-        TInt32 iRemovableMediaStatus;
+        TBool iRemovableMedia;
         /// ROAP Data. Owned.
         CRoapData* iRoapData;
         /// Progress or NULL. Owned.

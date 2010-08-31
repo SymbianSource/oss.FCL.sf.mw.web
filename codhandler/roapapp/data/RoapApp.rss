@@ -25,7 +25,7 @@ NAME ROAP
 // INCLUDES
 
 #include <eikon.rh>
-#include <DrmCommon.loc>
+#include <drmcommon.loc>
 #include "RoapApp.hrh"
 #include "eikon.rsg"
 #include <avkon.loc>

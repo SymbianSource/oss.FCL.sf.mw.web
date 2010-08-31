@@ -15,15 +15,22 @@
 *
 */
 
+
+
 #ifndef MULTIPARTPARSER_H
 #define MULTIPARTPARSER_H
 
+#warning The Multipart Parser API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
-#include <bodypart.h>
+#include "BodyPart.h"
+
 
 //  CONSTANTS
 
+
 // DATA TYPES
+
 
 // FORWARD DECLARATIONS
 class CBodyPart;

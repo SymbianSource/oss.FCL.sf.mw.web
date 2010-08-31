@@ -18,7 +18,7 @@
 /*New Api INF file*/
 #include "../FeedsServer/Api/group/bld.inf"
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 ARMV5 WINSCW

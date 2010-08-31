@@ -51,4 +51,11 @@ EXPORTS
 	_ZTI14HistoryHandler @ 50 NONAME ; #<TI>#
 	_ZTV14HistoryHandler @ 51 NONAME ; #<VT>#
 	_ZN6CBrCtl13TakeSnapshotLER10CFbsBitmap @ 52 NONAME
-	_ZN6CBrCtl21IsSynchRequestPendingEv @ 53 NONAME
+
+
+
+
+
+
+
+

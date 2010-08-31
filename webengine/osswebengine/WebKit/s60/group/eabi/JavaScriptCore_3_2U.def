@@ -541,6 +541,4 @@ EXPORTS
 	JSValueMakeUndefined @ 540 NONAME
 	JSValueProtect @ 541 NONAME
 	NPN_Enumerate @ 542 NONAME
-	_ZN3KJS9Collector11startedExitEb @ 543 NONAME
-	_ZN3KJS9Collector16isExitInProgressEv @ 544 NONAME
 

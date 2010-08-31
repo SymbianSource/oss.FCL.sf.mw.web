@@ -26,7 +26,7 @@
 #include <StifTestModule.h>
 
 #include <coecntrl.h>
-#include "brctlapitestcontainer.h"
+#include "BrCtlApiTestContainer.h"
 
 // CONSTANTS
 //const ?type ?constant_var = ?constant;

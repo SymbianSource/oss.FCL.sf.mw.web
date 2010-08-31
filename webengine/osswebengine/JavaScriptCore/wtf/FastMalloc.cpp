@@ -433,7 +433,7 @@ static void InitSizeClasses() {
   }
   if (next_class >= kNumClasses) {
     MESSAGE("used up too many size classes: %d\n", next_class);
-    abort();
+//    abort();
   }
 
   // Initialize the number of pages we should allocate to split into
@@ -454,25 +454,25 @@ static void InitSizeClasses() {
     const size_t sc = SizeClass(size);
     if (sc == 0) {
       MESSAGE("Bad size class %d for %" PRIuS "\n", sc, size);
-      abort();
+//      abort();
     }
     if (sc > 1 && size <= class_to_size[sc-1]) {
       MESSAGE("Allocating unnecessarily large class %d for %" PRIuS
               "\n", sc, size);
-      abort();
+//      abort();
     }
     if (sc >= kNumClasses) {
       MESSAGE("Bad size class %d for %" PRIuS "\n", sc, size);
-      abort();
+//      abort();
     }
     const size_t s = class_to_size[sc];
     if (size > s) {
       MESSAGE("Bad size %" PRIuS " for %" PRIuS " (sc = %d)\n", s, size, sc);
-      abort();
+//      abort();
     }
     if (s == 0) {
       MESSAGE("Bad size %" PRIuS " for %" PRIuS " (sc = %d)\n", s, size, sc);
-      abort();
+//      abort();
     }
   }
 }
@@ -531,7 +531,7 @@ class PageHeapAllocator {
       if (free_avail_ < kAlignedSize) {
         // Need more room
         free_area_ = reinterpret_cast<char*>(MetaDataAlloc(kAllocIncrement));
-        if (free_area_ == NULL) abort();
+        if (free_area_ == NULL) ;//abort();
         free_avail_ = kAllocIncrement;
       }
       result = free_area_;
@@ -2352,7 +2352,7 @@ void* operator new(size_t size) OPNEW_THROW {
   void* p = do_malloc(size);
   if (p == NULL) {
     MESSAGE("Unable to allocate %" PRIuS " bytes: new failed\n", size);
-    abort();
+//    abort();
   }
   MallocHook::InvokeNewHook(p, size);
   return p;
@@ -2367,7 +2367,7 @@ void* operator new[](size_t size) OPNEW_THROW {
   void* p = do_malloc(size);
   if (p == NULL) {
     MESSAGE("Unable to allocate %" PRIuS " bytes: new failed\n", size);
-    abort();
+//    abort();
   }
   MallocHook::InvokeNewHook(p, size);
   return p;

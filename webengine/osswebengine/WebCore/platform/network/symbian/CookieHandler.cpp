@@ -18,7 +18,7 @@
 
 
 // INCLUDES
-#include "Cookiehandler.h"
+#include "CookieHandler.h"
 #include <cookiemanagerclient.h>
 
 // EXTERNAL DATA STRUCTURES
@@ -64,9 +64,9 @@ TPtrC stripWhiteSpace(const TDesC& aString)
 // Creates a new object.
 // @return The constructed session.
 //
-CookieHandler* CookieHandler::init(RStringPool aStringPool)
+CookieHandler* CookieHandler::init()
 {
-    CookieHandler* self = new CookieHandler(aStringPool);
+    CookieHandler* self = new CookieHandler;
     if (self) {
         TRAPD(err, self->constructL());
         if (err) {
@@ -94,6 +94,7 @@ TText* CookieHandler::cookiesForUrlL(const TDesC8& aUrl, TInt32& aLen)
     User::LeaveIfError( uriParser.Parse( aUrl ));
     // possible leave
     cookieManager.GetCookiesL(uriParser.UriDes(), m_getCookies, cookie2Reqd);
+    
     TText* cookieString = NULL;
     
     HBufC8* cookieString8 = NULL;
@@ -147,22 +148,10 @@ void CookieHandler::addCookieL(const TDesC& aCookieData, const TDesC8& aUrl, con
         popAndDestroyCount ++;
     }
     
-    // if the path is not specified then extract the domain name from the Url
-    // Why do we duplicate this code here?  It already exists in Cookie's constructl's call to adddefaultpathl?
-    TPtrC8 requestPath;
+    // if the domain is not specified then extract the domain name from the Url
     if(!cookieRecord.m_pathName.Length()) {
         const TDesC8& pathName= uriParser.Extract(EUriPath);
-        const TUint8 KCookiePathSeparator = '/';
-        requestPath.Set(pathName);
-        TInt sepPos = requestPath.LocateReverse( KCookiePathSeparator );
-        // if / is not the last character
-        if ( 0 <= sepPos && ( ( sepPos + 1 != requestPath.Length() ) ) )
-            {
-            // then remove characters after the right-most /
-            requestPath.Set( requestPath.Left( sepPos + 1 ) );
-            }
-
-        cookieRecord.m_pathName.Set(TPtrC(asciiToUnicodeLC(requestPath)->Des()));
+        cookieRecord.m_pathName.Set(TPtrC(asciiToUnicodeLC(pathName)->Des()));
         popAndDestroyCount ++;
     }
     
@@ -173,8 +162,7 @@ void CookieHandler::addCookieL(const TDesC& aCookieData, const TDesC8& aUrl, con
         cookieRecord);
     popAndDestroyCount +=6;
     // create a cookie
-    // Why are we using the stringpool only constructor of cookie?
-    CCookie* cookie = CCookie::NewL( (m_stringPool) );
+    CCookie* cookie = CCookie::NewL( (*m_stringPool) );
     
     CleanupStack::PushL( cookie );
     popAndDestroyCount ++;
@@ -191,6 +179,7 @@ void CookieHandler::addCookieL(const TDesC& aCookieData, const TDesC8& aUrl, con
     if(cookieRecord.m_secure.Length()) {
         User::LeaveIfError( cookie->SetAttribute( CCookie::EVersion, versionAttrib ) );
     }
+    
     cookieManager.StoreCookie(*cookie, uriParser);
     CleanupStack::PopAndDestroy(popAndDestroyCount); // RCookieManager.Close(), InitAttributesForLongCookieLC(6),cookie,unicodeToAsciiLC,asciiToUnicodeLC(2)
 }
@@ -199,34 +188,33 @@ void CookieHandler::addCookie(const TDesC& aCookieData, const TDesC8& aUrl, cons
 {
     TRAP_IGNORE(addCookieL(aCookieData, aUrl, aPolicyBaseURL));
 }
-void CookieHandler::destroy()
-{
-  // frees all memory allocated ,
-  // including the objects whose
-  // pointers are contained by the array
-  m_getCookies.ResetAndDestroy();
 
-  if(m_cookieManager) {
-  m_cookieManager->Close();
-  delete m_cookieManager;
-  m_cookieManager = NULL;
-  }
-
-}
 //
 // Destructor.
 //
 CookieHandler::~CookieHandler()
-    {
-    destroy();
+{
+    // frees all memory allocated ,
+    // including the objects whose
+    // pointers are contained by the array
+    m_getCookies.ResetAndDestroy();
+    
     m_getCookies.Close();
+    if(m_cookieManager) {
+        m_cookieManager->Close();
+        delete m_cookieManager;
     }
+    
+    if(m_stringPool) {
+        m_stringPool->Close();
+        delete m_stringPool;
+    }
+}
 
 //
 // Constructor.
 //
-CookieHandler::CookieHandler(RStringPool aStringPool)
-  : m_stringPool(aStringPool)
+CookieHandler::CookieHandler()
 {}
 
 //
@@ -235,7 +223,9 @@ CookieHandler::CookieHandler(RStringPool aStringPool)
 //
 void CookieHandler::constructL( )
 {
-    m_cookieManager = new (ELeave) RCookieManager( m_stringPool );
+    m_stringPool = new (ELeave)RStringPool;
+    m_stringPool->OpenL();
+    m_cookieManager = new (ELeave) RCookieManager( *m_stringPool );
     User::LeaveIfError( m_cookieManager->Connect() );
 }
 
@@ -289,30 +279,30 @@ void CookieHandler::initAttributesForLongCookieLC( RStringF& aName,
 {
     
     // Setting name attribute
-    aName = m_stringPool.OpenFStringL(unicodeToAsciiLC(aCookieRecord.m_name)->Des());
+    aName = m_stringPool->OpenFStringL(unicodeToAsciiLC(aCookieRecord.m_name)->Des());
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aName);
     
     // Setting name attribute
-    aNameValue = m_stringPool.OpenFStringL(unicodeToAsciiLC(aCookieRecord.m_nameValue)->Des());
+    aNameValue = m_stringPool->OpenFStringL(unicodeToAsciiLC(aCookieRecord.m_nameValue)->Des());
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aNameValue);
     
-    aExpires = m_stringPool.OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_expires)->Des());
+    aExpires = m_stringPool->OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_expires)->Des());
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aExpires);
     // Setting Path attribute
-    aPath = m_stringPool.OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_pathName)->Des());
+    aPath = m_stringPool->OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_pathName)->Des());
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aPath );
     
     // Setting Domain attribute
-    aDomain = m_stringPool.OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_domainName)->Des() );
+    aDomain = m_stringPool->OpenFStringL( unicodeToAsciiLC(aCookieRecord.m_domainName)->Des() );
     CleanupStack::PopAndDestroy(); //unicodeToAsciiLC
     CleanupClosePushL<RStringF>( aDomain );
     
     // Setting Domain attribute
-    aVersion = m_stringPool.OpenFStringL( _L8("1"));
+    aVersion = m_stringPool->OpenFStringL( _L8("1"));
     CleanupClosePushL<RStringF>( aVersion );
 }
 

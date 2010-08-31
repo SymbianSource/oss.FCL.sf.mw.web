@@ -44,8 +44,6 @@ _LIT( KNokiaWidget,          "NokiaWidget" );
 _LIT( KMiniViewEnabled,      "MiniViewEnabled" );
 _LIT( KBlanketPermGranted,   "BlanketPermissionGranted" );         // optional
 _LIT( KPreInstalled,         "PreInstalled" );
-_LIT( KProcessUid,           "ProcessUid" );
-_LIT( KMimeType,             "MimeType" );
 
 static void XmlFree( TAny* aPtr )
     {
@@ -194,16 +192,6 @@ void CWidgetRegistryXml::ConstructL()
     property.id = EPreInstalled;
     property.name.Set( KPreInstalled );
     property.type = EWidgetPropTypeInt;
-    iProperties.AppendL(property);
-    //
-    property.id = EProcessUid;
-    property.name.Set( KProcessUid );
-    property.type = EWidgetPropTypeInt; // not TUid
-    iProperties.AppendL(property);
-    //
-    property.id = EMimeType;
-    property.name.Set( KMimeType );
-    property.type = EWidgetPropTypeString;
     iProperties.AppendL(property);
     }
 

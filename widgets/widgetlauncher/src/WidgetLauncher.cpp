@@ -21,20 +21,18 @@
 // INCLUDE FILES
 
 #include "widgetappdefs.rh"
-#include <APACMDLN.H>
+#include <apacmdln.h>
 #include <s32mem.h>
 #include <e32std.h>
 #include <e32base.h>
 #include <f32file.h>
 #include <apgcli.h>
-#include <W32STD.H>
-#include <APGTASK.H>
+#include <w32std.h>
+#include <apgtask.h>
 #include <oommonitorsession.h>
 #include <e32property.h>
-#ifndef BRDO_OOM_MONITOR2_COMPONENT_FF 
 #include <systemwarninglevels.hrh>
-#endif
-#include "browser_platform_variant.hrh"
+#include "Browser_platform_variant.hrh"
 
 // CONSTANTS
 #define KUidWidgetOOMPlugin 0x10282855
@@ -211,7 +209,7 @@ void LaunchWidgetL( const TUid& aUid, TUint32 aOperation )
             TInt bytesAvailaible(0);
             if (aOperation != WidgetSelect && aOperation != LaunchFullscreen )
                 {
-#ifdef BRDO_OOM_MONITOR2_COMPONENT_FF
+#ifdef FF_OOM_MONITOR2_COMPONENT
                 err = monitorSession.RequestOptionalRam(KMemoryToLaunchWidgetUi, KMemoryToLaunchWidgetUi,KUidWidgetOOMPlugin, bytesAvailaible);
 #else
                    TMemoryInfoV1Buf info;

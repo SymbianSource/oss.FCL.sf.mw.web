@@ -20,7 +20,7 @@
 #define LOGGER_H
 
 #ifdef _DEBUG
-#include <Flogger.h>
+#include <flogger.h>
 
 #define FEED_LOG(a, b, c, d) RFileLogger::WriteFormat((a), (b), (c), (d))
 #define FEED_LOG1(a, b, c, d, e) RFileLogger::WriteFormat((a), (b), (c), (d), (e))

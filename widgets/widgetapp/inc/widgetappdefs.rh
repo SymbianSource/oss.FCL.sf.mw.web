@@ -61,7 +61,6 @@ enum TWidgetOperations
     WidgetOnline,
     WidgetOffline,
     WidgetRestart,
-    WidgetFullViewClose,
     Uninitialized
     };
 

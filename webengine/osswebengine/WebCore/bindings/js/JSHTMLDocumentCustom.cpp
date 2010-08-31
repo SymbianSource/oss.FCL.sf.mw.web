@@ -112,11 +112,11 @@ void JSHTMLDocument::setLocation(ExecState* exec, JSValue* value)
     // When assigning location, IE and Mozilla both resolve the URL
     // relative not the target frame.
     Frame* activeFrame = static_cast<ScriptInterpreter*>(exec->dynamicInterpreter())->frame();
-    if (activeFrame) {
+    if (activeFrame)
         str = activeFrame->document()->completeURL(str);
-        bool userGesture = static_cast<ScriptInterpreter*>(exec->dynamicInterpreter())->wasRunByUserGesture();
-        frame->loader()->scheduleLocationChange(str, activeFrame->loader()->outgoingReferrer(), false, userGesture);
-    }
+
+    bool userGesture = static_cast<ScriptInterpreter*>(exec->dynamicInterpreter())->wasRunByUserGesture();
+    frame->loader()->scheduleLocationChange(str, activeFrame->loader()->outgoingReferrer(), false, userGesture);
 }
 
 // Custom functions

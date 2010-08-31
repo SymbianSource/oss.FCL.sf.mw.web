@@ -17,10 +17,10 @@
 
 
 #include "cxml_internal.h"
-#include <nw_dom_attribute.h>
-#include <nw_wbxml_dictionary.h>
-#include <nw_tinydom.h>
-#include <nw_string_string.h>
+#include "nw_dom_attribute.h"
+#include "nw_wbxml_dictionary.h"
+#include "nw_tinydom.h"
+#include "nw_string_string.h"
 #include "nw_dom_wbxmltypes.h"
 
 /*

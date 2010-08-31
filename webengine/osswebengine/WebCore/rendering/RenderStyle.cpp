@@ -21,7 +21,7 @@
 
 #include "RenderStyle.h"
 
-#include "CSSStyleSelector.h"
+#include "cssstyleselector.h"
 #include "RenderArena.h"
 
 namespace WebCore {

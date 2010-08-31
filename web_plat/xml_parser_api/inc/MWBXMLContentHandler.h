@@ -32,6 +32,8 @@
 #ifndef __MWBXMLCONTENTHANDLER_H
 #define __MWBXMLCONTENTHANDLER_H
 
+#warning The XML API has been deprecated
+
 //  INCLUDES
 #include <e32std.h>
 

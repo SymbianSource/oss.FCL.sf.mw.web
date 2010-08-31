@@ -24,7 +24,7 @@
 #include <e32base.h>
 #include <eikmobs.h>
 #include <aknPopup.h>
-#include <browser_platform_variant.hrh>
+
 // DATA TYPES
 enum TDownloadsListDlgEvent
     {
@@ -41,9 +41,6 @@ class CDownloadsListArray;
 class MDownloadsListDlgObserver;
 class RHttpDownload;
 class CDownloadUtils;
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-class CDlStylusPopupMenu;
-#endif
 
 // CONSTANTS
 /// Refresh timer setting. If this is zero, no timer is used! (Micro is 10^(-6))
@@ -135,10 +132,7 @@ NONSHARABLE_CLASS( CDownloadsListDlg ) : public CAknPopupList, public MEikMenuOb
         void ProcessCommandL( TInt aCommandId );
         void SetEmphasis( CCoeControl* aMenuControl, TBool aEmphasis );
         void DynInitMenuPaneL( TInt aResourceId, CEikMenuPane* aMenuPane );
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-        CDownloadsListArray* DownloadsListArray(){ return iDownloadsListArray;} 
-        void AddAiwItemsL();
-#endif        
+
     public: // from MEikListBoxObserver
     	void HandleListBoxEventL(CEikListBox* aListBox, TListBoxEvent aEventType);
 
@@ -207,10 +201,6 @@ NONSHARABLE_CLASS( CDownloadsListDlg ) : public CAknPopupList, public MEikMenuOb
         CDownloadUtils* iDownloadUtils; ///< Owned. 
         TBool iIsMSKChangeHandled;
 		TBool iProgressiveDownload;
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
-		CDlStylusPopupMenu *iStylusMenu;
-		TPointerEvent iPointerEvent;
-#endif
     };
 
 #endif /* CDOWNLOADSLISTDLG_H */

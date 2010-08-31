@@ -25,7 +25,7 @@
 #include "SWInstWidgetUid.h"
 #include "WidgetInstallerInternalCRKeys.h"
 #include <charconv.h>
-#include <widgetregistryconstants.h>
+#include <WidgetRegistryConstants.h>
 
 
 // DTD

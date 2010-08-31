@@ -17,7 +17,7 @@
 
 
 //  INCLUDES
-#include <ecom/RegistryInfoV2.rh>
+#include <registryinfov2.rh>
 #include <AiwCommon.hrh>
 
 //  RESOURCE DEFINITIONS 

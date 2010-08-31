@@ -18,6 +18,8 @@
 #ifndef WEBUTILSSDKCRKEYS_H
 #define WEBUTILSSDKCRKEYS_H
 
+#warning The Web Utils API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 const TUid KCRUidWebUtils = {0x101F8731};
 
 #endif      // WEBUTILSSDKCRKEYS_H

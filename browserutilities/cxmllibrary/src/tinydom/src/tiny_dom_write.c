@@ -16,12 +16,13 @@
 */
 /* ************************************************************************/
 #include "cxml_internal.h"
-#include <nw_wbxml_parse.h>
-#include <nw_wbxml_document.h>
-#include <nw_encoder_wbxmlwriter.h>
+#include "nw_wbxml_parse.h"
+#include "nw_wbxml_document.h"
+#include "nw_encoder_wbxmlwriter.h"
 #include "nw_encoder_tinydom2wbxml.h"
-#include <nw_tinytree.h>
-#include <nw_tinydom.h>
+#include "nw_tinytree.h"
+#include "nw_tinydom.h"
+
 
 /* Create an empty tree */
 

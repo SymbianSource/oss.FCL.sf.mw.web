@@ -21,7 +21,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 #include "httpcachemanager.h"
 
 // CONSTANTS
@@ -135,14 +135,6 @@ class CHttpCacheSupply : public CBase
         * @return
         */
 		void ResumeSupply();
-		
-        /**
-        *
-        * SetTransaction
-        * @param aTransaction
-        * @return
-        */		
-		void SetDownloadTransaction(RHTTPTransaction* aTransaction);
 
     private:
 
@@ -185,14 +177,6 @@ class CHttpCacheSupply : public CBase
         * @return
         */
         void SendBodyL();
-        
-        /**
-        *
-        * @SupplyToDownloadManager
-        * @param
-        * @return
-        */        
-        void SupplyToDownloadManager();
 
     private:    // Data
 
@@ -214,8 +198,6 @@ class CHttpCacheSupply : public CBase
         TBool							m_closed;
 
         CHttpCacheDataSupplier*         m_dataSupplier;
-        
-        RHTTPTransaction*               m_dlTransaction;
   };
 
 #endif      // CHTTPCACHESUPPLY_H

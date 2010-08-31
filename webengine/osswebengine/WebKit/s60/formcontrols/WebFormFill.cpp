@@ -21,13 +21,12 @@
 #include "WebFormFill.h"
 #include "WebFormFillPopup.h"
 #include "WebView.h"
-#include "brctl.h"
+#include "BrCtl.h"
 #include "SettingsContainer.h"
 #include "StaticObjectsContainer.h"
 #include "FormFillController.h"
 #include "FormState.h"
-#include "HtmlInputElement.h"
-#include "HTMLFormElement.h"
+#include "HTMLInputElement.h"
 #include <webkit.rsg>
 
 #include <StringLoader.h>
@@ -69,7 +68,7 @@ WebFormFill::~WebFormFill()
 void WebFormFill::willSubmitForm(FormState* formState)
 {
     int formDataType = m_webView->brCtl()->settings()->brctlSetting(TBrCtlDefs::ESettingsAutoFormFillEnabled);
-    if (formDataType != TBrCtlDefs::EFormDataOff && formState->form()->isDoingSubmit()) {        
+    if (formDataType != TBrCtlDefs::EFormDataOff) {
         StaticObjectsContainer::instance()->formFillController()->saveFormData(formState->form(), this, formDataType ==  TBrCtlDefs::EFormDataPlusPassword);
     }
 }

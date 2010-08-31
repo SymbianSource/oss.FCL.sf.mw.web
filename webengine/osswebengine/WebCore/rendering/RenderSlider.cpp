@@ -191,12 +191,10 @@ RenderStyle* RenderSlider::createThumbStyle(RenderStyle* parentStyle)
     style->setDisplay(BLOCK);
     style->setPosition(RelativePosition);
 
-    if(parentStyle) {
-        if (parentStyle->appearance() == SliderVerticalAppearance)
-            style->setAppearance(SliderThumbVerticalAppearance);
-        else if (parentStyle->appearance() == SliderHorizontalAppearance)
-            style->setAppearance(SliderThumbHorizontalAppearance);
-    }
+    if (parentStyle->appearance() == SliderVerticalAppearance)
+       style->setAppearance(SliderThumbVerticalAppearance);
+    else if (parentStyle->appearance() == SliderHorizontalAppearance)
+       style->setAppearance(SliderThumbHorizontalAppearance);
 
     return style;
 }

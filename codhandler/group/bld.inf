@@ -19,10 +19,10 @@
 
 #include <platform_paths.hrh>
 //#include <data_caging_paths_strings.hrh>
-#include "../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_EXPORTS
-../loc/codviewer.loc  				MW_LAYER_LOC_EXPORT_PATH(codviewer.loc)
+../Loc/CodViewer.loc  				MW_LAYER_LOC_EXPORT_PATH(CodViewer.loc)
 ../rom/CodHandler.iby				CORE_MW_LAYER_IBY_EXPORT_PATH(CodHandler.iby)
 ../rom/CodHandlerResources.iby		LANGUAGE_MW_LAYER_IBY_EXPORT_PATH(CodHandlerResources.iby)
 

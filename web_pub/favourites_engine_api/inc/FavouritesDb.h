@@ -19,14 +19,16 @@
 #ifndef FAVOURITES_DB_H
 #define FAVOURITES_DB_H
 
+#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 
 #include <e32base.h>
 #include <d32dbms.h>
-#include <favouritesitem.h>
-#include <favouriteslimits.h>
-#include <favouritessession.h>
-#include <favouriteshandle.h>
+#include <FavouritesItem.h>
+#include <FavouritesLimits.h>
+#include <FavouritesSession.h>
+#include <FavouritesHandle.h>
 
 // FORWARD DECLARATIONS
 

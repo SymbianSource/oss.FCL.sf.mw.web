@@ -21,8 +21,7 @@
 
 #include <e32base.h>
 #include <e32std.h>
-#include <aknglobalnote.h>
-#include <MemoryManager.h>
+#include "MemoryManager.h"
 
 // CONSTANTS
 
@@ -253,10 +252,6 @@ class CMemoryPool
 
     virtual void RestoreRescueBuffer() = 0;
     
-    virtual void InitOOMDialog();
-    
-    virtual void ResetOOMDialog();
-    
   protected:
     CMemoryPool() : iNotifier( 0 )   {}
   
@@ -361,22 +356,13 @@ NONSHARABLE_CLASS(CNewSymbianHeapPool) : public CMemoryPool
         TUint PostCheck();
         TUint FreeMemory( TFreeMem& aFree );
         void RestoreRescueBuffer();
-        void InitOOMDialog();
-        void ResetOOMDialog();
 #ifdef OOM_LOGGING         
-        void DumpHeapLogs(TInt aFailSize);
+        void DumpHeapLogs();
 #endif        
     private:
     	void InitLocal();
     	
     	RSymbianDLHeap *iAlloc;
-    	// Out of memory dialog and localized resource message
-        void ShowOOMDialog();
-        
-        CAknGlobalNote* iOOMErrorDialog;
-        HBufC *iOOMMessage;
-        bool isInitted;
-        bool iOOMDisplayed;
     };
 
 #endif

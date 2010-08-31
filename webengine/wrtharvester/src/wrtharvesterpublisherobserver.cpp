@@ -23,9 +23,9 @@
 
 #include "wrtharvesterconst.h"
 
-#include <LiwServiceHandler.h>
-#include <LiwVariant.h>
-#include <LiwGenericParam.h>
+#include <liwservicehandler.h>
+#include <liwvariant.h>
+#include <liwgenericparam.h>
 
 _LIT8( KCPContentInterface, "IContentPublishing" );
 _LIT8( KCPService, "Service.ContentPublishing" );

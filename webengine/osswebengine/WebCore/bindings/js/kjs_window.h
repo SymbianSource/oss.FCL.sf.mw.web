@@ -225,8 +225,6 @@ namespace KJS {
     WebCore::Frame* m_frame;
   };
 
-  void setDeferringJSTimers(bool defer); // allow JS timers to defer when shared timers do
-  void shutdownJSTimer(); // shut down JS timers
 } // namespace
 
 namespace WebCore {

@@ -226,6 +226,4 @@ EXPORTS
 	?find@UString@KJS@@QBEHABV12@H@Z @ 225 NONAME ; int KJS::UString::find(class KJS::UString const &, int) const
 	?roundValue@KJS@@YANPAVExecState@1@PAVJSValue@1@@Z @ 226 NONAME ; double KJS::roundValue(class KJS::ExecState *, class KJS::JSValue *)
 	?append@UString@KJS@@QAEAAV12@PBD@Z @ 227 NONAME ; class KJS::UString & KJS::UString::append(char const *)
-	?isExitInProgress@Collector@KJS@@SA_NXZ @ 228 NONAME ; bool KJS::Collector::isExitInProgress(void)
-	?startedExit@Collector@KJS@@SAX_N@Z @ 229 NONAME ; void KJS::Collector::startedExit(bool)
 

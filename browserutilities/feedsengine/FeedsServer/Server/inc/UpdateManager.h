@@ -122,7 +122,7 @@ public:
      * @since 7.1
      * @return Integer.
      */
-    void StartL(); 
+    TInt StartL(); 
 
     /**
      * This method Stop the updation;
@@ -250,19 +250,12 @@ public:  // From CActive
 public:
 
    /**
-    * Issue request for notification.    *
-    * @since 7.2
+    * Check for roaming.
+    *
+    * @since 7.1
     * @return void.
     */
-    void IssueRequestL();
-    /**
-    * Check if currently in roaming
-    *
-    * @since 7.2
-    * @return boolean.
-    */
-    TBool Roaming();
-
+	void CheckForRoaming();
 
 private:
    /**
@@ -281,11 +274,10 @@ private:
 
 private:
 
-    CTelephony  *iTelephony;
-    CTelephony::TNetworkRegistrationV1 iNetworkRegistrationV1;	
-    CTelephony::TNetworkRegistrationV1Pckg iNetworkRegistrationV1Pckg;
-    CUpdateManager  *iUpdateManager;
-    
+	CTelephony							*iTelephony;
+	CTelephony::TNetworkRegistrationV1	iRegStatus;
+	CUpdateManager					    *iUpdateManager;
+	
     };
 
 

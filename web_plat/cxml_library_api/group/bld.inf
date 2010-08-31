@@ -15,7 +15,7 @@
 *
 */
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
@@ -23,12 +23,12 @@ DEFAULT
 PRJ_EXPORTS
 
 // All in one header file for clients.
-../inc/nw_cxml_parser.h          MW_LAYER_PLATFORM_EXPORT_PATH(nw_cxml_parser.h)
+../inc/nw_cXML_Parser.h          MW_LAYER_PLATFORM_EXPORT_PATH(nw_cXML_Parser.h)
 
 // Individual header files for cXML Parser
 ../inc/cxml_proj.h               MW_LAYER_PLATFORM_EXPORT_PATH(cxml_proj.h)
 ../inc/cxml_file_if.h            MW_LAYER_PLATFORM_EXPORT_PATH(cxml_file_if.h)
-../inc/cxml_nw2cxmltypes.h       MW_LAYER_PLATFORM_EXPORT_PATH(cxml_nw2cxmltypes.h)
+../inc/cxml_nw2cxmlTypes.h       MW_LAYER_PLATFORM_EXPORT_PATH(cxml_nw2cxmltypes.h)
 ../inc/cxml_str.h                MW_LAYER_PLATFORM_EXPORT_PATH(cxml_str.h)
 ../inc/cxml_type_def.h           MW_LAYER_PLATFORM_EXPORT_PATH(cxml_type_def.h)
 ../inc/nw_dom.h                  MW_LAYER_PLATFORM_EXPORT_PATH(nw_dom.h)

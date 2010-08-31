@@ -15,8 +15,8 @@
 *
 */
 
-#include <Uri8.h>
-#include <EscapeUtils.h>
+#include <uri8.h>
+#include <escapeutils.h>
 #include <http/rhttpheaders.h>
 #include <http/mhttpdatasupplier.h>
 #include <thttpfields.h>
@@ -30,9 +30,9 @@
 #include "HttpCacheSupply.h"
 #include "HttpPostDataSupplier.h"
 #include <httpfiltercommonstringsext.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 #include "BrCtl.h"
-#include <brctlspecialloadobserver.h>
+#include "BrCtlSpecialLoadObserver.h"
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "DocumentLoader.h"
@@ -83,13 +83,10 @@ TInt DefersData::RunError(TInt aError)
 
 void DefersData::Activate()
 {
-    if(!IsActive())
-        {
-        SetActive();
-        iStatus = KRequestPending;
-        TRequestStatus* status = &iStatus;
-        User::RequestComplete( status, KErrNone );
-        }
+    SetActive();
+    iStatus = KRequestPending;
+    TRequestStatus* status = &iStatus;
+    User::RequestComplete( status, KErrNone );
 }
 
 
@@ -180,8 +177,6 @@ HttpConnection::~HttpConnection()
     delete m_unknownContentHandler;
     delete m_cacheSupply;
     delete m_postDataSupplier;
-    if(m_transaction)
-        m_transaction->Close();
     delete m_transaction;
 }
 
@@ -209,9 +204,6 @@ int HttpConnection::submit()
 void HttpConnection::submitL()
 {
     __ASSERT_DEBUG( !m_transaction, THttpConnUtils::PanicLoader( KErrArgument ) );
-    TBool retryFlag = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->getRetryConnectivityFlag();
-    if( retryFlag )
-        return;
 
     HttpSessionManager* httpSessionMgr = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager();
     User::LeaveIfNull(httpSessionMgr);
@@ -420,11 +412,6 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                     complete( authRet );
                     return;
                     }
-                }
-            if(httpStatus == EHttpNotAcceptable)
-                {
-                complete(KBrowserHTTPStatusCodes - m_transaction->Response().StatusCode());
-                return;
                 }
             if ( !handled )
                 {
@@ -661,10 +648,7 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                     return;
                     }
                 int statusCode = m_transaction->Response().StatusCode();
-                if ((statusCode == 404) && (aEvent.iStatus == THTTPEvent::EFailed) && (m_accumulatedSize != 0)) {
-                    complete(KErrNone);
-                }	
-                else if ( statusCode != 200) {
+                if ( statusCode != 200) {
                     complete(-25000 - m_transaction->Response().StatusCode());
                 }
                 else if (statusCode == 200 && aEvent.iStatus == THTTPEvent::EFailed) {
@@ -717,17 +701,12 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                 uriParser.UriWithoutFragment( uriNoFrag );
                 TUriParser8 parserNoFrag;
                 parserNoFrag.Parse( uriNoFrag );
+                m_transaction->Request().SetURIL( parserNoFrag );
                 // now save the fragment for later use
                 const TDesC8& fragment = uriParser.Extract( EUriFragment );
                 delete m_frag;
                 m_frag = NULL;
-                //Browser does not allow fragment size of greater than 2083 bytes
-                TInt32 maxbyte = fragment.Length(); 
-                if ( maxbyte <= 2083)
-                    {
-                     m_frag = fragment.AllocL();
-                    }
-                m_transaction->Request().SetURIL( parserNoFrag );
+                m_frag = fragment.AllocL();
                 }
             HandleSpecialEvent(aEvent.iStatus);
             break;
@@ -739,15 +718,7 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
         default:
             {
             // error handling
-            //KErrDisconnected should be coming only for OCC
-            //MHFRunL gets call before connection manager
-            if(aEvent.iStatus == KErrNotReady)
-                {
-                StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->setRetryConnectivityFlag();                 
-                StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->startTimer();    
-                }
-            else
-                handleError(aEvent.iStatus);               
+            handleError(aEvent.iStatus);
             break;
             }
         }
@@ -805,13 +776,6 @@ int HttpConnection::HandleSpecialEvent(int event)
 
 void HttpConnection::complete(int error)
 {
-    HttpSessionManager* httpSessionManager = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager();
-    TBool retryFlag = httpSessionManager->getRetryConnectivityFlag();
-    if( retryFlag )
-        {
-        return;
-        }
-    
     if (m_defersData) {
         m_defersData->m_done = true;
         m_defersData->m_error = error;
@@ -847,7 +811,6 @@ void HttpConnection::complete(int error)
                 m_MultipartContentHandler->MarkupContent(), m_maxSize, this);
         }
         delete m_MultipartContentHandler;
-        m_IsMultipart = false;
     }
     if (!error) {
         // Spawn active object for call to return immediately, to avoid blocking
@@ -867,7 +830,6 @@ void HttpConnection::complete(int error)
         m_transaction->Close();
         delete m_transaction;
         m_transaction = NULL;
-        httpSessionManager->removeRequest(this);
     }
     if (error) {
         CResourceHandleManager::self()->receivedFinished(m_handle, error, this);
@@ -951,7 +913,7 @@ int HttpConnection::handleAuthRequestL(
             break;
             }
         }
-    m_isDone = ETrue;
+
     TRAP( ret, SendAuthRequestL( usernameVal, realmVal, isProxy, stale, passwordVal ) );
     if (realmClose)
       {
@@ -1069,7 +1031,7 @@ void HttpConnection::AuthenticationResponse(
     HttpSessionManager* httpSessionMgr = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager();
     httpSessionMgr->removeAuthRequest(this);
     httpSessionMgr->addRequest(this, m_handle);
-    m_isDone = EFalse;
+
     switch (aError)
         {
         case KErrNone:
@@ -1193,17 +1155,15 @@ int HttpConnection::CheckForSecurityStatusChange()
         //When submitting the request iSecurePage was set based on the request url
         //Check the redirect url and see if the scheme has changed
         HttpSessionManager* httpSessionMgr = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager();
-        if(httpSessionMgr->isInSecureConnection() && requestedSecScheme && !redirectedSecScheme) //redirection from a secure page to an unsecure one
+        if(requestedSecScheme && !redirectedSecScheme) //redirection from a secure page to an unsecure one
             {
             error = httpSessionMgr->uiCallback()->aboutToLoadPage(control(m_frame), HttpUiCallbacks::EExitingSecurePage);
-            httpSessionMgr->setInSecureConnection(EFalse);
             }
-        else if(!httpSessionMgr->isInSecureConnection() && redirectedSecScheme && !requestedSecScheme) //redirection to unsecurepage when secure page was requested
+        else if(redirectedSecScheme && !requestedSecScheme) //redirection to unsecurepage when secure page was requested
             {
             error = httpSessionMgr->uiCallback()->aboutToLoadPage(control(m_frame), HttpUiCallbacks::EEnteringSecurePage );
-            httpSessionMgr->setInSecureConnection(ETrue);
             }
-        }      
+        }
     return error;
     }
 
@@ -1220,60 +1180,57 @@ TInt HttpConnection::CheckForNonHttpRedirect()
 
     if(uriParser.Parse( m_transaction->Request().URI().UriDes() ) == KErrNone)
         {
-        if (uriParser.IsPresent(EUriScheme)) // looking only for absolue Url path and schemes other than http(s)
+        if (uriParser.IsPresent(EUriHost) && uriParser.IsPresent(EUriScheme)) // looking only for absolue Url path and schemes other than http(s)
             {
             const TDesC8& scheme = uriParser.Extract(EUriScheme);
-            if(uriParser.IsPresent(EUriHost) || scheme.FindF(_L8("tel")) == KErrNone)
+            if (scheme.FindF(_L8("http")) == KErrNotFound) // everything but http(s)
                 {
-                if (scheme.FindF(_L8("http")) == KErrNotFound) // everything but http(s)
+                TPtrC8 ptr(uriParser.UriDes());
+                // these arrays are pushed into CleanupStack in case leave
+                // if no leave, they will be freed below
+                RArray<TUint>* typeArray = new (ELeave) RArray<TUint>(1);
+                CleanupStack::PushL(typeArray);
+
+                CDesCArrayFlat* desArray = new (ELeave) CDesCArrayFlat(1);
+                CleanupStack::PushL(desArray);
+
+                User::LeaveIfError(typeArray->Append(EParamRequestUrl));
+
+                HBufC16* urlbuf = HBufC16::NewLC( ptr.Length()  + 1); // +1 for zero terminate
+                urlbuf->Des().Copy( ptr );
+                TPtr16 bufDes16 = urlbuf->Des();
+                bufDes16.ZeroTerminate();
+
+                desArray->AppendL(bufDes16);
+                CleanupStack::Pop();
+
+                MBrCtlSpecialLoadObserver* loadObserver = control(m_frame)->brCtlSpecialLoadObserver();
+
+                if (loadObserver)
                     {
-                    TPtrC8 ptr(uriParser.UriDes());
-                    // these arrays are pushed into CleanupStack in case leave
-                    // if no leave, they will be freed below
-                    RArray<TUint>* typeArray = new (ELeave) RArray<TUint>(1);
-                    CleanupStack::PushL(typeArray);
-
-                    CDesCArrayFlat* desArray = new (ELeave) CDesCArrayFlat(1);
-                    CleanupStack::PushL(desArray);
-
-                    User::LeaveIfError(typeArray->Append(EParamRequestUrl));
-
-                    HBufC16* urlbuf = HBufC16::NewLC( ptr.Length()  + 1); // +1 for zero terminate
-                    urlbuf->Des().Copy( ptr );
-                    TPtr16 bufDes16 = urlbuf->Des();
-                    bufDes16.ZeroTerminate();
-
-                    desArray->AppendL(bufDes16);
-                    CleanupStack::Pop();
-
-                    MBrCtlSpecialLoadObserver* loadObserver = control(m_frame)->brCtlSpecialLoadObserver();
-
-                    if (loadObserver)
-                        {
-                        TRAP_IGNORE(loadObserver->HandleRequestL(typeArray, desArray));
-                        }
-
-                    // No leave, so pop here and clean up
-                    CleanupStack::Pop(desArray);
-                    CleanupStack::Pop(typeArray);
-
-                    // cleanup arrays
-                    if (typeArray)
-                        {
-                        // Closes the array and frees all memory allocated to the array
-                        typeArray->Close();
-                        delete typeArray;
-                        }
-
-                    if (desArray)
-                        {
-                        // Deletes all descriptors from the array and frees the memory allocated to the array buffer
-                        desArray->Reset();
-                        delete desArray;
-                        }
-
-                    return KErrCancel;
+                    TRAP_IGNORE(loadObserver->HandleRequestL(typeArray, desArray));
                     }
+
+                // No leave, so pop here and clean up
+                CleanupStack::Pop(desArray);
+                CleanupStack::Pop(typeArray);
+
+                // cleanup arrays
+                if (typeArray)
+                    {
+                    // Closes the array and frees all memory allocated to the array
+                    typeArray->Close();
+                    delete typeArray;
+                    }
+
+                if (desArray)
+                    {
+                    // Deletes all descriptors from the array and frees the memory allocated to the array buffer
+                    desArray->Reset();
+                    delete desArray;
+                    }
+
+                return KErrCancel;
                 }
             }
         }
@@ -1289,13 +1246,7 @@ RHTTPTransaction* HttpConnection::takeOwnershipHttpTransaction()
     // remove own address from transaction properties
     m_transaction->PropertySet().RemoveProperty(session.StringPool().StringF(HttpFilterCommonStringsExt::ESelfPtr,
         HttpFilterCommonStringsExt::GetTable()));
-    if(m_cacheSupply->IsSupplying())
-        {
-        //Download is started from cache.
-        m_cacheSupply->SetDownloadTransaction(m_transaction);
-        }
     m_transaction = NULL;
-    m_isDone = true;
     return trans;
 }
 

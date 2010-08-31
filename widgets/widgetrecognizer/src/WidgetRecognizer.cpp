@@ -16,7 +16,7 @@
 */
 
 #include "WidgetRecognizer.h"
-#include <ecom/implementationproxy.h>
+#include "implementationproxy.h"
 
 // CONSTANTS
 _LIT(KWidgetExtension, ".wgz");

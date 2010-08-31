@@ -26,7 +26,7 @@ class CWrtHarvester;
 // Content Harvester server secure id
 const TUid KPropertyCat = { 0x10282E5A };
 // Can not conflict with other Content Harvester plugin keys
-enum TPropertyKeys { EWidgetUIState = 109, EWidgetRegAltered, EWidgetMassStorageMode, EWidgetSystemShutdown };
+enum TPropertyKeys { EWidgetUIState = 109, EWidgetRegAltered, EWidgetMMCAltered, EWidgetMassStorageMode };
 
 /**
  * Publish&Subscribe event listener

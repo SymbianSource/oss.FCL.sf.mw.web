@@ -18,7 +18,10 @@
 
 #ifndef BRCTLDEFS_H
 #define BRCTLDEFS_H
-#include <browser_platform_variant.hrh>
+
+#warning The Browser Control API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
+
 //  INCLUDES
 
 // DATA TYPES
@@ -33,12 +36,12 @@
 * Usage:
 *
 * @code
-*  #include <brctldefs.h>
+*  #include <BrCtlDefs.h>
 *
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
 * @since 3.0
-* @file brctldefs.h
+* @file BrCtlDefs.h
 * @endcode     *
 */
 class TBrCtlDefs
@@ -206,24 +209,7 @@ class TBrCtlDefs
              ECommandEnterFullscreenBrowsing,
              ECommandLeaveFullscreenBrowsing,
              ECommandZoomIn,
-             ECommandZoomOut,
-             ECommandRetryTransactions,
-             ECommandSetRetryConnectivityFlag,
-             ECommandUnSetRetryConnectivityFlag,
-             ECommandClearQuedTransactions,
-             ECommandConnToDownloadManager,
-             
-            /**
-            * Pause/Resume Script Timers
-            */
-             ECommandPauseScriptTimers,
-             ECommandResumeScriptTimers,
-			 ECommandCancelQueuedTransactions,
-			 ECommandOOMExit,
-			       /**
-			       * Notify Flash Plugin FocusChangeEvent 
-			       */
-			       ECommandNotifyPluginFocusChangeEvent
+             ECommandZoomOut
             };
         /**
         * The load event that occurred.
@@ -575,8 +561,7 @@ class TBrCtlDefs
             ECapabilityFavicon          = 0x8000,
             ECapabilityToolBar          = 0x00010000,
             ECapabilityWebKitLite       = 0x00020000,
-            ECapabilityFitToScreen      = 0x00040000,
-            ECapabilityPinchZoom        = 0x00080000
+            ECapabilityFitToScreen      = 0x00040000
             };
 
         /**

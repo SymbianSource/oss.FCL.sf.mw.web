@@ -21,7 +21,7 @@
 //  INCLUDES
 
 #include <aiftool.rh>
-#include <schemedefs.hrh>
+#include <SchemeDefs.hrh>
 
 //  RESOURCE DEFINITIONS 
 

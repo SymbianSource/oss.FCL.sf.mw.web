@@ -1,4 +1,4 @@
-    /*
+/*
 * Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
 * All rights reserved.
 * This component and the accompanying materials are made available
@@ -28,10 +28,10 @@
 #include <e32base.h>
 #include <e32std.h>
 #include <w32std.h>
-#include <COEMAIN.H>
+#include <coemain.h>
 #include <fbs.h>
-#include <FeatMgr.h>
-#include <Languages.hrh>
+#include <featmgr.h>
+#include <languages.hrh>
 
 #include <AknFontAccess.h>
 #include <AknUtils.h>
@@ -138,9 +138,6 @@ PlatformFontCache::~PlatformFontCache()
 
 const AtomicString& PlatformFontCache::SystemFontFamily( const AtomicString& familyName )
 {
-#ifdef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
-    return familyName;
-#else
     // first check if we support this font
     for (TInt n=0; n<iTypefaceCount; ++n)
     {
@@ -151,7 +148,6 @@ const AtomicString& PlatformFontCache::SystemFontFamily( const AtomicString& fam
     }
 
     return DeviceDefaultFontFamilies();
-#endif
 }
 
 const AtomicString& PlatformFontCache::DeviceDefaultFontFamilies()
@@ -161,8 +157,6 @@ const AtomicString& PlatformFontCache::DeviceDefaultFontFamilies()
     return iDeviceDefaultFont;
     }
 
-const double KFontZoomStepSize = 0.05;
-const double KFontZoomBeginValue = 1.00;
 CFont* PlatformFontCache::CreateFont(const ZoomedSpec& spec)
 {    
     CFont* font = 0;
@@ -176,26 +170,15 @@ CFont* PlatformFontCache::CreateFont(const ZoomedSpec& spec)
         }
     }
     
+    
     if (spec.m_spec.iTypeface.iName == KPlatformDefaultFontFamily) { 
         // fall back to platform default fonts by using TAknFontFamily 
         font = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, spec.m_spec.iHeight * spec.m_zoom/100, (AknFontAccess::TAknFontFamily)0); 
     } 
     else { 
         font = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, spec.m_spec.iHeight * spec.m_zoom/100, spec.m_spec.iTypeface.iName); 
-        
-        if(spec.m_zoom != 100) {
-            CFont *fontWithoutZoom = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, spec.m_spec.iHeight, spec.m_spec.iTypeface.iName);
-        
-            double zoomout = KFontZoomBeginValue;
-            /* When width zoom ratio exceeds the expected zoom value, adjust it by reducing the font size*/
-            while((font->MaxCharWidthInPixels() * 100.0)/fontWithoutZoom->MaxCharWidthInPixels() > spec.m_zoom) {
-                    zoomout = zoomout - KFontZoomStepSize;
-                    ReleaseFont(font);
-                    font = AknFontAccess::GetClosestFont(*iScreenDevice, spec.m_spec.iFontStyle, (spec.m_spec.iHeight * spec.m_zoom * zoomout)/100, spec.m_spec.iTypeface.iName);
-                }
-            ReleaseFont(fontWithoutZoom);
-        }
     } 
+        
     
     if (font) {
         ZoomedSpec newSpec(spec);
@@ -227,16 +210,7 @@ TFontSpec PlatformFontCache::fontSpecInTwips(const FontDescription& fontDescript
     // convert to platform-supported font family
     TPtrC fPtr( SystemFontFamily( fontDescription.family().family() ) );
     
-    //Locate the left most font if the fptr string contains more than one font family names comma seperated
-    TInt comma = fPtr.Locate(TChar(','));
-    if (comma != KErrNotFound) {
-        fPtr.Set(fPtr.Left(comma));
-    }
-     
-    if(fPtr.Length() >KMaxTypefaceNameLength) {
-        fPtr.Set(fPtr.Left(KMaxTypefaceNameLength));
-    }
-    
+
     TFontSpec fontSpec(fPtr, twipSize);
     fontSpec.iFontStyle.SetStrokeWeight(fontDescription.bold() ? EStrokeWeightBold : EStrokeWeightNormal);
     fontSpec.iFontStyle.SetPosture(fontDescription.italic() ? EPostureItalic : EPostureUpright);

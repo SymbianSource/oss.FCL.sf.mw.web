@@ -20,7 +20,7 @@
 
 // INCLUDE FILES
 
-#include <EIKSECED.H>
+#include <eikseced.h>
 #include <avkon.hrh>
 
 #include "BrowserAuthenticationDialog.h"

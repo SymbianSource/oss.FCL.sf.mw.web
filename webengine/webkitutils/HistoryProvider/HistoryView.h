@@ -37,10 +37,10 @@ enum THistoryViewComponent
 
 
 // CONSTANTS
-const int KCenterThumbnailWidthPercent = 60;
-const int KCenterThumbnailHeightPercent = 75;
-const int KSideThumbnailWidthPercent = 20;
-const int KSideThumbnailHeightPercent = 60;
+const int KCenterThumbnailWidthPercent = 50;
+const int KCenterThumbnailHeightPercent = 90;
+const int KSideThumbnailWidthPercent = 25;
+const int KSideThumbnailHeightPercent = 70;
 
 // FORWARD DECLARATIONS
 class HistoryController;
@@ -209,15 +209,6 @@ class HistoryView : public CCoeControl
         * @return void
         */
         void loadUrl();
-        
-        /**
-         * Create a mask bitmap for the thumbnail of left and right entry
-         * left and right entry will use the same mask 
-         * @param aSize The size of the mask bitmap which will be cteated
-         * @param aDisplayMode The display mode of the mask bitmap
-         * @param aRgb The color filled in the bitmap
-         */
-        void CreateMaskBitmapForLeftRightThumbnailL(TSize& aSize, TDisplayMode aDisplayMode, TRgb aRgb);
 
     private:    // Data
 
@@ -267,9 +258,8 @@ class HistoryView : public CCoeControl
         THistoryViewComponent    m_historyViewComponent;
         // Timer for repeated scrolling
         CPeriodic*               m_autoScrollPeriodic;
-        TPoint                   m_lastpointerposition;
-        //Mask bitmap for the thumbnail of left and right entry
-        CFbsBitmap*              m_maskBitmap;
+
+        TPoint m_lastpointerposition;
     };
 
 #endif      // HISTORYVIEW_H

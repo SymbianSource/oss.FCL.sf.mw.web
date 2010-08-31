@@ -1,18 +1,22 @@
 /*
-* Copyright (c) 2002 Nokia Corporation and/or its subsidiary(-ies).
-* All rights reserved.
-* This component and the accompanying materials are made available
-* under the terms of the License "Eclipse Public License v1.0"
-* which accompanies this distribution, and is available
-* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+* ==============================================================================
+*  Name        : FavouritesEngineTest.h
+*  Part of     : ?Subsystem_name / FavouritesEngineTest
 *
-* Initial Contributors:
-* Nokia Corporation - initial contribution.
+*  Description : FavouritesEngineTest test module.
+*  Version:   0.5
 *
-* Contributors:
+*  Copyright (C) 2002 Nokia Corporation.
+*  This material, including documentation and any related 
+*  computer programs, is protected by copyright controlled by 
+*  Nokia Corporation. All rights are reserved. Copying, 
+*  including reproducing, storing,  adapting or translating, any 
+*  or all of this material requires the prior written consent of 
+*  Nokia Corporation. This material also contains confidential 
+*  information which may not be disclosed to others without the 
+*  prior written consent of Nokia Corporation.
 *
-* Description:
-*
+* ============================================================================
 */
 
 
@@ -23,16 +27,16 @@
 #include "StifTestModule.h"
 #include <StifLogger.h>
 #include <f32file.h>
-#include <favouritessession.h>
-#include <favouritesitem.h>
-#include <favouritesitemlist.h>
-#include <favouritesdb.h>
-#include <favouritesfile.h>
+#include <FavouritesSession.h>
+#include <FavouritesItem.h>
+#include <FavouritesItemList.h>
+#include <FavouritesDb.h>
+#include <FavouritesFile.h>
 //#include <RfsApMapper.h>
-#include <favouritesdbincremental.h>
-#include <favouritesdbobserver.h>
-#include <activefavouritesdbnotifier.h>
-#include "favouritesitemtestdata.h"
+#include <FavouritesDbIncremental.h>
+#include <FavouritesDbObserver.h>
+#include <ActiveFavouritesDbNotifier.h>
+#include "FavouritesItemTestData.h"
 
 // CONSTANTS
 _LIT( KTestDbName, "Test" );

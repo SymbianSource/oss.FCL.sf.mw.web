@@ -26,13 +26,8 @@
 #include "StopScheduler.h"
 #include "fast_malloc.h"
 #include "SymbianDlHeap.h"
-#include <OOMMonitorSession.h>
+#include <oommonitorsession.h>
 #include <hal.h>
-#include <avkon.hrh>
-#include <avkon.rsg>
-#include <StringLoader.h>
-#include <WebKit.rsg>
-#include "MemoryLogger.h"
 
 // CONSTANTS
 
@@ -82,10 +77,6 @@ void CMemoryPool::RemoveStopper( MOOMStopper* aStopper )
     TInt idx = iStoppers.Find( aStopper );
     if( idx != KErrNotFound )
         iStoppers.Remove( idx );
-    
-    if(iStoppers.Count() == 0 && iStopScheduler->IsActive()) // cancel stop if nobody is interested
-        iStopScheduler->Cancel();
-        
     }
 
 //-----------------------------------------------------------------------------
@@ -137,7 +128,6 @@ void CMemoryPool::SetStopping( TBool aStopping )
 //-----------------------------------------------------------------------------
 void CMemoryPool::CollectMemory(TUint aSize)
     {
-    MEM_LOG("CMemoryPool::CollectMemory - run");
     if( iIsCollecting ) return;
 
     iIsCollecting = ETrue;
@@ -145,9 +135,11 @@ void CMemoryPool::CollectMemory(TUint aSize)
       {
         iCollectors[i]->Collect(aSize);
       }
+
+    User::CompressAllHeaps();
     iIsCollecting = EFalse;
 	
-	if (iStopScheduler && !iIsStopping )
+	if (iStopScheduler)
 		iStopScheduler->Start( CStopScheduler::ECheckMemory, aSize );
     }
 
@@ -225,20 +217,6 @@ void CMemoryPool::NotifyAndStop()
 			iStopScheduler->Start( CStopScheduler::EStopLoading, 0 );
     }
   }
-
-//-----------------------------------------------------------------------------
-// CMemoryPool::InitOOMDialog()
-//-----------------------------------------------------------------------------
-void CMemoryPool::InitOOMDialog()
-    {
-    }
-
-//-----------------------------------------------------------------------------
-// CMemoryPool::ResetOOMDialog()
-//-----------------------------------------------------------------------------
-void CMemoryPool::ResetOOMDialog()
-    {
-    }
 
 //-----------------------------------------------------------------------------
 // CPlainAllocator::DoAlloc
@@ -471,19 +449,11 @@ void CDefaultMemoryPool::RestoreRescueBuffer()
 //-----------------------------------------------------------------------------
 // CNewSymbianHeapPool::FreeMemory
 //-----------------------------------------------------------------------------
-TUint CNewSymbianHeapPool::FreeMemory(TFreeMem& aFree )
+TUint CNewSymbianHeapPool::FreeMemory(TFreeMem& /*aFree*/ )
     {
     // TODO: implement free_memory
-    aFree.iPool = 0;
-    aFree.iHeap = 0;
-    
-    TInt freeRAM; 
-    if(HAL::Get(HALData::EMemoryRAMFree, freeRAM) == KErrNone) 
-        aFree.iHal = freeRAM;
-    else
-        aFree.iHal = 0;
-    
-    return KMaxTUint; // not fully implemented
+    return KMaxTUint;
+//    return free_memory( aFree.iPool, aFree.iHeap, aFree.iHal );
     }
 
 //-----------------------------------------------------------------------------
@@ -491,18 +461,7 @@ TUint CNewSymbianHeapPool::FreeMemory(TFreeMem& aFree )
 //-----------------------------------------------------------------------------
 TAny* CNewSymbianHeapPool::DoAlloc( TUint aSize )
     {
-    TAny *p = iAlloc->Alloc( aSize );
-    if(iAlloc->isLowSystemMemory && p) // use this a pre OOM indicator
-        {
-        if(iStopScheduler) iStopScheduler->Start( CStopScheduler::ECheckMemory, 0 );                
-        iAlloc->isLowSystemMemory = 0; // reset so that we don't check before next request for RAM
-        }
-        
-    if (!p) {
-        ShowOOMDialog();
-        MEM_LOG("CNewSymbianHeapPool::DoAlloc - failed");
-    }
-    return p;
+    return iAlloc->Alloc( aSize );
     }
 
 //-----------------------------------------------------------------------------
@@ -514,16 +473,10 @@ TAny* CNewSymbianHeapPool::ReAllocate( TAny* aPtr, TUint aSize )
     iMemStatus &= ~ERescueOOM;
 
     TAny* p = iAlloc->ReAlloc( aPtr, aSize );
-    if(iAlloc->isLowSystemMemory && p) // use this a pre OOM indicator
-        {
-        if(iStopScheduler) iStopScheduler->Start( CStopScheduler::ECheckMemory, 0 );                
-        iAlloc->isLowSystemMemory = 0; // reset so that we don't check before next request for RAM
-        }
-
+    
     // check memory manager status
     if( !p || iMemStatus & ERescueOOM )
         {
-        ShowOOMDialog();
         if( !iIsCollecting )
             {
             CollectMemory();
@@ -534,11 +487,6 @@ TAny* CNewSymbianHeapPool::ReAllocate( TAny* aPtr, TUint aSize )
 
         NotifyAndStop();
         }
-
-#ifdef OOM_LOGGING    
-    if(!p)
-        MEM_LOG("CNewSymbianHeapPool::ReAllocate - failed");
-#endif
 
     return p;
     }
@@ -603,8 +551,7 @@ TBool CNewSymbianHeapPool::PreCheck(TUint aTotalSize, TUint aMaxBufSize,
 	if(req > 0)
 		return ETrue;
 	
-    // We haven't got the required amount free yet, pop an OOM dialog and then try the browser heap.
-    ShowOOMDialog();
+	// We haven't got the required amount free yet, try the browser heap.
 	CollectMemory(aTotalSize);
 	// ask the system how much is free now...
 	HAL::Get(HALData::EMemoryRAMFree, systemFreeMemory);
@@ -615,11 +562,6 @@ TBool CNewSymbianHeapPool::PreCheck(TUint aTotalSize, TUint aMaxBufSize,
 		{
 		iMemStatus |= ECheckOOM;
 		NotifyAndStop();
-
-#ifdef OOM_LOGGING		
-		MEM_LOG("CNewSymbianHeapPool::PreCheck - failed !!");
-		DumpHeapLogs(aTotalSize);
-#endif		
 		return EFalse;
 		}
 	
@@ -668,9 +610,6 @@ void CNewSymbianHeapPool::RestoreRescueBuffer()
 
 CNewSymbianHeapPool::CNewSymbianHeapPool() : CMemoryPool()
 	{
-    isInitted = EFalse;
-    iOOMErrorDialog = 0;
-    iOOMMessage = 0;
 	}
 
 CNewSymbianHeapPool::~CNewSymbianHeapPool()
@@ -682,7 +621,7 @@ CNewSymbianHeapPool::~CNewSymbianHeapPool()
 	}
 
 #ifdef __WINSCW__
-const TInt KMaxHeapSize = 0x1000000; // 32MB, on emulator
+const TInt KMaxHeapSize = 0x2000000; // 32MB, on emulator
 #else
 const TInt KMaxHeapSize = 0x4000000; // 64MB, on hardware
 #endif
@@ -724,61 +663,10 @@ TBool CNewSymbianHeapPool::Create()
 	return CMemoryPool::Create();
 	}
 
-/*
- * Initialize the OOM dialog and localized message resource
- * This should be called as soon in the startup process as possible
- * (unfortunately it can't be called until resources are already loaded)
- * Note: apps are responsible for showing their own oom dialog; there
- * is no system one AFAIK; at least we can re-use the oom localized
- * resource message from elsewhere
- */
-void CNewSymbianHeapPool::InitOOMDialog()
-    {
-    if (!isInitted)
-        {
-        isInitted = ETrue;
-        iOOMErrorDialog = CAknGlobalNote::NewL();
-        iOOMErrorDialog->SetSoftkeys(R_AVKON_SOFTKEYS_OK_EMPTY);
-        iOOMMessage = StringLoader::LoadL(R_QTN_BROWSER_DIALOG_OOM);
-        iOOMDisplayed = EFalse;
-        }
-    }
-
-void CNewSymbianHeapPool::ShowOOMDialog()
-    {
-    MEM_LOG("CNewSymbianHeapPool::ShowOOMDialog - called");
-    
-    // Don't show it if we did once already
-    if (iOOMDisplayed)
-        return;
-
-    // If we got OOM, show a dialog (if the dialog was initted properly to begin with)
-    if (iOOMErrorDialog)
-        {
-        // If we couldn't load the message resource when we first initted, 
-        // try again now; this shouldn't ever happen
-        if (!iOOMMessage)
-            {
-            iOOMMessage = StringLoader::LoadL(R_QTN_BROWSER_DIALOG_OOM);
-            }
-        // If we have no dialog or message we unfortunately cannot display it!
-        if (iOOMMessage) 
-            {
-            iOOMErrorDialog->ShowNoteL(EAknGlobalWarningNote,iOOMMessage->Des());
-            iOOMDisplayed = ETrue;
-            }
-        }
-    }
-
-void CNewSymbianHeapPool::ResetOOMDialog()
-    {
-    iOOMDisplayed = EFalse;
-    }
-
 #ifdef OOM_LOGGING   
-void CNewSymbianHeapPool::DumpHeapLogs(TInt aFailSize)
+void CNewSymbianHeapPool::DumpHeapLogs()
     {
-    iAlloc->dump_heap_logs(aFailSize);
+    iAlloc->dump_heap_logs(0);
     iAlloc->dump_dl_free_chunks();
     }
 #endif

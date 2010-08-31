@@ -15,12 +15,14 @@
 *
 */
 
+
+
 #ifndef ASYNCEVENTHANDLERBASE_H
 #define ASYNCEVENTHANDLERBASE_H
 
 //  INCLUDES
 #include <e32base.h>
-#include <downloadmgrclient.h>
+#include <DownloadMgrClient.h>
 
 // FORWARD DECLARATIONS
 class RHttpDownload;

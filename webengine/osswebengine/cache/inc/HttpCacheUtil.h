@@ -360,24 +360,6 @@ class HttpCacheUtil
         */
         static TInt ExtractCacheControlDirectiveValue( RStringPool aStrP, RStringF& aDirective,  TDesC8& aValue, TInt64* aDirectiveValue,
             char** aExtraValue );
-        
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        static TInt ExtractCacheControlDirectivePairValue(const RHTTPHeaders& aHeaders,RStringPool aStrP,RStringF& aDirective,
-                TInt64* aDirectiveValue,TInt aIndex);
-        
-        /**
-        *
-        * @since 3.1
-        * @param
-        * @return
-        */
-        static TInt ExtractCacheControlDirectiveValueforParam(const RHTTPHeaders& aHeaders,RStringPool aStrP,TInt64* aDirectiveValue,
-                RStringF& aFieldParam,RStringF& aDirective,TInt aIndex);
     };
 
 NONSHARABLE_CLASS( TFileInfo )

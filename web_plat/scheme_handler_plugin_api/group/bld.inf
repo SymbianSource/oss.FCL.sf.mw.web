@@ -17,19 +17,22 @@
 *
 */
 
+
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../inc/schemehandler.h         MW_LAYER_PLATFORM_EXPORT_PATH(schemehandler.h)
-../inc/schemehandler.inl       MW_LAYER_PLATFORM_EXPORT_PATH(schemehandler.inl)
-../inc/schemedefs.hrh          MW_LAYER_PLATFORM_EXPORT_PATH(schemedefs.hrh)
+../inc/SchemeHandler.h         MW_LAYER_PLATFORM_EXPORT_PATH(SchemeHandler.h)
+../inc/SchemeHandler.inl       MW_LAYER_PLATFORM_EXPORT_PATH(SchemeHandler.inl)
+../inc/SchemeDefs.hrh          MW_LAYER_PLATFORM_EXPORT_PATH(SchemeDefs.hrh)
 
 #ifdef BRDO_ADDED_EXPORT_LOCATION
-../inc/schemedefs.hrh          BRDO_ADDED_EXPORT_LOCATION(schemedefs.hrh)
+../inc/SchemeDefs.hrh          BRDO_ADDED_EXPORT_LOCATION(SchemeDefs.hrh)
 #endif
 
 PRJ_MMPFILES
+
+

@@ -521,6 +521,4 @@ EXPORTS
 	_ZN3KJS7UString4fromEj @ 520 NONAME
 	_ZNK3KJS7UString4findERKS0_i @ 521 NONAME
 	_ZN3KJS7UString6appendEPKc @ 522 NONAME
-	_ZN3KJS9Collector11startedExitEb @ 523 NONAME
-	_ZN3KJS9Collector16isExitInProgressEv @ 524 NONAME
 

@@ -17,6 +17,8 @@
 #ifndef BROWSERUISDKCRKEYS_H
 #define BROWSERUISDKCRKEYS_H
 
+#warning The Browser UI SDK keys will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 const TUid KCRUidBrowserUiLV = {0x101F861B};
 const TUid KCRUidBrowser   = {0x10008D39};
 
@@ -409,7 +411,5 @@ const TUint32 KBrowserCursorShowMode =          0x00000082;
 
 // Controls whether enter key can activate a link, ot just has a default behavior. 
 const TUint32 KBrowserEnterKeyMode = 0x00000083;
-//OCC related
-const TUint32 KBrowserOccAccessPointSelectionMode = 0x00000084;
-const TUint32 KBrowserOccNGDefaultSnapId = 0x00000085;
+
 #endif      // BROWSERUISDKCRKEYS_H

@@ -45,7 +45,7 @@
 #define BRCTLSPECIALLOADOBSERVERIMPL_H
 
 //  INCLUDES
-#include <brctlspecialloadobserver.h>
+#include <BrCtlSpecialLoadObserver.h>
 
 /**
 *  This observer handles special load events such as network connection, deal with non-http(s) or non-html requests

@@ -20,7 +20,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 #include <http/rhttpsession.h>
 #include <stringpool.h>
 

@@ -35,7 +35,7 @@ extern "C" {
 #include <f32file.h>
 #include <e32math.h>
 #include <hal.h>
-#include <BAUTILS.H>
+#include <bautils.h>
 
 ///////////////////////////////////////////////////////////////////////////////////////////
 

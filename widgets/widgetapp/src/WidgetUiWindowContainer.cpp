@@ -23,21 +23,21 @@
 
 #include <WidgetUi.rsg>
 
-#include <widgetregistryconstants.h>
+#include <WidgetRegistryConstants.h>
 
 #include <brctlinterface.h>
 #include <ApUtils.h>
-#include <internetconnectionmanager.h>
+#include <InternetConnectionManager.h>
 #include <ActiveApDb.h>
 #include <avkon.hrh>
-#include <aknsdrawutils.h>
+#include <AknsDrawUtils.h>
 #include <AknsBasicBackgroundControlContext.h>
 
  // CAknMessageQueryDialog
-#include <AknMessageQueryDialog.h>
+#include <aknmessagequerydialog.h>
 #include <aknnotewrappers.h>
-#include <AknNoteDialog.h>
-#include <browserdialogsprovider.h>
+#include <aknnotedialog.h>
+#include <BrowserDialogsProvider.h>
 
 // EXTERNAL DATA STRUCTURES
 
@@ -154,6 +154,8 @@ CWidgetUiWindowContainer::~CWidgetUiWindowContainer()
 //
 void CWidgetUiWindowContainer::SizeChanged()
     {
+    TInt offset( 0 );
+
     if( Engine() && (Engine()->Rect() != Rect()) )
         {
         TRect rect( Rect() );
@@ -278,16 +280,10 @@ TKeyResponse CWidgetUiWindowContainer::OfferKeyEventL(
     if (aKeyEvent.iCode == EKeyNo)
         {
         // Close the current active widget
-        //iWindowManager.CloseWindowsAsync(EFalse);
+        iWindowManager.CloseWindowsAsync(EFalse);
         return EKeyWasConsumed;
         }
 
-    //Ignore application keys(EKeyApplication0-EKeyApplication1F)
-    if( (aKeyEvent.iCode>=EKeyApplication0 && aKeyEvent.iCode<= EKeyApplicationF) || 
-        (aKeyEvent.iCode>=EKeyApplication10 && aKeyEvent.iCode<= EKeyApplication1F) )
-        {
-        return EKeyWasNotConsumed;
-        }
     TKeyResponse resp(EKeyWasNotConsumed);
     TBool editing(EFalse);
 	//Reset the iIsOptionsMenuActivated if enabled
@@ -295,12 +291,16 @@ TKeyResponse CWidgetUiWindowContainer::OfferKeyEventL(
 
     if (Engine())
         {
+        TBool showStausPane(EFalse);
         TBrCtlDefs::TBrCtlElementType eType = Engine()->FocusedElementType();
         switch(eType)
             {
             case TBrCtlDefs::EElementInputBox:
             case TBrCtlDefs::EElementActivatedInputBox:
             case TBrCtlDefs::EElementTextAreaBox:
+                // status pane is needed for editing
+                showStausPane = ETrue;
+                // fall through
             case TBrCtlDefs::EElementObjectBox:
             case TBrCtlDefs::EElementActivatedObjectBox:
                 {

@@ -16,8 +16,8 @@
 */
 
 
-#include <feedsserverfeed.h>
-#include <S32Mem.h>
+#include <FeedsServerFeed.h>
+#include <s32mem.h>
 #include <es_sock.h>
 
 #include "FeedRequestHandlers.h"

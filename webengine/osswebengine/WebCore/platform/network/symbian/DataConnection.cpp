@@ -11,15 +11,16 @@
 *
 * Contributors:
 *
-* Description:  
+* Description:
 *
 */
 
 #include <f32file.h>
 #include <uri8.h>
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 #include <apmrec.h>
 #include <apgcli.h>
+//#include <imcvcodc.h>
 #include <tconvbase64.h>
 #include "ResourceHandle.h"
 #include "ResourceRequest.h"
@@ -148,7 +149,9 @@ void DataConnection::parseUrlLC(HBufC8*& contentType, HBufC8*& encoding, HBufC8*
                 body = HBufC8::NewLC( 2 * data.Length() );
                 TPtr8 decodedBody( body->Des() );
                 // urlPtr8
-                TBase64 codec; 
+                //TImCodecB64 codec;
+                //codec.Initialise();
+                TBase64 codec;
                 ok = codec.Decode( data, decodedBody );
             }
             if( !ok ) { // if not base64, simple copy
@@ -159,8 +162,7 @@ void DataConnection::parseUrlLC(HBufC8*& contentType, HBufC8*& encoding, HBufC8*
             }
         }
     }
-    if(body != NULL)
-        m_maxSize = body->Length();
+    m_maxSize = body->Length();
 }
 
 void DataConnection::cancel()
@@ -176,11 +178,7 @@ void DataConnection::download(WebCore::ResourceHandle* handle,
                               const WebCore::ResourceRequest& request,
                               const WebCore::ResourceResponse& response)
 {
-// This routine would implement the handling of a sisx file in   
-   //  <iframe src="data:x-epoc/x-sis-x;base64, ...."> type element    
-        // This is not yet implemented so the ASSERT below is commented out to prevent   
-        //   an assert crash.  
-        //  __ASSERT_ALWAYS(EFalse, User::Panic(_L("Resource Loader"), KErrArgument));  
+    __ASSERT_ALWAYS(EFalse, User::Panic(_L("Resource Loader"), KErrArgument));
 }
 
 TInt DataConnection::sendResponseCb(TAny* aPtr)
@@ -203,17 +201,12 @@ void DataConnection::sendResponseL()
     HBufC8* encoding = NULL;
     HBufC8* body = NULL;
     parseUrlLC(contentType, encoding, body);
-    if(body != NULL)
-        {
-        ResourceResponse response(m_handle->request().url().des(), contentType->Des(), body->Length(), encoding->Des(), String() );
-        CResourceHandleManager::self()->receivedResponse(m_handle, response, this);
-        CResourceHandleManager::self()->receivedData(m_handle, body->Des(), body->Length(), this);
-        }
+
+    ResourceResponse response(m_handle->request().url().des(), contentType->Des(), body->Length(), encoding->Des(), String() );
+    CResourceHandleManager::self()->receivedResponse(m_handle, response, this);
+    CResourceHandleManager::self()->receivedData(m_handle, body->Des(), body->Length(), this);
     CResourceHandleManager::self()->receivedFinished(m_handle, KErrNone, this);
-    if(body != NULL)
-        CleanupStack::PopAndDestroy(3); // contentType, encoding, body
-    else
-        CleanupStack::PopAndDestroy(2); // contentType, encoding
+    CleanupStack::PopAndDestroy(3); // contentType, encoding, body
     derefHandle();
     }
 

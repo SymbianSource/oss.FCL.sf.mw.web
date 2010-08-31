@@ -15,12 +15,14 @@
 *
 */
 
-#include <TInternetDate.h>
+
+#include <tinternetdate.h>
 
 #include "FeedParser.h"
 #include "FeedParserObserver.h"
-#include <leaktracker.h>
-#include <xmlutils.h>
+#include "LeakTracker.h"
+#include "XmlUtils.h"
+
 
 _LIT8(KUrlStr, "url");
 
@@ -295,7 +297,6 @@ void CFeedParser::AddMappingL(RArray<ElementHandlerMapEntry>& aMappings,
         const TDesC8& aNamespace, const TDesC8& aElementName, TInt aValueId, 
         ElementHandlerFunctionL aHandler)
     {
-    CleanupClosePushL(aMappings);  
     ElementHandlerMapEntry  entry;
 
     // Init the entry.
@@ -306,7 +307,6 @@ void CFeedParser::AddMappingL(RArray<ElementHandlerMapEntry>& aMappings,
     
     // Append the entry.
     User::LeaveIfError(aMappings.Append(entry));
-    CleanupStack::Pop();
     }
 
 

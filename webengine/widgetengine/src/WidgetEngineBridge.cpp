@@ -15,6 +15,8 @@
 *
 */
 
+
+
 // INCLUDE FILES
 #include "WidgetEngineBridge.h"
 #include "WidgetEventHandler.h"
@@ -23,7 +25,7 @@
 #include <eikmenub.h>
 #include <gdi.h>
 #include <bitdev.h>
-#include <brctlinterface.h>
+#include "brctlinterface.h"
 #include "WidgetEngineCallbacks.h"
 
 #include "WidgetClient.h"
@@ -96,10 +98,9 @@ WidgetEngineBridge::~WidgetEngineBridge()
 void WidgetEngineBridge::Clear()
 {    
 	// unprotect objects
-    HashCountedSet<JSValue*>::iterator end = m_protectedObjects.end();
-	for (HashCountedSet<JSValue*>::iterator it = m_protectedObjects.begin(); it != end; ++it) {
-		for(int count = it->second; count > 0; count--)
-            Collector::unprotect(it->first);
+	HashSet<JSValue*>::iterator end = m_protectedObjects.end();
+	for (HashSet<JSValue*>::iterator it = m_protectedObjects.begin(); it != end; ++it) {
+		Collector::unprotect(*it);
 	}
 	m_protectedObjects.clear();
 
@@ -171,11 +172,7 @@ void WidgetEngineBridge::SetParamL(TBrCtlDefs::TBrCtlWidgetParams aParam, const 
     switch( aParam ) {
         case TBrCtlDefs::EWidgetBasePath: {
             m_preferences->setBasePathL(aValue);
-           TRAPD(err, m_preferences->loadL());
-            if(err!=KErrNone)
-            	{
-                m_preferences->deleteAllPrefFiles();
-           	    }
+            m_preferences->loadL();            
             break;
         }
         case TBrCtlDefs::EWidgetBundleId: {
@@ -322,6 +319,5 @@ void WidgetEngineBridge::Unprotect(JSValue* obj)
 }
 
 //END OF FILE
-
 
 

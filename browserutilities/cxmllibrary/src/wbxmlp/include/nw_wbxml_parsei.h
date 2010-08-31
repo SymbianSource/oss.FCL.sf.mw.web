@@ -25,8 +25,8 @@
 #ifndef NW_PARSER_WBXML_PARSE_I_H
 #define NW_PARSER_WBXML_PARSE_I_H
 
-#include <cxml_proj.h>
-#include <nw_wbxml_parse.h>
+#include "cxml_proj.h"
+#include "nw_wbxml_parse.h"
 
 #ifdef __cplusplus
 extern "C" {

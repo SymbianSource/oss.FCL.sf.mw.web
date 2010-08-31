@@ -15,7 +15,7 @@
 *
 */
 
-#include <browser_platform_variant.hrh>
+#include <Browser_platform_variant.hrh>
 #include "config.h"
 #include <../bidi.h>
 #include "WebFrameLoaderClient.h"
@@ -25,7 +25,7 @@
 #include "Frame.h"
 #include "FrameLoader.h"
 #include "HTMLFrameOwnerElement.h"
-#include "HtmlNames.h"
+#include "HTMLNames.h"
 #include "HTMLFrameElement.h"
 #include "WebCoreFrameBridge.h"
 #include "HTMLFormElement.h"
@@ -38,16 +38,16 @@
 #include "WebFrameView.h"
 #include "WebFrameBridge.h"
 #include "WebDocumentLoader.h"
-#include "brctl.h"
-#include "page.h"
+#include "BrCtl.h"
+#include "Page.h"
 #include "ProgressTracker.h"
 #include "WebPolicyManager.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
-#include <brctlwindowobserver.h>
+#include "BrCtlWindowObserver.h"
 #include "WmlDispatcher.h"
 #include "WebUtil.h"
-#include "errordefs.h"
+#include "ErrorDefs.h"
 #include "WebFepTextEditor.h"
 #include "SettingsContainer.h"
 #include "WebTabbedNavigation.h"
@@ -56,7 +56,7 @@
 #include "WebCharsetData.h"
 #include "WebKitLogger.h"
 #include "PluginHandler.h"
-#include "MIMETypeRegistry.h"
+#include "MimeTypeRegistry.h"
 #include "WidgetExtension.h"
 
 using namespace WebCore;
@@ -115,13 +115,14 @@ void WebFrameLoaderClient::makeDocumentView()
     //NSView <WebDocumentView> *documentView = [v _makeDocumentViewForDataSource:ds];
     //if (!documentView)
     //    return;
-    if(m_webFrame) {
-        if (m_webFrame->frameView() && 
-            m_webFrame->frameView()->topView()&&
-           !m_webFrame->parentFrame()) {
-            m_webFrame->frameView()->topView()->setEditable(false);
-        }
-        
+
+    if (m_webFrame && 
+        m_webFrame->frameView() && 
+        m_webFrame->frameView()->topView()&&
+        !m_webFrame->parentFrame()) {
+
+        m_webFrame->frameView()->topView()->setEditable(false);
+    }
     WebFrameBridge *bridge = m_webFrame->bridge();
 
     // FIXME: We could save work and not do this for a top-level view that is not a WebHTMLView.
@@ -129,7 +130,6 @@ void WebFrameLoaderClient::makeDocumentView()
     bridge->createFrameViewWithScrollView(v, v->marginWidth(), v->marginHeight());
     //m_webFrame.get() _updateBackground];
     bridge->installInFrame(v);
-    }
 
     // Call setDataSource on the document view after it has been placed in the view hierarchy.
     // This what we for the top-level view, so should do this for views in subframes as well.
@@ -147,9 +147,7 @@ void WebFrameLoaderClient::makeRepresentation(DocumentLoader* docLoader)
                 brctl(m_webFrame)->setWmlDispatcher(m_WmlContentListener);
                 }
         }
-        if ( m_WmlContentListener ) {
-          TRAPD(err,m_WmlContentListener->HeadersL( 0, m_response ));
-        }
+        TRAPD(err,m_WmlContentListener->HeadersL( 0, m_response ));
     }
     else{
         if (m_WmlContentListener) {
@@ -163,7 +161,6 @@ void WebFrameLoaderClient::makeRepresentation(DocumentLoader* docLoader)
             core(m_webFrame)->loader()->isLoadingMainFrame() &&
             FrameLoadTypeStandard == core(m_webFrame)->loader()->loadType()){
             m_webFrame->frameView()->topView()->resetZoomLevel();
-            m_webFrame->frameView()->topView()->resetJsTimers();
         }
 
         if (!core(m_webFrame)->ownerElement()) {
@@ -934,10 +931,9 @@ void WebFrameLoaderClient::didChangeTitle(DocumentLoader*)
 void WebFrameLoaderClient::committedLoad(DocumentLoader* loader, const char* data, int length) 
 { 
     if (brctl(m_webFrame)->wmlMode()) {
-    if(m_WmlContentListener)
-    	TRAP_IGNORE(
-         m_WmlContentListener->ResponseL( data, length );
-         );
+        TRAP_IGNORE(
+        m_WmlContentListener->ResponseL( data, length );
+        );
         return;
     }
     m_webFrame->bridge()->receivedData(data, length, m_response.textEncodingName());
@@ -1146,9 +1142,9 @@ String WebFrameLoaderClient::generatedMIMETypeForURLScheme(const String& URLSche
 void WebFrameLoaderClient::frameLoadCompleted()
 {
     if (brctl(m_webFrame)->wmlMode()) {
-    if (m_WmlContentListener)
         TRAP_IGNORE(
-         m_WmlContentListener->CompleteL( 0, 0 );
+		if (m_WmlContentListener)
+        	m_WmlContentListener->CompleteL( 0, 0 );
         );
         return;
     }

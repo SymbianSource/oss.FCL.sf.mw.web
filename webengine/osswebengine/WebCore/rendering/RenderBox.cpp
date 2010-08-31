@@ -1449,18 +1449,8 @@ int RenderBox::calcReplacedHeightUsing(Length height) const
                 int newHeight = block->calcContentBoxHeight(block->contentHeight());
                 block->setHeight(oldHeight);
                 return calcContentBoxHeight(height.calcValue(newHeight));
-            }            
-            // As per CSS2, percentage based height computes to 'auto', if the height of the containing block
-            // is not specified explicitly, and this element is not absolutely positioned.
-            // In standard mode, we try to follow this rule.
-            if (!style()->htmlHacks() && cb->style()->height().isAuto() && !isPositioned() && !cb->isRenderView() && !cb->isTableCell()) {
-                IntSize size = intrinsicSize();
-                // Try to keep aspect ratio.
-                int h = size.width() ? calcReplacedWidth() * size.height() / size.width() : size.height();
-                if (h > 0)
-                    return calcContentBoxHeight(h);
             }
-
+            
             int availableHeight = isPositioned() ? containingBlockHeightForPositioned(cb) : cb->availableHeight();
 
             // It is necessary to use the border-box to match WinIE's broken

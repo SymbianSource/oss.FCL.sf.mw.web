@@ -128,16 +128,6 @@ public:
         iScrollView = &aView;
         }
 
-    void setOpacity(float opacity)
-        {
-        iOpacity = opacity;
-        }
-        
-    float opacity()
-        {
-        return iOpacity;
-        }
-    
     protected:
 
         WebCoreGraphicsContext(CFbsBitmap* aBitmap, MScrollView* aView);
@@ -153,7 +143,6 @@ public:
         TRect iClippingRect;
         TPoint iOrigin;
         TBool iHasClipping;
-        float iOpacity;
 };
 
 #endif

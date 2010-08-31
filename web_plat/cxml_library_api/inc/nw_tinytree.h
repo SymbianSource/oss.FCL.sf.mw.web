@@ -29,13 +29,14 @@
 #ifndef NW_TINY_TREE_H
 #define NW_TINY_TREE_H
 
-#include <cxml_proj.h>
-#include <nw_tinytree_treevector.h>
-#include <nw_tinytree_ebuffer.h>
+#include "cxml_proj.h"
+#include "nw_tinytree_treevector.h"
+#include "nw_tinytree_ebuffer.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
+
 
 /* ----------------------------------------------------------------------- **
    Tiny tree definitions   

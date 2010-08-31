@@ -62,7 +62,7 @@
 #include "IconLoader.h"
 #include "InspectorController.h"
 #include "Logging.h"
-#include "MIMETypeRegistry.h"
+#include "MimeTypeRegistry.h"
 #include "MainResourceLoader.h"
 #include "Page.h"
 #include "PageCache.h"
@@ -77,7 +77,7 @@
 #include "SystemTime.h"
 #include "TextResourceDecoder.h"
 #include "WindowFeatures.h"
-#include "XMLHttpRequest.h"
+#include "xmlhttprequest.h"
 #include "XMLTokenizer.h"
 #include "kjs_binding.h"
 #include "kjs_proxy.h"
@@ -226,7 +226,6 @@ FrameLoader::FrameLoader(Frame* frame, FrameLoaderClient* client)
     , m_wasUnloadEventEmitted(false)
     , m_isComplete(false)
     , m_isLoadingMainResource(false)
-    , m_mayLoadIconLater(false)    
     , m_cancellingWithLoadInProgress(false)
     , m_needsClear(false)
     , m_receivedData(false)
@@ -1044,17 +1043,11 @@ void FrameLoader::endIfNotLoadingMainResource()
 
 void FrameLoader::iconLoadDecisionAvailable()
 {
+    if (!m_mayLoadIconLater)
+        return;
     LOG(IconDatabase, "FrameLoader %p was told a load decision is available for its icon", this);
-    if (m_mayLoadIconLater) {
-        // Notfification came from iconDataBase to load the icon
-        startIconLoader();
-        m_mayLoadIconLater = false;
-    } else {
-        // Icon was specified in <link> tag with rel="icon" or rel="shortcut icon" property
-        if(m_iconLoader)
-            m_iconLoader->stopLoading(); // cancel previous loading state
-        startIconLoader();
-    }
+    startIconLoader();
+    m_mayLoadIconLater = false;
 }
 
 void FrameLoader::startIconLoader()
@@ -1518,16 +1511,13 @@ bool FrameLoader::gotoAnchor(const String& name)
     RenderObject* renderer;
     IntRect rect;
     if (!anchorNode)
-        {
         renderer = m_frame->document()->renderer(); // top of document
-        rect = m_frame->document()->getRect();
-        }
     else {
         renderer = anchorNode->renderer();
         rect = anchorNode->getRect();
     }
     if (renderer)
-             renderer->enclosingLayer()->scrollRectToVisible(rect, RenderLayer::gAlignToEdgeIfNeeded, RenderLayer::gAlignTopAlways);                         
+        renderer->enclosingLayer()->scrollRectToVisible(rect, RenderLayer::gAlignToEdgeIfNeeded, RenderLayer::gAlignTopAlways);
 
     return true;
 }

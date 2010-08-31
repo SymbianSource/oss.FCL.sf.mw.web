@@ -25,20 +25,9 @@
 #include "CodUtil.h"
 #include "CodError.h"
 #include "CodLogger.h"
-#include <CommDbConnPref.h>
+#include <commdbconnpref.h>
 #include <cdblen.h>
 #include <es_enum.h>
-#include <platform/mw/browser_platform_variant.hrh>
-#ifdef BRDO_OCC_ENABLED_FF
-#include <extendedconnpref.h>
-#include <FeatMgr.h>
-#include <CentralRepository.h>
-#include <CoreApplicationUIsSDKCRKeys.h>
-#include <cmgenconnsettings.h>
-#include <cmmanagerkeys.h>
-#include <etelmm.h>
-#include <rconnmon.h>
-#endif
 
 // ================= MEMBER FUNCTIONS =======================
 
@@ -105,49 +94,7 @@ void CConnection::ConnectL( TUint32 aIap, TRequestStatus* aStatus )
             // aIap == 0 -> user select.
             iConnPref.SetDialogPreference( ECommDbDialogPrefPrompt );
             }
-        #ifdef BRDO_OCC_ENABLED_FF
-           TExtendedConnPref extPref;
-           CLOG(( EConn, 4, _L("CodHalder Setting OCC parameters") ));
-           
-           CLOG(( EConn, 4, _L("Iap: %d"), aIap ));
-           if (aIap)
-           {
-              CLOG(( EConn, 4, _L("Iap is found") ));
-              extPref.SetSnapPurpose(CMManager::ESnapPurposeUnknown);
-              extPref.SetIapId(aIap);
-           }
-           else
-           {
-              CLOG(( EConn, 4, _L("Using Internet Snap") ));
-              extPref.SetSnapPurpose(CMManager::ESnapPurposeInternet);
-		   }
-
-           //Default dialog behaviour
-           extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourConnSilent);
-                  
-           if ( !IsPhoneOfflineL() )
-           {
-              TInt currentmode = KErrNone;
-              CRepository* rep = CRepository::NewLC( KCRUidCmManager );
-              rep->Get(KCurrentCellularDataUsage, currentmode );
-              CleanupStack::PopAndDestroy(); //rep
-              if(ECmCellularDataUsageConfirm == currentmode)
-              {
-                 if ( IsRoamingL() || (aIap == 0) )
-                 {
-                    CLOG(( EConn, 4, _L("Setting note behaviour as Default") ));
-                    extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourDefault);
-                 }
-              }
-           }
-           
-           TConnPrefList prefList;
-           prefList.AppendL(&extPref);
-           iConn.Start( prefList, iStatus );
-        #else
-            iConn.Start( iConnPref, iStatus );
-        #endif //BRDO_OCC_ENABLED_FF
-        
+        iConn.Start( iConnPref, iStatus );
         iState = EConnecting;
         SetActive();
         CleanupStack::Pop( 2 ); // closing iConn and iSockServ
@@ -368,98 +315,3 @@ void CConnection::Done()
     User::RequestComplete( iParentStatus, iStatus.Int() );
     iParentStatus = NULL;
     }
-
-#ifdef BRDO_OCC_ENABLED_FF
-// ---------------------------------------------------------
-// CConnection::IsPhoneOfflineL
-//
-// Checks if phone is in offline mode or not.
-// Return ETrue if phone is in offline mode.
-// Return EFalse if phone is not in offline mode.
-// ---------------------------------------------------------
-//
-TBool CConnection::IsPhoneOfflineL() const
-     {
-      if ( FeatureManager::FeatureSupported( KFeatureIdOfflineMode ) )
-         {
-         CRepository* repository = CRepository::NewLC( KCRUidCoreApplicationUIs );
-         TInt connAllowed = 1;
-         repository->Get( KCoreAppUIsNetworkConnectionAllowed, connAllowed );
-         CleanupStack::PopAndDestroy();  // repository
-         if ( !connAllowed )
-             {
-             CLOG(( EConn, 2, _L("Yes, Phone is in Offline mode") ));
-             return ETrue;
-             }
-         }
-     
-     CLOG(( EConn, 2, _L("Phone is in Online mode") ));
-     return EFalse;
-     }
-
-// ---------------------------------------------------------
-// CConnection::IsRoamingL
-//
-// Checks if phone is in home network or in roam network.
-// Return ETrue if phone is in foriegn network.
-// Return EFalse if phone is in home network.
-// ---------------------------------------------------------
-//
-TBool CConnection::IsRoamingL()
-    {
-        RTelServer telServer;
-        User::LeaveIfError( telServer.Connect());
-        
-        RTelServer::TPhoneInfo teleinfo;
-        User::LeaveIfError( telServer.GetPhoneInfo( 0, teleinfo ) );
-        
-        RMobilePhone phone;
-        User::LeaveIfError( phone.Open( telServer, teleinfo.iName ) );
-        User::LeaveIfError(phone.Initialise()); 
-        
-        RMobilePhone::TMobilePhoneNetworkMode mode;                     
-        TInt err = phone.GetCurrentMode( mode );
-        phone.Close();
-        telServer.Close();
-        TInt Bearer = EBearerIdGSM ;
-        if( KErrNone == err )
-        {
-           switch(mode)
-           {
-                case RMobilePhone::ENetworkModeGsm:     
-                {           
-                Bearer = EBearerIdGSM ;
-                    break;      
-                }
-                case RMobilePhone::ENetworkModeWcdma:
-                {                                   
-                    Bearer = EBearerIdWCDMA  ;
-                    break;  
-                }   
-                default: 
-                {                   
-                
-                }                       
-            }
-        }   
-        RConnectionMonitor monitor;
-        TRequestStatus status;
-        // open RConnectionMonitor object
-        monitor.ConnectL();
-        CleanupClosePushL( monitor );
-        TInt netwStatus ;
-        monitor.GetIntAttribute( Bearer, 0, KNetworkRegistration, netwStatus, status );
-        User::WaitForRequest( status );
-        CleanupStack::PopAndDestroy(); // Destroying monitor
-        if ( status.Int() == KErrNone && netwStatus == ENetworkRegistrationRoaming )
-        {
-            CLOG(( EConn, 2, _L("Yes, Phone is in Forign network") ));
-            return ETrue;
-        }
-        else //home n/w or some other state in n/w
-        {
-            CLOG(( EConn, 2, _L("Phone is in Home network") ));
-            return EFalse;
-        }
-   }
-#endif

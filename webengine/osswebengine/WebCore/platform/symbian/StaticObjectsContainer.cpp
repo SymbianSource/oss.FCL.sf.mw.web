@@ -29,15 +29,15 @@
 #include "config.h"
 #include <../bidi.h>            // work around for multiple bidi.h files
 #include "StaticObjectsContainer.h"
-#include "Brctl.h"
+#include "BrCtl.h"
 #include "AtomicString.h"
 #include "PlatformFontCache.h"
 #include "PictographSymbian.h"
 #include "FontCache.h"
 #include "FormFillController.h"
 #include "ResourceLoaderDelegate.h"
-#include "webkitLogger.h"
-#include <brctldefs.h>
+#include "WebKitLogger.h"
+#include "BrCtlDefs.h"
 #include "WebIconDatabase.h"
 #include "WebSurface.h"
 #include "WebCursor.h"
@@ -48,7 +48,7 @@
 #include "SharedTimer.h"
 #include "TextEncoding.h"
 #include "TextEncodingRegistry.h"
-#include "CSSStyleSelector.h"
+#include "cssstyleselector.h"
 #include "RenderStyle.h"
 #include "Page.h"
 #include "Cache.h"
@@ -59,20 +59,18 @@
 #include "EventNames.h"
 #include "FontCache.h"
 #include "RenderThemeSymbian.h"
-#include "qualifiedname.h"
+#include "QualifiedName.h"
 #include "XMLTokenizer.h"
 #include "Document.h"
 #include "StyleElement.h"
 #include "bidi.h"
 #include "RenderBox.h"
 #include "FontCache.h"
-#include "MIMETypeRegistry.h"
+#include "MimeTypeRegistry.h"
 #include "ResourceHandleManagerSymbian.h"
 #include "TextBreakIteratorSymbian.h"
 #include "ImageSymbian.h"
 #include "HTMLElementFactory.h"
-#include "GCController.h"
-#include "bitmap\AnimationDecoderWrapped.h"
 #include <eikenv.h>
 
 #include "WidgetEngineBridge.h"
@@ -130,11 +128,9 @@ StaticObjectsContainer::StaticObjectsContainer() :
 
 StaticObjectsContainer::~StaticObjectsContainer()
 {
-    // Instruct garbage collect for destruction in progress and to stop garbage collection
-    gcController().startedExit(true); 
-    KJS::Collector::startedExit(true);
-    CAnimationDecoderWrapped::closeSyncDecodeThread();
-        
+    // Run KJS collector to cleanup any remaining references
+    // This must be run before Cache::deleteStaticCache to properly free resources
+    KJS::Collector::collect();
     delete m_oomHandler;
     delete m_oomStopper;
     FontCache::deleteFontDataCache();
@@ -340,11 +336,6 @@ RenderTheme* StaticObjectsContainer::theme()
     if(!m_symbianTheme)
         m_symbianTheme = new RenderThemeSymbian();
     return m_symbianTheme;
-}
-
-void StaticObjectsContainer::setIconDatabaseEnabled(bool enabled)
-{    
-    m_icondatabase->setEnabled(enabled);
 }
 }
 // END OF FILE

@@ -19,10 +19,12 @@
 #ifndef BRCTLWINDOWOBSERVER_H
 #define BRCTLWINDOWOBSERVER_H
 
+#warning The Browser Control API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 
 // CONSTANTS
 
@@ -48,12 +50,12 @@ class CBrCtlInterface;
 * Usage:
 *
 * @code
-*  #include <brctlwindowobserver.h>
+*  #include <BrCtlWindowObserver.h>
 *
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
 * @since 3.0
-* @file brctlwindowobserver.h
+* @file BrCtlWindowObserver.h
 * @endcode     *
 */
 class MBrCtlWindowObserver

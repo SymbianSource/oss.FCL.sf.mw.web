@@ -28,7 +28,7 @@
 #ifndef NW_TINYTREE_EBUFFER_H
 #define NW_TINYTREE_EBUFFER_H
 
-#include <cxml_proj.h>
+#include "cxml_proj.h"
 
 #ifdef __cplusplus
 extern "C" {

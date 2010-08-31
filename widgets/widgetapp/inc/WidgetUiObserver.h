@@ -20,11 +20,11 @@
 #define WIDGETUIOBSERVER_H_
 
 //  INCLUDES
-#include <brctllayoutobserver.h>
-#include <brctlsoftkeysobserver.h>
-#include <brctlspecialloadobserver.h>
-#include <brctldownloadobserver.h>
-#include <brctlwindowobserver.h>
+#include <BrCtlLayoutObserver.h>
+#include <BrCtlSoftkeysObserver.h>
+#include <BrCtlSpecialLoadObserver.h>
+#include <BrCtlDownloadObserver.h>
+#include <BrCtlWindowObserver.h>
 #include <brctlinterface.h>
 #include <DocumentHandler.h>
 #include <flogger.h>
@@ -287,9 +287,10 @@ class CWidgetUiObserver : public CBase,
         * Rcognize the mime type.
         * @since 3.1
         * @param aFileName
+        * @param aData
         * @return HBufC*
         */
-        HBufC* RecognizeLC( const TDesC& aFileName );
+        HBufC* RecognizeLC( const TDesC& aFileName, const TDesC8& aData );
 
         /**
         * TranslateURLToFilenameL
@@ -318,7 +319,6 @@ class CWidgetUiObserver : public CBase,
         //Active Object to collect bitmap
         CIdle* iCollectBitmapTimer;
         RFs iFs;
-        RFile iFile;
     };
 
 #endif      // WIDGEUIOBSERVER_H

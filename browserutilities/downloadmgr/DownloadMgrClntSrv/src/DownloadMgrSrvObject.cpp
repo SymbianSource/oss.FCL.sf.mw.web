@@ -16,14 +16,15 @@
 *
 */
 
+
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
 #include "DownloadMgrServer.h"
 #include "DownloadMgrDef.h"
 #include "DownloadMgrDefAttrib.h"
-#include "HttpClientApp.h"
-#include "HttpClientAppInstance.h"
-#include "HttpDownload.h"
+#include <HttpClientApp.h>
+#include <HttpClientAppInstance.h>
+#include <HttpDownload.h>
 #include <e32svr.h>
 #include <basched.h>
 //#include <e32uid.h>

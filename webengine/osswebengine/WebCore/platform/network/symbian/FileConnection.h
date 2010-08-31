@@ -65,10 +65,6 @@ private:
     * Determine the content type of the file.
     */
     HBufC8* contentTypeL();
-    /**
-    * Determine the content type of the file from PluginHandler.
-    */
-    HBufC8* contentTypeFromPluginsL();
 
     /**
     * Determine the content encoding of the file.

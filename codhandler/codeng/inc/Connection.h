@@ -22,10 +22,10 @@
 #define CONNECTION_H
 
 // INCLUDES
-#include <platform/mw/browser_platform_variant.hrh>
+
 #include <e32base.h>
 #include <es_sock.h>
-#include <CommDbConnPref.h>
+#include <commdbconnpref.h>
 
 // CLASS DECLARATION
 
@@ -106,11 +106,6 @@ NONSHARABLE_CLASS( CConnection ) : public CActive
         * Second phase constructor. Leaves on failure.
         */
         void ConstructL();
-        
-#ifdef BRDO_OCC_ENABLED_FF
-        TBool IsPhoneOfflineL() const;
-        TBool IsRoamingL();
-#endif
 
     private:  // from CActive
 

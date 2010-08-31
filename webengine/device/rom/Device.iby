@@ -18,11 +18,7 @@
 
 #ifndef __DEVICE_IBY__
 #define __DEVICE_IBY__
-#ifdef __S60_32__
-#include <browser_platform_variant.hrh>
-#else
-#include <platform/mw/browser_platform_variant.hrh>
-#endif
+#include <platform/mw/Browser_platform_variant.hrh>
 
 
 // bitmaps

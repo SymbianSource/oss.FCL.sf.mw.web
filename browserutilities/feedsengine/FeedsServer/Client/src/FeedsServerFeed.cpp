@@ -15,10 +15,13 @@
 *
 */
 
-#include <feedsserverclient.h>
-#include <feedsserverfeed.h>
+
+#include "FeedsServerClient.h"
+#include "FeedsServerFeed.h" 
 #include "FeedRequestHandlers.h"
 #include "ClientRequestHandlers.h"
+
+
 
 #include "Logger.h"
 

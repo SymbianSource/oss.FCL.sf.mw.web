@@ -15,13 +15,15 @@
 *
 */
 
-#include <feedsserverclient.h>
-#include <feedsservermsg.h>
-#include <feedsserversettings.h>
+
+#include "FeedsServerClient.h"
+#include "FeedsServerMsg.h"
+#include "FeedsServerSettings.h"
 #include "Logger.h"
 #include "ClientRequestHandlers.h"
 #include "FeedRequestHandlers.h"
 #include "FolderItemRequestHandlers.h"
+
 
 // -----------------------------------------------------------------------------
 // RFeedsServer::RFeedsServer

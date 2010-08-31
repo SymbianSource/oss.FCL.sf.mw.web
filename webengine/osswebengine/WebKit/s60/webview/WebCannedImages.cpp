@@ -31,7 +31,7 @@
 #include <WebKitIcons.mbg>
 #endif
 // tot:move ibeam from bitmap to svg
-#include <WebKit.mbg>
+#include <webkit.mbg>
 
 // EXTERNAL DATA STRUCTURES
 

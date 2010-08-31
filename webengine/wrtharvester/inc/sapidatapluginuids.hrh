@@ -19,6 +19,8 @@
 #ifndef SAPIDATAPLUGINUIDS_HRH
 #define SAPIDATAPLUGINUIDS_HRH
 
+#include <aicontentpublisheruid.hrh>
+
 /**
  * Ecom dll uid for AI Data plug-in.
  */

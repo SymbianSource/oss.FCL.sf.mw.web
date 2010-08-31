@@ -19,11 +19,11 @@
 // INCLUDE Files
 
 // User includes
-#include <browserdialogsprovider.h>	// Class header
+#include "BrowserDialogsProvider.h"	// Class header
 #include "BrowserDialogsProvider.hrh"
 #include "BrowserAuthenticationDialog.h"
 #include "BrowserDialogsProviderConstants.h"
-#include <browserdialogsproviderobserver.h> //obs
+#include "BrowserDialogsProviderObserver.h" //obs
 
 // Browser as a Plugin - own classes
 #include "BrowserViewImagesPopup.h"		// For DialogDisplayPageImagesL
@@ -32,7 +32,7 @@
 #include "BrowserUploadProgressNote.h"  // For UploadProgressNoteL
 
 // System Includes
-#include <aknLists.h>					// for Object Element Dialog
+#include <aknlists.h>					// for Object Element Dialog
 #include <aknmessagequerydialog.h>		// DialogAlertL
 #include <CAknFileSelectionDialog.h>	// File Selection Dialog
 
@@ -47,30 +47,27 @@
 
 #include <aknnotewrappers.h>			
 #include <AknInfoPopupNoteController.h> // tooltip
-#include <PathConfiguration.hrh>
-#include <FeatMgr.h>
+#include <pathconfiguration.hrh>
+#include <featmgr.h>
 #include <MGFetch.h> // Media Fetch
 // General
 #include <StringLoader.h>				// strings
 #include <f32file.h>
-#include <THttpFields.h>
+#include <thttpfields.h>
 #include <textresolver.h>
 
 // Resources
-#include <coneresloader.h>
+#include <ConeResLoader.h>
 #include <BrowserDialogsProvider.rsg>
 
 // Data Caging
-#include <data_caging_path_literals.hrh>
+#include <data_caging_path_literals.hrh>    
 
 // CONSTANTS
 const TInt KBrCtlObjectElementMaxLength = 50;
 const TInt KBrCtlMBFormat = 4;
 const TInt KBrCtlGBFormat = 10;
 const TInt KBrCtlMegabyte = 1000;	// although 1MB=1024 kB, treat as 1000kb for user simplicity
-const TInt KBrowserFileNotFound  = -26003; // Defined in ErrorDefs.h but not exported so define here
-//There is an empty note popup is displayed because of this undefined error code that has been thrown by http layer
-const TInt KHttpErrIgnore  = -26173;
 
 // DLL resource file name with path
 _LIT( KBrowserDialogsProviderDirAndFile, "z:BrowserDialogsProvider.rsc" );// resource
@@ -131,8 +128,6 @@ void CBrowserDialogsProvider::ConstructL()
 //-----------------------------------------------------------------------------
 CBrowserDialogsProvider::~CBrowserDialogsProvider()
 	{
-	iDialogs.Close();
-	iDialogs.ResetAndDestroy();
 	iResourceLoader.Close();
 
 	// Delete any dialogs
@@ -152,8 +147,6 @@ CBrowserDialogsProvider::~CBrowserDialogsProvider()
 //-----------------------------------------------------------------------------
 EXPORT_C void CBrowserDialogsProvider::DialogNotifyErrorL( TInt aErrCode )
 	{
-    if( aErrCode == KHttpErrIgnore )
-       return;
     TInt httpErr = KBrCtlHttpErrorsOffset - aErrCode;
 	CTextResolver* textresolver = CTextResolver::NewLC(); 
 	TPtrC msg;
@@ -172,17 +165,8 @@ EXPORT_C void CBrowserDialogsProvider::DialogNotifyErrorL( TInt aErrCode )
             }
         default:
             {
-            // change error code to browser error code, when trying to open file
-            // that doesn't exist
-            if ( KErrNotFound == aErrCode )
-            	{
-            	iCoeEnv.HandleError( KBrowserFileNotFound );
-            	}
-            else
-            	{
-				// Handle all others as system error dialog
-            	iCoeEnv.HandleError( aErrCode );
-            	}
+            // Handle all others as system error dialog
+            CCoeEnv::Static()->HandleError( aErrCode );
         	break;
             }
         }   // end of switch
@@ -444,16 +428,17 @@ EXPORT_C TBool CBrowserDialogsProvider::DialogSelectOptionL(
 								TBrCtlSelectOptionType aBrCtlSelectOptionType,
 								CArrayFix<TBrCtlSelectOptionData>& aOptions )
 	{
-     iSelectDlg = CBrowserSelectElementDlg::NewL(	aTitle, 
+    CBrowserSelectElementDlg* dlg = CBrowserSelectElementDlg::NewL(	aTitle, 
 												aBrCtlSelectOptionType, 
 												aOptions );
 
+	
+    iDialogs.Append( dlg );     // Store a pointer to the dialog for CancelAll()
 
+	TInt result = dlg->ExecuteLD();
 
-	TInt result = iSelectDlg->ExecuteLD();
-
-
-    iSelectDlg = 0;
+    RemoveDialogFromArray();
+    
     if ( iObserver )
         {
         iObserver->ReportDialogEventL( 
@@ -692,14 +677,11 @@ EXPORT_C TBool CBrowserDialogsProvider::DialogPromptLC( const TDesC& aTitle,
 												HBufC*& aReturnedInput )
 	{
     TBool retVal;
-    TInt length = aDefaultInput.Length();
-    if ( aDefaultInput.Length() > KMaxAltTextLength )
-        {
-        length = KMaxAltTextLength;
-        }
-    // defInput is not modified by the dialog.Truncate if length is greater than KMaxAltTextLength 
-    TPtr defInput( (TUint16*) aDefaultInput.Ptr(), length, KMaxAltTextLength );
-    
+
+	// defInput is not modified by the dialog.
+    TPtr defInput( (TUint16*) aDefaultInput.Ptr(), aDefaultInput.Length(), 
+													    KMaxAltTextLength );
+
     CBrowserScriptPromptDialog* dialog = 
 		new (ELeave) CBrowserScriptPromptDialog( defInput, aReturnedInput );
 
@@ -989,10 +971,9 @@ EXPORT_C void CBrowserDialogsProvider::DialogDisplayPageImagesL(
 //-----------------------------------------------------------------------------
 //
 EXPORT_C void CBrowserDialogsProvider::CancelAll()
-    {
-	 if(iSelectDlg  )
-        iSelectDlg->CancelPopup();
-		
+	{
+    // Empty the array
+    iDialogs.ResetAndDestroy();
 	}
 
 //-----------------------------------------------------------------------------

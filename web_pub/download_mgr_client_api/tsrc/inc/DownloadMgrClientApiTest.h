@@ -24,8 +24,8 @@
 #include <StifTestModule.h>
 #include <StifLogger.h>
 #include <f32file.h>
-#include <downloadmgrclient.h>
-#include <cdownloadmgruilibregistry.h>
+#include <DownloadMgrClient.h>
+#include <CDownloadMgrUiLibRegistry.h>
 
 // CONSTANTS
 const TInt KThisAppUid = 0x101FB3E7;

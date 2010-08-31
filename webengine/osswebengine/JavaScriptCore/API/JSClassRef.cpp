@@ -122,10 +122,7 @@ JSClassRef OpaqueJSClass::create(const JSClassDefinition* definition)
         // remove functions from the original class
         JSClassDefinition objectDefinition = *definition;
         objectDefinition.staticFunctions = 0;
-        JSClassRef jsClass = new OpaqueJSClass(&objectDefinition, protoClass);
-        if(protoClass && !jsClass)
-             delete protoClass;
-        return jsClass;
+        return new OpaqueJSClass(&objectDefinition, protoClass);
     }
 
     return new OpaqueJSClass(definition, 0);

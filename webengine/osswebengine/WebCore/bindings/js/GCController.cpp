@@ -41,38 +41,19 @@ GCController& gcController()
 
 GCController::GCController()
     : m_GCTimer(this, &GCController::gcTimerFired)
-     , m_exitInProgress(false)
 {
 }
 
 void GCController::garbageCollectSoon()
 {
-    if(!m_exitInProgress)
-        { 
-        if (!m_GCTimer.isActive())
-            m_GCTimer.startOneShot(0);
-        } 
+    if (!m_GCTimer.isActive())
+        m_GCTimer.startOneShot(0);
 }
 
 void GCController::gcTimerFired(Timer<GCController>*)
 {
-    if(!m_exitInProgress)
-        { 
-        JSLock lock;
-        Collector::collect();
-        } 
+    JSLock lock;
+    Collector::collect();
 }
-
-void GCController::startedExit(TBool aExitStatus)
-    { 
-    m_exitInProgress = aExitStatus; 
-    if(m_exitInProgress)
-        { 
-        KJS::Collector::startedExit(true); 
-        if(m_GCTimer.isActive()) 
-            { 
-            m_GCTimer.stop();
-            } 
-        }
-    }
+    
 } // namespace WebCore

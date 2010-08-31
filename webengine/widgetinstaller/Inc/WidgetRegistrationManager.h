@@ -68,14 +68,7 @@ NONSHARABLE_CLASS(CWidgetRegistrationManager): public CBase
         * @return void
         */
         void DeregisterWidgetL( const TUid& aUid );
-        
-        /**
-        * deregister installed widgets as non native app
-        * @since 3.1
-        * @param aUidList - the list of UID of widgets to be unisntalled
-        * @return void
-        */		
-		void DeregisterWidgetsL( const RArray<TUid>& aUidList);
+
 
     protected:  // constructors
 

@@ -17,5 +17,4 @@ EXPORTS
 	NPN_RetainObject @ 16 NONAME
 	NPN_SetProperty @ 17 NONAME
 	NPN_UTF8FromIdentifier @ 18 NONAME
-	NPN_SetException @ 19 NONAME
 

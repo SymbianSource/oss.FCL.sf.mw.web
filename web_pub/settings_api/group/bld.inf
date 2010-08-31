@@ -18,15 +18,15 @@
 */
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 
 DEFAULT
 
 PRJ_EXPORTS
-../inc/browseruisdkcrkeys.h         MW_LAYER_PUBLIC_EXPORT_PATH(browseruisdkcrkeys.h)
-../inc/browseruiinternalcrkeys.h    MW_LAYER_PUBLIC_EXPORT_PATH(browseruiinternalcrkeys.h)
+../inc/BrowserUiSDKCRKeys.h         MW_LAYER_PUBLIC_EXPORT_PATH(BrowserUiSDKCRKeys.h)
+../inc/BrowserUiInternalCRKeys.h    MW_LAYER_PUBLIC_EXPORT_PATH(BrowserUiInternalCRKeys.h)
 
 PRJ_MMPFILES
 

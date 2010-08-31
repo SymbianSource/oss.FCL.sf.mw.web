@@ -54,7 +54,6 @@ _LIT8( KHSOffline, "offline");
 _LIT8( KTemplateType, "template_type");
 _LIT8( KWidgetName,   "widget_name");
 _LIT8( KWidgetInfo,   "widget_info");
-_LIT8( KWidgetType,   "widget_type");
 _LIT( KTemplatedWidget, "ai3templatedwidget");
 _LIT8( KMyActionMap, "action_map" );
 _LIT8( KMyItem, "item" );

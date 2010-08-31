@@ -20,11 +20,12 @@
 #ifndef _CXML_XMLP_INT_ENTITY_H_
 #define _CXML_XMLP_INT_ENTITY_H_
 #include <e32std.h>
-#include <cxml_proj.h>
+#include "cxml_proj.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
 
 typedef struct CXML_Internal_Entity_s {
    NW_Ucs2 * name;

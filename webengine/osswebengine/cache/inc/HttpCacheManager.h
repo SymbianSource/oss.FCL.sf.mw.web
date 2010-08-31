@@ -20,8 +20,8 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <CenRepNotifyHandler.h>
-#include <brctldefs.h>
+#include <cenrepnotifyhandler.h>
+#include <BrCtlDefs.h>
 #include <http/rhttpsession.h>
 
 // CONSTANTS

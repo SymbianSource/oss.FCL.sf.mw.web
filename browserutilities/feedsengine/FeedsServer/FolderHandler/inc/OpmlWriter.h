@@ -15,8 +15,10 @@
 *
 */
 
+
 #ifndef OPML_WRITER_H
 #define OPML_WRITER_H
+
 
 // INCLUDES
 #include <e32base.h>
@@ -27,7 +29,9 @@
 
 #include "FeedsDatabase.h"
 #include "CleanupLibXml2.h"
-#include <xmlutils.h>
+#include "XmlUtils.h"
+
+
 
 // CONSTANTS
 
@@ -40,6 +44,7 @@
 // FORWARD DECLARATIONS
 
 // CLASS DECLARATION
+
 
 /**
 *  Translates CFolderItems back to opml.

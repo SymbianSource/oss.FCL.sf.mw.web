@@ -36,14 +36,6 @@ _LIT8( KFuncMemLogEnd, "END: Peek -> %d Diff -> %d Accumulated Peek -> %d" );
 _LIT8( KTab, "\t" );
 
 // MACROS
-#define MEM_LOG_CREATE()   \
-    RFs fs; \
-    _LIT( KFilePath, "C:\\Logs\\Webcore\\"); \
-    TFileName path (KFilePath); \
-    if(fs.Connect() == KErrNone) { \
-        fs.MkDirAll( path ); \
-        fs.Close(); \
-    }
 
 #define MEM_LOG(a)		{ _LIT8(temp, a); RFileLogger::Write(KMEMLogDir, KMEMLogFile, EFileLoggingModeAppend, temp); }
 #define MEM_LOGF		FPrint
@@ -135,7 +127,6 @@ inline FunctionLogger::~FunctionLogger()
 				loggers[ i ]->_accum += _peek;
 	}
 #else // OOM_LOGGING
-#define MEM_LOG_CREATE()
 #define MEM_LOG(a)
 #define MEM_LOGF
 #define C_LOG(a)

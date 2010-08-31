@@ -267,8 +267,7 @@ bool FocusController::setFocusedNode(Node* node, PassRefPtr<Frame> newFocusedFra
         
     if (oldFocusedNode && oldFocusedNode->rootEditableElement() == oldFocusedNode && !relinquishesEditingFocus(oldFocusedNode))
         return false;
-
-
+        
     clearSelectionIfNeeded(oldFocusedFrame.get(), newFocusedFrame.get(), node);
     
     if (!node) {

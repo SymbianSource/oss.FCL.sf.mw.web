@@ -15,6 +15,7 @@
 *
 */
 
+
 /*
 ** WARNING
 **
@@ -33,7 +34,8 @@
  * Doc Type = -//SYNCML//DTD SyncML v1.0//EN
  */
 
-#include <nw_wbxml_dictionary.h>
+#include "nw_wbxml_dictionary.h"
+
 
 static const NW_Ucs2 NW_SyncML_1_0_ElementTag_Add[] = {'A','d','d','\0'};
 static const NW_Ucs2 NW_SyncML_1_0_ElementTag_Alert[] = {'A','l','e','r','t','\0'};

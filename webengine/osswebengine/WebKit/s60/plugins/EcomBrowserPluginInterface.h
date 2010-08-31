@@ -24,7 +24,7 @@
 #include <ecom/ecom.h>
 
 #include <npupp.h>
-#include <browserplugininterface.h>
+#include <BrowserPluginInterface.h>
 
 typedef struct
     {

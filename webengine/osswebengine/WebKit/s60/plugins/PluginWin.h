@@ -23,10 +23,9 @@
 //  INCLUDES
 #include <e32def.h>
 #include <coecntrl.h>
-#include <pluginadapterinterface.h>
+#include <PluginAdapterInterface.h>
 #include <npapi.h>
 #include <rt_gesturehelper.h>
-#include <stmgestureinterface.h>
 
 // FORWARD DECLARATIONS
 class PluginSkin;
@@ -479,18 +478,8 @@ public: // Functions from MPluginAdapter
     void ToggleScreenMode(bool aFullScreen);
     void PlayPausePluginL ();
     void HandlePointerEventFromPluginL(const TPointerEvent& aEvent);
-    TBool HandleGesture(const TStmGestureEvent& aEvent);    
+    TBool HandleGesture(const RT_GestureHelper::TGestureEvent& aEvent);    
 	TBool Windowed() { return m_windowedPlugin;}
-	bool containsPoint(WebView& view, const TPoint& pt);
-	void SetBitmapFromPlugin(TInt aHandle);
-	TBool IsPluginFocused() {return m_pluginfocus; }
-	TBool IsPluginBitMapSet() {return m_pluginHasBitmap; }
-	CFbsBitmap* PluginBitmap() {return m_pausedBitmap; }
-	void GetBitmapFromPlugin (bool status);
-	void ClearPluginBitmap();
-	TBool IsCollectBitmapSupported();
-	void drawBitmapToWebCoreContext();
-	void notifyAPChange(void* ap);
     protected: // New functions
 
         /**
@@ -516,11 +505,6 @@ public: // Functions from MPluginAdapter
         bool                                m_fullscreen;
         bool                                m_windowCreated;
         bool                                m_forceScroll;
-        bool                                m_visibilty;
-        CFbsBitmap*                         m_pausedBitmap;       //Plugin paused Bitmap
-        bool                                m_pluginHasBitmap;
-        bool                                m_BitmapSupported;
-        bool                                m_PluginInvisibleOnPinchZoom; 
     };
 
 

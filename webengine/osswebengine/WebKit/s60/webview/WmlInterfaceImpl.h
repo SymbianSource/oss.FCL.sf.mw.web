@@ -25,7 +25,7 @@
 #include <e32base.h>
 #include "WmlInterface.h"
 
-#include <brctldialogsprovider.h>
+#include "BrCtlDialogsProvider.h"
 
 class CBrCtlObjectInfo;
 class CWmlContentInterface;
@@ -119,7 +119,7 @@ NONSHARABLE_CLASS(CWmlInterfaceImpl):public CBase,public MWmlInterface
 
     /**
         * Set the WKScrollingProviderNotifyLayoutChange.
-    * Function \S60\WebEngine\WEBKIT\BrowserControl\inc\brctldialogsprovider.h
+    * Function \S60\WebEngine\WEBKIT\BrowserControl\inc\BrCtlDialogsProvider.h
     * void CBrCtlScrollingProvider::NotifyLayoutChange(..)
         * @since 3.1.
         * @return void
@@ -129,7 +129,7 @@ NONSHARABLE_CLASS(CWmlInterfaceImpl):public CBase,public MWmlInterface
 
     /**
         * Set the SetWKScrollingProviderUpdateVScrollBarL.
-    * Function \S60\WebEngine\WEBKIT\BrowserControl\inc\brctldialogsprovider.h
+    * Function \S60\WebEngine\WEBKIT\BrowserControl\inc\BrCtlDialogsProvider.h
     * void CBrCtlScrollingProvider::UpdateVScrollBarL(..)
         * @since 3.1.
         * @return void
@@ -141,7 +141,7 @@ NONSHARABLE_CLASS(CWmlInterfaceImpl):public CBase,public MWmlInterface
                 TInt aDisplayPosY);
     /**
         * Set the SetWKScrollingProviderUpdateHScrollBarL
-    * Function \S60\WebEngine\WEBKIT\BrowserControl\inc\brctldialogsprovider.h
+    * Function \S60\WebEngine\WEBKIT\BrowserControl\inc\BrCtlDialogsProvider.h
     * void CBrCtlScrollingProvider::UpdateHScrollBarL(..)
         * @since 3.1.
         * @return void
@@ -159,7 +159,7 @@ NONSHARABLE_CLASS(CWmlInterfaceImpl):public CBase,public MWmlInterface
 
     /**
         * Used by and defined in support of CWKDialogProvider
-    * Function \S60\WebEngine\WEBKIT\BrowserControl\inc\brctldialogsprovider.h
+    * Function \S60\WebEngine\WEBKIT\BrowserControl\inc\BrCtlDialogsProvider.h
     * CBrCtlObjectInfo::CWKObjectInfo() in
     * [WEBKIT\BrowserControl\src\WKDialogsProviderUtils.cpp]
         * @since 3.1.

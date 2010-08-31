@@ -19,11 +19,13 @@
 #ifndef ACTIVE_FAVOURITES_DB_NOTIFIER_H
 #define ACTIVE_FAVOURITES_DB_NOTIFIER_H
 
+#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 
 #include <e32base.h>
 #include <d32dbms.h>
-#include <favouritesdbnotifier.h>
+#include <FavouritesDbNotifier.h>
 
 // FORWARD DECLARATION
 

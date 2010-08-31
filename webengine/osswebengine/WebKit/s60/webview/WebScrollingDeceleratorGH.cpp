@@ -17,7 +17,6 @@
 
 
 // INCLUDE FILES
-#include <browser_platform_variant.hrh>
 #include <../bidi.h>
 #include "WebScrollingDeceleratorGH.h"
 #include "WebView.h"
@@ -29,6 +28,7 @@
 
 #include "WebKitLogger.h"
 
+using namespace RT_GestureHelper;
 // constants
 const int KRecordSize = 4;
 
@@ -36,18 +36,9 @@ const int KRecordSize = 4;
 // It lists the timeout dt values in microseconds.
 const int KDecelCurveSize = 10;
 
-#ifdef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
-const int KScrollIntervalTimeout = 30000; // scroll timer interval in microseconds
-#else
 const int KScrollIntervalTimeout = 60000; // scroll timer interval in microseconds
-#endif
 
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-const float KDecceleration = -1300.0;
-#else 
-const float KDecceleration = -750.0;
-#endif 
-const float KSpeedHigh = 2000.0;
+const float KDecceleration = -700.0;
 
 int decelTimerCB(TAny* ptr);
 
@@ -87,7 +78,6 @@ WebScrollingDeceleratorGH::WebScrollingDeceleratorGH(WebView& webView)
 void WebScrollingDeceleratorGH::ConstructL()
 {
     m_decelTimer = CPeriodic::NewL(CActive::EPriorityStandard);
-    m_deceleration = KDecceleration;
 }
 
 // -----------------------------------------------------------------------------
@@ -101,7 +91,7 @@ WebScrollingDeceleratorGH::~WebScrollingDeceleratorGH()
 
 int WebScrollingDeceleratorGH::getDecceleration()
 {
-   return  m_deceleration;  
+   return  KDecceleration;  
 }
 
 
@@ -116,50 +106,29 @@ void WebScrollingDeceleratorGH::cancelDecel()
 { 
     m_decelelatorSwitch = false;
     if (m_decelTimer->IsActive()) {
-        m_webView.setViewIsScrolling(false);
-		m_webView.resumeJsTimers();		
         m_decelTimer->Cancel();
     }
 }
 
-bool WebScrollingDeceleratorGH::startDecel(TRealPoint& speed, WebScrollbarDrawer* scrollbarDrawer)
+void WebScrollingDeceleratorGH::startDecel(TRealPoint& speed, WebScrollbarDrawer* scrollbarDrawer)
 {
-    bool started = false;
     m_decelelatorSwitch = true;
     m_scrollbarDrawer = scrollbarDrawer;
-    float speedX = speed.iX;
-    float speedY = speed.iY;
-    float absSpeedX = abs(speedX);
-    float absSpeedY = abs(speedY);
-    
-    if (absSpeedX > KSpeedHigh) {
-        speedX = KSpeedHigh * speedX/absSpeedX ;
-    }
-    if (absSpeedY > KSpeedHigh) {
-        speedY = KSpeedHigh * speedY/absSpeedY;
-    }
-    
-    m_initSpeed.iX = (-1) * speedX;
-    m_initSpeed.iY = (-1) * speedY;
+    m_initSpeed.iX = (-1) * speed.iX;
+    m_initSpeed.iY = (-1) * speed.iY;
     
     m_numscrollsteps = 0;
     if (m_decelTimer->IsActive()) {
-        m_webView.setViewIsScrolling(false);
-    	m_webView.resumeJsTimers();
         m_decelTimer->Cancel();
     }
     
     WebFrameView* scrollingView = m_webView.pageScrollHandler()->currentScrollingFrameView();
     if (scrollingView) {
-        m_webView.pauseJsTimers(); // pause the JS timers
-        m_webView.setViewIsScrolling(true);
         m_startPos = scrollingView->contentPos();
         m_lastPos = m_startPos;
         m_decelTimer->Start(0, KScrollIntervalTimeout, 
                             TCallBack(&decelTimerCB, this));
-        started = true;
     }
-    return started;
 }
 
 void WebScrollingDeceleratorGH::scroll()
@@ -176,16 +145,14 @@ void WebScrollingDeceleratorGH::scroll()
     TReal32 accelX = 0.0;
     TReal32 accelY = 0.0;
     
-    TReal32 deceleration = getDecceleration();
-    
     if (m_initSpeed.iX) {
-        accelX = (m_initSpeed.iX > 0) ?  deceleration : (-1) * deceleration;
+        accelX = (m_initSpeed.iX > 0) ?  KDecceleration : (-1) * KDecceleration;
         vx = m_initSpeed.iX + accelX * t;
         dx = m_initSpeed.iX * t + 0.5 * accelX * (t * t);
     }
         
     if (m_initSpeed.iY) {
-        accelY = (m_initSpeed.iY > 0) ?  deceleration : (-1) * deceleration;
+        accelY = (m_initSpeed.iY > 0) ?  KDecceleration : (-1) * KDecceleration;
         vy = m_initSpeed.iY + accelY * t;
         dy = m_initSpeed.iY * t + 0.5 * accelY * (t * t);
     }
@@ -205,9 +172,6 @@ void WebScrollingDeceleratorGH::scroll()
         if (m_scrollbarDrawer) {
             m_scrollbarDrawer->fadeScrollbar();
         }
-		
-        m_webView.resumeJsTimers(); // resume the js timers
-        m_webView.setViewIsScrolling(false);
         m_decelTimer->Cancel();
         handler->clearScrollingElement();
         m_webView.setViewIsScrolling(false);

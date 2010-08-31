@@ -17,13 +17,14 @@
 *
 */
 
+
 #ifndef WIDGETREGISTRYXML_H
 #define WIDGETREGISTRYXML_H
 
 // INCLUDES
 #include <libxml2_tree.h>
-#include <widgetregistryconstants.h>
-#include <widgetpropertyvalue.h>
+#include "WidgetRegistryConstants.h"
+#include "WidgetPropertyValue.h"
 
 class RFs;
 /**

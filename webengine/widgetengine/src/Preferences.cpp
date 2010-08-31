@@ -17,7 +17,7 @@
 
 // INCLUDE FILES
 #include <e32std.h>
-#include <S32FILE.H>
+#include <s32file.h>
 #include <f32file.h>
 #include <uri16.h>
 #include <e32hashtab.h>
@@ -34,8 +34,6 @@ const TInt KMaxKeyValueSize = 4096; //4 k
 
 _LIT( KKeyFormat, "%d.%S" );
 _LIT( KPrefsFile,"prefs.dat" );
-_LIT( KPrefsTmpFile,"prefs.dat.tmp" );
-_LIT( KPrefsBakFile, "prefs.dat.bak" );
 
 
 // ----------------------------------------------------------------------------
@@ -49,8 +47,7 @@ WidgetPreferences::WidgetPreferences() :m_widgetid(0),
                                         m_basepath(0),
                                         m_filepath(0)
 {
-    m_preferences = new RPtrHashMap<TDesC,PrefElement>();
-    m_asynsave = new (ELeave) CAsyncCallBack(TCallBack(SavePref,this),CActive::EPriorityIdle);
+    m_preferences = new RPtrHashMap<TDesC,PrefElement>();    
 }
 
 // ----------------------------------------------------------------------------
@@ -60,19 +57,8 @@ WidgetPreferences::WidgetPreferences() :m_widgetid(0),
 //
 // ----------------------------------------------------------------------------
 WidgetPreferences::~WidgetPreferences()
-{       
-    if(m_asynsave && m_asynsave->IsActive())
-        {
-        m_asynsave->Cancel();
-        TRAPD(err, saveL());
-        if(err!= KErrNone) 
-            {
-            deleteAllPrefFiles();
-            }      
-        }    
-    delete m_asynsave;
-    m_asynsave = NULL;
-    
+{
+    //TRAP_IGNORE( saveL() );
     if (m_preferences) {
         m_preferences->ResetAndDestroy();
         m_preferences->Close();
@@ -277,10 +263,10 @@ void WidgetPreferences::setPreferenceL( const TDesC& akey, const TDesC& avalue)
 
         CleanupStack::Pop();   // k
 
-    // Save update to persistent storage
-    m_asynsave->Cancel();
-    m_asynsave->CallBack();
+        // Save update to persistent storage
+		saveL();
     }
+
 }
 
 // ----------------------------------------------------------------------------
@@ -320,10 +306,7 @@ void WidgetPreferences::removePreferenceL( const TDesC& akey, const TDesC& avalu
         CleanupStack::PopAndDestroy();   // k
 
         // Save update to persistent storage
-	TRAPD(err, saveL());
-    if(err!= KErrNone) {
-        deleteAllPrefFiles();
-        }
+		saveL();
     }
 }
 
@@ -340,180 +323,46 @@ void WidgetPreferences::saveL()
 
     RFs fs;
 
+    if ( fs.Connect() == KErrNone ) {
         
-    // Connect to file server
-    User::LeaveIfError(fs.Connect());
-    CleanupClosePushL( fs );
-        
-    // Form filenames
-    HBufC* tmpFilePath = HBufC::NewLC( m_basepath->Length() + KPrefsTmpFile().Length() );
-    HBufC* bakFilePath = HBufC::NewLC( m_basepath->Length() + KPrefsBakFile().Length() );
-    HBufC* filePath = HBufC::NewLC( m_basepath->Length() + KPrefsFile().Length() );
+        CleanupClosePushL( fs );
+        HBufC* filePath = HBufC::NewLC( m_basepath->Length() + KPrefsFile().Length() );
 
-    TPtr fName( tmpFilePath->Des() );
-    fName.Append( *m_basepath );
-    fName.Append( KPrefsTmpFile );
-    
-    fName.Set( bakFilePath->Des() );
-    fName.Append( *m_basepath );
-    fName.Append( KPrefsBakFile );
-    
-    fName.Set( filePath->Des() );
-    fName.Append( *m_basepath );
-    fName.Append( KPrefsFile );
+        TPtr fName( filePath->Des() );
+        fName.Append( *m_basepath );
+        fName.Append( KPrefsFile );
 
-	  RFileWriteStream writeStream;
-    writeStream.PushL();
-    
-	// Try to create the temp file
-	if(writeStream.Replace(fs, *tmpFilePath, EFileWrite|EFileShareExclusive) != KErrNone) {
-		// Make sure the private path exists
-		fs.CreatePrivatePath( EDriveC );
-		
-		// Try again to create the file
-		User::LeaveIfError(writeStream.Create(fs, *tmpFilePath, EFileWrite|EFileShareExclusive));
-	}
+        RFileWriteStream writeStream;
+        TInt fileerror = writeStream.Replace( fs, *filePath, EFileWrite );
 
-    // Try to externalize the data to the stream
-    TRAPD(err, externalizeL(writeStream));
-    
-    // Close the stream
-    CleanupStack::PopAndDestroy(); // writeStream
-    	     
-    // If no error at this point then we're guaranteed to have a valid file
-    if(err!=KErrNone)
-    	{
-    	// Delete the temp file
-    	fs.Delete(*tmpFilePath);
-    	
-    	// And leave with the error code
-    	User::Leave(err);
-    	}
-    	
-    // Backup any old valid file just in case
-    fs.Delete(*bakFilePath);
-    fs.Rename(*filePath, *bakFilePath);
-    
-    // Rename the temp file to be the actual settings file
-    err = fs.Rename(*tmpFilePath, *filePath);
-    if(err!=KErrNone)
-    	{
-    	// If we had a backup settings file, try to return it
-    	fs.Rename(*bakFilePath, *filePath);
-    	User::Leave(err);
-    	}
-
-	// Cleanup
-	CleanupStack::PopAndDestroy(4); // filePath, bakFilePath, tmpFilePath, fs
-
-}
-
-// ----------------------------------------------------------------------------
-// WidgetPreferences::externalizeL
-//
-//
-// ----------------------------------------------------------------------------
-
-void WidgetPreferences::externalizeL(RWriteStream& aStream) const
-{
-    aStream.WriteInt32L( m_preferences->Count() );
-	
-    TPtrHashMapIter<TDesC,PrefElement> it( *m_preferences );
-    const TDesC* key;
-    const PrefElement* pref;
-
-    while ( ( key = it.NextKey() ) != 0 ) {
-        pref = it.CurrentValue();
-        aStream.WriteInt32L( key->Length() );
-        aStream.WriteL( *key );
-        aStream.WriteInt32L( pref->value().Length() );
-        aStream.WriteL( pref->value() );
-        aStream.WriteInt32L( pref->valueSize() );
-    }
-    aStream.CommitL();
-    
-}
-
-// ----------------------------------------------------------------------------
-// WidgetPreferences::internalizeL
-//
-//
-// ----------------------------------------------------------------------------
-void WidgetPreferences::internalizeL(RReadStream& aStream)
-{
-    TInt count( aStream.ReadInt32L() );
-    for( TInt i = 0; i < count; i++ ) {
-        
-        TInt len = aStream.ReadInt32L();
-
-        if ( len > 0 ) {
-            HBufC* key = HBufC::NewLC( len );
-            TPtr ptrkey = key->Des();
-            aStream.ReadL( ptrkey, len );
-            len = aStream.ReadInt32L();
-
-            if ( len <= KMaxKeyValueSize ) {
-                HBufC* value = HBufC::NewLC( len );
-                TPtr ptrvalue = value->Des();
-                aStream.ReadL( ptrvalue, len );
-                PrefElement* pref = new ( ELeave ) PrefElement;
-                CleanupStack::PushL( pref );
-                pref->setValueL( ptrvalue );
-                TInt size = aStream.ReadInt32L();
-                pref->setValueSize( size );
-                m_preferences->InsertL( key, pref );
-                CleanupStack::Pop(); //pref
-                CleanupStack::PopAndDestroy(); //value
-                CleanupStack::Pop(); //key
-            }
-            else {
-                CleanupStack::PopAndDestroy( key );
-             }
-
-         }
-
-        else {
-            break;
+        if ( fileerror != KErrNone ) {
+            fs.CreatePrivatePath( EDriveC );
+            fileerror = writeStream.Create( fs, *filePath, EFileWrite|EFileShareExclusive );
         }
-     }
 
- }
+        if ( fileerror == KErrNone ) {
+            CleanupClosePushL( writeStream );
+            writeStream.WriteInt32L( m_preferences->Count() );
+            
+            TPtrHashMapIter<TDesC,PrefElement> it( *m_preferences );
+            const TDesC* key;
+            const PrefElement* pref;
 
-// ----------------------------------------------------------------------------
-// WidgetPreferences::deleteAllPrefFiles
-//
-//
-// ----------------------------------------------------------------------------
-void WidgetPreferences::deleteAllPrefFiles(){
+            while ( ( key = it.NextKey() ) != 0 ) {
+                pref = it.CurrentValue();
+                writeStream.WriteInt32L( key->Length() );
+                writeStream.WriteL( *key );
+                writeStream.WriteInt32L( pref->value().Length() );
+                writeStream.WriteL( pref->value() );
+                writeStream.WriteInt32L( pref->valueSize() );
+            }
 
-   if ( !m_basepath || (m_basepath->Length() <= 0) ) 
-         return;
+            writeStream.CommitL();
+            CleanupStack::PopAndDestroy(); //writeStream
+        }
 
-
-   RFs fs;
-   // Deleting bkUp and main prefs file.
-   User::LeaveIfError(fs.Connect());
-   CleanupClosePushL( fs );
-   
-   HBufC* bkFilePath = HBufC::NewLC( m_basepath->Length() + KPrefsBakFile().Length() );
-
-   TPtr fName( bkFilePath->Des() );
-   fName.Append( *m_basepath );
-   fName.Append( KPrefsBakFile );
- 
-   fs.Delete( *bkFilePath  );
-         
-   CleanupStack::PopAndDestroy(); 
-
-   HBufC* prefFilePath = HBufC::NewLC( m_basepath->Length() + KPrefsFile().Length() );
-
-   TPtr fNamePr( prefFilePath->Des() );
-   fNamePr.Append( *m_basepath );
-   fNamePr.Append( KPrefsFile);
- 
-   fs.Delete( *prefFilePath  );
-         
-   CleanupStack::PopAndDestroy(2);
+        CleanupStack::PopAndDestroy( 2 ); //fs,filePath
+    }
 
 }
 
@@ -525,49 +374,61 @@ void WidgetPreferences::deleteAllPrefFiles(){
 // ----------------------------------------------------------------------------
 void WidgetPreferences::loadL()
 {
-   if ( !m_basepath || (m_basepath->Length() <= 0) ) 
-         return;
-    
-    // Try to connect to file server
     RFs fs;
-    User::LeaveIfError(fs.Connect());
-    CleanupClosePushL( fs );
-    
-    // Form settings file name
-    HBufC* filePath = HBufC::NewLC( m_basepath->Length() + KPrefsFile().Length() );
-    TPtr fName( filePath->Des() );
-    fName.Append( *m_basepath );
-    fName.Append( KPrefsFile );
+    if ( !m_basepath || (m_basepath->Length() <= 0) )
+        return;
 
-    // Open stream
-    RFileReadStream readStream;
-    readStream.PushL();
-    TInt err = readStream.Open( fs, *filePath, EFileRead );
-    if(err!=KErrNone) {
-        User::Leave(err);
-    }
-    
-    // Read the data from the stream
-    internalizeL(readStream);
+    if ( fs.Connect() == KErrNone ) {
+        CleanupClosePushL( fs );
+        HBufC* filePath = HBufC::NewLC( m_basepath->Length() + KPrefsFile().Length() );
 
-    CleanupStack::PopAndDestroy(3); // readStream, filePath, fs
-}
+        TPtr fName( filePath->Des() );
+        fName.Append( *m_basepath );
+        fName.Append( KPrefsFile );
 
-// ----------------------------------------------------------------------------
-// WidgetPreferences::SavePref
-// Save preferences for persistent storage
-//
-//
-// 
-TInt WidgetPreferences::SavePref(TAny* aPtr)
-{   
-    WidgetPreferences* self = (WidgetPreferences*)aPtr;
-    TRAPD(err, self->saveL());
-    if(err!= KErrNone)
-        {
-        self->deleteAllPrefFiles();
+        RFileReadStream readStream;
+
+        if ( readStream.Open( fs, *filePath, EFileRead ) == KErrNone ) {
+            CleanupClosePushL( readStream );
+            TInt count( readStream.ReadInt32L() );
+
+            for( TInt i = 0; i < count; i++ ) {
+                TInt len = readStream.ReadInt32L();
+
+                if ( len > 0 ) {
+                    HBufC* key = HBufC::NewLC( len );
+                    TPtr ptrkey = key->Des();
+                    readStream.ReadL( ptrkey, len );
+                    len = readStream.ReadInt32L();
+
+                    if ( len <= KMaxKeyValueSize ) {
+                        HBufC* value = HBufC::NewLC( len );
+                        TPtr ptrvalue = value->Des();
+                        readStream.ReadL( ptrvalue, len );
+                        PrefElement* pref = new ( ELeave ) PrefElement;
+                        CleanupStack::PushL( pref );
+                        pref->setValueL( ptrvalue );
+                        TInt size = readStream.ReadInt32L();
+                        pref->setValueSize( size );
+                        m_preferences->InsertL( key, pref );
+                        CleanupStack::Pop(); //pref 
+                        CleanupStack::PopAndDestroy(); //value
+                        CleanupStack::Pop(); //key
+                    }
+                    else {
+                        CleanupStack::PopAndDestroy( key );
+                    }
+                }
+                else {
+                    break;
+                }
+            }
+
+            CleanupStack::PopAndDestroy(); //readStream
         }
-    return 0;
+
+        CleanupStack::PopAndDestroy( 2 ); //fs,filePath
+    }
 }
     
 // ----------------------------------------------------------------------------
@@ -625,6 +486,5 @@ void PrefElement::setValueL( const TDesC& value )
 
     m_value  = value.AllocL();
 }
-
 
 

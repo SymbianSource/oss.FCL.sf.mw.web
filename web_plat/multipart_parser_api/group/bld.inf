@@ -16,7 +16,7 @@
 */
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 #ifdef BRDO_MULTIPART_PARSER_FF
 
@@ -24,8 +24,8 @@ PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../inc/bodypart.h           MW_LAYER_PLATFORM_EXPORT_PATH(bodypart.h)
-../inc/multipartparser.h    MW_LAYER_PLATFORM_EXPORT_PATH(multipartparser.h)
+../inc/BodyPart.h           MW_LAYER_PLATFORM_EXPORT_PATH(BodyPart.h)
+../inc/MultipartParser.h    MW_LAYER_PLATFORM_EXPORT_PATH(MultipartParser.h)
 
 PRJ_MMPFILES
 

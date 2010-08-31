@@ -37,18 +37,13 @@
 #include "ResourceHandleManagerSymbian.h"
 #include "StaticObjectsContainer.h"
 #include "WebFrame.h"
-#include "ResourceHandleClient.h"
-#include <FeatMgr.h>
+
 // CONSTANTS
 _LIT8( KHttpProtString, "HTTP/TCP" );
 _LIT (KNullStr, "");
-const TInt KResetRetryFlagTimeOut = 5*1000*1000;
-TInt doResetFlag(TAny*);
+
 class MBrCtlSpecialLoadObserver;
-//FIXME: Below constant need to be properly set or removed after wk30 platform, since it will be defined by platform
-#define KFeatureIdBrowserGracefulSocketShutdown 361
-//Below is socket lingering timeout
-#define SOCKET_LINGERING_TIMEOUT 100000
+
 using namespace WebCore;
 
 HttpSessionManager::HttpSessionManager()
@@ -63,9 +58,6 @@ HttpSessionManager::HttpSessionManager()
     m_httpDownload = NULL;
     m_SelfDownloadContentHandler = NULL;
     m_SelfDownloadContentTypes = KNullStr().Alloc();
-    retryConnectivityFlag = EFalse;
-    m_inSecConnection = EFalse;
-    m_resetTimer = NULL;
 }
 
 HttpSessionManager::~HttpSessionManager()
@@ -75,19 +67,12 @@ HttpSessionManager::~HttpSessionManager()
     delete m_ReqHdrManager;
     m_ReqHdrManager = NULL;
     delete m_cookieHandler;
-    m_cookieHandler = NULL;
     delete m_httpDownload;
     m_httpDownload = NULL;
     delete m_SelfDownloadContentHandler;
     m_SelfDownloadContentHandler = NULL;
     delete m_SelfDownloadContentTypes;
     m_SelfDownloadContentTypes = NULL;
-    if(m_resetTimer)
-        {
-        m_resetTimer->Cancel();
-        delete m_resetTimer;
-        m_resetTimer = NULL;
-        }
     m_ClientAcceptHeaders.ResetAndDestroy();
     m_ClientAcceptHeaders.Close();
     closeHttpSession();
@@ -102,31 +87,11 @@ void HttpSessionManager::openHttpSessionIfNeededL()
         RStringPool strP = m_httpSession.StringPool();
         const TStringTable& stringTable = RHTTPSession::GetTable();
         RHTTPConnectionInfo connInfo = m_httpSession.ConnectionInfo();
-        
-        TBool gracefulShutdown = false;
-        RStringF retStr;
-        TInt err( KErrNone );
-        
-#ifdef BRDO_OCC_ENABLED_FF 
-        FeatureManager::InitializeLibL();
-        gracefulShutdown = FeatureManager::FeatureSupported( KFeatureIdBrowserGracefulSocketShutdown );
-        FeatureManager::UnInitializeLib();
-        retStr = strP.StringF( HTTP::EHttpEnableOptimalPipelining + 3, stringTable );
-        
-#endif
-        
-        if( err == KErrNone && gracefulShutdown && retStr != RStringF())
-            {
-            //Property exists
-            THTTPHdrVal setValue(SOCKET_LINGERING_TIMEOUT);
-            connInfo.SetPropertyL ( strP.StringF( HTTP::EHttpEnableOptimalPipelining + 3, stringTable ), setValue );
-            }
-        else 
-            {
-            // set shutdown
-            THTTPHdrVal immediateShutdown = strP.StringF( HTTP::ESocketShutdownImmediate, stringTable );
-            connInfo.SetPropertyL ( strP.StringF( HTTP::ESocketShutdownMode, stringTable ), immediateShutdown );
-            }
+
+        // set shutdown
+        THTTPHdrVal immediateShutdown = strP.StringF( HTTP::ESocketShutdownImmediate, stringTable );
+        connInfo.SetPropertyL ( strP.StringF( HTTP::ESocketShutdownMode, stringTable ), immediateShutdown );
+
         // set pipelining
         RStringF maxConnection = strP.StringF( HTTP::EMaxNumTransportHandlers , stringTable );
         connInfo.SetPropertyL( maxConnection, THTTPHdrVal( KHttpMaxConnectionNum ) );
@@ -155,11 +120,6 @@ void HttpSessionManager::openHttpSessionIfNeededL()
 		THTTPHdrVal enableTranspHndlrPriority(strP.StringF(HTTP::EEnableTranspHndlrPriority, RHTTPSession::GetTable()));
 		connInfo.SetPropertyL(strP.StringF(HTTP::ETranspHndlrPriority, RHTTPSession::GetTable()), enableTranspHndlrPriority);
 
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-        RStringF strictHeaders = strP.StringF(HTTP::EEnableStrictConnectHeaders, RHTTPSession::GetTable());
-        connInfo.SetPropertyL(strP.StringF(HTTP::EStrictConnectHeaders, RHTTPSession::GetTable()), strictHeaders);
-#endif
-
         strP.OpenL( HttpFilterCommonStringsExt::GetTable() );
         strP.OpenL( HttpFilterCommonStringsExt::GetLanguageTable() );
         strP.OpenL( HttpFilterCommonStringsAddition::GetTable() );
@@ -179,7 +139,7 @@ void HttpSessionManager::openHttpSessionIfNeededL()
             m_ReqHdrManager = HttpRequestHeaderManager::NewL(m_httpSession);
         }
         if (!m_cookieHandler) {
-            m_cookieHandler = CookieHandler::init(m_httpSession.StringPool());
+            m_cookieHandler = CookieHandler::init();
         }
     }
     updateFilters(true);
@@ -195,11 +155,7 @@ CHttpCacheManager* HttpSessionManager::cacheManager()
 HttpDownload* HttpSessionManager::httpDownload(bool aCreate)
 {
     if (!m_httpDownload && aCreate){
-        TRAPD(err, m_httpDownload = HttpDownload::NewL(this));
-        if(err != KErrNone)
-           {
-		   m_httpDownload = NULL;
-           }
+        m_httpDownload = new HttpDownload(this);
     }
     return m_httpDownload;
 }
@@ -212,9 +168,6 @@ void HttpSessionManager::closeHttpSession()
         // disconnect the Dl Mgr
         if (m_httpDownload){
             m_httpDownload->disconnect();
-        if(m_cookieHandler)
-            m_cookieHandler->destroy();
-   
 		}
         m_httpSession.Close();
         m_sessionRunning = false;
@@ -299,34 +252,6 @@ void HttpSessionManager::handleError(int error)
         }
 }
 
-void HttpSessionManager::retryTransactions()
-{
-    Vector<HttpConnection *> requests;
-
-    if (m_sessionRunning)
-    {
-    TBool newConn = ETrue;
-    m_httpSession.ConnectionInfo().SetPropertyL(m_httpSession.StringPool().StringF(HttpFilterCommonStringsExt::EHttpNewConnFlag, HttpFilterCommonStringsExt::GetTable()), THTTPHdrVal((TBool)newConn));
-    }
-
-    for(HashMap<HttpConnection *, ResourceHandle *>::iterator tmpit = m_pendingHttpRequests.begin();
-        tmpit != m_pendingHttpRequests.end(); ++tmpit)
-        {
-                requests.append(tmpit->first);  
-        }
-    //Submit them again
-    for (int i=0; i<requests.size(); ++i)
-        {
-        if(requests[i]->HttpTransaction()) {
-             requests[i]->HttpTransaction()->SubmitL();
-        }
-        else {
-             removeRequest(requests[i]);
-        }
-                 
-        }
-}
-
 HttpConnection* HttpSessionManager::firstHttpConnection()
 {
     HashMap<HttpConnection *, ResourceHandle *>::const_iterator it = m_pendingHttpRequests.begin();
@@ -373,7 +298,6 @@ void HttpSessionManager::downloadL(ResourceHandle* handle, const ResourceRequest
                                   const ResourceResponse& response, HttpConnection* connection)
 {
     RHTTPTransaction* connTransaction = connection->takeOwnershipHttpTransaction();
-    removeRequest(connection);
     WebFrame* webFrame = kit(connection->frame());
     if (!m_SelfDownloadContentHandler) {
         m_SelfDownloadContentHandler = SelfDownloadContentHandler::NewL(
@@ -385,7 +309,6 @@ void HttpSessionManager::downloadL(ResourceHandle* handle, const ResourceRequest
 		!= KErrNotSupported) {
 		if (m_OutstandingSelfDl) {
 			// only one outstanding self download is supported
-            connTransaction->Close();
 			User::Leave(KErrCancel);
 		}
 		else {
@@ -531,45 +454,6 @@ void HttpSessionManager::UpdateCacheL(const String& url, const String &equiv, co
         }
         CleanupStack::PopAndDestroy(); // url8
     }
-}
-
-void HttpSessionManager::cancelQueuedTransactions()
-{
-    Vector<HttpConnection *> requests;
-    for(HashMap<HttpConnection *, ResourceHandle *>::iterator tmpit = m_pendingHttpRequests.begin();
-        tmpit != m_pendingHttpRequests.end(); ++tmpit)
-        {
-                requests.append(tmpit->first);  
-        }
-    
-    for (int i = 0; i < requests.size(); ++i) {
-        if(requests[i]->HttpTransaction()) {
-            requests[i]->HttpTransaction()->Cancel();
-        }
-    }
-}
-
-void HttpSessionManager::startTimer()
-{
-    if(m_resetTimer)
-        deleteTimer();
-    m_resetTimer = CPeriodic::NewL(CActive::EPriorityStandard);
-    m_resetTimer->Start(KResetRetryFlagTimeOut,0,TCallBack(&doResetFlag,this));
-}
-
-void HttpSessionManager::deleteTimer()
-{
-    m_resetTimer->Cancel();
-    delete m_resetTimer;
-    m_resetTimer = NULL;
-}
-    
-TInt doResetFlag(TAny* ptr)
-{
-    HttpSessionManager* tmp = static_cast<HttpSessionManager*>(ptr);
-    tmp->unSetRetryConnectivityFlag();
-    tmp->deleteTimer();  
-    return EFalse;
 }
 
 // end of file

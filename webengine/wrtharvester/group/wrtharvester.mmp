@@ -20,22 +20,19 @@ TARGETTYPE	    PLUGIN
 UID			    0x10009D8D 0x2001FE2C
 
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 CAPABILITY      CAP_ECOM_PLUGIN
-
-// uncomment to enable logs
-//MACRO _DEBUG
-//#define _DEBUG
 
 SOURCEPATH      ../src
 SOURCE          wrtharvester.cpp
 SOURCE          wrtharvesterpsnotifier.cpp
 SOURCE          wrtharvesterpublisherobserver.cpp
 SOURCE          wrtharvesterregistryaccess.cpp
+SOURCE          wrtusbhandler.cpp
 
 MW_LAYER_SYSTEMINCLUDE
-
+MW_LAYER_ECOM_SYSTEMINCLUDE
 USERINCLUDE     ../inc
 
 START RESOURCE  ../data/2001FE2C.rss
@@ -70,6 +67,5 @@ LIBRARY		  cone.lib 		    // CoeControl
 LIBRARY		  CommonEngine.lib
 LIBRARY       ws32.lib
 LIBRARY       PlatformEnv.lib
-LIBRARY       oommonitor.lib
 
 //end of file

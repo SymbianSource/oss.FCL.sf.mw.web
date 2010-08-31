@@ -24,7 +24,7 @@
 #include "HttpPostDataSupplier.h"
 #include "PostDataItem.h"
 #include "FormData.h"
-#include "brctl.h"
+#include "BrCtl.h"
 
 using namespace WebCore;
 
@@ -35,7 +35,7 @@ using namespace WebCore;
 // CONSTANTS
 // The post is transmitted in parts. A buffer is allocated of max size to
 // contain the next part to be transmitted. 
-const TInt KPartMaxSize = 24576;
+const TInt KPartMaxSize = 10240;
 
 // MACROS
 

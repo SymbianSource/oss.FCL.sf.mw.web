@@ -18,7 +18,7 @@
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
 #include <bldvariant.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 // TARGET INFO
 
@@ -27,19 +27,16 @@ TARGETTYPE  exe
 UID         0x100039CE 0x10282822
 
 epocstacksize 0x14000
-// There is no need to set a custom heap size as a custom allocator is used so the default values of 1 KB for
-// minimum and 1 MB for maximum should be used instead.  These will be used for a short time at startup for
-// the default heap, which in turn is used to create the custom allocator. no gain in functionality 
-//EPOCHEAPSIZE 0x5000 0x1000000
+EPOCHEAPSIZE 0x5000 0x1000000
 
 VENDORID    VID_DEFAULT
-CAPABILITY CAP_APPLICATION NetworkControl WriteDeviceData
+CAPABILITY CAP_APPLICATION NetworkControl
 
 EpocAllowDllData
 
 // RESOURCE INFO
 
-START RESOURCE ../Data/WidgetUi.rss
+START RESOURCE ../data/WidgetUi.rss
 DEPENDS avkon.rsg
 HEADER
 TARGETPATH APP_RESOURCE_DIR
@@ -65,12 +62,11 @@ SOURCE  WidgetUiWindow.cpp
 SOURCE  WidgetUiAsyncExit.cpp
 SOURCE  WidgetUiDialogsProviderProxy.cpp
 SOURCE	WidgetUiNetworkListener.cpp
-source  WidgetUiPSNotifier.cpp
 #ifdef BRDO_WRT_HS_FF
 SOURCE  cpspublisher.cpp
 #endif
 
-START RESOURCE ../Data/WidgetUi_reg.rss
+START RESOURCE ../data/WidgetUi_reg.rss
 DEPENDS widgetui.rsg
 // Do not change the UID below.
 TARGETPATH /private/10003a3f/apps
@@ -81,10 +77,11 @@ MACRO OOM_WIDGET_CLOSEALL
 
 USERINCLUDE .
 USERINCLUDE ../inc
-USERINCLUDE ../../WidgetInstaller/inc
+USERINCLUDE ../../widgetinstaller/inc
 
 MW_LAYER_SYSTEMINCLUDE
-OS_LAYER_ESTLIB_SYSTEMINCLUDE
+MW_LAYER_LIBC_SYSTEMINCLUDE
+MW_LAYER_ECOM_SYSTEMINCLUDE
 
 // LIB DEPENDENCIES
 
@@ -113,23 +110,14 @@ LIBRARY AknSkins.lib
 LIBRARY ImageConversion.lib
 LIBRARY ecom.lib  // for schemeHandler
 LIBRARY MemMan.lib
-LIBRARY centralrepository.lib
-
-#ifdef BRDO_MULTITOUCH_ENABLED_FF
-LIBRARY gfxtrans.lib
-#endif
-
 #ifdef BRDO_WRT_HS_FF
 LIBRARY	liwservicehandler.lib
 #endif
-
 LIBRARY bitgdi.lib
 LIBRARY aknnotify.lib
-
 #ifdef RD_SCALABLE_UI_V2
 LIBRARY cdlengine.lib 
 #endif
-
 LIBRARY esock.lib
 
 DEBUGLIBRARY flogger.lib 
@@ -140,9 +128,4 @@ LIBRARY     oommonitor.lib
 #if defined( RD_PF_SEC_APPARC )
 LIBRARY         ServiceHandler.lib
 #endif 
-
-#ifdef BRDO_OCC_ENABLED_FF
-LIBRARY    extendedconnpref.lib
-LIBRARY    netmeta.lib
-#endif
 // End of File

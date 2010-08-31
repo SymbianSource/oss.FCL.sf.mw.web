@@ -11,5 +11,4 @@ EXPORTS
 	_ZTV14CIconConverter @ 10 NONAME ; #<VT>#
 	_ZTI24CWidgetBackupRegistryXml @ 11 NONAME ; #<TI>#
 	_ZTV24CWidgetBackupRegistryXml @ 12 NONAME ; #<VT>#
-	_ZN16CWidgetInstaller18DeregisterWidgetsLERK6RArrayI4TUidE @ 13 NONAME
 

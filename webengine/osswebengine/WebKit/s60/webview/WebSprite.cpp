@@ -101,8 +101,8 @@ CWebSprite::CWebSprite()
 // ======================================================================
 CWebSprite::CWebSprite(CCoeControl* aParent, CFbsBitmap* aBitmap, 
                        CFbsBitmap* aMask, TBool aInvertMask) : 
-                       iBitmap(aBitmap), iMask(aMask), 
-		                   iInvertMask(aInvertMask), iWin(NULL), iParent(aParent)
+                       iParent(aParent), iBitmap(aBitmap), iMask(aMask), 
+		       iInvertMask(aInvertMask), iWin(NULL)
     {    
     }
 

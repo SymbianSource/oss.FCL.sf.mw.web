@@ -51,8 +51,8 @@ class NetscapePlugInStreamLoaderClient
 {
 
 public:
-    static NetscapePlugInStreamLoaderClient* NewL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata = 0, TBool notify = EFalse);
-    static NetscapePlugInStreamLoaderClient* NewL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata=0, TBool notify = EFalse);
+    static NetscapePlugInStreamLoaderClient* NewL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata = 0);
+    static NetscapePlugInStreamLoaderClient* NewL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata=0);
     virtual ~NetscapePlugInStreamLoaderClient();             
     
     void start();    
@@ -65,11 +65,10 @@ public:
     void didFinishLoading();
     void didFail(const ResourceError& error);
     void didCancel(const ResourceError& error);
-    TBool notify() { return m_notify; }
     
 private:
-    void ConstructL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata = 0, TBool notify = EFalse);
-    void ConstructL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata=0, TBool notify = EFalse);
+    void ConstructL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata = 0);
+    void ConstructL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata=0);
 
     NetscapePlugInStreamLoaderClient();
 
@@ -78,10 +77,7 @@ private:
     PluginStream* m_pluginstream;
     ResourceRequest* m_request;              
     NetscapePlugInStreamLoader* m_loader;
-    PluginSkin* m_pluginskin; // not owned
-    void* m_notifydata; // not owned
     int m_error;
-    TBool m_notify;
     
 };
 

@@ -77,10 +77,10 @@ void HTMLSearchFieldResultsButtonElement::defaultEventHandler(Event* evt)
 {
     // On mousedown, bring up a menu, if needed
     HTMLInputElement* input = static_cast<HTMLInputElement*>(shadowAncestorNode());
-    if (input && evt->type() == mousedownEvent && evt->isMouseEvent() && static_cast<MouseEvent*>(evt)->button() == LeftButton) {
+    if (evt->type() == mousedownEvent && evt->isMouseEvent() && static_cast<MouseEvent*>(evt)->button() == LeftButton) {
         input->focus();
         input->select();
-        if (input->renderer() && static_cast<RenderTextControl*>(input->renderer())->popupIsVisible())
+        if (input && input->renderer() && static_cast<RenderTextControl*>(input->renderer())->popupIsVisible())
             static_cast<RenderTextControl*>(input->renderer())->hidePopup();
         else if (input->maxResults() > 0)
             static_cast<RenderTextControl*>(input->renderer())->showPopup();

@@ -20,7 +20,7 @@
 
 #include "Shared.h"
 #include <wtf/Vector.h>
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 
 namespace WebCore {
     class Node;
@@ -118,17 +118,11 @@ private:
     bool                         m_shouldCreateRenderers;
     Vector<WebCore::IntRect>     m_focusableNodeList;
 
-public:
-    bool                         m_rtl;
-
-
 };
 
 #endif // __WEBCOREFRAMEBRIDGE_H__
 
 // END OF FILE
-
-
 
 
 

@@ -29,13 +29,13 @@
 #include "FrameLoadRequest.h"
 #include "kjs_proxy.h"
 #include "kjs_binding.h"
-#include <stringloader.h>
+#include <StringLoader.h>
 #include <Webkit.rsg>
 
 
 
 #include <centralrepository.h>
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 
 const TInt KMaxJavaLogMsgLen = 500;
 const TInt KMaxJavaLogMsgPaddingLen = 0x200; // for paddings in JS log message such as: log type and labels.
@@ -185,10 +185,7 @@ void WebChromeClient::addMessageToConsoleL(const WebCore::String& message, Messa
     delete rep;
 
     if ( scriptLogType == TBrCtlDefs::EScriptLogDisable )
-	{
-	    fsSession.Close();
         return;
-	}
     TBool needLogFile = EFalse, needLogConsole = EFalse;
 
     // construct the log message
@@ -365,9 +362,3 @@ void WebChromeClient::setElementVisibilityChanged(bool visibility) {
     m_visibilityByMouse = m_visibility && m_webView->isMouseEventFired();
     m_visibilityByKey = m_visibility && m_webView->isKeyEventFired();
 }
-
-
-void WebChromeClient::wait(double t) 
-{ 
-    m_webView->wait(t); 
-} 

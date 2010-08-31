@@ -19,10 +19,12 @@
 #ifndef BRCTLDOWNLOADOBSERVER_H
 #define BRCTLDOWNLOADOBSERVER_H
 
+#warning The Browser Control API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 
 // CONSTANTS
 
@@ -86,12 +88,12 @@ class CBrCtlInterface;
 * Usage:
 *
 * @code
-*  #include <brctldownloadobserver.h>
+*  #include <BrCtlDownloadObserver.h>
 *
 *  
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
-* @file brctldownloadobserver.h
+* @file BrCtlDownloadObserver.h
 * @endcode     *
 */
 class MBrCtlDownloadObserver

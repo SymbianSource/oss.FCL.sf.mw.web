@@ -33,7 +33,7 @@
 #include "CachedResource.h"
 #include "CachedResourceClient.h"
 #include "CachedScript.h"
-#include "CSSHelper.h"
+#include "csshelper.h"
 #include "CString.h"
 #include "DocLoader.h"
 #include "Document.h"

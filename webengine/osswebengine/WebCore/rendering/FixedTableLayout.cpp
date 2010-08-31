@@ -163,7 +163,8 @@ int FixedTableLayout::calcWidthArray(int tableWidth)
                 
                 int usedSpan = 0;
                 int i = 0;
-                while (usedSpan < span && cCol + i < nEffCols) {
+                while (usedSpan < span) {
+                    ASSERT(cCol + i < nEffCols);
                     int eSpan = m_table->spanOfEffCol(cCol + i);
                     // Only set if no col element has already set it.
                     if (m_width[cCol + i].isAuto() && w.type() != Auto) {

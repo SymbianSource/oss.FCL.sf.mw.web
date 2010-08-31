@@ -28,7 +28,7 @@
 #include "HTMLDocument.h"
 #include "JSDocument.h"
 #include "JSEvent.h"
-#include "XMLHttpRequest.h"
+#include "xmlhttprequest.h"
 #include "kjs_events.h"
 #include "kjs_window.h"
 

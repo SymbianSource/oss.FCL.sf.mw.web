@@ -32,7 +32,7 @@
 #if PLATFORM(SYMBIAN)
 #include "Document.h"
 #include "Frame.h"
-#include "renderView.h"
+#include "RenderView.h"
 #include "FrameView.h"
 #include "ScrollTypes.h"
 #endif
@@ -74,7 +74,8 @@ void RenderFrame::layoutWithFlattening(bool flexibleWidth, bool flexibleHeight)
     if (!m_width || !m_height || !childRoot) {
         updateWidgetPosition();
         if (childFrameView)
-            childFrameView->layout();
+            while (childFrameView->layoutPending())
+                childFrameView->layout();
         setNeedsLayout(false);
         return;
     }
@@ -95,9 +96,9 @@ void RenderFrame::layoutWithFlattening(bool flexibleWidth, bool flexibleHeight)
     // update again to pass the width to the child frame
     updateWidgetPosition();
      
-
-    childFrameView->layout();
-
+    do
+        childFrameView->layout();
+    while (childFrameView->layoutPending() || childRoot->needsLayout());
         
     if (scrolling || flexibleHeight || childFrameView->frame()->isFrameSet())
         m_height = max(m_height, childFrameView->contentsHeight());

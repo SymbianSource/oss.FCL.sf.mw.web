@@ -79,7 +79,7 @@ const size_t SPARE_EMPTY_BLOCKS = 2;
 const size_t MIN_ARRAY_SIZE = 14;
 const size_t GROWTH_FACTOR = 2;
 const size_t LOW_WATER_FACTOR = 4;
-const size_t ALLOCATIONS_PER_COLLECTION = 4000;
+const size_t ALLOCATIONS_PER_COLLECTION = 1000;
 
 enum OperationInProgress { NoOperation, Allocation, Collection };
 
@@ -113,7 +113,6 @@ static CollectorHeap heap = { 0, 0, 0, 0, 0, 0, 0, NoOperation };
 size_t Collector::mainThreadOnlyObjectCount = 0;
 
 bool Collector::memoryFull = false;
-bool Collector::m_exitInProgress = false; 
 
 #if PLATFORM(SYMBIAN)
 unsigned int Collector::CallStackGrowthThresh = 0;
@@ -835,17 +834,12 @@ void Collector::markRecursivelyOrphanedCells()
 EXPORT
 bool Collector::collect()
 {
-    if(m_exitInProgress)
-        { 
-        return false; 
-        }
-
   ASSERT(JSLock::lockCount() > 0);
   ASSERT(JSLock::currentThreadIsHoldingLock());
 
   ASSERT(heap.operationInProgress == NoOperation);
   if (heap.operationInProgress != NoOperation)
-    abort();
+  ; //  abort();
 
   heap.operationInProgress = Collection;
 
@@ -1002,17 +996,6 @@ bool Collector::collect()
 
   return deleted;
 }
-
-EXPORT
-void Collector::startedExit(bool status)
-    { 
-    m_exitInProgress = status; 
-    }
-EXPORT
-bool Collector::isExitInProgress()
-    { 
-    return m_exitInProgress; 
-    }
 
 size_t Collector::size() 
 {

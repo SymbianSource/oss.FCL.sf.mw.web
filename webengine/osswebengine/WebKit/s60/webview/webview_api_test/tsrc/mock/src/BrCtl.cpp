@@ -39,7 +39,7 @@
 * ==============================================================================
 */
 // INCLUDE FILES
-#include <browser_platform_variant.hrh>
+#include <Browser_platform_variant.hrh>
 #include <../bidi.h>
 #include <avkon.hrh>
 #include <apmrec.h>
@@ -55,9 +55,9 @@
 #endif
 #include <GULICON.h>
 #include <e32uid.h>
-#include <browserdialogsprovider.h>
+#include <BrowserDialogsProvider.h>
 //tot:fixme
-//#include "oom.h"
+//#include <oom.h>
 
 #include "config.h"
 #include "BrCtl.h"
@@ -91,7 +91,7 @@
 #include "WebCursor.h"
 #include "WebUtil.h"
 #include "WebCharsetData.h"
-#include "httpcachemanager.h"
+#include "HttpCacheManager.h"
 #include "ResourceLoaderDelegate.h"
 #include "EventHandler.h"
 #include "timer.h"

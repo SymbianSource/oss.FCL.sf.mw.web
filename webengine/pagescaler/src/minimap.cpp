@@ -118,10 +118,10 @@ CMinimap::CMinimap(MPageScalerCallback& aCallback, TDisplayMode aMode, TBool aLo
 void CMinimap::ConstructL()
     {
     iGenerator = CMinimapGenerator::NewL(*this);
-    iUpdateCbTimer = CMinimapTimer::NewL(*this, &UpdateCbTimerCbL, CActive::EPriorityStandard - 1 );
-    iUpdateTimer = CMinimapTimer::NewL(*this, &UpdateTimerCbL);
-    iVisibilityTimer = CMinimapTimer::NewL(*this, &VisibilityTimerCbL);
-    iFadeTimer = CMinimapTimer::NewL(*this, &UpdateTransparency);
+    iUpdateCbTimer = CMinimapTimer::NewL(*this, &CMinimap::UpdateCbTimerCbL, CActive::EPriorityStandard - 1 );
+    iUpdateTimer = CMinimapTimer::NewL(*this, &CMinimap::UpdateTimerCbL);
+    iVisibilityTimer = CMinimapTimer::NewL(*this, &CMinimap::VisibilityTimerCbL);
+    iFadeTimer = CMinimapTimer::NewL(*this, &CMinimap::UpdateTransparency);
     SetRelativePosition(KDefaultOffsetX,KDefaultOffsetY,KDefaultPosition);
     }
 

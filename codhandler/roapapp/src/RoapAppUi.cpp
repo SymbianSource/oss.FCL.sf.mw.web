@@ -24,7 +24,7 @@
 #include <apgcli.h>
 #include <RoapApp.rsg>
 #include <avkon.rsg>
-#include <AknNoteWrappers.h>
+#include <aknnotewrappers.h>
 #include <AknQueryDialog.h>
 #include <StringLoader.h>
 #include <DocumentHandler.h>
@@ -32,8 +32,8 @@
 #include <caf/caf.h>
 #include <DRMCommon.h>
 #include <aknmessagequerydialog.h>
-#include <AknNoteDialog.h>                  
-#include <FeatMgr.h>                    
+#include <aknnotedialog.h>                  
+#include <featmgr.h>                    
 #include <hlplch.h>             
 #include <RoapDef.h>
 #include "RoapAppUi.h"
@@ -45,7 +45,7 @@
 #include "RoapAppPanic.h"
 #include "RequestCompleteCallback.h"
 #include "RoapAppLogger.h"
-#include <httpdownloadmgrcommon.h>
+#include <HttpDownloadMgrCommon.h>
 
 #ifdef __SERIES60_HELP
 // Context-Sensitve Help File

@@ -25,7 +25,7 @@
 // User includes
 
 // System Includes
-#include <brctldialogsprovider.h>
+#include <BrCtlDialogsProvider.h>
 //#include <BrowserDialogsProviderProxy.h>
 #include <e32std.h>
 

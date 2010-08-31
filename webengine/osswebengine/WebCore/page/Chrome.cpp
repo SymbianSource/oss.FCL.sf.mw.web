@@ -352,12 +352,6 @@ void Chrome::setElementVisibilityChanged(bool visibility)
 {
     m_client->setElementVisibilityChanged(visibility);
 }
-
-void Chrome::wait(double t)
-{
-    m_client->wait(t);    
-}
-
 #endif    
 PageGroupLoadDeferrer::PageGroupLoadDeferrer(Page* page, bool deferSelf)
 {

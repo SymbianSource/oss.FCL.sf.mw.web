@@ -95,17 +95,7 @@ public:
     void UpdateCacheL( const WebCore::String& url, const WebCore::String &equiv, const WebCore::String &content );
 	void ResetOutstandingSelfDl() {m_OutstandingSelfDl = false; }
     const RPointerArray<HBufC8>& ClientAcceptHeaders() const { return m_ClientAcceptHeaders; }
-    void retryTransactions();
-    void setRetryConnectivityFlag(){ retryConnectivityFlag = ETrue; }
-    TBool getRetryConnectivityFlag(){ return retryConnectivityFlag; }
-    void unSetRetryConnectivityFlag(){ retryConnectivityFlag = EFalse; }    
-    TUint pendingTransactionsCount(){ return m_pendingHttpRequests.size(); }
-    TBool isInSecureConnection() {return m_inSecConnection;}
-    void setInSecureConnection(TBool inSecCon) {m_inSecConnection = inSecCon;}    
-    void cancelQueuedTransactions();
-    void startTimer();
-    void deleteTimer();
-
+    
 private:
     void updateFilters(bool initializing = false);
     int count();
@@ -138,10 +128,6 @@ private:
     HBufC* m_SelfDownloadContentTypes;
 	bool m_OutstandingSelfDl;
 	RPointerArray<HBufC8> m_ClientAcceptHeaders;
-	TBool retryConnectivityFlag;
-	TBool m_inSecConnection;
-	CPeriodic* m_resetTimer;
-
 };
 #endif // __HTTPSESSIONMANAGER_H__
 // end of file

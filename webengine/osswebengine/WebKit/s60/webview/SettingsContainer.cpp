@@ -15,22 +15,23 @@
 *
 */
 
+
 #include <../bidi.h>
 #include "SettingsContainer.h"
 #include "WebView.h"
 #include "BrCtl.h"
 #include "WebUtil.h"
 #include "Page.h"
-#include "frame.h"
-#include "frametree.h"
-#include "frameview.h"
-#include "document.h"
+#include "Frame.h"
+#include "FrameTree.h"
+#include "FrameView.h"
+#include "Document.h"
 #include "Settings.h"
 #include "HttpSessionManager.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
 #include "HistoryInterface.h"
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "WebDocumentLoader.h"
 #include "Frame.h"
 #include "FrameLoader.h"
@@ -142,10 +143,7 @@ void SettingsContainer::updatePageSetting(TBrCtlDefs::TBrCtlSettings setting)
             break;
         case TBrCtlDefs::ESettingsCurrentZoomLevelIndex:
             m_webView->setZoomLevel(brctlSettings[setting]);
-            break;            
-        case TBrCtlDefs::ESettingsAutoRefresh:
-            brctlSetting(TBrCtlDefs::ESettingsAutoRefresh);
-            break;        
+            break;
     }
 }
 
@@ -260,10 +258,7 @@ unsigned int SettingsContainer::brctlSetting(TBrCtlDefs::TBrCtlSettings setting)
             }
         case TBrCtlDefs::ESettingsNumOfDownloads :
             {
-            if ( httpSessionMgr->httpDownload() )
-                {
-                retVal = httpSessionMgr->httpDownload()->numOfDownloads();
-                }
+            retVal = httpSessionMgr->httpDownload()->numOfDownloads();
             break;
             }
         default:

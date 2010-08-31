@@ -15,14 +15,15 @@
 *
 */
 
+
 /*****************************************************************
 **  File: dictionary.c
 **  Description:
 *****************************************************************/
 #include "cxml_internal.h"
 #include "nw_wbxml_parsei.h"
-#include <nw_string_char.h>
-#include <nw_wbxml_dictionary.h>
+#include "nw_string_char.h"
+#include "nw_wbxml_dictionary.h"
 #include "DictionaryContext.h"
 
 /* HTTP_iso_8859_1 IANA MIBenum 4 */
@@ -31,6 +32,7 @@
 /*
  * The dictionaries ...
  */
+
 
 static
 NW_Bool

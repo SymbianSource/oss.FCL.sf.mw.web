@@ -35,7 +35,8 @@
  */
 
 #include "DdDummyDict.h"
-#include <nw_wbxml_dictionary.h>
+#include <xml/cxml/nw_wbxml_dictionary.h>
+
 
 static const NW_Ucs2 NW_DdDummy_ElementTag_name[] = {'n','a','m','e','\0'};
 static const NW_Ucs2 NW_DdDummy_ElementTag_vendor[] = {'v','e','n','d','o','r','\0'};

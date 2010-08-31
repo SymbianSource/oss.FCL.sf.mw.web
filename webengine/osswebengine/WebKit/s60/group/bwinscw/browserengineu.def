@@ -46,5 +46,8 @@ EXPORTS
 	?getNumber@JSValue@KJS@@QBE_NAAN@Z @ 45 NONAME ; bool KJS::JSValue::getNumber(double &) const
 	?PostUrlL@CBrCtl@@UAEXABVTDesC16@@ABVTDesC8@@1PBV3@PAX@Z @ 46 NONAME ; void CBrCtl::PostUrlL(class TDesC16 const &, class TDesC8 const &, class TDesC8 const &, class TDesC8 const *, void *)
 	?TakeSnapshotL@CBrCtl@@UAEXAAVCFbsBitmap@@@Z @ 47 NONAME ; void CBrCtl::TakeSnapshotL(class CFbsBitmap &)
-	?IsSynchRequestPending@CBrCtl@@UAEHXZ @ 48 NONAME ; int CBrCtl::IsSynchRequestPending(void)
+
+
+
+
 

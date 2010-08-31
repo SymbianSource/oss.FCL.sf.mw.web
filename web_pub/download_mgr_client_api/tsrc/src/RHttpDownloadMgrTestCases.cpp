@@ -21,7 +21,7 @@
 // INCLUDE FILES
 #include <e32math.h>
 #include <es_sock.h>
-#include "downloadmgrclientapitest.h"
+#include "DownloadMgrClientApiTest.h"
 
 // EXTERNAL DATA STRUCTURES
 // None

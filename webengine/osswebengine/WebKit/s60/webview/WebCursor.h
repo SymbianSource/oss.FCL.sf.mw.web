@@ -51,7 +51,7 @@ class WebCursor : public CBase
         const TRect& nodeRect() const { return m_nodeRect; }
         void setPosition(const TPoint& pt) { m_pos = pt;}
         void updatePositionAndElemType(const TPoint& pt);
-        void setCurrentView(WebView* view);
+        void setCurrentView(WebView& view);
         void offsetCursor(const TPoint& offset);
         bool isVisible() const { return m_visible; }
         void setCursorVisible(bool visible) { m_visible = visible; }
@@ -73,8 +73,7 @@ class WebCursor : public CBase
         WebFrame* getFrameAtPoint(const TPoint& viewPos_);
         WebCore::Element*  getElementUnderCursor() {return m_elementUnderCursor;}
         void stopTransparencyTimer();
-        WebView* getCursorWebView(){ return m_view;}
-                
+        
        
   private:
         void moveCursor(int lr,int tb, int scrollRange);

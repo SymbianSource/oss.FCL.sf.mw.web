@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include <../bidi.h>
-#include <aknutils.h>
+#include <AknUtils.h>
 #include <gulicon.h>
 #include "WebPopupDrawer.h"
 #include "WebView.h"

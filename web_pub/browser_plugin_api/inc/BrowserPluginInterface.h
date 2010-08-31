@@ -19,6 +19,8 @@
 #ifndef BROWSERPLUGININTERFACE_H
 #define BROWSERPLUGININTERFACE_H
 
+#warning This NP API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 const TUid KBrowserPluginInterfaceUid = { 0x101F8810 };
 
 #endif // BROWSERPLUGININTERFACE_H

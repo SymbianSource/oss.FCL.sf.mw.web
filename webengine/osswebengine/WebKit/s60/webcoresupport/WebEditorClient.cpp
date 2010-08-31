@@ -31,9 +31,9 @@
 #include "WebView.h"
 #include "WebFrame.h"
 #include "WebFormFill.h"
-#include "HtmlNames.h"
+#include "HTMLNames.h"
 #include "WebFepTextEditor.h"
-#include <eikcoctl.rsg>
+#include <EIKCOCTL.rsg>
 #include <eikon.hrh>
 
 
@@ -317,7 +317,7 @@ void WebEditorClient::toggleGrammarChecking()
 //-----------------------------------------------------------------------------
 void WebEditorClient::handleKeypress(KeyboardEvent* event)
 {
-    if (!(m_webView && m_webView->page())) {
+    if (!m_webView && !m_webView->page()) {
         return;
     }
 
@@ -380,12 +380,12 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                  frame->editor()->execCommand("MoveLeft");
                 }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
-                if (frame->selectionController()->start() == startPos &&
-                    frame->selectionController()->end() == endPos && !select) {
-                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
+                if (frame->selectionController()->start() != startPos &&
+                    frame->selectionController()->end() != endPos) {
+                    event->setDefaultHandled();
                 }
                 else {
-                    event->setDefaultHandled();
+                    m_shouldEndEditing = !m_webView->fepTextEditor()->IsTextAreaFocused();
                 }
                 break;
 
@@ -403,50 +403,36 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                  frame->editor()->execCommand("MoveRight");
                 }
                 m_webView->fepTextEditor()->HandleUpdateCursor();
-                if (frame->selectionController()->start() == startPos &&
-                    frame->selectionController()->end() == endPos && !select) {
-                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
+                if (frame->selectionController()->start() != startPos &&
+                    frame->selectionController()->end() != endPos) {
+                    event->setDefaultHandled();
                 }
                 else {
-                    event->setDefaultHandled();
+                    m_shouldEndEditing = !m_webView->fepTextEditor()->IsTextAreaFocused();
                 }
                 break;
 
             case EKeyUpArrow:
-                if (select) { //If shift is pressed then highlight the selection
-                    if(kevent->isKeyDown())
-                        break;
-                    frame->editor()->execCommand("MoveUpAndModifySelection");//from createCommandMap()
-                }
-                else {
-                    frame->editor()->execCommand("MoveUp");
-                }
+                frame->editor()->execCommand("MoveUp");
                 m_webView->fepTextEditor()->HandleUpdateCursor();
-                if (frame->selectionController()->start() == startPos &&
-                    frame->selectionController()->end() == endPos && !select) {
-                    m_shouldEndEditing = true;
+                if (frame->selectionController()->start() != startPos &&
+                    frame->selectionController()->end() != endPos) {
+                    event->setDefaultHandled();
                 }
                 else {
-                    event->setDefaultHandled();
+                    m_shouldEndEditing = true;
                 }
                 break;
 
             case EKeyDownArrow:
-                if (select) {//If shift is pressed then highlight the selection
-                    if(kevent->isKeyDown())
-                        break;
-                    frame->editor()->execCommand("MoveDownAndModifySelection");//from createCommandMap()
-                }
-                else {
-                    frame->editor()->execCommand("MoveDown");
-                }
+                frame->editor()->execCommand("MoveDown");
                 m_webView->fepTextEditor()->HandleUpdateCursor();
-                if (frame->selectionController()->start() == startPos &&
-                    frame->selectionController()->end() == endPos && !select) {
-                    m_shouldEndEditing = true;
+                if (frame->selectionController()->start() != startPos &&
+                    frame->selectionController()->end() != endPos) {
+                    event->setDefaultHandled();
                 }
                 else {
-                    event->setDefaultHandled();
+                    m_shouldEndEditing = true;
                 }
                 break;
                 
@@ -465,6 +451,26 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                 break;
 
             case EKeyF18:
+                if (magnify)
+                {
+                    switch (kevent->symbianEvent().iScanCode)
+                        {
+                        case EEikCmdEditCut:
+                            m_webView->fepTextEditor()->CcpuCutL();
+                            frame->editor()->deleteWithDirection(SelectionController::BACKWARD,
+                                                             CharacterGranularity, false, true);
+                            m_webView->fepTextEditor()->HandleUpdateCursor();
+                            break;
+                        case EEikCmdEditCopy:
+                            m_webView->fepTextEditor()->CcpuCopyL();
+                            break;
+                        case EEikCmdEditPaste:
+                            m_webView->fepTextEditor()->CcpuPasteL();
+                            break;
+                        default:
+                            break;
+                        }
+                }
                 break;
 
 // All of the diagonal KeyEvents are allowed to flow through the "default" case...
@@ -500,8 +506,6 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     break;
                     }
 
-                if(m_webView->fepTextEditor()->inlineTextEditingStarted()) 
-                    return;
                 if (TChar(kevent->symbianEvent().iCode).IsPrint()) {
                     if (m_webView->fepTextEditor()->DocumentLengthForFep() <
                         m_webView->fepTextEditor()->DocumentMaximumLengthForFep()) {
@@ -522,11 +526,9 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
 //-----------------------------------------------------------------------------
 // WebEditorClient::handleInputMethodKeypress
 //-----------------------------------------------------------------------------
-void WebEditorClient::handleInputMethodKeypress(KeyboardEvent* event)
+void WebEditorClient::handleInputMethodKeypress(KeyboardEvent*)
 {
-    const PlatformKeyboardEvent* kevent = event->keyEvent();
-    if(kevent->isKeyDown())
-    handleKeypress(event);
+    notImplemented();
 }
 
 //-----------------------------------------------------------------------------
@@ -561,9 +563,8 @@ void WebEditorClient::textDidChangeInTextField(Element* inputElement)
 //-----------------------------------------------------------------------------
 bool WebEditorClient::doTextFieldCommandFromEvent(Element*, KeyboardEvent*)
 {
-     
-   notImplemented();
-   return false;
+    notImplemented();
+    return false;
 }
 
 //-----------------------------------------------------------------------------
@@ -689,8 +690,4 @@ void WebEditorClient::handleDeleteText(Frame* frame)
         m_webView->fepTextEditor()->HandleMaskedDeleteText(frame);
     }
 }
-
-
-
-
 

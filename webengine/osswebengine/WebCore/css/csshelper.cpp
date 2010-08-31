@@ -22,7 +22,7 @@
  */
 
 #include "config.h"
-#include "CSSHelper.h"
+#include "csshelper.h"
 
 #include "PlatformString.h"
 #include <wtf/Vector.h>

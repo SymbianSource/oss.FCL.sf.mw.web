@@ -1005,12 +1005,6 @@ bool IconDatabase::shouldStopThreadActivity() const
 void* IconDatabase::iconDatabaseSyncThreadStart(void* vIconDatabase)
 {    
     IconDatabase* iconDB = static_cast<IconDatabase*>(vIconDatabase);
-
-#if PLATFORM(SYMBIAN)
-    // rename the thread
-    _LIT(KThreadName, "iconDbSync");
-    RThread().RenameMe(KThreadName);
-#endif
     
     return iconDB->iconDatabaseSyncThread();
 }

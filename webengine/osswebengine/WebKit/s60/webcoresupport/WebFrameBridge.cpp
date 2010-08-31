@@ -196,8 +196,7 @@ MWebCoreWidget* WebFrameBridge::viewForPluginWithURL( const TPtrC8& url, const V
     //tot: need to fix url convert
     TRAP_IGNORE( pluginSkin = PluginSkin::NewL( *m_webFrame,
         url, paramNames, paramValues, baseUrl, mimeType, loadContent ) );
-    if (pluginSkin)
-        pluginSkin->setElement(pluginElement);    
+    pluginSkin->setElement(pluginElement);    
     return pluginSkin; 
 }
             

@@ -15,13 +15,14 @@
 *
 */
 
+
 /*****************************************************************
 **  File: opaque.c
 **  Description: Methods on WBXML opaque data objects
 *****************************************************************/
 
 #include "cxml_internal.h"
-#include <nw_wbxml_opaque.h>
+#include "nw_wbxml_opaque.h"
 
 /*
  * Initialize an opaque object

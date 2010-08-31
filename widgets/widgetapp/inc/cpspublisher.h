@@ -28,7 +28,6 @@
 #define CPSPUBLISHER_H
 
 #include <e32base.h>
-#include <e32hashtab.h>
 #include <liwcommon.h>
 
 class CFbsBitmap;
@@ -69,13 +68,9 @@ class CCpsPublisher : public CBase,
     
     public:
         TSize BitmapSize();
-        void  PublishBitmapL( CFbsBitmap& aBitmap, const TDesC& aBundleName );
-        void  NetworkConnectionCancelledL();
-        void  NetworkConnectionAllowedL();
-        void  PublishScreenshotL(const TDesC& aWidget, TInt aWidgetId,
-                  CFbsBitmap* aBmp);
-
-       void ClearScreenshotL(const TDesC& aWidget, TInt aWidgetId);
+        void PublishBitmapL( CFbsBitmap& aBitmap, const TDesC& aBundleName );
+        void NetworkConnectionCancelledL();
+        void NetworkConnectionAllowedL();
         
     private:
         void GetBitmapSizeL();
@@ -86,25 +81,12 @@ class CCpsPublisher : public CBase,
         void ExecuteCommandL(CLiwDefaultMap* aInFilter, CLiwDefaultMap* aOutDataMap,
                 const TDesC16& aRegistry  );
         void ExecuteRegistrationCommandL( TUint aOption );
-        void StoreBitmapL(TInt aWidgetId, CFbsBitmap* aBmp);
-        void RemoveBitmapL(TInt aWidgetId);
-        void PublishScreenshotToCpsL(const TDesC& aWidget,
-        TInt aWidgetId, TInt aBitmap);
-        void RemoveScreenshotFromCpsL(const TDesC& aWidget);
-        
     private:
     
     CFbsBitmap* iMaskBitmap;
     MLiwInterface* iCpsInterface;
     CLiwServiceHandler* iServiceHandler;
     TSize iSize;
-    /**
-     * Hash table storing the screenshots.
-     * Key: window group id for the screenshot
-     * (the one received in ApplicationChange)
-     * Value: CFbsBitmap*, pointers owned
-     */    
-    RHashMap<TInt, CFbsBitmap*> iScreenshots;
 
     };
 

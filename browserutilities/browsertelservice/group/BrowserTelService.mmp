@@ -19,7 +19,7 @@
 
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET		BrowserTelService.dll
 TARGETTYPE	dll
@@ -34,7 +34,7 @@ LANG sc
 LANGUAGE_IDS 
 #endif
 
-START RESOURCE ../data/browsertelservice.rss
+START RESOURCE ../data/BrowserTelService.rss
 DEPENDS avkon.rsg
 HEADER
 TARGETPATH  RESOURCE_FILES_DIR
@@ -45,10 +45,11 @@ SOURCE      BrowserTelService.cpp
 SOURCE      BrowserTelServiceEtelWatcher.cpp
 SOURCE      BrowserTelServiceDlgs.cpp
 
+
 USERINCLUDE    ../inc
 USERINCLUDE    ../../inc
 
-APP_LAYER_SYSTEMINCLUDE
+//APP_LAYER_SYSTEMINCLUDE
 /* SF TODO: resolve APP LAYER DEPENDENCY: 
     s60/app/contacts/contacts_sdk/phonebook_data_addedit_ui_api/inc/CPbkContactEditorDlg.h
 	s60/app/contacts/contacts_sdk/phonebook_data_management_api/inc/CPbkContactEngine.h
@@ -68,13 +69,16 @@ APP_LAYER_SYSTEMINCLUDE
 	s60/app/messaging/msg_sdk/send_ui_api/inc/SendUiConsts.h
 	s60/app/messaging/msg_sdk/send_ui_api/inc/SenduiMtmUids.h
 */
-// MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_SYSTEMINCLUDE
+
+
+SYSTEMINCLUDE	../../../inc
 
 LIBRARY		euser.lib 
 LIBRARY		etel.lib 
 LIBRARY		etelmm.lib 
-LIBRARY		PbkEng.lib
-LIBRARY		PbkView.lib
+//LIBRARY		PbkEng.lib
+//LIBRARY		PbkView.lib
 LIBRARY		cntmodel.lib 
 LIBRARY		cone.lib
 LIBRARY		etext.lib
@@ -87,10 +91,10 @@ LIBRARY		ESock.lib
 LIBRARY		ApEngine.lib
 LIBRARY		commdb.lib
 LIBRARY		efsrv.lib 
-LIBRARY   	commonui.lib
-LIBRARY   	featmgr.lib // feature mannger support
-LIBRARY   	estor.lib  // RWriteStream, RFileBuf
-LIBRARY     	Centralrepository.lib
+LIBRARY     commonui.lib
+LIBRARY     featmgr.lib // feature mannger support
+LIBRARY     estor.lib  // RWriteStream, RFileBuf
+LIBRARY     Centralrepository.lib
 
 #if defined(ARMCC)
     DEFFILE ../EABI/BROWSERTELSERVICEU_EKA2.def
@@ -103,3 +107,4 @@ LIBRARY     ServiceHandler.lib
 LIBRARY			aiwdialdata.lib
 
 DEBUGLIBRARY    flogger.lib
+

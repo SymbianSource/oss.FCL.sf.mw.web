@@ -41,7 +41,7 @@ public:
     // from MScrollView
     void draw(WebCoreGraphicsContext&, const TRect&);
     void invalidateRect(const TRect&, TBool);
-    void scrollTo(const TPoint&, TBool aNotifyPlugins=EFalse);
+    void scrollTo(const TPoint&);
     TRect visibleRect() const;
     TSize contentSize() const;
     void resizeContent(const TSize& /*aSize*/);
@@ -104,8 +104,6 @@ public:
     int getBidiWidth();
     bool needScroll(const TPoint& aPoint);
 private:
-    void moveFocus();
-
     WebFrameView(const WebFrameView&);            // not implemented
     WebFrameView& operator=(const WebFrameView&); // not implemented
     

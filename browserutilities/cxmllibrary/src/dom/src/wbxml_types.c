@@ -17,7 +17,7 @@
 
 
 #include "cxml_internal.h"
-#include <nw_dom_node.h>
+#include "nw_dom_node.h"
 #include "nw_dom_wbxmltypes.h"
 
 /** Extension **/

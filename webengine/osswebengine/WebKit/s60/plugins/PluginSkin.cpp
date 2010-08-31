@@ -16,11 +16,11 @@
 */
 
 //INCLUDES
-#include <Browser_Platform_Variant.hrh>
+#include <Browser_platform_variant.hrh>
 #include "../../bidi.h"
 #include "PlatformString.h"
 #include <centralrepository.h>
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 #include "PluginSkin.h"
 #include "PluginWin.h"
 #include "PluginHandler.h"
@@ -33,9 +33,9 @@
 #include "BrCtl.h"
 #include "WebCoreGraphicsContext.h"
 #include "StaticObjectsContainer.h"
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "SettingsContainer.h"
-#include <Uri8.h>
+#include <uri8.h>
 #include <StringLoader.h>
 #include <Webkit.rsg>
 #include "Frame.h"
@@ -43,17 +43,16 @@
 #include "DocumentLoader.h"
 #include "ResourceRequest.h"
 #include "Widget.h"
-#include "PlatformScrollBar.h"
-#include "Page.h"
-#include "FocusController.h"
+#include "PlatformScrollbar.h"
 
 #include <ApEngineConsts.h>
-#include <Uri8.h>
-#include <internetconnectionmanager.h>
+#include <uri8.h>
+#include <InternetConnectionManager.h>
 #include <es_enum.h>
+#include <TextEncoding.h>
+#include "CString.h"
 #include "WidgetExtension.h"
-#include <widgetregistryclient.h>
-
+#include <WidgetRegistryClient.h>
 
 // CONSTANTS
 using namespace WebCore;
@@ -85,11 +84,8 @@ _LIT(KApplicationId,"ApplicationId");
 _LIT(KSecMgrScriptSession,"SecMgrScriptSession");
 _LIT(KAllowNetworkAccess,"AllowNetworkAccess");
 
-#if defined(__PLATFORM_VERSION_32__)
-#define KArraySize 1
-#else
+
 #define KArraySize 3
-#endif
 
 const TInt32 KWidgetApplicationId =  0x10282822;
 const TInt32 KBrowserApplicationId = 0x10008D39;
@@ -104,13 +100,10 @@ TInt RunScriptCb( TAny* aPtr );
 // return an absolute url that results from refUrl being resolved against 
 // baseUrl.
 // ----------------------------------------------------------------------------
-HBufC8* makeAbsoluteUrlL(const TDesC8* baseUrl,const TDesC8* docUrl, const TDesC8& refUrl)
+HBufC8* makeAbsoluteUrlL(const TDesC8& baseUrl, const TDesC8& refUrl)
 {
     TUriParser8 baseUrlparser;
-    if(baseUrl == NULL)
-        baseUrlparser.Parse(*docUrl); 
-    else
-        baseUrlparser.Parse(*baseUrl);
+    baseUrlparser.Parse(baseUrl); 
     TUriParser8 refUrlparser;
     refUrlparser.Parse(refUrl); 
 
@@ -162,13 +155,12 @@ PluginSkin::PluginSkin( WebFrame& frame )
       m_canInteract( EFalse ),
       m_rect(TRect(0,0,0,0)),
       m_ref(1),
-      m_oldRect(TRect(0,0,0,0)),
-      m_oldViewport(TRect(0,0,0,0)),
-      m_NPObject(0),
       m_handle(-1),
       m_instance(0),    
       m_pluginfuncs(0),
-      m_resized(false)
+      m_resized(false),
+      m_oldRect(TRect(0,0,0,0)),
+      m_oldViewport(TRect(0,0,0,0))
   {
   }
 
@@ -202,11 +194,8 @@ void PluginSkin::addWidgetAttributesL()
 #endif
 
         TInt uid = wdgtExt->GetWidgetId();         
-        
         CWidgetPropertyValue* AccessValue = widgetregistry.GetWidgetPropertyValueL(TUid::Uid(uid), EAllowNetworkAccess ); 
-        TInt networkAccess = AccessValue && *AccessValue;
-        delete AccessValue;
-        
+        TInt networkAccess = *AccessValue;
         const TDesC& allowNetworkAccess = KAllowNetworkAccess();
         NPN_GenericElement NetworkAccess(allowNetworkAccess,networkAccess);
         iGenericElementArray->AppendL(NetworkAccess);
@@ -408,37 +397,12 @@ void PluginSkin::Close()
     delete m_attributeNames; m_attributeNames = 0;
     delete m_attributeValues; m_attributeValues = 0;
     delete m_url; m_url = 0;
-    if(iJavascriptTimer)
-        { 
-        iJavascriptTimer->Cancel();
-        delete iJavascriptTimer; 
-        iJavascriptTimer = 0;
-        }
+    delete iJavascriptTimer; iJavascriptTimer = 0;
     m_pluginfuncs = 0;
     m_pluginSupported = EFalse;
     m_pluginClosed = true;
-    
  }
 
-// ----------------------------------------------------------------------------
-// PluginSkin::HandleLosingForeground()
-// PluginSkin function to handle Losing foreground event
-// ----------------------------------------------------------------------------
-void PluginSkin::HandleLosingForeground()
-{
-    if(m_pluginwin) 
-        m_pluginwin->HandleLosingForeground();
-}
- 
-// ----------------------------------------------------------------------------
-// PluginSkin::HandleGainingForeground()
-// PluginSkin function to handle Gaining foreground event
-// ----------------------------------------------------------------------------
-void PluginSkin::HandleGainingForeground()
-{
-    if(m_pluginwin)
-        m_pluginwin->HandleGainingForeground();
-}
 
 // ----------------------------------------------------------------------------
 // PluginSkin::pluginFocusChanged()
@@ -498,9 +462,7 @@ void PluginSkin::draw( WebCoreGraphicsContext& context,
 
     CFbsBitmap* bitmap = m_cannedimg.m_img;
     TSize bmpSize( bitmap->SizeInPixels() );
-    CWidgetExtension* wdgtExt = control(this->frame()) ? control(this->frame())->getWidgetExt(): NULL;
-    
-    if ( !wdgtExt && !m_pluginwin && newRect.Height() >= bmpSize.iHeight && newRect.Width() >= bmpSize.iWidth )
+    if ( !m_pluginwin && newRect.Height() >= bmpSize.iHeight && newRect.Width() >= bmpSize.iWidth )
         {
         // The inner rect is big enough, draw the placeholder image
         TPoint bitmapStartPoint( newRect.Center() );
@@ -510,35 +472,9 @@ void PluginSkin::draw( WebCoreGraphicsContext& context,
         }
     if(m_pluginwin)
         {
-        //if bitmap is shared from plugins then draw the shared bitmap
-        if(m_pluginwin->IsPluginBitMapSet())
-            {
-            CFbsBitmap* bitmap = m_pluginwin->PluginBitmap();
-            if(bitmap)
-                {
-                TRect clippingRect = context.clippingRect();
-                TRect oldcontextrect = context.clippingRect();
-
-                if(newRect != clippingRect)
-                    {
-                    context.setClippingRect(newRect);
-                    }
-                 gc->DrawBitmap(newRect, bitmap);
-                 context.setClippingRect(oldcontextrect);
-                }
-            else
-                {
-                //if not a valid bitmap, then hide that plugin
-                m_pluginwin->MakeVisible(EFalse);
-                }
-                positionChanged();
-            }
-        else
-            {
-            positionChanged();
-            // Force the control to be redrawn, for window less plugins
-            m_pluginwin->refreshPlugin(*gc,newRect);
-            }
+        positionChanged();
+        // Force the control to be redrawn.
+        m_pluginwin->refreshPlugin(*gc,newRect);
         }
     }
 
@@ -566,37 +502,10 @@ TSize PluginSkin::sizeHint() const
 // ----------------------------------------------------------------------------
 void PluginSkin::makeVisible( TBool visible )
     {
-    // if visible is true for a plugin, make sure that the plugin is actually visible in the window before proceeding 
-    TBool visibility = EFalse;
-    if (visible) {
-        TRect fullRect(getPluginWinRect());
-        TRect clipRect(getClipRect());
-        TRect frameRect(m_frame->frameView()->rect());
-        TRect viewRect = control(m_frame)->webView()->Rect();
-        TBool isPageViewMode = control(m_frame)->webView()->inPageViewMode();
-        WebFrame* pf = m_frame;
-        TPoint p = frameRect.iTl;
-
-        if (m_frame->parentFrame()) {
-            pf = m_frame->parentFrame();
-            p = pf->frameView()->frameCoordsInViewCoords(frameRect.iTl); 
-        }
-        TSize  sz = pf->frameView()->toViewCoords(frameRect.Size());
-        TRect frameRectInViewCoord = TRect(p, sz);
-        TBool isPluginVisible = frameRectInViewCoord.Intersects(fullRect); 
-        TBool isFrameVisible = m_frame->frameView()->isVisible() && 
-                                frameRectInViewCoord.Intersects(viewRect);
-        
-        visibility = isFrameVisible && !isPageViewMode && isPluginVisible;
-      
-    }
     if ( m_pluginwin )
         {
-        if (visible && !visibility)
-            visible = EFalse;
-        
         m_visible = visible;
-        if(m_active && !visible)
+        if(m_active)
             deActivate();
         m_pluginwin->makeVisible(visible);
         }
@@ -656,7 +565,6 @@ void PluginSkin::activate()
                 {
                 m_active = ETrue;
                 m_frame->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
-                control(m_frame)->webView()->page()->focusController()->setFocusedNode(getElement(), control(m_frame)->webView()->page()->focusController()->focusedOrMainFrame());                        
                 pluginHandler->setActivePlugin(this);
                 pluginHandler->setPluginToActivate(NULL);
                 }
@@ -742,9 +650,11 @@ void PluginSkin::loadPluginL( const TDesC8& mimetype )
         NPError error( NPERR_NO_ERROR );
         
         m_instance = (NPP) User::AllocL(sizeof(NPP_t));
+        m_instance->ndata = pluginWin();
+        m_instance->pdata = NULL;
+
         if (m_instance) {
-            m_instance->ndata = pluginWin();
-            m_instance->pdata = NULL;            
+            
             PluginHandler* pluginhandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
             if ( pluginhandler ) {
                 pluginhandler->loadPluginL( m_handle, &m_pluginfuncs );
@@ -761,8 +671,8 @@ void PluginSkin::loadPluginL( const TDesC8& mimetype )
                 }
                 if (m_pluginwin) {
                     m_pluginwin->ConstructL(*(control(m_frame)->webView()));
-                }
             }
+        }
         }
 
         switch ( error ) {
@@ -774,11 +684,13 @@ void PluginSkin::loadPluginL( const TDesC8& mimetype )
                 User::Leave( KErrNotSupported );
                 break;
             }
-        }
+        }    
         
         if (m_pluginwin)
-            m_pluginwin->SetExtent( TPoint(0,0), TSize(0,0) );
+        m_pluginwin->SetExtent( TPoint(0,0), TSize(0,0) );
+            
     }
+
 }
 
 // -----------------------------------------------------------------------------
@@ -888,11 +800,11 @@ TBool PluginSkin::RunScript()
 int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,const TDesC* aWindowType)
 {
     TPluginLoadMode loadmode = GetLoadMode(aWindowType);
-    
+
     if (url.Ptr() == NULL ) {                        
         return KErrArgument;
     }
-    
+
     _LIT8(KJs, "javascript:");
     if ((url.Length() > KJs().Length() ) &&(url.Left(KJs().Length()).FindF(KJs) == 0)) {
         HBufC* pBuffer = HBufC::NewL(url.Length());
@@ -909,18 +821,24 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
      }
 
     // make sure it is an absolute URL
-    HBufC8* docUrl = HBufC8::NewLC(core(m_frame)->document()->baseURI().length());
-    docUrl->Des().Copy(core(m_frame)->document()->baseURI());
-    HBufC8* absoluteUrl = makeAbsoluteUrlL(m_url, docUrl, url); 
+    HBufC8* absoluteUrl = makeAbsoluteUrlL(*m_url, url); 
     CleanupStack::PushL(absoluteUrl);
 
-    PluginHandler* pluginHandler = StaticObjectsContainer::instance()->pluginHandler();
-    if( (loadmode == ELoadModePlugin ) || (loadmode == ELoadModeTop && (pluginHandler->pluginMimeByExtention(url) != NULL)) ){        
+    if (loadmode == ELoadModePlugin ) {    
+        
         if (m_instance && m_pluginfuncs) {
         
-            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(url, this, core(m_frame), notifydata, notify);
+            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(url, this, core(m_frame), notifydata);
             if (pluginloader) {
-                pluginloader->start();                                          
+                pluginloader->start();                            
+
+                if ( notify ) {
+                    HBufC* url16 = HBufC::NewLC( url.Length() );
+                    url16->Des().Copy( url );
+                    m_pluginfuncs->urlnotify( m_instance, *url16, NPRES_DONE, notifydata );        
+                    CleanupStack::PopAndDestroy(url16);
+                }
+                
             }                
         }                 
     }
@@ -931,7 +849,7 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
         CleanupStack::PopAndDestroy(windowType);
     }
 
-    CleanupStack::PopAndDestroy(2);
+    CleanupStack::PopAndDestroy(absoluteUrl);
 
     return KErrNone;
 }
@@ -939,9 +857,7 @@ int PluginSkin::getRequestL(const TDesC8& url, bool notify, void* notifydata,con
 int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfile, bool notify, void* notifydata,const TDesC* aWindowType)
 {
     // make sure it is an absolute URL
-    HBufC8* docUrl = HBufC8::NewLC(core(m_frame)->document()->baseURI().length());
-    docUrl->Des().Copy(core(m_frame)->document()->baseURI());
-    HBufC8* absoluteUrl = makeAbsoluteUrlL(m_url, docUrl, url);     
+    HBufC8* absoluteUrl = makeAbsoluteUrlL(*m_url, url);     
     CleanupStack::PushL(absoluteUrl);
     TPluginLoadMode loadmode = GetLoadMode(aWindowType);
  
@@ -991,9 +907,11 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
         int start_content = buffer.Find(KRequestEOH());    
         start_content =  (start_content != KErrNotFound) ? start_content+ KRequestEOH().Length() : 0;                
         
-        HBufC8* body = HBufC8::NewLC(buffer.Mid(start_content).Length());                
-        body->Des().Copy(buffer.Mid(start_content));        
-        FormData* fd = new (ELeave) FormData(body->Ptr(),body->Length());                                          
+        HBufC* body = HBufC::NewLC(buffer.Mid(start_content).Length()+1);                
+        body->Des().Copy(buffer.Mid(start_content));
+        TextEncoding *ecoder = new TextEncoding(core(mainFrame(m_frame))->loader()->encoding());
+        CString decoded_body = ecoder->encode(body->Des().PtrZ(),body->Length());
+        FormData* fd = new (ELeave) FormData(decoded_body.data(),decoded_body.length());                                               
         request.setHTTPBody(fd);                                              
         CleanupStack::PopAndDestroy(); // body
     }
@@ -1002,9 +920,17 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
     if (loadmode == ELoadModePlugin ) {    
                         
         if (m_instance && m_pluginfuncs) {
-            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(request, this, core(m_frame), notifydata, notify);
+            NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(request, this, core(m_frame), notifydata);
             if (pluginloader) {
-                pluginloader->start();                                           
+                pluginloader->start();                            
+
+                if ( notify ) {
+                    HBufC* url16 = HBufC::NewLC( url.Length() );
+                    url16->Des().Copy( url );
+                    m_pluginfuncs->urlnotify( m_instance, *url16, NPRES_DONE, notifydata );        
+                    CleanupStack::PopAndDestroy(url16);
+                }
+                
             }                
         }                 
     }
@@ -1016,7 +942,7 @@ int PluginSkin::postRequestL(const TDesC8& url,const TDesC& buffer, bool fromfil
     }
     
 
-    CleanupStack::PopAndDestroy(2);
+    CleanupStack::PopAndDestroy(absoluteUrl);
 
     return KErrNone;
 }
@@ -1067,32 +993,15 @@ void PluginSkin::handlePluginError( TInt error )
 
 void* PluginSkin::pluginScriptableObject()
 {
-    if (!m_NPObject && m_pluginfuncs && m_pluginfuncs->getvalue) {
-        NPError npErr = m_pluginfuncs->getvalue( m_instance, NPPVpluginScriptableNPObject, &m_NPObject);
-        if (npErr != NPERR_NO_ERROR) {
-            m_NPObject = 0;
+    //
+    if (m_pluginfuncs && m_pluginfuncs->getvalue) {
+        void *value = 0;
+        NPError npErr = m_pluginfuncs->getvalue( m_instance, NPPVpluginScriptableNPObject, (void *)&value);
+        if (npErr == NPERR_NO_ERROR) {
+            return value;
         }
     }
-    return m_NPObject;
-}
-
-TBool validateDataScheme(const TPtrC8& url)
-{
-    // Check if body part of "data:" exists = data:[<mediatype>][;base64],<body>. RFC-2397 : http://www.faqs.org/rfcs/rfc2397
-    TPtrC8 urlPtr8 = url;
-    
-    if(url.Length() <= 0 )
-           return EFalse;
-    
-    TInt commaPos( urlPtr8.Locate( ',' ) );
-    if (commaPos == KErrNotFound )
-        return EFalse;
-    
-    TPtrC8 datapart (urlPtr8.Mid(commaPos + 1)); 
-    if (datapart.Length() <= 0)
-        return EFalse;
-
-    return ETrue;
+    return (void *)0;
 }
 
 TBool PluginSkin::isBrowserScheme(const TPtrC8& url)
@@ -1102,12 +1011,8 @@ TBool PluginSkin::isBrowserScheme(const TPtrC8& url)
     if( parser.Parse( url ) == KErrNone ) {
         TPtrC8 scheme = parser.Extract( EUriScheme );
         if (scheme.CompareF( _L8("http" ) ) == 0 || scheme.CompareF( _L8("https" ) ) == 0 
-            || scheme.Length() == 1 || scheme.CompareF( _L8("file") ) == 0) {
+            || scheme.Length() == 1 || scheme.CompareF( _L8("file") ) == 0 || scheme.CompareF( _L8("data") ) == 0) {
             supported = ETrue;
-        }
-        else if(scheme.CompareF( _L8("data") ) == 0) {
-            // if the scheme is "data", check its validity according to RFC-2397 : http://www.faqs.org/rfcs/rfc2397
-            supported = validateDataScheme(url);
         }
     }
     return supported;
@@ -1145,11 +1050,8 @@ void PluginSkin::setPluginWinClipedRect()
                            frameRectInViewCoord.Intersects(viewRect);
       
     if (m_pluginwin) {
-        TBool visibility = isFrameVisible && !isPageViewMode && isPluginVisible;
-        if(fullRect.Size() != TSize(0,0)) {
-            m_pluginwin->makeVisible(visibility);
-        }
-        if (!m_pluginwin->isPluginInFullscreen() && visibility) {
+        m_pluginwin->makeVisible( isFrameVisible && !isPageViewMode && isPluginVisible);
+        if (!m_pluginwin->isPluginInFullscreen()) {
             clipRect.Intersection(fullRect);
             m_pluginwin->SetRect(clipRect);
         }
@@ -1285,151 +1187,3 @@ TWindowType PluginSkin::GetWindowType(const TDesC* aWindowType)
 
     return EWindowTypeUnknown;
 }
-
-void PluginSkin::reCreatePlugin()
-{
-    TBuf16<4> apId;
-    apId.Format( _L("%d"), m_frame->frameView()->topView()->accessPointId() );
-    
-    if (m_pluginwin ) {
-        m_pluginwin->notifyAPChange((void*)&apId);
-    }
-    
-    if (m_streams.size() > 0) {
-        
-        //destroy the plugin
-    
-        Vector<PluginStream*> streams;
-        for (HashSet<PluginStream*>::iterator it = m_streams.begin(); it != m_streams.end(); ++it) {
-            streams.append(*it);
-        }    
-        for (int i=0; i<streams.size(); ++i) {
-            streams[i]->close();
-        }
-        m_streams.clear();
-    
-        if (m_instance && m_pluginfuncs && m_pluginfuncs->destroy) {        
-            m_pluginfuncs->destroy(m_instance, NULL);
-        }
-        User::Free(m_instance); m_instance = 0;
-        delete m_pluginwin; m_pluginwin = 0;
-        delete iJavascriptTimer; iJavascriptTimer = 0;
-        
-        RFs& rfs = StaticObjectsContainer::instance()->fsSession();
-        for(TInt i=0; i < m_tempFilesArray.Count(); i++) {
-            rfs.Delete(m_tempFilesArray[i]->Des());
-        }
-        m_tempFilesArray.ResetAndDestroy();
-           
-        //create/load the destroyed plugin again
-                    
-        NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(m_url->Des(), this, core(m_frame));
-        if (pluginloader) {
-            pluginloader->start();                            
-        }                                                
-    }
-}
-
-// -----------------------------------------------------------------------------
-// PluginWin::NotifyPluginsForScrollOrPinch
-// When ever there is Scroll or Pinch zoom is in progress, the webframe will
-// Notify all the plugins "ETrue" for Start and "EFalse" for end
-// -----------------------------------------------------------------------------
-void PluginSkin::NotifyPluginsForScrollOrPinch(bool status)
-    {
-    if(m_pluginwin)
-       {
-        //while pinch zoom, deactivate and activate the plugins.
-    WebView* view = control(frame())->webView();
-    if(!view)
-        return;
-
-       //check weather the collect bitmap is supported or not
-        TBool bitmapSupported  = m_pluginwin->IsCollectBitmapSupported();
-
-        //if bitmap is not supported, check for pinch zoom and deactivate the plugins.
-        if((view->isPinchZoom()))
-            {
-            //if bitmap sharing is not supported then deactivate or activate the plugins
-            if(!bitmapSupported)
-                {
-                if(status)
-                    {
-                    if(m_pluginwin->IsVisible())
-                        {
-                        m_pluginwin->MakeVisible(false);
-                        m_pluginwin->setPluginFocusL(false);
-                        }
-                    }
-                else
-                    {
-                    activate();
-                    }
-                }
-
-            }
-
-        if(bitmapSupported)
-           {
-            m_pluginwin->GetBitmapFromPlugin(status);
-            if(!status)
-                {
-                m_pluginwin->ClearPluginBitmap();
-                activateVisiblePlugins();
-                }
-          }
-       }
-}
-
-// -----------------------------------------------------------------------------
-// PluginWin::IsCollectBitmapSupported
-// Check Plugin are supported for Bitmap Sharing
-// -----------------------------------------------------------------------------
-TBool PluginSkin::IsCollectBitmapSupported()
-    {
-    if(m_pluginwin)
-        {
-        return  m_pluginwin->IsCollectBitmapSupported();
-        }
-    return false;
-    }
-
-void PluginSkin::activateVisiblePlugins()
-    {
-    TRect fullRect(getPluginWinRect());
-    TRect clipRect(getClipRect());
-    TRect frameRect(m_frame->frameView()->rect());
-    TRect viewRect = control(m_frame)->webView()->Rect();
-    TBool isPageViewMode = control(m_frame)->webView()->inPageViewMode();
-    WebFrame* pf = m_frame;
-    TPoint p = frameRect.iTl;
-
-    if (m_frame->parentFrame())
-        {
-        pf = m_frame->parentFrame();
-        p = pf->frameView()->frameCoordsInViewCoords(frameRect.iTl);
-        }
-
-    TSize  sz = pf->frameView()->toViewCoords(frameRect.Size());
-    TRect frameRectInViewCoord = TRect(p, sz);
-    TBool isPluginVisible = frameRectInViewCoord.Intersects(fullRect);
-    TBool isFrameVisible = m_frame->frameView()->isVisible() &&
-            frameRectInViewCoord.Intersects(viewRect);
-
-    TBool visibility = isFrameVisible && !isPageViewMode && isPluginVisible;
-    if(fullRect.Size() != TSize(0,0))
-        {
-        if (visibility)
-            {
-            m_pluginwin->MakeVisible(true); //forcefully make the plugin visible, this is for pinch exit
-            m_pluginwin->makeVisible(true);
-            }
-        else
-            {
-            //this is required for flash plugin to clear the EGL surface
-            //when the plugin window is outside the view port
-            m_pluginwin->makeVisible(false);
-            }
-        }
-
-    }

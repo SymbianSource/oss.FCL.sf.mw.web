@@ -23,7 +23,7 @@
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "BrCtl.h" 
 
 class CWmlContentInterface;
@@ -90,7 +90,7 @@ class MWmlInterface
 
     /**
         * Set the WKScrollingProviderNotifyLayoutChange.
-    * Function brctldialogsprovider.h
+    * Function BrCtlDialogsProvider.h
     * void CBrCtlScrollingProvider::NotifyLayoutChange(..)
         * @since 3.1.
         * @return void
@@ -100,7 +100,7 @@ class MWmlInterface
 
     /**
         * Set the SetWKScrollingProviderUpdateVScrollBarL.
-    * Function brctldialogsprovider.h
+    * Function BrCtlDialogsProvider.h
     * void CBrCtlScrollingProvider::UpdateVScrollBarL(..)
         * @since 3.1.
         * @return void
@@ -113,7 +113,7 @@ class MWmlInterface
 
     /**
         * Set the SetWKScrollingProviderUpdateHScrollBarL
-    * Function brctldialogsprovider.h
+    * Function BrCtlDialogsProvider.h
     * void CBrCtlScrollingProvider::UpdateHScrollBarL(..)
         * @since 3.1.
         * @return void
@@ -129,7 +129,7 @@ class MWmlInterface
 
      /**
         * Used by and defined in support of CWKDialogProvider
-    * Function brctldialogsprovider.h
+    * Function BrCtlDialogsProvider.h
     * CBrCtlObjectInfo::CWKObjectInfo() in
     * [WEBKIT\BrowserControl\src\WKDialogsProviderUtils.cpp]
         * @since 3.1.

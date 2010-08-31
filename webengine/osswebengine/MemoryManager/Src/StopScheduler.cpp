@@ -18,10 +18,10 @@
 #include "StopScheduler.h"
 #include "MemoryPool.h"
 #include "fast_malloc.h"
-#include "MemoryLogger.h"
-#include <hal.h>
 
 // MEMBER FUNCTIONS
+static const TUint KLessRAM = ( 2*1024*1024 );
+static const TUint KMinimumRAM = (1024 * 1024);
 static const TTimeIntervalMicroSeconds32 KMemoryCheckIntervalSlow = 1000000;        // 1 second
 static const TTimeIntervalMicroSeconds32 KMemoryCheckIntervalFast = 500000;         // 0.5 second
 
@@ -81,33 +81,26 @@ void CStopScheduler::RunL()
         }
     else if( iState == ECheckMemory )
         {
-    
-        TInt systemFreeRAM; 
-        if(HAL::Get(HALData::EMemoryRAMFree, systemFreeRAM) != KErrNone) 
-            return;        
-        
-        // case 1: Good memory levels - no worry
-        if( systemFreeRAM > KGoodMemoryThreshold ) // Above 4MB
+        TFreeMem freeMem;
+        TInt total = iMemoryPool.FreeMemory( freeMem );
+
+        // see if free memory is enough to restore all collectors
+        if( freeMem.iHal >= KLessRAM )
             {
-            iMemoryPool.RestoreCollectors( EOOM_PriorityLow ); // restore all collectors
+            iMemoryPool.RestoreCollectors( EOOM_PriorityLow );
             iState = EIdle;
             iNextStop = EAllStop;
 
             // recover the rescue buffer, if it is already released.
             iMemoryPool.RestoreRescueBuffer();
-            return;
             }
-        
-        // case 2: Going low - keep checking
-        if( systemFreeRAM > KLowMemoryThreshold ) // Between 4MB to 2MB
+        else if( freeMem.iHal >= KMinimumRAM/2 )
             {
+            iMemoryPool.RestoreCollectors( EOOM_PriorityMiddle );
             CheckMemoryDefered( KMemoryCheckIntervalSlow );
             iNextStop = EAllStop;
-            return;
             }
-         
-        // case 3: Below normal levels - stop low priority activites
-        if( systemFreeRAM > KStopThreshold )  // Between 2MB to 1MB
+        else if( freeMem.iHal >= KMinimumRAM/4 )
             {
             if( iNextStop & ENormalStop ) 
                 {
@@ -115,15 +108,15 @@ void CStopScheduler::RunL()
                 iNextStop &= ~ENormalStop;
                 }
             CheckMemoryDefered( KMemoryCheckIntervalFast );
-            }        
-        else // case 4: Really low - stop in emergency (all activites), below 1MB
+            }
+        else
             {
             if( iNextStop & EEmergencyStop ) 
                 {
                 StopLoading( EOOM_PriorityHigh );
                 iNextStop &= ~EEmergencyStop;
                 }
-            CheckMemoryDefered( KMemoryCheckIntervalSlow ); // need to restore colectors later
+            CheckMemoryDefered( KMemoryCheckIntervalFast );
             }
         }
     }
@@ -141,7 +134,6 @@ void CStopScheduler::DoCancel()
 //-----------------------------------------------------------------------------
 void CStopScheduler::StopLoading( TOOMPriority aPriority )
     {
-    MEM_LOG("CStopScheduler::StopLoading - run");
     // stop operations
     for( TInt i=0; i<iMemoryPool.Stoppers().Count(); ++i )
         {
@@ -149,7 +141,6 @@ void CStopScheduler::StopLoading( TOOMPriority aPriority )
         if( stopper->Priority() == aPriority )
             stopper->Stop();
         }
-    iMemoryPool.CollectMemory(2*KGoodMemoryThreshold);  // try to collect memory
     iMemoryPool.SetStopping( EFalse );
     }
 

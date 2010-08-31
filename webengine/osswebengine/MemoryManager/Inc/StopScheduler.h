@@ -20,12 +20,9 @@
 
 // INCLUDES
 
-#include <MemoryManager.h>
+#include "MemoryManager.h"
 
 // CONSTANTS
-static const TUint KGoodMemoryThreshold = ( 4*1024*1024 ); // keep checking memory levels
-static const TUint KLowMemoryThreshold = ( 2*1024*1024 ); // should stop activities
-static const TUint KStopThreshold = ( 1024*1024 );  // unsafe limit
 
 // DATA TYPES
 
@@ -94,4 +91,5 @@ class CStopScheduler : public CActive
         RTimer          iCheckTimer;
         TInt            iNextStop;
 	};
+
 #endif

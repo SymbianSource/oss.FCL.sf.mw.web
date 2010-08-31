@@ -18,7 +18,7 @@
 */
 
 #include <platform_paths.hrh>
-#include <platform/mw/browser_platform_variant.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          CodRecog.dll
 TARGETTYPE      PLUGIN
@@ -36,9 +36,10 @@ VENDORID        VID_DEFAULT
 SOURCE          CodRecog.cpp
 
 USERINCLUDE     ../inc
-USERINCLUDE   ../../CodEng/inc
 
+SYSTEMINCLUDE   ../../codeng/inc
 MW_LAYER_SYSTEMINCLUDE
+MW_LAYER_ECOM_SYSTEMINCLUDE
 
 LIBRARY         euser.lib
 LIBRARY         efsrv.lib

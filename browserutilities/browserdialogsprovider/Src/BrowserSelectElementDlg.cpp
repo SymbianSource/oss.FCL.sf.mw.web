@@ -18,7 +18,6 @@
 
 
 // INCLUDE FILES
-#include <browser_platform_variant.hrh>
 #include "BrowserSelectElementDlg.h"
 #include "BrowserSelectElementListBox.h"
 #include "BrowserSelectElementModel.h"
@@ -186,11 +185,7 @@ void CBrowserSelectElementDlg::HandleListBoxEventL
     
     if(AknLayoutUtils::PenEnabled())
         {
-#ifdef BRDO_SINGLE_CLICK_ENABLED_FF    
-        if((aEventType == EEventItemDoubleClicked) || (aEventType == EEventItemSingleClicked))
-#else            
         if(aEventType == EEventItemDoubleClicked)
-#endif            
             {
             penSelect = ETrue;
             }

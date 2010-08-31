@@ -23,9 +23,9 @@
 #include "CodBuffStorage.h"
 #include "CodLogger.h"
 #include "HeaderField.h"
-#include <SysUtil.h>
+#include <sysutil.h>
 #include <DocumentHandler.h>
-#include <APMSTD.H>
+#include <apmstd.h>
 #include <f32file.h>
 
 

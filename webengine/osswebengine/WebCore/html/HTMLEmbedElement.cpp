@@ -25,7 +25,7 @@
 #include "config.h"
 #include "HTMLEmbedElement.h"
 
-#include "CSSHelper.h"
+#include "csshelper.h"
 #include "CSSPropertyNames.h"
 #include "Frame.h"
 #include "FrameView.h"
@@ -277,11 +277,6 @@ bool HTMLEmbedElement::isFocusable() const
         renderer()->width() == 0 || renderer()->height() == 0)
         return false;
     return static_cast<RenderPartObject*>(renderer())->isFocusable();
-}
-
-bool HTMLEmbedElement::canStartSelection() const
-{
-return false;
 }
 #endif
 }

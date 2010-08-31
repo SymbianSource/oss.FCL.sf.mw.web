@@ -27,7 +27,7 @@
 #include "HitTestResult.h"
 #include "HTMLNames.h"
 #include "FrameTree.h"
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "WebCursor.h"
 #include "StaticObjectsContainer.h"
 #include "Page.h"
@@ -36,7 +36,7 @@
 #include "WebFrameView.h"
 #include <wtf/RefPtr.h>
 #include "EventHandler.h"
-#include "webkitlogger.h"
+#include "WebKitLogger.h"
 #include "FocusController.h"
 #include "RenderListBox.h"
 #include "HTMLSelectElement.h"
@@ -70,7 +70,7 @@ void WebTabbedNavigation::clear()
 
 void WebTabbedNavigation::initializeForPage()
 {
-    if (!m_initializedForPage && m_webView->IsVisible()) {
+    if (!m_initializedForPage) {
         if (navigate(0, 1)) {
             m_initializedForPage = true;
             m_firstNavigationOnPage = false;
@@ -139,20 +139,16 @@ TPoint WebTabbedNavigation::focusPointFromFocusedNode(Frame* frame, int horizont
                 elemVisibleRect.Intersection(m_webView->Rect());
                 if (horizontalDir == -1) {
                     focusPosition.iX = elemVisibleRect.iTl.iX;
-                    focusPosition.iY = elemVisibleRect.iTl.iY;
                 }
                 else if (horizontalDir == 1) {
                     focusPosition.iX = elemVisibleRect.iBr.iX;
-                    focusPosition.iY = elemVisibleRect.iTl.iY;
                 }
                 
                 if (verticalDir == -1) {
                     focusPosition.iY = elemVisibleRect.iTl.iY;
-                    focusPosition.iX = elemVisibleRect.iTl.iX;
                 }
                 else if (verticalDir == 1) {
                     focusPosition.iY = elemVisibleRect.iBr.iY;
-                    focusPosition.iX = elemVisibleRect.iTl.iX;
                 }
                 
                 if ((verticalDir == 0) && (horizontalDir == 0)) {
@@ -433,7 +429,7 @@ int WebTabbedNavigation::distanceFunction(int horizontalDir, int verticalDir, TR
     sameAxisDist = horizontalDir * (point.iX - m_focusPosition.iX) + verticalDir * (point.iY - m_focusPosition.iY);
     otherAxisDist = (horizontalDir) ? (point.iY - m_focusPosition.iY) : (point.iX - m_focusPosition.iX) ;
     otherAxisDist = (otherAxisDist < 0 ) ? (otherAxisDist * -1) : otherAxisDist;
-    if (verticalDir) { // vertical 
+    if (horizontalDir) { // horizontal
         if (rect.iBr.iY < m_selectedElementRect.iTl.iY || rect.iTl.iY > m_selectedElementRect.iBr.iY) {
             overlap = 0;
         }
@@ -447,7 +443,7 @@ int WebTabbedNavigation::distanceFunction(int horizontalDir, int verticalDir, TR
             }
         }
     }
-    else { // horizontal   
+    else { // vertical    
         if (rect.iBr.iX < m_selectedElementRect.iTl.iX || rect.iTl.iX > m_selectedElementRect.iBr.iX) {
             overlap = 0;
         }

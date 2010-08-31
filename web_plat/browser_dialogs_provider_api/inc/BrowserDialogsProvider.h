@@ -18,9 +18,11 @@
 #ifndef BROWSERDIALOGSPROVIDER_H
 #define BROWSERDIALOGSPROVIDER_H
 
+#warning The Browser Dialogs Provider API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 // System Includes
-#include <brctldialogsprovider.h>
+#include <BrCtlDialogsProvider.h>
 #include <eikenv.h>
 #include <coneresloader.h> 
 #include <e32std.h>

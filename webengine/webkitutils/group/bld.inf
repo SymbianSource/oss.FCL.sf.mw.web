@@ -16,17 +16,17 @@
 */
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 #ifdef BRDO_USE_GESTURE_HELPER
-#include "../stmgesturefw/group/bld.inf"
+#include "../rt_gesturehelper/group/bld.inf"
 #endif 
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../loc/Toolbar.loc         MW_LAYER_LOC_EXPORT_PATH(Toolbar.loc)
+../loc/toolbar.loc         MW_LAYER_LOC_EXPORT_PATH(Toolbar.loc)
 
 #ifdef __SERIES60_32__
 
@@ -44,7 +44,7 @@ OPTION SOURCEFILE iconlist.txt
 END
 
 PRJ_MMPFILES
-webkitutils.mmp
+WebKitUtils.mmp
 
 #endif
 

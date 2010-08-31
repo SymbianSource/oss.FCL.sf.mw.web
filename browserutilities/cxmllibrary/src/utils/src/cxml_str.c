@@ -15,6 +15,7 @@
 *
 */
 
+
 /***************************************************************************
 **   File: cxml_str.c
 **   Purpose:  Provides the implementation to CXML string API
@@ -27,7 +28,8 @@
 */
 
 #include "cxml_internal.h"
-#include <cxml_nw2cxmlTypes.h>
+#include "cxml_nw2cxmltypes.h"
+
 
 static NW_Uint16 CXML_Str_Strlen(const CXML_Ucs2 *string)
 {

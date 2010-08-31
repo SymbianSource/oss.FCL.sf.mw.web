@@ -36,7 +36,6 @@ static inline bool isBreakableSpace(UChar ch, bool treatNoBreakSpaceAsBreak)
         case ' ':
         case '\n':
         case '\t':
-        case zeroWidthSpace:
             return true;
         case noBreakSpace:
             return treatNoBreakSpaceAsBreak;

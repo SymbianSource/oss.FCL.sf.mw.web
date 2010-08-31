@@ -17,12 +17,13 @@
 *
 */
 
+
 // INCLUDE FILES
 
-#include <favouritesfile.h>
+#include "FavouritesFile.h"
 #include "FavouritesMsg.h"
 #include "FavouritesPanic.h"
-#include <favouritesdb.h>
+#include "FavouritesDb.h"
 #include <f32file.h>
 
 // CLASS DECLARATION

@@ -95,13 +95,9 @@ void IconLoader::didReceiveResponse(SubresourceLoader* resourceLoader, const Res
     int status = response.httpStatusCode();
     LOG(IconDatabase, "IconLoader::didReceiveResponse() - Loader %p, response %i", resourceLoader, status);
 
-    // It is possible that we are receiving the response for previous load request which is cancelled.
-    // Process down response of last resource loader only. Ignore if we can not remember other icon load requests. 
-    if(resourceLoader == m_resourceLoader) {
-        if (status && (status < 200 || status > 299)) {
-            ResourceHandle* handle = resourceLoader->handle();
-            finishLoading(handle ? handle->request().url() : KURL(), 0);
-        }
+    if (status && (status < 200 || status > 299)) {
+        ResourceHandle* handle = resourceLoader->handle();
+        finishLoading(handle ? handle->request().url() : KURL(), 0);
     }
 }
 
@@ -118,10 +114,8 @@ void IconLoader::didFail(SubresourceLoader* resourceLoader, const ResourceError&
     // we need to be prepared to receive this call even after we've "finished loading" once.
     // After it is resolved, we can restore an assertion that the load is in progress if ::didFail() is called
     
-    // It is possible that we are receiving the response for previous load request which is cancelled.
-    // Process down response of last resource loader only. Ignore if we can not remember other icon load requests.    
-    if (m_loadIsInProgress && (resourceLoader == m_resourceLoader)) {
-        //ASSERT(resourceLoader == m_resourceLoader);
+    if (m_loadIsInProgress) {
+        ASSERT(resourceLoader == m_resourceLoader);
         ResourceHandle* handle = resourceLoader->handle();
         finishLoading(handle ? handle->request().url() : KURL(), 0);
     }
@@ -135,10 +129,8 @@ void IconLoader::didFinishLoading(SubresourceLoader* resourceLoader)
     // we need to be prepared to receive this call even after we've "finished loading" once.
     // After it is resolved, we can restore an assertion that the load is in progress if ::didFail() is called
     
-    // It is possible that we are receiving the response for previous load request which is cancelled.
-    // Process down response of last resource loader only. Ignore if we can not remember other icon load requests.    
-    if (m_loadIsInProgress && (resourceLoader == m_resourceLoader)) {
-        //ASSERT(resourceLoader == m_resourceLoader);
+    if (m_loadIsInProgress) {
+        ASSERT(resourceLoader == m_resourceLoader);
         ResourceHandle* handle = resourceLoader->handle();
         finishLoading(handle ? handle->request().url() : KURL(), m_resourceLoader->resourceData());
     }

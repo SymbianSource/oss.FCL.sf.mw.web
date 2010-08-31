@@ -17,20 +17,20 @@
 */
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../rom/DownloadMgr.iby	CORE_MW_LAYER_IBY_EXPORT_PATH(DownloadMgr.iby)
+../Rom/DownloadMgr.iby	CORE_MW_LAYER_IBY_EXPORT_PATH(DownloadMgr.iby)
 
 PRJ_MMPFILES
 // None
 
 
-#include "../DownloadMgrServEng/group/bld.inf"
+#include "../DownloadMgrServEng/Group/bld.inf"
 #include "../DownloadMgrClntSrv/group/bld.inf"
-#include "../DownloadMgruilib/group/bld.inf"
+#include "../DownloadMgrUiLib/Group/Bld.inf"
 
 // End of File

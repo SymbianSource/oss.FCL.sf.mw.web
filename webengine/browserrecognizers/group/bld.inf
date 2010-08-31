@@ -16,14 +16,14 @@
 */
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT GCCE
 
 PRJ_EXPORTS
 
-../Rom/BrowserRecognizers.iby    CORE_MW_LAYER_IBY_EXPORT_PATH(BrowserRecognizers.iby)
+../rom/BrowserRecognizers.iby    CORE_MW_LAYER_IBY_EXPORT_PATH(BrowserRecognizers.iby)
 
 PRJ_MMPFILES
 BrowserRec.mmp

@@ -15,11 +15,13 @@
 *
 */
 
+
 #include "OpmlParser.h"
 #include "CleanupLibXml2.h"
-#include <leaktracker.h>
+#include "LeakTracker.h"
 #include "PackedFolder.h"
-#include <xmlutils.h>
+#include "XmlUtils.h"
+
 
 // Element and attribute names used by this parser.
 _LIT8(KBody, "body");

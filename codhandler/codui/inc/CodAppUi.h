@@ -15,15 +15,16 @@
 *
 */
 
+
 #ifndef COD_APP_UI_H
 #define COD_APP_UI_H
 
 // INCLUDES
 
 #include <e32base.h>
-#include <AknAppUi.h>
+#include <aknappui.h>
 #include <AknServerApp.h>
-#include "CodLoadObserver.h"
+#include <CodLoadObserver.h>
 #include "CodWaitDialog.h"
 
 // FORWARD DECLARATIONS

@@ -19,7 +19,7 @@
 #include "FormFillController.h"
 #include "Event.h"
 #include "Timer.h"
-#include "String.h"
+#include "string.h"
 #include "HTMLInputElement.h"
 #include "HTMLFormElement.h"
 #include "FontCache.h"
@@ -36,9 +36,6 @@
 #include "FormFillPopup.h"
 #include "PlatformFontCache.h"
 #include "StaticObjectsContainer.h"
-#include "FontDescription.h" 
-
-#define KMaxZoomFactorForPopup 125 
 namespace WebCore {
 
 static const double kSearchStartTimeout = 0.5f;
@@ -46,7 +43,7 @@ static const double kSearchStartTimeout = 0.5f;
 FormFillController::FormFillController() 
                     : m_popup(0), m_callback(0), m_inputElement(0), m_formDB(0), m_passwdDB(0)
 {
-    m_searchTimer = new Timer<FormFillController>(this, FormFillController::fireSearch);
+    m_searchTimer = new Timer<FormFillController>(this, &FormFillController::fireSearch);
 }
 
 FormFillController::~FormFillController()
@@ -79,22 +76,13 @@ void FormFillController::updatePopupView()
         // lazily create the popup view
         PlatformFontCache* cache = StaticObjectsContainer::instance()->fontCache();
         float zoomFactor =  (float)cache->fontZoomFactor();
-        // system font to be used by popup
-
-        float newFont = 12.0f * zoomFactor /100.0f;
-        FontDescription fd; 
-        fd.setComputedSize(newFont);
-        //If zoom factor is greater than 120 and less than or equals 200, then make it 125 by default. This
-        //will make it selectable not too big.
-        FontPlatformData* font = new FontPlatformData(cache->zoomedFont(fd, (zoomFactor > 120)? KMaxZoomFactorForPopup : zoomFactor));;
         if(!m_popup) {
+            // system font to be used by popup
+
+            float newFont = 12.0f * zoomFactor /100.0f;
+            FontPlatformData* font = FontCache::getDeviceDefaultFont(newFont);
             m_popup = m_callback->createFormFillPopup(font->Font());
         }
-        else
-        {
-            m_popup->setFont(font->Font());
-        }
-        delete font; 
         if (!m_popup) {
             return;
         }
@@ -245,10 +233,6 @@ void FormFillController::saveFormData(HTMLFormElement* form, MFormFillCallback* 
                         // we first check the black list, don't bother the user with
                         // queries if the realm is in black list
                         if (!m_passwdDB->saveAllowed(realm))
-                            ignorefield = true;
-
-                        // check if username, password value is missing
-                        if(!passwd->value() || !input->value())
                             ignorefield = true;
 
                         // if login info is already saved, don't save again

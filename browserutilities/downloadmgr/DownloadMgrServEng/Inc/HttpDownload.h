@@ -25,7 +25,7 @@
 #include "HttpConnHandler.h"
 #include "DownloadDataServ.h"
 
-#include <httpdownloadmgrcommon.h>
+#include <HttpDownloadMgrCommon.h>
 #include <e32base.h>
 #include <es_sock.h>
 #include <http.h>
@@ -52,9 +52,8 @@ class RFile;
 class CFileMan;
 class CHeaderField;
 class CHttpStorage;
-#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
-class CDownloadPathHandler;
-#endif
+
+
 /**
 *  ?one_line_short_description.
 *  ?other_description_lines
@@ -460,8 +459,6 @@ NONSHARABLE_CLASS( CHttpDownload ): public CActive
         void Suspended();
         void Disconnected();
         void ConnectionFailed( TInt aError );
-        void SetRetryFlag(TBool aFlag){ iRetryFlag = aFlag; }
-        TBool GetRetryFlag(){ return iRetryFlag;}        
         
     protected:  // New functions
 
@@ -979,16 +976,7 @@ NONSHARABLE_CLASS( CHttpDownload ): public CActive
         void CHttpDownload::ConvertDownloadNameUniqueL( HBufC*& filePath,
                                             			HBufC*& fileName,
                                             			HBufC*& fileExtn);
-#ifdef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
-        /*
-         * Gets the instance of CDownloadPathHandler from the Plugin implementaion, if present 
-         */
-        CDownloadPathHandler* GetDownloadPathPluginInstanceL();
-        /*
-         * Get Updated path from the Plugin Implementation
-         */
-        void GetUpdatedPathFromPluginL(CDownloadPathHandler* downloadPathPlugin,TFileName& rootPath, TPtr& fileNamePtr);
-#endif
+        
     public:     // Data
         // ?one_line_short_description_of_data
         //?data_declaration;
@@ -1123,7 +1111,6 @@ NONSHARABLE_CLASS( CHttpDownload ): public CActive
         TInt    iActivePlayedDownload;  // Currenlty actively played Cod Download
         TInt	iMOMoved;				// index for bulk move
         TBool   iMoDownloadCompleted;   //MO download Completed.But Move will be issued by PD Client
-        TBool   iRetryFlag;
         
     public:     // Friend classes
         //?friend_class_declaration;

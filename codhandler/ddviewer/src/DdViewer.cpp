@@ -19,7 +19,7 @@
 // INCLUDE FILES
 
 #include <eikstart.h>
-#include "DdViewerApp.h"
+#include <DdViewerApp.h>
 
 // ================= OTHER FUNCTIONS ==============
 

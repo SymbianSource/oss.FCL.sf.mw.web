@@ -17,18 +17,19 @@
 *
 */
 
+
 #ifndef __WEBTOOLBARINTERFACE
 #define __WEBTOOLBARINTERFACE
 
 //  INCLUDES
 #include <e32base.h>
 #include <bitstd.h>
-#include <W32STD.H>
-#include <COEDEF.H>
+#include <w32std.h>
+#include <coedef.h>
 #include <AknsConstants.h>
 #include <AknsItemID.h>
 #include <AknsConstants.h>
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 #include "ToolBar.h"
 /*
 #include "Favicon.h"

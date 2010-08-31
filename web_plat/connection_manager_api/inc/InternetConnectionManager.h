@@ -21,6 +21,8 @@
 #ifndef INTERNET_CONNECTION_MANAGER_H
 #define INTERNET_CONNECTION_MANAGER_H
 
+#warning The Connection Manager API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //FORWARD DECLARATIONS
 class CIntConnectionInitiator;
 class CApUtils;
@@ -244,7 +246,6 @@ NONSHARABLE_CLASS(  CInternetConnectionManager ): public CBase,
         * @return none.
         */
         IMPORT_C void ShowConnectionChangedDlg();
-        
 	
 	public:
 
@@ -397,7 +398,7 @@ NONSHARABLE_CLASS(  CInternetConnectionManager ): public CBase,
 		/**
 		*Utility functions that are used to establish a connection with a snap Id
 		*/
- 		TInt ConnectWithSnapIdL(TUint32 aRequestedSnapId);
+ 		TInt ConnectWithSnapId(TUint32 aRequestedSnapId);
  		
  		TInt ConnectSnapWithoutCheckL(TUint32 aRequestedSnapId);
 		 
@@ -628,15 +629,6 @@ NONSHARABLE_CLASS(  CInternetConnectionManager ): public CBase,
         
         void InitializeL();
 
-    public:
-        /**
-        * Cancels the connection.
-        * @return none.
-        */         
-         virtual void CancelConnection();
-         
-         void SetOccPreferences(TSetOCCPreferences aOCCPreferences);
-    
 	private:
 
     	CApAccessPointItem* iCurrentAP;

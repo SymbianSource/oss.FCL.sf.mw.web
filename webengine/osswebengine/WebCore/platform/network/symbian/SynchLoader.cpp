@@ -27,10 +27,6 @@
 
 namespace WebCore {
 
-const int KSyncRequestTimeOut  = 3*1000*1000;
-
-int syncRequestTimerCb( void* ptr );
-
 // ============================SynchLoader MEMBER FUNCTIONS ===============================
 
 class SynchResourceHandleClient;
@@ -146,7 +142,6 @@ SynchResourceHandleClient::SynchResourceHandleClient(TRequestStatus& aStatus,
     , m_response()
     , m_error(String(), KErrNone, String(), String())
     , m_data(0)
-    , m_syncRequestTimer(0)
 {
     m_status = &aStatus;
     
@@ -155,19 +150,11 @@ SynchResourceHandleClient::SynchResourceHandleClient(TRequestStatus& aStatus,
     
     if (m_loader) {
         m_resourceHandle = m_loader->handle();
-        
-        //Start the synchronous request expiry timer
-        m_syncRequestTimer = CPeriodic::NewL(CActive::EPriorityHigh);
-        m_syncRequestTimer->Start( KSyncRequestTimeOut,0,TCallBack(&syncRequestTimerCb,this));
     }
 }
 
 SynchResourceHandleClient::~SynchResourceHandleClient()
 {
-    if (m_syncRequestTimer && m_syncRequestTimer->IsActive()) {
-        m_syncRequestTimer->Cancel();
-    }    
-    delete m_syncRequestTimer;
 }
 
 PassRefPtr<SynchResourceHandleClient> SynchResourceHandleClient::create(TRequestStatus& aStatus, 
@@ -230,11 +217,6 @@ void SynchResourceHandleClient::finish(const ResourceError& error)
 {
     m_error = error;
     
-    //Cancel the synchronous Request timer
-    if (m_syncRequestTimer->IsActive()) {
-        m_syncRequestTimer->Cancel();
-    }
-    
     if (!m_finished) { // Avoid multiple execution
         if (m_loader) {
             m_loader->removeSubresourceLoader();
@@ -250,20 +232,6 @@ void SynchResourceHandleClient::finish(const ResourceError& error)
     
     m_finished = true;
     //m_loader = 0;
-}
-
-void SynchResourceHandleClient::handleSyncRequestTimeOut()
-{
-    cancel(ResourceError(String(), KErrCancel, String(), String()));
-}
-
-// -----------------------------------------------------------------------------
-// syncRequestTimerCb
-// -----------------------------------------------------------------------------
-int syncRequestTimerCb(void* ptr)
-{
-    ((SynchResourceHandleClient*)ptr)->handleSyncRequestTimeOut();
-    return 0;
 }
 
 } // End namespace WebCore

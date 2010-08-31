@@ -21,7 +21,7 @@
 
 // INCLUDES
 #include <f32file.h>
-#include <widgetregistryconstants.h>
+#include "WidgetRegistryConstants.h"
 
 // CONSTANTS
 

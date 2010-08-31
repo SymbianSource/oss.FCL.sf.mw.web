@@ -21,11 +21,11 @@
 #define BRCTLBCTESTOBSERVER_H
 
 //  INCLUDES
-#include <brctllayoutobserver.h>
-#include <brctlsoftkeysobserver.h>
-#include <brctlspecialloadobserver.h>
-#include <brctldownloadobserver.h>
-#include <brctlinterface.h>
+#include <BrCtlLayoutObserver.h>
+#include <BrCtlSoftkeysObserver.h>
+#include <BrCtlSpecialLoadObserver.h>
+#include <BrCtlDownloadObserver.h>
+#include <BrCtlInterface.h>
 #include <DocumentHandler.h>    
 #include <flogger.h>
 

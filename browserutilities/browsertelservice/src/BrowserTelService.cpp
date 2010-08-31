@@ -22,16 +22,16 @@
 #include    <data_caging_path_literals.hrh>
 
 // For phonebook API
-#include <CPbkContactItem.h>    // Phonebook Contact
-#include <CPbkContactEngine.h>  // Phonebook Engine
-#include <CPbkFieldsInfo.h>     // Phonebook field types
-#include <RPbkViewResourceFile.h>
-#include <CPbkContactEditorDlg.h>   // Phonebook editor
+//#include <CPbkContactItem.h>    // Phonebook Contact
+//#include <CPbkContactEngine.h>  // Phonebook Engine
+//#include <CPbkFieldsInfo.h>     // Phonebook field types
+//#include <RPbkViewResourceFile.h>
+//#include <CPbkContactEditorDlg.h>   // Phonebook editor
 // For searching a matching number from contact's db
-#include <TPbkContactItemField.h>
-#include <CNTFLDST.H>
+//#include <TPbkContactItemField.h>
+#include <cntfldst.h>
 
-#include <FeatMgr.h>
+#include <featmgr.h>
 // 
 #include <txtrich.h>
 #include <badesca.h>
@@ -57,7 +57,7 @@
 #include <es_enum.h>
 
 #include <ApUtils.h>
-#include <APDataHandler.h>
+#include <ApDataHandler.h>
 #include <ApAccessPointItem.h>
 #include <commdb.h>
 
@@ -65,10 +65,10 @@
 // Const file name for make call
 #include <mmtsy_names.h>
 
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 #include <centralrepository.h>
 
-#include <nwx_status.h>
+#include <xml/cxml/nwx_status.h>
 
 #include <DialUtils.h>
 
@@ -80,10 +80,8 @@
 
 const TInt KParseArrayAllocation = 10;
 const TInt KTimerDelay = 2500000;
-
-//constants
-const TUid KUidMsgTypeSMTP			= {0x10001028};	// 268439592
-
+//constants 
+const TUid KUidMsgTypeSMTP                      = {0x10001028}; // 268439592 
 
 _LIT( KValidDTMFChars,"w/p*#0123456789ABCDabcd," );
 _LIT( KDTMFWaitChars, "/wp,*#" );
@@ -1076,11 +1074,17 @@ void CBrowserTelService::FindAndRipVoipParametersL( TDes& aNumber )
     {
     TELSERVICE_ENTERFN( "FindAndRipVoipParametersL()" )
 
+    HBufC* buf = NULL;    
     TInt offset = aNumber.Locate( TChar( '@' ) );
     if( offset > 0 ) // Separator is not allowed to be a first char
         {
-        __ASSERT_DEBUG( offset <= aNumber.Length(), User::Leave( KErrGeneral ) );         
+        __ASSERT_DEBUG( offset <= aNumber.Length(), User::Leave( KErrGeneral ) );
+        buf = aNumber.Mid( offset ).AllocL();         
         aNumber.SetLength( offset );           
+        }
+    else
+        {
+        buf = HBufC::NewL( 0 );
         }
 
     TELSERVICE_LEAVEFN( "FindAndRipVoipParametersL()" )
@@ -1378,7 +1382,7 @@ EXPORT_C TInt CBrowserTelService::AddPBEntryL(
     {
     TELSERVICE_ENTERFN( "AddPBEntryL()" )
 
-    CPbkContactEngine* pbkEngine = CPbkContactEngine::NewL();
+/*    CPbkContactEngine* pbkEngine = CPbkContactEngine::NewL();
     CleanupStack::PushL( pbkEngine );
 
     // Make sure a resource file is available
@@ -1477,7 +1481,7 @@ EXPORT_C TInt CBrowserTelService::AddPBEntryL(
     CleanupStack::PopAndDestroy( 3 ); // contactItem, pbkResourceFile, pbkEngine
 
     TELSERVICE_LEAVEFN( "AddPBEntryL()" )
-
+*/
     return KErrNone;
 	}
 
@@ -1594,7 +1598,7 @@ EXPORT_C TInt CBrowserTelService::SendEmailMessageL(
            loopCounter = 1;
         }
                    
-        for(; loopCounter<len; loopCounter++)
+        for(loopCounter; loopCounter<len; loopCounter++)
         {
             if( (*ptr >= '0' && *ptr <= '9') || *ptr == ',')
             {
@@ -2349,7 +2353,7 @@ HBufC* CBrowserTelService::SearchPbForMatchL(
     HBufC* matchingName = NULL;
 	
     // Create phonebook engine
-    CPbkContactEngine* pbkEngine = CPbkContactEngine::NewL();
+/*    CPbkContactEngine* pbkEngine = CPbkContactEngine::NewL();
     CleanupStack::PushL( pbkEngine );
 
     // Make sure a resource file is available
@@ -2373,7 +2377,7 @@ HBufC* CBrowserTelService::SearchPbForMatchL(
         }
 
     CleanupStack::PopAndDestroy( 3 );   // idArray, pbkResourceFile, pbkEngine
-
+*/
     TELSERVICE_LEAVEFN("SearchPbForMatchL()")
 
     return matchingName;
@@ -2392,7 +2396,7 @@ CContactIdArray* CBrowserTelService::SearchPbForMatchLC(
 
     CContactIdArray* idArray = NULL;
 
-	if( aMatchType == EPhoneNumber )
+/*	if( aMatchType == EPhoneNumber )
 		{
 		idArray = aPbkEngine.MatchPhoneNumberL( aToMatch, aToMatch.Length() );
 		}
@@ -2408,7 +2412,7 @@ CContactIdArray* CBrowserTelService::SearchPbForMatchLC(
         CleanupStack::PopAndDestroy( findFrom );
 		}
 
-	CleanupStack::PushL( idArray );
+	CleanupStack::PushL( idArray ); */
     TELSERVICE_LEAVEFN( "SearchPbForMatchLC()" )
 	return idArray;
 	}
@@ -2676,7 +2680,7 @@ CPbkContactItem* CBrowserTelService::SearchPBItemLC( CPbkContactEngine& aPbkEngi
 
     aNewContact = ETrue;
 
-	if( idArrayPhoneNr->Count() && aNumber.Length() )
+/*	if( idArrayPhoneNr->Count() && aNumber.Length() )
 		{
 		// Open existing
 		if ( ShowDialogL( aNumber, EConfirmAddToPb ) )
@@ -2714,7 +2718,7 @@ CPbkContactItem* CBrowserTelService::SearchPBItemLC( CPbkContactEngine& aPbkEngi
 	CleanupStack::PopAndDestroy( 2 );		// idArrayEmail,idArrayPhoneNr
 
 	CleanupStack::PushL( contactItem );
-
+*/
     return contactItem;
     }
 
@@ -2730,7 +2734,7 @@ void CBrowserTelService::SetPBEntryFieldL( TInt aField,
     {
     if( aFieldValue.Length() )
 		{
-        TPbkContactItemField *dataField = aContactItem->FindField( aField );
+  /*      TPbkContactItemField *dataField = aContactItem->FindField( aField );
 
         if( !dataField )
 			{
@@ -2758,7 +2762,7 @@ void CBrowserTelService::SetPBEntryFieldL( TInt aField,
 			    {
                 aFormIndex = aContactItem->FindFieldIndex( *dataField );
 			    }
-            }
+            }*/
 		}
     }
 

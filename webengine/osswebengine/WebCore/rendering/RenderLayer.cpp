@@ -59,7 +59,7 @@
 #include "HitTestResult.h"
 #include "OverflowEvent.h"
 #include "PlatformMouseEvent.h"
-#include "PlatformScrollBar.h" 
+#include "PlatformScrollbar.h" 
 #include "RenderArena.h"
 #include "RenderInline.h"
 #include "RenderTheme.h"
@@ -893,7 +893,7 @@ void RenderLayer::resize(const PlatformMouseEvent& evt, const IntSize& oldOffset
     ExceptionCode ec;
 
     if (difference.width()) {
-        if (element->isControl()) {
+        if (element && element->isControl()) {
             // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
             style->setProperty(CSS_PROP_MARGIN_LEFT, String::number(renderer->marginLeft()) + "px", false, ec);
             style->setProperty(CSS_PROP_MARGIN_RIGHT, String::number(renderer->marginRight()) + "px", false, ec);
@@ -904,7 +904,7 @@ void RenderLayer::resize(const PlatformMouseEvent& evt, const IntSize& oldOffset
     }
 
     if (difference.height()) {
-        if (element->isControl()) {
+        if (element && element->isControl()) {
             // Make implicit margins from the theme explicit (see <http://bugs.webkit.org/show_bug.cgi?id=9547>).
             style->setProperty(CSS_PROP_MARGIN_TOP, String::number(renderer->marginTop()) + "px", false, ec);
             style->setProperty(CSS_PROP_MARGIN_BOTTOM, String::number(renderer->marginBottom()) + "px", false, ec);
@@ -1298,15 +1298,9 @@ void RenderLayer::paintOverflowControls(GraphicsContext* p, int tx, int ty, cons
         static Image* resizeCornerImage;
         if (!resizeCornerImage)
             resizeCornerImage = Image::loadPlatformResource("textAreaResizeCorner");
-#if PLATFORM(SYMBIAN)            	
-        if(resizeCornerImage){
-        	IntPoint imagePoint(scrollCorner.right() - resizeCornerImage->width(), scrollCorner.bottom() - resizeCornerImage->height());
-        	p->drawImage(resizeCornerImage, imagePoint);
-        }
-#else
-        	IntPoint imagePoint(scrollCorner.right() - resizeCornerImage->width(), scrollCorner.bottom() - resizeCornerImage->height());
-        	p->drawImage(resizeCornerImage, imagePoint);
-#endif
+        IntPoint imagePoint(scrollCorner.right() - resizeCornerImage->width(), scrollCorner.bottom() - resizeCornerImage->height());
+        p->drawImage(resizeCornerImage, imagePoint);
+
         // Draw a frame around the resizer (1px grey line) if there are any scrollbars present.
         // Clipping will exclude the right and bottom edges of this frame.
         if (m_hBar || m_vBar) {

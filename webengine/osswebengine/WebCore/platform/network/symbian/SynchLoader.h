@@ -76,7 +76,6 @@ public:
     ResourceError resourceError() const { return m_error; }
     Vector<char> data() const { return m_data; }
     ResourceHandle* resourceHandle() const { return m_resourceHandle.get(); }
-    void handleSyncRequestTimeOut();
 
 private:
     SynchResourceHandleClient(TRequestStatus&, const ResourceRequest&, Frame*);
@@ -93,7 +92,6 @@ private:
     RefPtr<SynchLoader> m_loader;
     RefPtr<ResourceHandle> m_resourceHandle;
     TRequestStatus* m_status;
-    CPeriodic*  m_syncRequestTimer; // <<owned>> 
         
 }; // end class SynchResourceHandleClient
 

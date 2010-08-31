@@ -22,7 +22,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <httpdownloadmgrcommon.h>
+#include <HttpDownloadMgrCommon.h>
 
 // DATA TYPES
 typedef TPckgBuf< TInt32 > THttpDownloadMgrIntegerBuf;

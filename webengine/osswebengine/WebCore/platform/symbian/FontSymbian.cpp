@@ -25,7 +25,7 @@
 #include "IntRect.h"
 #include "WebCoreGraphicsContext.h"
 #include <e32std.h>
-#include <BITSTD.H>
+#include <bitstd.h>
 #include <gdi.h>
 #include "StaticObjectsContainer.h"
 #include "PictographSymbian.h"
@@ -65,9 +65,8 @@ void Font::drawComplexText(GraphicsContext* graphicsContext, const TextRun& run,
     PlatformFontCache* cache = StaticObjectsContainer::instance()->fontCache();
     CFont* font = cache->zoomedFont(m_fontDescription, cache->fontZoomFactor());
     // RenderBlock::layoutColumns create a 0 platform context to do a faked paint
-
     // during layout - weird stuff :)
-    if (!graphicsContext || !graphicsContext->platformContext())
+    if (!graphicsContext->platformContext())
         return;
 
     CFbsBitGc& bitgc = graphicsContext->platformContext()->gc();

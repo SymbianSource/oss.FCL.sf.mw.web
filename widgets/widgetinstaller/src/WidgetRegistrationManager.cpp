@@ -19,15 +19,12 @@
 #include "WidgetRegistrationManager.h"
 #include "WidgetUIOperationsWatcher.h"
 #include <apgcli.h>
-#include <APGICNFL.h>
-#include <S32MEM.H>
-#include <widgetregistryconstants.h>
-
+#include <apgicnfl.h>
 #ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
 #include <apgicnflpartner.h>
-//#include <apgicnflinternal.h>
-#endif
-
+#endif //SYMBIAN_ENABLE_SPLIT_HEADERS
+#include <s32mem.h>
+#include <WidgetRegistryConstants.h>
 
 // CONSTANTS
 _LIT(KMBMExt, ".mbm");
@@ -128,6 +125,10 @@ void CWidgetRegistrationManager::RegisterWidgetL(
     RApaLsSession apparcSession;
     CleanupClosePushL( apparcSession );
     User::LeaveIfError( apparcSession.Connect() );
+    apparcSession.PrepareNonNativeApplicationsUpdatesL();
+    apparcSession.DeregisterNonNativeApplicationL( KUidWidgetLauncher );
+    apparcSession.DeregisterNonNativeApplicationTypeL( KUidWidgetLauncher );
+    apparcSession.CommitNonNativeApplicationsUpdatesL();
 
     // reasonably like an acceptable file name
     TBuf<KWidgetRegistryVal> appName;

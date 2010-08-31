@@ -23,7 +23,7 @@ NAME    CnMn // 4 letter ID
 //  INCLUDES
 #include <eikon.rh>
 #include <avkon.loc>
-#include <ConnectionManager.loc>
+#include <connectionmanager.loc>
 #include "eikon.rsg"
 #include <avkon.rsg>
 #include <avkon.rh>

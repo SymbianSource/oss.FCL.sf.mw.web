@@ -15,8 +15,12 @@
 *
 */
 
+
 #ifndef FEEDS_SERVER_CLIENT_H
 #define FEEDS_SERVER_CLIENT_H
+
+#warning The Feeds Engine API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 
 // INCLUDES
 #include <e32std.h>
@@ -27,9 +31,9 @@
 #include <FeedsServerSettings.h>
 
 //API changes
-#include <feedsinterface.h>
-#include <feedsmap.h>
-#include <transaction.h>
+#include "FeedsInterface.h"
+#include "FeedsMap.h"
+#include "Transaction.h"
 
 // CONSTANTS
 
@@ -40,6 +44,7 @@
 // FUNCTION PROTOTYPES
 
 // FORWARD DECLARATIONS
+
 
 // CLASS DECLARATION
    class CClientRequestHandler;

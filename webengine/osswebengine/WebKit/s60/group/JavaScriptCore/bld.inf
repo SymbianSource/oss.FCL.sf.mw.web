@@ -11,19 +11,15 @@
 *
 * Contributors:
 *
-* Description:
+* Description:  
 *
 */
-
-#include <platform_paths.hrh>
-#include <data_caging_paths.hrh>
-#include "../../../../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 
-// Export
+// Export 
 PRJ_EXPORTS
 #ifdef __S60_32__
 ../../../../JavaScriptCore/bindings/npruntime.h          MW_LAYER_SDK_EXPORT_PATH(javascriptcore/npruntime.h)

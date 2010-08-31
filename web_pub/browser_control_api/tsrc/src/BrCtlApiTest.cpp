@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include <Stiftestinterface.h>
-#include "brctlapitest.h"
+#include "BrCtlApiTest.h"
 #include <SettingServerClient.h>
 
 // ============================= LOCAL FUNCTIONS ===============================

@@ -15,11 +15,13 @@
 *
 */
 
+
+
 // INCLUDE FILES
-#include    <cdownloadmgruiuserinteractions.h>
+#include    "CDownloadMgrUiUserInteractions.h"
 #include    "CUserInteractionsUtils.h"
-#include    <cdownloadmgruidownloadslist.h>
-#include    <cdownloadmgruilibregistry.h>
+#include    "CDownloadMgrUiDownloadsList.h"
+#include    "CDownloadMgrUiLibRegistry.h"
 #include    "UserInteractionsEventHandler.h"
 #include    "AsyncEventHandlerArray.h"
 #include    "UiLibLogger.h"
@@ -354,6 +356,7 @@ TBool CDownloadMgrUiUserInteractions::OkToExitL()
     THttpDownloadState state;
     THttpProgressState progState;
     TBool isHiddenDel = EFalse;
+    TBool isCodDownload( EFalse );
     TBool isProg (EFalse);
     // check if progressive download, if yes, will NOT delete from the list, otherwise will
     const CDownloadArray& downloadsDel = iRegistryModel.DownloadMgr().CurrentDownloads();
@@ -454,14 +457,15 @@ TBool CDownloadMgrUiUserInteractions::OkToExitL()
         
         downloadCnt = iRegistryModel.DownloadCount();
 
-       
+        TBool isProgressive (EFalse);
         if ( resp == EAknSoftkeyYes || resp == EAknSoftkeyOk )
 		    {
             for ( TInt i = downloadCnt - 1; i >=0; --i )
 		        {
 	            RHttpDownload* dl = downloads.At(i); //current download
+                dl->GetBoolAttribute( EDlAttrProgressive, isProgressive );
                 dl->GetBoolAttribute( EDlAttrPausable , isPausable );
-                if (!( isPausable ) ) // delete only Non pausable Downloads
+                if (!( isProgressive || isPausable ) ) // delete only no-PDL downloads and Non pausable Downloads
     			    {
                     // Delete not attached downloads.
     	            dl->Delete(); // Return value ignored.
@@ -908,10 +912,6 @@ void CDownloadMgrUiUserInteractions::PrepareToExitL( CEikAppUi* /*aAppUi*/,
     for( TInt i = 0; i < downloadCnt; ++i )
         {
         RHttpDownload* dl = downloads.At(i); // current download
-        // we do not have to show the download in case of invalid descriptor
-        HBufC* name = HBufC::NewLC( KMaxUrlLength );
-        TPtr tempPtr = name->Des(); 
-        dl->GetStringAttribute( EDlAttrName, tempPtr );		
         err = dl->GetBoolAttribute( EDlAttrPausable, isPausable );
         if ( !err )
             {
@@ -938,11 +938,10 @@ void CDownloadMgrUiUserInteractions::PrepareToExitL( CEikAppUi* /*aAppUi*/,
         	err = dl->GetBoolAttribute( EDlAttrNoMedia, isNoMedia );
         	}
         CLOG_WRITE_FORMAT(" err: %d",err);
-        if ( !err && ( !isPausable || isHidden ||isNoMedia || state == EHttpDlMultipleMOCompleted || !tempPtr.Length()  ) )
+        if ( !err && ( !isPausable || isHidden ||isNoMedia || state == EHttpDlMultipleMOCompleted  ) )
             {
             ++ignoredDownloads;
             }
-        CleanupStack::PopAndDestroy( name ); // name 			
         }
     CLOG_WRITE_FORMAT(" downloadCnt: %d",downloadCnt);
     CLOG_WRITE_FORMAT(" ignoredDownloads: %d",ignoredDownloads);
@@ -1043,8 +1042,8 @@ void CDownloadMgrUiUserInteractions::DeleteEventHandlerShowingDlConfirmation
             // found one.
             if ( handlerI->DownloadConfirmationShown() )
                 {
-                iEventHandlerArray->Remove( handlerI );
                 delete handlerI;
+                iEventHandlerArray->Remove( handlerI );
                 --i;
                 --handlerCount;
                 }

@@ -28,9 +28,9 @@
 #include <bldvariant.hrh>
 #include <e32std.h>
 #include <centralrepository.h>
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 #include <DocumentHandler.h>
-#include <FeatMgr.h>
+#include <featmgr.h>
 
 #ifdef RD_MULTIPLE_DRIVE
 #include <driveinfo.h>

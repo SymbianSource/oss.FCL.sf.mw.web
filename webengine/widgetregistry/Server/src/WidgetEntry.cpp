@@ -17,11 +17,10 @@
 */
 
 #include "WidgetEntry.h"
-#include "UidAllocator.h"
-#include <widgetregistryconstants.h>
+#include "WidgetRegistryConstants.h"
 #include <s32file.h>
 #include <f32file.h>
-#include <APGTASK.H>
+#include <apgtask.h>
 //#include <widgetappdefs.rh>
 
 // EXTERNAL DATA STRUCTURES
@@ -55,6 +54,8 @@ _LIT( KXmlDataTypeInt, "int" );
 _LIT( KXmlDataTypeString, "string" );
 _LIT( KXmlDataTypeUid, "uid" );
 
+static const TInt KWidgetPropertyListVersion32 = 1;
+static const TInt KWidgetPropertyListVersion71 = 3;
 // MODULE DATA STRUCTURES
 
 // LOCAL FUNCTION PROTOTYPES
@@ -92,8 +93,7 @@ CWidgetEntry* CWidgetEntry::NewL()
 CWidgetEntry* CWidgetEntry::NewL( RPointerArray<CWidgetPropertyValue>** aProps )
 {
     CWidgetEntry* tmp = NewL();
-    TInt i = 0;
-    for ( ; i < (*aProps)->Count(); i++ )
+    for ( TInt i = 0; i < (*aProps)->Count(); i++ )
     {
         CWidgetPropertyValue* value = CWidgetPropertyValue::NewL();
         tmp->iPropertyValues.AppendL( value );
@@ -102,14 +102,6 @@ CWidgetEntry* CWidgetEntry::NewL( RPointerArray<CWidgetPropertyValue>** aProps )
         (**aProps)[i]->iType = EWidgetPropTypeUnknown;
         delete (**aProps)[i];
     }
-
-    // Pad out with unknown properties to reach the correct number
-    for ( ; i < EWidgetPropertyIdCount ; i++ )
-    {
-        CWidgetPropertyValue* value = CWidgetPropertyValue::NewL();
-        tmp->iPropertyValues.AppendL( value );
-    }
-    
     (*aProps)->Close();
     delete *aProps;
     *aProps = NULL;
@@ -125,9 +117,9 @@ CWidgetEntry* CWidgetEntry::NewL( RPointerArray<CWidgetPropertyValue>** aProps )
 //
 CWidgetEntry::CWidgetEntry()
     : iPropertyValues( EWidgetPropertyIdCount ),
-      iMiniView ( EFalse),
+      iBlanketPermGranted ( EFalse),
       iFullView ( EFalse),
-      iBlanketPermGranted ( EFalse)
+      iMiniView ( EFalse)
     {
     }
 
@@ -178,44 +170,13 @@ void CWidgetEntry::InternalizeBinaryL( RReadStream& aReadStream )
     //WIDGETPROPERTYLISTVERSION is 1 in case of Tiger engine and 3 in case of Leopard engine. Therefore, modifying the check such that 
     //when the Version id is 1 or 3, we do not treat the file as corrupt.
     if ( ( EWidgetPropTypeUnknown == (*this)[EWidgetPropertyListVersion].iType )
-         || ( (KWidgetPropertyListVersion32 != (*this)[EWidgetPropertyListVersion] ) && 
-              (KWidgetPropertyListVersion71 != (*this)[EWidgetPropertyListVersion] ) &&
-              (KWidgetPropertyListVersion71CWRT != (*this)[EWidgetPropertyListVersion] ) ))
+         || ( (KWidgetPropertyListVersion32 != (*this)[EWidgetPropertyListVersion] ) && (KWidgetPropertyListVersion71 != (*this)[EWidgetPropertyListVersion] )) )
         {
         User::Leave( KErrCorrupt );
         }
-        
-    // Provide appropriate values for EProcessUid and EMimeType
-    (*this)[EProcessUid] = KUidWidgetUi.iUid;
-    
-    HBufC* heapBuf = HBufC::NewLC(KWidgetMime().Length());
-    TPtr ptr(heapBuf->Des());   
-    ptr.Copy(KWidgetMime);  // 8-bit to 16-bit copy
-    (*this)[EMimeType] = *heapBuf;
-    CleanupStack::PopAndDestroy();
-    
-    // Read only until the ENokiaWidget for the 3.2 widgets, EPreInstalled for 7.1 widgets
-    TInt propertyIdCount = 0;
-    switch ((*this)[EWidgetPropertyListVersion]) {
-    case KWidgetPropertyListVersion32:
-        propertyIdCount = ENokiaWidget+1;
-        // since we've filled in the EProcessUid and EMimeType we're
-        // now at KWidgetPropertyListVersion71CWRT
-        (*this)[EWidgetPropertyListVersion] = KWidgetPropertyListVersion71CWRT;
-        break;
-    case KWidgetPropertyListVersion71:
-        propertyIdCount = EPreInstalled+1;
-        // since we've filled in the EProcessUid and EMimeType we're
-        // now at KWidgetPropertyListVersion71CWRT
-        (*this)[EWidgetPropertyListVersion] = KWidgetPropertyListVersion71CWRT;
-        break;
-    case KWidgetPropertyListVersion71CWRT:
-        propertyIdCount = EWidgetPropertyIdCount;
-        break;
-    }        
 
     // fill property values array
-    for ( TInt i = 1; i < propertyIdCount; ++i )
+    for ( TInt i = 1; i < EWidgetPropertyIdCount; ++i )
         {
         (*this)[i].DeserializeL( aReadStream );
         }
@@ -256,8 +217,6 @@ void CWidgetEntry::InternalizeXmlL( RFs& aFileSession,
                 iPropertyValues.AppendL( val );
                 CleanupStack::Pop(); // val
                 }
-            // Internalization of the Xml is complete, cleanup the properties appropriately
-            PropertyCleanupL();
             return;
             }
         TPtrC8 propTag( n->name );
@@ -436,6 +395,7 @@ void CWidgetEntry::ExternalizeXmlL( RWriteStream& aWriteStream,
                                     CWidgetRegistryXml* aXmlProcessor,
                                     RFs& aFileSession )
     {
+    xmlDocPtr doc = NULL; // not really used
     TInt i = 0;
     // For each property, write an XML entry
     for ( ; i < EWidgetPropertyIdCount; ++i )
@@ -623,17 +583,7 @@ TInt CWidgetEntry::ActiveL()
         User::LeaveIfError( wsSession.Connect() );
         CleanupClosePushL( wsSession );
         TApaTaskList taskList( wsSession );
-
-        TUid uid;
-
-        if ( EWidgetPropTypeUnknown == (*this)[EProcessUid].iType ) {
-            uid = KUidWidgetUi;
-        } else {
-            uid = TUid::Uid( (*this)[EProcessUid] );
-        }
-
-        TApaTask task = taskList.FindApp( uid );
-
+        TApaTask task = taskList.FindApp( KUidWidgetUi );
         if ( EFalse == task.Exists() )
             {
             // widget UI crashed, reset active
@@ -667,51 +617,5 @@ TInt CWidgetEntry::SapiAccessState()
         }
         
     }
-    
-// ============================================================================
-// CWidgetEntry::PropertyCleanupL()
-// Make adjustments to bring the property values up to the current
-// property list version
-//
-// @since 
-// ============================================================================
-//
-void CWidgetEntry::PropertyCleanupL()
-{
-    TInt currentVersion = (*this)[EWidgetPropertyListVersion];
-
-    while (currentVersion < WIDGETPROPERTYLISTVERSION) {
-        switch (currentVersion) {
-        case KWidgetPropertyListVersion32:
-            // Go from PropertyListVersion32 to PropertyListVersion71
-            // Adds EMiniViewEnable, EBlanketPermGranted, EPreInstalled
-            // (all are optional, just update the version number now
-            //  and they will be undefined when serialized/deserialized)
-            currentVersion = KWidgetPropertyListVersion71;
-            break;
-        case KWidgetPropertyListVersion71:
-            // Go from PropertlyListVersion71 to PropertyListVersion71CWRT
-           // 1) add ProcessUid for WRT (wgz) widgets
-            {
-            (*this)[EProcessUid] = KUidWidgetUi.iUid;
-
-             // 2) add MIMEType
-            HBufC* heapBuf = HBufC::NewLC(KWidgetMime().Length());
-            TPtr ptr(heapBuf->Des());
-            ptr.Copy(KWidgetMime);  // 8-bit to 16-bit copy
-            (*this)[EMimeType] = *heapBuf;
-            CleanupStack::PopAndDestroy();
-
-            currentVersion = KWidgetPropertyListVersion71CWRT;
-            }
-            break;
-        default:
-            // Trouble
-            return;
-        }
-
-        (*this)[EWidgetPropertyListVersion] = currentVersion;
-    }
-}
 
 //  End of File

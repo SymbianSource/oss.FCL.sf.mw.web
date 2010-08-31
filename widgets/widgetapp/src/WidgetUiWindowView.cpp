@@ -24,22 +24,22 @@
 #include "WidgetUiWindow.h"
 #include <WidgetUi.rsg>
 #include <Widgetmenu.rsg>
-#include <AknViewAppUi.h>
+#include <aknViewAppUi.h>
 #include <avkon.RSG>
 #include "WidgetUi.hrh"
 #include <aknenv.h>
-#include <aknindicatorcontainer.h>
+#include <AknIndicatorContainer.h>
 #include <aknnavi.h>
 #include <aknnavide.h>
 #include <aknEditStateIndicator.h>
-#include <stringloader.h>
+#include <StringLoader.h>
 #include <e32math.h>
 #include <AknSgcc.h>
 #include <akntitle.h>
 #include <centralrepository.h>
-#include <browseruisdkcrkeys.h>
+#include <BrowserUiSDKCRKeys.h>
 #ifdef RD_SCALABLE_UI_V2
-#include <LayoutMetaData.cdl.h> // For Layout_Meta_Data landscape/portrait status
+#include <layoutmetadata.cdl.h> // For Layout_Meta_Data landscape/portrait status
 #include <akntoolbar.h>
 #endif
 
@@ -229,18 +229,6 @@ void CWidgetUiWindowView::DynInitMenuPaneL( TInt aResourceId,
     {
     if (!iWindowManager.ActiveWindow())
         return;
-    #ifdef RD_SCALABLE_UI_V2
-    if (PenEnabled()&&(Layout_Meta_Data::IsLandscapeOrientation())&& IsEditMode())
-    	{
-    	TInt newResId = Cba()->IsVisible() ?
-			  R_AVKON_WIDESCREEN_PANE_LAYOUT_USUAL_FLAT :
-			  R_AVKON_WIDESCREEN_PANE_LAYOUT_USUAL_FLAT_NO_SOFTKEYS;
-		
-			StatusPane()->SwitchLayoutL(newResId);
-			StatusPane()->ApplyCurrentSettingsL();
-			StatusPane()->MakeVisible(ETrue);         
-    	}
-    #endif	
     CBrCtlInterface* engine = iWindowManager.ActiveWindow()->Engine();
     if( engine && (aResourceId == R_WIDGETUI_MENU || aResourceId >= R_CASCADE_MENU_1) )
         {
@@ -318,7 +306,7 @@ void CWidgetUiWindowView::UpdateStatusPane( TBool aVisible )
             if (resId != newResId)
                 {
                 StatusPane()->SwitchLayoutL(newResId);
-                }            
+                }
             }
         else //Portrait
             {
@@ -412,7 +400,7 @@ void CWidgetUiWindowView::StateChanged(
 //
 TBool CWidgetUiWindowView::IsOptionsMenuActivated()
  	{
- 	return AppUi()->IsDisplayingMenuOrDialog();
+ 	return iIsOptionsMenuActivated;
  	}
 
 

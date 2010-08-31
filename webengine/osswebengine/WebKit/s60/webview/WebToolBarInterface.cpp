@@ -25,7 +25,7 @@
 #include "WebToolBarInterface.h"
 #include "SettingsContainer.h"
 
-#include "KUrl.h"
+#include "KURL.h"
 #include "BrCtl.h"
 #include "Frame.h"
 #include "FrameLoader.h"

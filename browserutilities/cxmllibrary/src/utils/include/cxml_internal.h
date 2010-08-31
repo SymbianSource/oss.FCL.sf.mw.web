@@ -29,9 +29,9 @@
 
 #include <nwx_status.h>
  
-#include <cxml_type_def.h>
+#include "cxml_type_def.h"
 #include "cxml_mem.h"
-#include <cxml_str.h>
+#include "cxml_str.h"
 #include "cxml_vector.h"
 
 

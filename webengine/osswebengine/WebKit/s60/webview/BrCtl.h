@@ -23,6 +23,7 @@
 //  INCLUDES
 #include <brctlinterface.h>
 
+#include "BrCtlDefs.h"
 #include "HistoryInterface.h"
 
 #include "WmlInterface.h"
@@ -57,7 +58,6 @@ class CPageScaler;
 class CWmlDispatcher;
 class CWmlContentInterface;
 class CUserAgent;
-class CWidgetExtension;
 
 namespace WebCore {
     class FormData;
@@ -161,7 +161,6 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         TBrCtlWmlServiceOption* firstPrevDoElement() const { return m_firstPrevDoElement; }
         HBufC* fileNameToUrlLC(const TDesC& aFileName);
         void SetScriptLogMode(TInt aMode);
-        CWidgetExtension* getWidgetExt();
         
     public: // Methods from CBrCtlInterface
 
@@ -414,8 +413,6 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         */
         IMPORT_C void TakeSnapshotL(CFbsBitmap& snapshot);
         
-        IMPORT_C TBool IsSynchRequestPending();
-        
         /**
         * From CBrCtlInterface
         * Register an observer for state change changes
@@ -593,6 +590,7 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         /**
          * From CCoeControl
          */
+        void HandlePointerBufferReadyL();
         MBrCtlSpecialLoadObserver* brCtlSpecialLoadObserver() const { return m_brCtlSpecialLoadObserver; }
         MBrCtlDownloadObserver* brCtlDownloadObserver();
         MBrCtlLinkResolver* brCtlLinkResolver() const { return m_brCtlLinkResolver; }
@@ -611,7 +609,6 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         
         void showWindow();
         void closeWindowSoon();
-        // this function leaves in case of exit which is the normal behaviour
         void doCloseWindowSoon();
         TBool sendCommandsToClient(TBrCtlDefs::TBrCtlClientCommands aCommand,
                                     const CArrayFix<TPtrC>& aAttributesNames,
@@ -708,7 +705,6 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         CPeriodic* m_timer;
         bool m_wmlMode;
         bool m_suspendTimers;
-        bool m_pageLoadFinished;
         MWmlEngineInterface* m_wmlEngineInterface;
         RLibrary  m_Library;
         MWmlInterface* m_WmlInterface;
@@ -732,8 +728,7 @@ class CBrCtl : public CBrCtlInterface, public MBrCtlLoadEventObserver
         TBrCtlWmlServiceOption*                 m_firstPrevDoElement;
         MBrCtlDownloadObserver*                 m_brCtlDownloadObserver;
         CPeriodic* m_windoCloseTimer;       //new timer for managing browser window close
-        bool m_didFirstLayout;
-        bool m_NotifyPluginFocusChangeEvent;
+
 };
 
 #endif      // BRCTL_H

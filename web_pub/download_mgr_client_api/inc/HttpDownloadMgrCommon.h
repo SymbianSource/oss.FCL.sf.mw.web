@@ -20,6 +20,8 @@
 #ifndef HTTPDOWNLOADMGRCOMMON_H
 #define HTTPDOWNLOADMGRCOMMON_H
 
+#warning This Download Manager Client API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <e32base.h>
 

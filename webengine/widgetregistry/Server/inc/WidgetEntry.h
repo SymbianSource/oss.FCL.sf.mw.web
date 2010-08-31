@@ -17,16 +17,18 @@
 *
 */
 
+
 #ifndef WIDGETENTRY_H
 #define WIDGETENTRY_H
 
 // INCLUDES
-#include <widgetpropertyvalue.h>
+#include "WidgetPropertyValue.h"
 #include "WidgetRegistryXml.h"
 
 // FORWARD DECLARATIONS
 class RFileWriteStream;
 class RFileReadStream;
+
 
 /**
 *
@@ -182,11 +184,6 @@ protected:
      * 2-phase constructor
      */
     void ConstructL();
-    
-    /**
-     * Property cleanup
-     */
-    void PropertyCleanupL();
 
 protected:
     RPointerArray<CWidgetPropertyValue>  iPropertyValues;
@@ -196,9 +193,9 @@ protected:
 
     TInt iActive; // bool, 1 if widget is executing
 
-    TInt iMiniView; // bool, 1 if launched in miniview
+   	TInt iMiniView; // bool, 1 if launched in miniview
 
-    TInt iFullView; // bool, 1 if launched in fullview
+	TInt iFullView; // bool, 1 if launched in fullview
     TInt iBlanketPermGranted; // bool, 1 if platform service access needs to be prompted
     
     };

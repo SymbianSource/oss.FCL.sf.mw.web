@@ -17,6 +17,7 @@
 *
 */
 
+
 // INCLUDE FILES
 
 #include "FileHandler.h"
@@ -27,7 +28,7 @@
 #include <apparc.h>
 #include <eikproc.h>
 #include <f32file.h>
-#include <APGTASK.H>
+#include <apgtask.h>
 #include <apgcli.h>
 
 // ================= CONSTANTS =======================
@@ -141,10 +142,10 @@ void CFileHandler::HandleUrlEmbeddedL()
 	    buf16->Des().Copy( KBrowserPrefix );
 	    buf16->Des().Append( *buf );
 	            
-        iLauncher = CBrowserLauncher::NewL();
+/*        iLauncher = CBrowserLauncher::NewL();
         iLauncher->LaunchBrowserEmbeddedL( buf16->Des(), 
                                            NULL, 
-                                           this );
+                                           this );*/
         CleanupStack::PopAndDestroy();  // buf16        
         }
 	CleanupStack::PopAndDestroy(); //buf

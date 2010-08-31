@@ -99,8 +99,6 @@ Page::Page(ChromeClient* chromeClient, ContextMenuClient* contextMenuClient, Edi
 
 Page::~Page()
 {
-    // call the garbage collection for the javascript object, before the plugin is destroyed. 
-    KJS::Collector::collect();
     m_mainFrame->setView(0);
     setGroupName(String());
     allPages->remove(this);

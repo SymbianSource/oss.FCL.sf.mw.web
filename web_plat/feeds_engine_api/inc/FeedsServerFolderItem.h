@@ -15,17 +15,21 @@
 *
 */
 
+
 #ifndef FEEDS_SERVER_FOLDER_ITEM_H
 #define FEEDS_SERVER_FOLDER_ITEM_H
+
+#warning The Feeds Engine API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
 
 // INCLUDES
 #include <e32base.h>
 #include <e32std.h>
 
 #include <FeedsServerRequestHandler.h>
-#include <feedsentity.h>
-#include <leaktracker.h>
-#include <transaction.h>
+#include "FeedsEntity.h"
+#include "LeakTracker.h"
+
+#include "Transaction.h"
 
 // CONSTANTS
 

@@ -15,8 +15,11 @@
 *
 */
 
+
+
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_MMPFILES
+
 WidgetStartup.mmp

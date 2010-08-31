@@ -55,7 +55,6 @@ void CUpdateManager::ConstructL( TUint32 aAutoUpdateAP)
     iLazyCaller = CIdle::NewL(CActive::EPriorityIdle );
     iHttpConnection = CServerHttpConnection::NewL( aAutoUpdateAP );
     iRoamingInfo = CRoamingInfo::NewL(this);
-    iRoamingInfo->IssueRequestL();
     iAutoUpdateAp = aAutoUpdateAP;
     iLastAutoUpdate.HomeTime();
     }
@@ -140,9 +139,13 @@ void CUpdateManager::RunL()
     if (iStatus.Int() == KErrNone || iStatus.Int() == KErrAbort)
         {      
         StartTimer();
-        if(iAutoUpdateWhileRoaming || !iRoamingInfo->Roaming())
+        if(iAutoUpdateWhileRoaming)
             {
             UpdateL();
+            }
+        else
+            {
+            iRoamingInfo->CheckForRoaming();
             }
         }      
     }
@@ -152,7 +155,7 @@ void CUpdateManager::RunL()
 // 
 // Handles the Update of feed
 // -----------------------------------------------------------------------------     
-void CUpdateManager::StartL()
+TInt CUpdateManager::StartL()
     {
     iCurrentFeedCount = 0;
 
@@ -362,7 +365,7 @@ void CRoamingInfo::ConstructL()
 // -----------------------------------------------------------------------------
 //
 CRoamingInfo::CRoamingInfo(CUpdateManager *aUpdateManager)
-	:CActive(CActive::EPriorityStandard),iNetworkRegistrationV1Pckg(iNetworkRegistrationV1),iUpdateManager(aUpdateManager)
+	:CActive(CActive::EPriorityStandard),iUpdateManager(aUpdateManager)
     {
     }
 
@@ -380,13 +383,22 @@ CRoamingInfo::~CRoamingInfo()
     }
 
 // -----------------------------------------------------------------------------
-// CRoamingInfo::Roaming
+// CRoamingInfo::CheckForRoaming
 // 
-// Check for roaming. Returns true if in roaming
+// Check for roaming.
 // -----------------------------------------------------------------------------
-TBool CRoamingInfo::Roaming()
+void CRoamingInfo::CheckForRoaming()
     {
-    return (iNetworkRegistrationV1.iRegStatus == CTelephony::ERegisteredRoaming);	  
+
+#ifndef __WINSCW__
+
+    CTelephony::TNetworkRegistrationV1Pckg RegStatusPkg(iRegStatus);
+    iTelephony->GetNetworkRegistrationStatus(iStatus, RegStatusPkg);
+    SetActive();
+
+#else
+    TRAP_IGNORE( iUpdateManager->UpdateL() );
+#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -396,23 +408,14 @@ TBool CRoamingInfo::Roaming()
 // -----------------------------------------------------------------------------
 //
 void CRoamingInfo::RunL()
-    {
-    IssueRequestL();
-    }
- 
-// -----------------------------------------------------------------------------
-// CRoamingInfo::IssueRequestL
-//
-// Issue the request for change in network registration
-// -----------------------------------------------------------------------------
-void CRoamingInfo::IssueRequestL()
-    {   
-    if (iStatus.Int() == KErrNone || iStatus.Int() == KErrAbort)
+    {  
+    if (iStatus.Int() == KErrNone)
         {
-        iTelephony->NotifyChange( iStatus, CTelephony::ENetworkRegistrationStatusChange,
-            iNetworkRegistrationV1Pckg);
-        SetActive();
-        }
+        if(iRegStatus.iRegStatus != CTelephony::ERegisteredRoaming)
+        	{
+        	iUpdateManager->UpdateL();
+        	}
+		}
     }
 
 // -----------------------------------------------------------------------------
@@ -423,5 +426,5 @@ void CRoamingInfo::IssueRequestL()
 //
 void CRoamingInfo::DoCancel()
     {
-    iTelephony->CancelAsync(CTelephony::ENetworkRegistrationStatusChangeCancel );
+    iTelephony->CancelAsync(CTelephony::EGetCurrentNetworkInfoCancel );
     }

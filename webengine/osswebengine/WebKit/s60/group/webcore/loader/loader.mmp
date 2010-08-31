@@ -14,6 +14,9 @@
 // * Description:  This is the project specification file for WebCore.
 // *
 
+#include <platform_paths.hrh>
+#include <data_caging_paths.hrh>
+#include <platform/mw/Browser_platform_variant.hrh>
 #include "../../common.mmpi"
 
 TARGET  WebCoreloader.lib
@@ -54,7 +57,7 @@ SOURCE TextDocument.cpp
 SOURCE TextResourceDecoder.cpp
 SOURCE WmlResourceLoader.cpp
 
-SOURCEPATH ../../../../../WebCore/loader/symbian
+SOURCEPATH ../../../../../WebCore/loader/Symbian
 
 SOURCE DocumentLoaderSymbian.cpp
 SOURCE IconLoaderSymbian.cpp
@@ -66,7 +69,7 @@ SOURCEPATH ../../../../../WebCore/loader/icon
 SOURCE IconDatabase.cpp
 SOURCE IconLoader.cpp
 SOURCE IconRecord.cpp
-SOURCE PageUrlRecord.cpp
+SOURCE PageURLRecord.cpp
 SOURCE SQLDatabase.cpp
 SOURCE SQLStatement.cpp
 SOURCE SQLTransaction.cpp

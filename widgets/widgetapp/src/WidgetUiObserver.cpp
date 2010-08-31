@@ -25,9 +25,9 @@
 #include <avkon.hrh>
 #include <aknmessagequerydialog.h>
 #include <ActiveApDb.h>
-#include <EscapeUtils.h>
-#include <Uri16.h>
-#include <brctldefs.h>
+#include <escapeutils.h>
+#include <uri16.h>
+#include <BrCtlDefs.h>
 #include "WidgetUiObserver.h"
 #include "WidgetUiWindow.h"
 #include "WidgetUiWindowView.h"
@@ -51,16 +51,6 @@ _LIT( KFileScheme, "file://" );
 _LIT( KDefaultDrivePath, "C:\\" );
 _LIT( KPathChar, "\\" );
 _LIT( KLprojExt, ".lproj" );
-
-
-_LIT( KJavaExtension, ".js");
-_LIT( KJavaMimeType, "application/x-javascript");
-_LIT( KCssExtension, ".css");
-_LIT( KCssMimeType,"text/css");
-_LIT( KPngExtension, ".png");
-_LIT( KPngMimeType, "image/png");
-_LIT( KGifExtension, ".gif");
-_LIT( KGifMimeType,"image/gif");
 
 // MACROS
 
@@ -259,7 +249,7 @@ TBool CWidgetUiObserver::ResolveEmbeddedLinkL(const TDesC& aEmbeddedUrl,
             { // For files in Public areas, don't use localized subdirectory
             TranslateURLToFilenameL( aEmbeddedUrl, KNullDesC); 
             } 
-
+        
         HBufC8* buf = ReadFileL( *iFileName);
         
         if ( !buf && isSandboxed )
@@ -276,56 +266,7 @@ TBool CWidgetUiObserver::ResolveEmbeddedLinkL(const TDesC& aEmbeddedUrl,
         CleanupStack::PushL( buf );
         HBufC* contentType = NULL;
         TPtrC p( NULL, 0 );
-        
-        // file extension check for .js, .css, .png & .gif        
-        TInt err(0);
-        //.js 
-        err = iFileName->FindF(KJavaExtension);
-        if(err != KErrNotFound)
-        {
-             //.js
-             contentType = HBufC::NewLC(KJavaMimeType().Length());
-             *contentType = KJavaMimeType;
-        }
-        else 
-        {
-            //.css
-            err = iFileName->FindF(KCssExtension) ;
-            if(err != KErrNotFound) 
-            {
-                contentType = HBufC::NewLC(KCssMimeType().Length());
-                *contentType = KCssMimeType;                         
-            }
-            else if (err == KErrNotFound)
-            {
-                    //.png 
-                    err = iFileName->FindF(KPngExtension);
-                    if(err != KErrNotFound)
-                         {
-                         //.png
-                         contentType = HBufC::NewLC(KPngMimeType().Length());
-                         *contentType = KPngMimeType;
-                         }
-                    else
-                        {    
-                        //.gif      
-                        err = iFileName->FindF(KGifExtension) ;
-                        if(err!=KErrNotFound)
-                        {
-                            contentType = HBufC::NewLC(KGifMimeType().Length());
-                            *contentType = KGifMimeType;                         
-                        }
-                    }
-            }
-        }
-        if(err == KErrNotFound)
-        {
-             //Let's use existing iFile the handle to the opened file (no need to re-open it)
-             contentType = RecognizeLC( *iFileName);
-                   
-         }
-         iFile.Close(); 
-  
+        contentType = RecognizeLC( *iFileName, *buf );
         aEmbeddedLinkContent.HandleResolveComplete( *contentType, p, buf );
         CleanupStack::PopAndDestroy( 2, buf ); // contentType, buf
         return ETrue;
@@ -472,44 +413,47 @@ TBool CWidgetUiObserver::IsFileScheme( const TDesC& aFileName )
     return EFalse;
     }
 
-//
 // -----------------------------------------------------------------------------
-// CWidgetUiObserver::ReadFileL
+// CWidgetUiObserver::ReadFile
 // -----------------------------------------------------------------------------
 //
 HBufC8* CWidgetUiObserver::ReadFileL( const TDesC& aFileName )
     {
-    if (KErrNone != iFile.Open(CCoeEnv::Static()->FsSession(), aFileName, EFileRead|EFileShareAny) )
+    RFile file;
+
+    if (KErrNone != file.Open( CCoeEnv::Static()->FsSession(), aFileName, EFileRead ) )
         {
         return NULL;
         }
 
+    CleanupClosePushL( file );
+
     TInt size;
-    User::LeaveIfError( iFile.Size( size ) );
+    User::LeaveIfError( file.Size( size ) );
     HBufC8* buf = HBufC8::NewLC( size );
     TPtr8 bufPtr( buf->Des() );
-    User::LeaveIfError( iFile.Read( bufPtr ) );
+    User::LeaveIfError( file.Read( bufPtr ) );
     CleanupStack::Pop( buf );
+    CleanupStack::PopAndDestroy( &file );
     return buf;
     }
-//
+
 // -----------------------------------------------------------------------------
-// CWidgetUiObserver::RecognizeLC
+// CWidgetUiObserver::RecognizeL
 // -----------------------------------------------------------------------------
 //
-HBufC* CWidgetUiObserver::RecognizeLC( const TDesC& aFileName)
+HBufC* CWidgetUiObserver::RecognizeLC( const TDesC& aFileName, const TDesC8& aData )
     {
     TDataRecognitionResult dataType;
     RApaLsSession apaSession;
     TInt ret;
-    
+
     CleanupClosePushL(apaSession);
     User::LeaveIfError( apaSession.Connect() );
 
     // Ask the application architecture to find the file type
-    ret = apaSession.RecognizeData( iFile, dataType );
+    ret = apaSession.RecognizeData( aFileName, aData, dataType );
     apaSession.Close();
-    
     CleanupStack::PopAndDestroy(1, &apaSession);
     
     TPtrC8 mimeTypePtr = dataType.iDataType.Des8();
@@ -518,8 +462,7 @@ HBufC* CWidgetUiObserver::RecognizeLC( const TDesC& aFileName)
 
     if ( ret == KErrNone &&
         ( dataType.iConfidence == CApaDataRecognizerType::ECertain ) ||
-        ( dataType.iConfidence == CApaDataRecognizerType::EProbable) ||
-        ( dataType.iConfidence == CApaDataRecognizerType::EPossible)  )
+        ( dataType.iConfidence == CApaDataRecognizerType::EProbable ) )
         {
         // If the file type was found, try to match it to a known file type
         contentTypeString->Des().Copy( mimeTypePtr );

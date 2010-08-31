@@ -107,15 +107,12 @@ public:
     // FIXME: Change this to be private after getting rid of all the clients.
     Vector<HTMLGenericFormElement*> formElements;
 
-#if PLATFORM(SYMBIAN)
-    bool isDoingSubmit(){return m_doingsubmit;}
-#endif 
-
     class CheckedRadioButtons {
     public:
         void addButton(HTMLGenericFormElement*);
         void removeButton(HTMLGenericFormElement*);
         HTMLInputElement* checkedButtonForGroup(const AtomicString& name) const;
+
     private:
         typedef HashMap<AtomicStringImpl*, HTMLInputElement*> NameToInputMap;
         OwnPtr<NameToInputMap> m_nameToCheckedRadioButtonMap;

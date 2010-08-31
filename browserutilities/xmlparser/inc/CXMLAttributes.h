@@ -15,13 +15,16 @@
 *
 */
 
+
+
 #ifndef __CXMLATTRIBUTES_H
 #define __CXMLATTRIBUTES_H
 
 //  INCLUDES
 #include <e32std.h>
-#include <eikenv.h>  
-#include <mxmlattributes.h>
+#include <badesca.h>
+#include "MXMLAttributes.h"
+
 
 // CLASS DECLARATION
 

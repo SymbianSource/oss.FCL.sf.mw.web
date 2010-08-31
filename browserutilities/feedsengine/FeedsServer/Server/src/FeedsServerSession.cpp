@@ -16,18 +16,18 @@
 */
 
 
-#include <S32Mem.h>
-#include <Uri16.h>
+#include <s32mem.h>
+#include <uri16.h>
 
 #include "FeedsDatabase.h"
 #include "FeedsServer.h"
-#include <feedsservermsg.h>
+#include "FeedsServerMsg.h"
 #include "FeedsServerSession.h"
 #include "SessionHttpConnection.h"
 #include "Logger.h"
 #include "PackedFeed.h"
 #include "PackedFolder.h"
-#include <SysUtil.h>
+#include <sysutil.h>
 
 _LIT(KTempDirName, "c:\\system\\temp\\");
 

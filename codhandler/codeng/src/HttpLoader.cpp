@@ -17,6 +17,7 @@
 *
 */
 
+
 // INCLUDE FILES
 
 #include "HttpLoader.h"
@@ -30,7 +31,7 @@
 #include "Connection.h"
 #include "Timeout.h"
 #include "CodProgress.h"
-#include "CodEngbase.h"
+#include "CodEngBase.h"
 
 #include <cookiefilterinterface.h>
 #include <uaproffilter_interface.h>
@@ -39,16 +40,18 @@
 #include <bldvariant.hrh>
 #include <ecom/ecom.h>
 #include <es_sock.h>
-#include <EscapeUtils.h>
+#include <escapeutils.h>
 #include <http/rhttpheaders.h>
 #include <Oma2Agent.h>
-#include <httpdownloadmgrcommon.h>
-#include "HeaderField.h"
-#include "FileExt.h"
-#include "CodData.h"
+#include <HttpDownloadMgrCommon.h>
+#include    "HeaderField.h"
+#include    "FileExt.h"
+#include    "CodData.h"
+
+
 
 _LIT8( KDRMOldContentType, "x-drm-old-content-type");           // old content type header to be added
-_LIT8( KAcceptRangeHeaderNone, "none");
+_LIT8( KAcceptRangeHeader, "bytes");           
 
 // ================= CONSTANTS =======================
 
@@ -1066,15 +1069,16 @@ TBool CHttpLoader::AcceptRangesSupported()
     THTTPHdrVal value;
     
     TInt index = FindHeaderField(iResponseHeaders, range.DesC());
+    
     if( index  != KErrNotFound ) 
-             {
-             if( !(*iResponseHeaders)[index]->FieldRawData()->Compare( KAcceptRangeHeaderNone() ) )
-                 {
-                 return EFalse;
-                 }
-             }
-    return ETrue; 
-     
+        {
+        if( !(*iResponseHeaders)[index]->FieldRawData()->Compare( KAcceptRangeHeader() ) )
+            {
+            return ETrue;
+            }
+        }
+        
+    return EFalse;    
 	}
 
 // ---------------------------------------------------------

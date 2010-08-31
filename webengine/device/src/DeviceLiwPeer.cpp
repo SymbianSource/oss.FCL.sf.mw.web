@@ -58,12 +58,12 @@ DeviceLiwPeer::DeviceLiwPeer(
 DeviceLiwPeer::~DeviceLiwPeer()
 {
     delete m_serviceName;
-    m_interface->Close();
-    m_interface = NULL; // in majority cases, the interface close methods delete them selves.    
     m_callbackArray->ResetAndDestroy();
     m_callbackArray->Close();
     delete m_callbackArray;
-    m_callbackArray = NULL;    
+    m_callbackArray = NULL;
+    m_interface->Close();
+    m_interface = NULL; // in majority cases, the interface close methods delete them selves.
 }
 
 

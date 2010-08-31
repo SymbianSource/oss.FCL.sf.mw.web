@@ -36,7 +36,7 @@
 #include "PlatformString.h"
 #include "Range.h"
 #include "RangeException.h"
-#include "XMLHttpRequest.h"
+#include "xmlhttprequest.h"
 #include "kjs_dom.h"
 #include "kjs_window.h"
 #include <kjs/collector.h>
@@ -135,7 +135,7 @@ ScriptInterpreter::ScriptInterpreter(JSObject* global, Frame* frame)
     , m_timerCallback(false)
 {
     // Time in milliseconds before the script timeout handler kicks in.
-    setTimeoutTime(10000); // 10 sec
+    setTimeoutTime(100000);
 }
 
 DOMObject* ScriptInterpreter::getDOMObject(void* objectHandle) 

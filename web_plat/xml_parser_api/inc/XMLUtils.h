@@ -43,6 +43,8 @@
 #ifndef __XMLUTILS_H
 #define __XMLUTILS_H
 
+#warning The XML API has been deprecated
+
 
 // Error Codes
 const TInt KErrDictionaryInitFailed=(-90);

@@ -15,11 +15,12 @@
  *
 */
 
-#include <feedsinterface.h>
-#include <feedsmap.h>
-#include <transaction.h>
-#include <feedattributes.h>
-#include <folderattributes.h>
+ 
+#include "FeedsInterface.h"
+#include "FeedsMap.h"
+#include "Transaction.h"
+#include "FeedAttributes.h"
+#include "FolderAttributes.h"
 #include "Logger.h"
 #include <e32math.h>
 

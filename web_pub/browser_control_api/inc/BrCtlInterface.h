@@ -19,6 +19,8 @@
 #ifndef BRCTLINTERFACE_H
 #define BRCTLINTERFACE_H
 
+#warning The Browser Control API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+
 //  INCLUDES
 #include <../bidi.h>
 #include <e32std.h>
@@ -27,14 +29,14 @@
 #include <eikmenup.h>
 #include <ssl.h>
 
-#include <brctldialogsprovider.h>
-#include <brctllayoutobserver.h>
-#include <brctllinkresolver.h>
-#include <brctlsoftkeysobserver.h>
-#include <brctlspecialloadobserver.h>
-#include <brctlwindowobserver.h>
-#include <brctldownloadobserver.h>
-#include <brctldefs.h>
+#include <BrCtlDialogsProvider.h>
+#include <BrCtlLayoutObserver.h>
+#include <BrCtlLinkResolver.h>
+#include <BrCtlSoftkeysObserver.h>
+#include <BrCtlSpecialLoadObserver.h>
+#include <BrCtlWindowObserver.h>
+#include <BrCtlDownloadObserver.h>
+#include <BrCtlDefs.h>
 
 // DATA TYPES
 
@@ -108,27 +110,27 @@ IMPORT_C CBrCtlInterface* CreateBrowserControlL(CCoeControl* aParent, TRect aRec
 * Usage:
 *
 * @code
-*  #include <brctlinterface.h>
+*  #include <BrCtlInterface.h>
 *  // Interface that provides dialogs used by the Browser Control.
-*  #include <brctldialogsprovider.h>
+*  #include <BrCtlDialogsProvider.h>
 *  // Interface used to receive scrolling events.
-*  #include <brctllayoutobserver.h>
+*  #include <BrCtlLayoutObserver.h>
 *  //Interface that provides a callback mechanism for receiving the
 *  //content of an embedded link or the content of a user-initiated
 *  //load request.
-*  #include <brctllinkresolver.h>
+*  #include <BrCtlLinkResolver.h>
 *  //Interface that handles requests to change the softkeys.
-*  #include <brctlsoftkeysobserver.h>
+*  #include <BrCtlSoftkeysObserver.h>
 *  //Interface that handles special load needs.
-*  #include <brctlspecialloadobserver.h>
+*  #include <BrCtlSpecialLoadObserver.h>
 *  //Reserved for future use.
-*  #include <brctlwindowobserver.h>
+*  #include <BrCtlWindowObserver.h>
 *  //Interface that passes download events from the
 *  //Download Manager through the Browser Control to the
 *  //host application.
-*  #include <brctldownloadobserver.h>
+*  #include <BrCtlDownloadObserver.h>
 *  Enum Definition of the Browser Control API.
-*  #include <brctldefs.h>
+*  #include <BrCtlDefs.h>
 *
 *
 *   The following types of things you can do with the Browser Control API.
@@ -148,7 +150,7 @@ IMPORT_C CBrCtlInterface* CreateBrowserControlL(CCoeControl* aParent, TRect aRec
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
 * @since 2.8
-* @file brctlinterface.h
+* @file BrCtlInterface.h
 * @endcode     *
 */
 class CBrCtlInterface : public CCoeControl
@@ -611,8 +613,6 @@ class CBrCtlInterface : public CCoeControl
         * @return void. 
         */
         IMPORT_C virtual void TakeSnapshotL(CFbsBitmap& snapshot) = 0; 
-        
-        IMPORT_C virtual TBool IsSynchRequestPending()= 0 ;
     };
 
 
@@ -627,11 +627,11 @@ class CBrCtlInterface : public CCoeControl
 * Usage:
 *
 * @code
-*  #include <brctlinterface.h>
+*  #include <BrCtlInterface.h>
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
 * @since 2.8
-* @file brctlinterface.h
+* @file BrCtlInterface.h
 * @endcode     *
 */
 class MBrCtlDataLoadSupplier
@@ -652,11 +652,11 @@ class MBrCtlDataLoadSupplier
 * the Browser Control with the ability to receive content incrementally.
 *
 * @code
-*  #include <brctlinterface.h>
+*  #include <BrCtlInterface.h>
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
 * @since 2.8
-* @file brctlinterface.h
+* @file BrCtlInterface.h
 * @endcode     *
 */
 class MBrCtlDataLoadConsumer
@@ -692,11 +692,11 @@ class MBrCtlDataLoadConsumer
 * The host application can implement this interface.
 *
 * @code
-*  #include <brctlinterface.h>
+*  #include <BrCtlInterface.h>
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
 * @since 2.8
-* @file brctlinterface.h
+* @file BrCtlInterface.h
 * @endcode     *
 */
 class MBrCtlLoadEventObserver
@@ -717,10 +717,10 @@ class MBrCtlLoadEventObserver
 * The TBrCtlWmlServiceOption class wraps information about the WML DO elements.
 * For more information about the DO tag, see http://www.w3schools.com/wap/tag_do.asp.
 * @code
-*  #include <brctlinterface.h>
+*  #include <BrCtlInterface.h>
 * @lib BrowserEngine.lib
 * @since 2.8
-* @file brctlinterface.h
+* @file BrCtlInterface.h
 * @endcode     *
 */
 class TBrCtlWmlServiceOption
@@ -779,10 +779,10 @@ class TBrCtlWmlServiceOption
 /**
 * The TBrCtlSubscribeTo class provides information of Subscribe to items.
 * @code
-*  #include <brctlinterface.h>
+*  #include <BrCtlInterface.h>
 * @lib BrowserEngine.lib
 * @since 2.8
-* @file brctlinterface.h
+* @file BrCtlInterface.h
 * @endcode     *
 */
 class TBrCtlSubscribeTo
@@ -841,10 +841,10 @@ class TBrCtlSubscribeTo
 * implement this interface in order to find out when the view
 * changes to and from the Image Map view.
 * @code
-*  #include <brctlinterface.h>
+*  #include <BrCtlInterface.h>
 * @lib BrowserEngine.lib
 * @since 2.8
-* @file brctlinterface.h
+* @file BrCtlInterface.h
 * @endcode     *
 */
 class MBrCtlStateChangeObserver

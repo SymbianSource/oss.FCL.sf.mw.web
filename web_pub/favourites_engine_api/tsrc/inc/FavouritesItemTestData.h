@@ -22,7 +22,7 @@
 //  INCLUDES
 
 #include <e32base.h>
-#include <favouritesitemdata.h>
+#include <FavouritesItemData.h>
 
 // CLASS DECLARATION
 

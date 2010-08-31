@@ -19,7 +19,8 @@
 #include <e32base.h>
 #include <f32file.h>
 #include <s32mem.h>
-#include <widgetregistryclient.h>
+#include "WidgetRegistryClient.h"
+
 
 // ============================================================================
 // Starts the widget registry server
@@ -625,14 +626,14 @@ EXPORT_C void RWidgetRegistryClientSession::SetBlanketPermissionL(
 CBufFlat* RWidgetRegistryClientSession::MarshalPropertyValuesL(
     const RPointerArray<CWidgetPropertyValue>&  aPropertyValues ) const
     {
-    CBufFlat* buf = CBufFlat::NewL( 4096 );
+    CBufFlat* buf = CBufFlat::NewL( 512 );
     CleanupStack::PushL( buf );
 
     RBufWriteStream stream( *buf );
     CleanupClosePushL( stream );
 
     TInt i = 0;
-    for ( ; i < aPropertyValues.Count(); ++i )
+    for ( ; i < EWidgetPropertyIdCount; ++i )
         {
         aPropertyValues[i]->SerializeL( stream );
         }

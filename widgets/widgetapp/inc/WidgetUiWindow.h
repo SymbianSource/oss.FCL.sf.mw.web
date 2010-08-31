@@ -21,12 +21,11 @@
 
 // INCLUDES FILES
 #include <e32base.h>
-#include <brctldefs.h>
+#include <BrCtlDefs.h>
 #include <brctlinterface.h> // for MWidgetCallback
 #include <AknServerApp.h>
 #include <coecntrl.h>
 #include "WidgetUiObserver.h"
-
 
 // CONSTANTS
 enum TWidgetAccessGrant
@@ -74,7 +73,6 @@ class CFbsBitmap;
 class CSchemeHandler;
 class CBrCtlInterface;
 class CJpgSaver;
-class CBrowserDialogsProvider;
 // CLASS DECLARATION
 
 /**
@@ -233,6 +231,7 @@ class CWidgetUiWindow :  public CBase,
 
         void HandleServerAppExit( TInt aReason );
 
+
     public:  // new functions
 
         /**
@@ -332,7 +331,7 @@ class CWidgetUiWindow :  public CBase,
         * @since 3.1
         * @return void
         */
-       void RelayoutL(TInt aType=0 );
+       void Relayout( );
 
        /**
         * SetCurrentWindow
@@ -501,34 +500,6 @@ class CWidgetUiWindow :  public CBase,
          * @return CActiveSchedulerWait*
          */
         CActiveSchedulerWait* NetworkModeWait() { return iNetworkModeWait; }
-        
-        /**
-         * NeedToNotifyNetworkState
-         * Notifies to Widget about network state
-         * @since 7.1
-		 * @param aNetworkState the online/offline state needs to be notified to widget or not
-         * @return none
-         */
-        void NeedToNotifyNetworkState(TBool aNetworkState);
-        
-        TBool CanBeDeleted();
-        
-        static TInt DeleteItself(TAny* aPtr);
-
-		void DeleteItself();
-		
-#ifdef BRDO_OCC_ENABLED_FF        
-        void CancelAllDialogs();
-        
-        
-        TBool IsDialogsLaunched();        
-#endif
-        void  setSapiPromptCleared(TBool aPrompt){ iSapiPromptCleared = aPrompt; }
-        TBool getSapiPromptCleared(){ return iSapiPromptCleared; }
-        TInt  getNeedToIgnoreSapiNtfn(){ return iNeedToIgnoreSapiNtfn; }
-        void  setNeedToIgnoreSapiNtfn ( TInt aVal){ iNeedToIgnoreSapiNtfn = iNeedToIgnoreSapiNtfn + aVal;}
-        TInt  getNeedToIgnoreSapiClearNtfn(){ return iNeedToIgnoreSapiClearNtfn;}
-        void  setNeedToIgnoreSapiClearNtfn ( TInt aVal) { iNeedToIgnoreSapiClearNtfn = iNeedToIgnoreSapiClearNtfn + aVal;}
 
         
     protected:
@@ -623,24 +594,12 @@ class CWidgetUiWindow :  public CBase,
         //Download transaction ID
         long                            iDlId;  
 		TInt                            iClickCount;
-        CFbsBitmap                      iMiniviewBitmap1;
-        CFbsBitmap                      iMiniviewBitmap2;
-        CFbsBitmap*                     iActiveMiniviewBitmap;
-        
+        CFbsBitmap*                     iMiniviewBitmap ;
         TTime                           iOOMWidgetStartTime; 
         TBool                           iWidgetLoadStarted; // Set to true when widget load starts
         CJpgSaver*                       iJpgSaver; 
         CActiveSchedulerWait*           iNetworkModeWait;
-        TBool                           iNeedToNotifyNetworkState;        
-        TBool                           iConnecting;                            
-        TBool                           iDeleteItself;
-        CAsyncCallBack*                 iAsyncCallBack;    
-        CBrowserDialogsProvider*        iDialogsProvider;// owned, responsible for deleting
-        // For sapi prmompt counts
-        TBool                           iSapiPromptCleared;
-        TInt                            iNeedToIgnoreSapiNtfn;
-        TInt                            iNeedToIgnoreSapiClearNtfn;
-
+                            
    };
 
 #endif  //

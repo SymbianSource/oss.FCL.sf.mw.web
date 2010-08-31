@@ -59,9 +59,7 @@ public:
 #if USE(JAVASCRIPTCORE_BINDINGS)
     virtual KJS::Bindings::Instance* getInstance() const;
 #endif
-
 #if PLATFORM(SYMBIAN)
-    virtual bool canStartSelection() const;  
     bool isFocusable() const;
 #endif
     String src() const;

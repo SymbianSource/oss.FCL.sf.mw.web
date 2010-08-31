@@ -26,8 +26,8 @@
 #include <f32file.h>
 #include <badesca.h>
 #include <wtf/HashSet.h>
-#include <ECom/ImplementationInformation.h>    // ecom
-#include "Ecombrowserplugininterface.h"
+#include <ecom/implementationinformation.h>    // ecom
+#include "EcomBrowserPluginInterface.h"
 #include "WebCorePluginHandler.h"
 
 // FORWARD DECLARATIONS
@@ -146,7 +146,6 @@ class PluginHandler : public CBase
         void setActivePlugin(PluginSkin* pluginObj) { m_activePlugin = pluginObj; };
         HBufC* pluginMimeByExtention(const TPtrC8& url);
         PluginInfo* pluginInfoByExtention(const TPtrC8& aUrl, TInt* aExtIdx);
-        RPointerArray<PluginSkin>& getVisiblePlugins() { return m_visiblePlugins; }
 
     private: // New functions
 
@@ -203,7 +202,6 @@ class PluginHandler : public CBase
                                                         //the plugins from drives
         PluginSkin*                 m_pluginToActivate;
         PluginSkin*                 m_activePlugin;
-        RPointerArray<PluginSkin>   m_visiblePlugins;    // Array to hold visible plugins 
     };
 
 

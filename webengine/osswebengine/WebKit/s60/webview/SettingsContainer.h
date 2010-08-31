@@ -20,7 +20,7 @@
 #define __SETTINGSCONTAINER_H__
 
 #include <e32base.h>
-#include <brctldefs.h>
+#include "BrCtlDefs.h"
 
 class WebView;
 class HistoryControllerInterface;

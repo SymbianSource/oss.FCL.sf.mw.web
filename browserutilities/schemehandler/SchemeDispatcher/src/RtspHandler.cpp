@@ -17,8 +17,9 @@
 *
 */
 
+
 // INCLUDE FILES
- 
+
 #include "RtspHandler.h"
 #include "SchemeDispLogger.h"
 #include <ecom/ecom.h>		// For REComSession
@@ -31,13 +32,9 @@
 #include <f32file.h>
 #include <AknLaunchAppService.h>
 
-#ifdef __S60_32__
-LOCAL_C const TUid KUidMediaPlayer = { 0x10005A3E };
-#else
-#include <videoplayeruid.hrh>
-#endif
 // ================= CONSTANTS =======================
 
+LOCAL_C const TUid KUidMediaPlayer = { 0x10005A3E };
 _LIT( KRtspFileName, "c:\\system\\temp\\RtspTemp.ram" );
 
 // ================= MEMBER FUNCTIONS =======================
@@ -197,11 +194,8 @@ void CRtspHandler::HandleUrlStandaloneL()
 	User::LeaveIfError( appArcSession.Connect() );
 	TThreadId id;
 
-#ifdef __S60_32__
-    appArcSession.StartDocument( iParsedUrl->Des(), KUidMediaPlayer , id );
-#else
-    appArcSession.StartDocument( iParsedUrl->Des(), TUid::Uid(KVideoPlayerUID) , id );
-#endif
+	appArcSession.StartDocument( iParsedUrl->Des(), KUidMediaPlayer , id );
+
 	appArcSession.Close();
 
 	CLOG_LEAVEFN( "CRtspHandler::HandleUrlStandaloneL()" );
@@ -230,5 +224,4 @@ void CRtspHandler::HandleServerAppExit(TInt aReason)
 
 	CLOG_LEAVEFN( "CRtspHandler::HandleServerAppExit" );	
 	}
-
 

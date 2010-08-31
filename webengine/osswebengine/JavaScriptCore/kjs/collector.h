@@ -44,8 +44,6 @@ namespace KJS {
   public:
     static void* allocate(size_t s);
     IMPORT static bool collect();
-    IMPORT static void startedExit(bool status);
-    IMPORT static bool isExitInProgress(); 
     static bool isBusy(); // true if an allocation or collection is in progress
 
     static const size_t minExtraCostSize = 256;
@@ -100,7 +98,6 @@ namespace KJS {
     
     static size_t mainThreadOnlyObjectCount;
     static bool memoryFull;
-    static bool m_exitInProgress; 
   };
 
   // tunable parameters

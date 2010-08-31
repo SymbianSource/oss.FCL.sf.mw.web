@@ -54,7 +54,6 @@ WebCoreGraphicsContext::WebCoreGraphicsContext(CFbsBitmap* aBitmap, MScrollView*
     {
     iScrollView = aView;
     iOffscreenBitmap = aBitmap;
-    iOpacity = 1.0f; // default 1.0f i.e. fully opaque
     }
 
 WebCoreGraphicsContext::~WebCoreGraphicsContext()

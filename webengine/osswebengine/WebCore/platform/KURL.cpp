@@ -223,9 +223,6 @@ static inline int hexDigitValue(unsigned char c)
     return (c - 'A' + 10) & 0xF; // handle both upper and lower case without a branch
 }
 
-static const unsigned maximumValidPortNumber = 0xFFFE; 
-static const unsigned invalidPortNumber = 0xFFFF;
-
 // KURL
 
 KURL::KURL() : m_isValid(false)
@@ -237,11 +234,7 @@ KURL::KURL(const char *url)
     if (url && url[0] == '/') {
          // 5 for "file:", 1 for terminator
         size_t urlLength = strlen(url) + 1;
-#if PLATFORM(SYMBIAN)
-        Vector<char, 256> buffer(urlLength + 5);
-#else        
         Vector<char, 2048> buffer(urlLength + 5);
-#endif        
         buffer[0] = 'f';
         buffer[1] = 'i';
         buffer[2] = 'l';
@@ -257,11 +250,7 @@ KURL::KURL(const DeprecatedString &url)
 {
     if (!url.isEmpty() && url[0] == '/') {
         // 5 for "file:", 1 for terminator
-#if PLATFORM(SYMBIAN)
-        Vector<char, 256> buffer(url.length() + 6);
-#else
         Vector<char, 2048> buffer(url.length() + 6);
-#endif        
         buffer[0] = 'f';
         buffer[1] = 'i';
         buffer[2] = 'l';
@@ -414,11 +403,7 @@ void KURL::init(const KURL &base, const DeprecatedString &relative, const TextEn
                 // must be relative-path reference
 
                 // Base part plus relative part plus one possible slash added in between plus terminating \0 byte.
-#if PLATFORM(SYMBIAN)
-                Vector<char, 256> buffer(base.pathEndPos + 1 + strlen(str) + 1);
-#else
                 Vector<char, 2048> buffer(base.pathEndPos + 1 + strlen(str) + 1);
-#endif                
 
                 char *bufferPos = buffer.data();
                 
@@ -547,16 +532,14 @@ unsigned short int KURL::port() const
     if (!m_isValid) {
         return 0;
     }
-	int result;
 
     if (hostEndPos != portEndPos) {
-
-        result = urlString.mid(hostEndPos + 1, portEndPos - hostEndPos - 1).toInt();
-
-		if (0 >= result || result > maximumValidPortNumber) { 
- 	        return invalidPortNumber;
-		}
-        return (unsigned short int)result;
+        bool ok;
+        unsigned short result = urlString.mid(hostEndPos + 1, portEndPos - hostEndPos - 1).toUShort(&ok);
+        if (!ok) {
+            result = 0;
+        }
+        return result;
     }
 
     return 0;
@@ -781,11 +764,7 @@ DeprecatedString KURL::decode_string(const DeprecatedString& urlString, const Te
 {
     DeprecatedString result("");
 
-#if PLATFORM(SYMBIAN)
-    Vector<char, 256> buffer(0);
-#else
     Vector<char, 2048> buffer(0);
-#endif    
 
     int length = urlString.length();
     int decodedPosition = 0;
@@ -1125,11 +1104,7 @@ void KURL::parse(const char *url, const DeprecatedString *originalString)
 
     // assemble it all, remembering the real ranges
 
-#if PLATFORM(SYMBIAN)
-    Vector<char, 256> buffer(fragmentEnd * 3 + 1);
-#else    
     Vector<char, 4096> buffer(fragmentEnd * 3 + 1);
-#endif    
 
     char *p = buffer.data();
     const char *strPtr = url;
@@ -1248,11 +1223,7 @@ void KURL::parse(const char *url, const DeprecatedString *originalString)
     // add path, escaping bad characters
     
     if (hierarchical && hasSlashDotOrDotDot(url)) {
-#if PLATFORM(SYMBIAN)
-        Vector<char, 256> path_buffer(pathEnd - pathStart + 1);
-#else        
         Vector<char, 4096> path_buffer(pathEnd - pathStart + 1);
-#endif        
         copyPathRemovingDots(path_buffer.data(), url, pathStart, pathEnd);
         appendEscapingBadChars(p, path_buffer.data(), strlen(path_buffer.data()));
     } else
@@ -1297,11 +1268,7 @@ DeprecatedString KURL::encode_string(const DeprecatedString& notEncodedString)
 {
     DeprecatedCString asUTF8 = notEncodedString.utf8();
     
-#if PLATFORM(SYMBIAN)
-    Vector<char, 256> buffer(asUTF8.length() * 3 + 1);
-#else    
     Vector<char, 4096> buffer(asUTF8.length() * 3 + 1);
-#endif    
     char *p = buffer.data();
 
     const char *str = asUTF8;

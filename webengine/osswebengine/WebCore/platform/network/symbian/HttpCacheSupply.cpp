@@ -23,9 +23,8 @@
 #include "HttpConnection.h"
 #include "ResourceLoaderDelegate.h"
 #include "StaticObjectsContainer.h"
-#include "HttpDlConnection.h"
 
-#include <http/RHTTPTransaction.h>
+#include <http/rhttptransaction.h>
 #include <http/mhttpdatasupplier.h>
 #include <http/rhttpsession.h>
 #include <httperr.h>
@@ -228,70 +227,65 @@ TInt CHttpCacheSupply::ResponseCallbackL(TAny* aAny)
 void CHttpCacheSupply::SupplyResponseL()
 {
     RHTTPTransaction* trans = m_httpTransaction->HttpTransaction();
-    if(!trans && m_dlTransaction){
-    	SupplyToDownloadManager();
-    }
-    else{
     //
-        switch( m_reponseState )
-        {
-            case THTTPEvent::EGotResponseHeaders:
-                {
-                    m_failed = EFalse;
-                    if( m_cacheManager->RequestHeadersL( *trans, m_cacheEntry ) == KErrNone ) {
-                        //
-                        trans->Response().SetStatusCode( HTTPStatus::EOk );
-                        //
-                        m_httpTransaction->MHFRunL( THTTPEvent::EGotResponseHeaders );
-                        // move to the next state
-                        m_reponseState = THTTPEvent::EGotResponseBodyData;
-                    }
-                    else {
-                        // move to the next state
-                        m_failed = ETrue;
-                        // move to the next state
-                        m_reponseState = THTTPEvent::EResponseComplete;
-                    }
-                    break;
+    switch( m_reponseState )
+    {
+        case THTTPEvent::EGotResponseHeaders:
+            {
+                m_failed = EFalse;
+                if( m_cacheManager->RequestHeadersL( *trans, m_cacheEntry ) == KErrNone ) {
+                    //
+                    trans->Response().SetStatusCode( HTTPStatus::EOk );
+                    //
+                    m_httpTransaction->MHFRunL( THTTPEvent::EGotResponseHeaders );
+                    // move to the next state
+                    m_reponseState = THTTPEvent::EGotResponseBodyData;
                 }
-            case THTTPEvent::EGotResponseBodyData:
-                {
-                    SendBodyL();
+                else {
+                    // move to the next state
+                    m_failed = ETrue;
                     // move to the next state
                     m_reponseState = THTTPEvent::EResponseComplete;
-                    break;
                 }
-            case THTTPEvent::EResponseComplete:
-                {
-                    m_httpTransaction->MHFRunL(THTTPEvent::EResponseComplete );
-                    // move to the next state
-                    m_reponseState = !m_failed ? THTTPEvent::ESucceeded : THTTPEvent::EFailed;
-                    break;
-                }
-            case THTTPEvent::ESucceeded:
-                {
-                    // move to the next state
-                    m_reponseState = THTTPEvent::EClosed;
-                    // cancel timer
-                    m_responseTimer->Cancel();
-                    //
-                    m_httpTransaction->MHFRunL(THTTPEvent::ESucceeded );
-                    // this obj is destroyed at this point
-                    break;
-                }
-            case THTTPEvent::EFailed:
-                {
-                    // move to the next state
-                    m_reponseState = THTTPEvent::EClosed;
-                    // cancel timer
-                    m_responseTimer->Cancel();
-                    m_httpTransaction->MHFRunL(THTTPEvent::EFailed );
-                    // this obj is destroyed at this point
-                    break;
-                }
-            default:
                 break;
-        }
+            }
+        case THTTPEvent::EGotResponseBodyData:
+            {
+                SendBodyL();
+                // move to the next state
+                m_reponseState = THTTPEvent::EResponseComplete;
+                break;
+            }
+        case THTTPEvent::EResponseComplete:
+            {
+                m_httpTransaction->MHFRunL(THTTPEvent::EResponseComplete );
+                // move to the next state
+                m_reponseState = !m_failed ? THTTPEvent::ESucceeded : THTTPEvent::EFailed;
+                break;
+            }
+        case THTTPEvent::ESucceeded:
+            {
+                // move to the next state
+                m_reponseState = THTTPEvent::EClosed;
+                // cancel timer
+                m_responseTimer->Cancel();
+                //
+                m_httpTransaction->MHFRunL(THTTPEvent::ESucceeded );
+                // this obj is destroyed at this point
+                break;
+            }
+        case THTTPEvent::EFailed:
+            {
+                // move to the next state
+                m_reponseState = THTTPEvent::EClosed;
+                // cancel timer
+                m_responseTimer->Cancel();
+                m_httpTransaction->MHFRunL(THTTPEvent::EFailed );
+                // this obj is destroyed at this point
+                break;
+            }
+        default:
+            break;
     }
 }
 
@@ -342,106 +336,4 @@ void CHttpCacheSupply::ResumeSupply()
         m_responseTimer->Start( KResponseTimeout, KResponseTimeout, TCallBack( &ResponseCallbackL, this ) );
 }
 
-// -----------------------------------------------------------------------------
-// CHttpCacheSupply::SetDownloadTransaction
-//------------------------------------------------------------------------------
-void CHttpCacheSupply::SetDownloadTransaction(RHTTPTransaction* transaction)
-{
-    m_dlTransaction = transaction;
-}
-
-// -----------------------------------------------------------------------------
-// CHttpCacheSupply::SupplyToDownloadManager
-//------------------------------------------------------------------------------
-void CHttpCacheSupply::SupplyToDownloadManager()
-{
-    RHTTPTransactionPropertySet propSet = m_dlTransaction->PropertySet();
-    RStringPool strPool = m_dlTransaction->Session().StringPool();
-    THTTPHdrVal callback;
-    RStringF downloadPropStr;
-    HttpDlConnection* httpDlConnection = HttpDlConnection::dlConnectionFromTransaction(*m_dlTransaction);
-    if (httpDlConnection) {
-        RStringF downloadPropStr = strPool.OpenFStringL( _L8( "TransactionCallback" ) );
-        if( propSet.Property( downloadPropStr, callback ) ){
-            MHTTPTransactionCallback* callbackPtr = REINTERPRET_CAST( MHTTPTransactionCallback*, callback.Int() );
-            if( callbackPtr ){
-                switch( m_reponseState )
-                    {
-                    case THTTPEvent::EGotResponseHeaders:
-                        {
-                            m_failed = EFalse;
-                            if( m_cacheManager->RequestHeadersL( *m_dlTransaction, m_cacheEntry ) == KErrNone ) {
-                                //
-                                m_dlTransaction->Response().SetStatusCode( HTTPStatus::EOk );
-                                //
-                                callbackPtr->MHFRunL( *m_dlTransaction,THTTPEvent::EGotResponseHeaders );
-                                // move to the next state
-                                m_reponseState = THTTPEvent::EGotResponseBodyData;
-                            }
-                            else {
-                                // move to the next state
-                                m_failed = ETrue;
-                                // move to the next state
-                                m_reponseState = THTTPEvent::EResponseComplete;
-                            }
-                            break;
-                        }
-                    case THTTPEvent::EGotResponseBodyData:
-                        {
-                        //
-                         TBool lastChunk;
-                         // currently it is always the last chunk
-                         HBufC8* body = m_cacheManager->RequestNextChunkL( *m_dlTransaction, lastChunk, m_cacheEntry );
-                         if( body ) {
-                             CleanupStack::PushL( body );
-                             // create datasupplier and attach it to the transaction
-                             if( !m_dataSupplier )
-                                 m_dataSupplier = CHttpCacheDataSupplier::NewL( body );
-                             m_dlTransaction->Response().SetBody( *m_dataSupplier );
-                             CleanupStack::Pop(); // body
-                             callbackPtr->MHFRunL(*m_dlTransaction,THTTPEvent::EGotResponseBodyData);
-                         }
-                         else {
-                             // move to the next state
-                             m_failed = ETrue;
-                             }   
-                            // move to the next state
-                            m_reponseState = THTTPEvent::EResponseComplete;
-                            break;
-                        }
-                    case THTTPEvent::EResponseComplete:
-                        {
-                            callbackPtr->MHFRunL(*m_dlTransaction, THTTPEvent::EResponseComplete );
-                            // move to the next state
-                            m_reponseState = !m_failed ? THTTPEvent::ESucceeded : THTTPEvent::EFailed;
-                            break;
-                        }
-                    case THTTPEvent::ESucceeded:
-                        {
-                            // move to the next state
-                            m_reponseState = THTTPEvent::EClosed;
-                            // cancel timer
-                            m_responseTimer->Cancel();
-                            //
-                            callbackPtr->MHFRunL(*m_dlTransaction, THTTPEvent::ESucceeded );
-                            // this obj is destroyed at this point
-                            break;
-                        }
-                    case THTTPEvent::EFailed:
-                        {
-                            // move to the next state
-                            m_reponseState = THTTPEvent::EClosed;
-                            // cancel timer
-                            m_responseTimer->Cancel();
-                            callbackPtr->MHFRunL(*m_dlTransaction, THTTPEvent::EFailed );
-                            // this obj is destroyed at this point
-                            break;
-                        }
-                    default:
-                        break;
-                }                    
-            }
-        }
-	}
-}	
 //  End of File

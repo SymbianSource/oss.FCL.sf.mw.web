@@ -246,6 +246,4 @@ EXPORTS
 	JSStringGetCharactersPtr @ 245 NONAME
 	JSStringGetLength @ 246 NONAME
 	NPN_Enumerate @ 247 NONAME
-	?isExitInProgress@Collector@KJS@@SA_NXZ @ 248 NONAME ; bool KJS::Collector::isExitInProgress(void)
-	?startedExit@Collector@KJS@@SAX_N@Z @ 249 NONAME ; void KJS::Collector::startedExit(bool)
 
