@@ -1,0 +1,44 @@
+/*
+* Copyright (c) 1997-2001 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include  "../webkitcommon.mmpi"
+
+TARGET          wml1x.lib
+TARGETTYPE      lib
+
+CAPABILITY CAP_GENERAL_DLL
+VENDORID        VID_DEFAULT
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER 1
+
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
+
+SOURCEPATH      ../../src/wml1x/src/
+
+SOURCE	WML1XApi.cpp
+SOURCE	WML1XContentHandler.cpp
+SOURCE  wml1xEntitySet.c
+SOURCE	WML1XEventHandler.cpp
+SOURCE	WML1XFormLiaison.cpp
+SOURCE  Epoc32Wml1xActiveEvent.cpp
+SOURCE  WML1XEpoc32DefaultStyleSheet.cpp
+SOURCE  WML1XEpoc32ContentHandler.cpp

@@ -15,17 +15,15 @@
 *
 */
 
-
 #include <http.h>
 #include <httpfiltercommonstringsext.h>
 #include <httpfilterconnhandlerinterface.h>
-#include <InternetConnectionManager.h>
+#include <internetconnectionmanager.h>
 #include <httpfiltercommonstringsaddition.h>
 
 #include "HttpConnection.h"
-#include "LeakTracker.h"
+#include <leaktracker.h>
 #include "Logger.h"
-
 
 // -----------------------------------------------------------------------------
 // CHttpConnection::CHttpConnection
@@ -37,7 +35,6 @@ CHttpConnection::CHttpConnection()
     {
     }
         
-
 // -----------------------------------------------------------------------------
 // CHttpConnection::BaseConstructL
 // Symbian 2nd phase constructor can leave.

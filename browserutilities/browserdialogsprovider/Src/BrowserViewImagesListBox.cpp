@@ -24,7 +24,7 @@
 
 #include <gulicon.h>
 #include <e32math.h>
-#include <AknIconArray.h>
+#include <akniconarray.h>
 #include <Oma2Agent.h>
 using namespace ContentAccess;
 //-----------------------------------------------------------------------------

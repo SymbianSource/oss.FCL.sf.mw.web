@@ -21,7 +21,7 @@
 #include <e32base.h>
 #include <w32std.h>
 #include <flogger.h>
-#include "StaticObjectsContainer.h"
+#include "staticobjectscontainer.h"
 // CONSTANTS
 
 // MACROS

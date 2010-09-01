@@ -26,8 +26,6 @@
 #ifndef BROWSER_PLATFORM_VARIANT_HRH
 #define BROWSER_PLATFORM_VARIANT_HRH
 
-#warning The Browser Platfrom API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 /*
 * Establish which platform we are building on.
 * If required, un-comment correct platform macro as
@@ -36,7 +34,7 @@
 */
 /*
 * ===================
-*        S60 3.23 Gadget, etc..
+*        S60 3.23 etc..
 * ===================
 */ 
 #if defined(__S60_32__)
@@ -46,22 +44,22 @@
 
 /*
 * ===================
-*        S60 5.0 Tube, Alvin, Ivalo, Saga, etc.
+*        S60 5.0 PF_52_50, etc.
 *        5.0/5250 platforms
 * ===================
 */ 
 #elif defined(__S60_50__)
 // manually edit the following lines to enable definition for
 // whichever platform is in use
-// un-comment following line for 5.0/5250 platforms running on products similar on Tube and Alvin
-// #define __PLATFORM_VERSION_50_TUBE__
+// un-comment following line for 5.0/5250 platforms running on products similar on S60_50
+// #define __PLATFORM_VERSION_S60_50__
 
-// un-comment following line for 5.0/5250 platforms for Ivalo and Saga
-// #define __PLATFORM_VERSION_50__
+// un-comment following line for 5.0/5250
+// #define __PLATFORM_VERSION_5250__
 
 /*
 * ===================
-*        S60 5.1 Corolla, etc.
+*        S60 5.1 S60_51, etc.
 * ===================
 */ 
 // #elif defined(__S60_51__)
@@ -70,13 +68,13 @@
 
 /*
 * ===================
-*        S60 5.2 Vasco, etc.
+*        S60 5.2 TB_92, etc.
 * ===================
 */ 
 // #elif defined(__S60_52__)
 
 // un-comment following line for 5.2/TB9.2 platforms
-#define __PLATFORM_VERSION_52__
+#define __PLATFORM_VERSION_52_TB92__
 //
 #endif
 
@@ -115,7 +113,7 @@
 Disable WML support using BRDO_WML_DISABLED_FF
 Default is WML support enabled 
 */
-#define BRDO_WML_DISABLED_FF
+#undef BRDO_WML_DISABLED_FF
 
 // Defines if SecurityManager component is present
 #define BRDO_WRT_SECURITY_MGR_FF
@@ -134,6 +132,9 @@ Default is WML support enabled
 
 // Defines WRT widgets feature to publish on homescreen
 #define BRDO_WRT_HS_FF
+
+// Defines flag for OOM Monitor-2
+#define BRDO_OOM_MONITOR2_COMPONENT_FF
 
 // Gallery App is not present
 #undef BRDO_APP_GALLERY_SUPPORTED_FF
@@ -156,12 +157,82 @@ Default is WML support enabled
 // Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
 //Flag need to be removed after this fix is supplied to Symbian 9.4
 #define BRDO_HTTP_STACK_93
+
+// Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2   
+#define BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
+
+// Flag for Multi touch enable 
+#define BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification 
+#define BRDO_SAPINTFN_ENABLED_FF
+
+//To provide WidgetSIDChecker support 
+#define APP_SID_CHECK_SUPPORT_FF
+
+//AT&T DownloadMgr path support flag
+#define DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
+//Music Store Warning Level Feature Flag
+#define DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
+// One Click Connectivity support flag
+#define BRDO_OCC_ENABLED_FF
+
+//Single click flag
+#define BRDO_SINGLE_CLICK_ENABLED_FF
+
+//Video player 2, surface aware controller, 
+#define BRDO_VIDEOPLAYER2_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#define BRDO_IAD_UPDATE_ENABLED_FF
+
+//To enable performance improvements done in TB9.2
+#define BRDO_PERF_IMPROVEMENTS_ENABLED_FF
+
+//To enable modified cache-control = max-age feature
+#define BRDO_CACHE_MAX_AGE
+
 /*
 * ===================
 *        S60 3.23
 * ===================
 */ 
 #if defined(__PLATFORM_VERSION_32__)
+
+//Video player 2, surface aware controller, 
+#undef BRDO_VIDEOPLAYER2_ENABLED_FF
+
+
+//OCC support
+#undef BRDO_OCC_ENABLED_FF
+
+//AT&T DownloadMgr path support flag
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
+//Music Store Warning Level Feature Flag
+#undef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
+
+//Single click support
+#undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#undef BRDO_IAD_UPDATE_ENABLED_FF
+
+//To provide WidgetSIDChecker support 
+#undef APP_SID_CHECK_SUPPORT_FF 
+
+// Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2
+#undef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
+
+// Flag for Multi touch enable 
+#undef BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification 
+#undef BRDO_SAPINTFN_ENABLED_FF
+
+//Flag for performance improvements in TB9.2
+#undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
 
 // Defines touch screen capability
 #undef BRDO_TOUCH_ENABLED_FF
@@ -178,6 +249,9 @@ Default is WML support enabled
 // Defines WRT widgets feature to publish on homescreen
 #undef BRDO_WRT_HS_FF
 
+// Defines flag for OOM Monitor-2
+#undef BRDO_OOM_MONITOR2_COMPONENT_FF
+
 // Gallery App is present
 #define BRDO_APP_GALLERY_SUPPORTED_FF
 
@@ -191,16 +265,16 @@ Default is WML support enabled
 
 // Location, where the middleware layer localization .loc file should be exported
 #if __GNUC__ >= 3
-#define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(exported)
+#define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(oem/exported)
 #else
-#define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(##exported)
+#define MW_LAYER_LOC_EXPORT_PATH(exported) MW_LAYER_PUBLIC_EXPORT_PATH(oem/##exported)
 #endif
 
 // Location, where the middleware layer localization .loc file should be exported
 #if __GNUC__ >= 3
-#define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(exported)
+#define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(oem/exported)
 #else
-#define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(##exported)
+#define APP_LAYER_LOC_EXPORT_PATH(exported) APP_LAYER_PUBLIC_EXPORT_PATH(oem/##exported)
 #endif
 
 #if __GNUC__ >= 3
@@ -209,30 +283,58 @@ Default is WML support enabled
 #define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../platform/mw/##exported)
 #endif
 
-#define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
-#define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
-#define APP_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(http)
-#define APP_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
-#define APP_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(swi)
-#define APP_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(kernel)
-#define APP_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
-#define APP_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
+#ifndef OS_LAYER_ESTLIB_SYSTEMINCLUDE
+#define OS_LAYER_ESTLIB_SYSTEMINCLUDE SYSTEMINCLUDE OS_LAYER_PUBLIC_EXPORT_PATH(libc)
+#endif
 
-#define MW_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
-#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
-#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(http)
+#ifndef MW_LAYER_CONNECT_SYSTEMINCLUDE
 #define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
-#define MW_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(swi)
-#define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(kernel)
-#define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
-#define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
+#endif
+
+
+//To disable modified cache-control = max-age 
+#undef BRDO_CACHE_MAX_AGE
 
 /*
 * ===================
-*        S60 5.0 PF5250 / Tube / Alvin
+*        S60 5.0 S60_50
 * ===================
 */ 
-#elif defined(__PLATFORM_VERSION_50_TUBE__)
+#elif defined(__PLATFORM_VERSION_S60_50__)
+
+
+//Video player 2, surface aware controller, 
+#undef BRDO_VIDEOPLAYER2_ENABLED_FF
+
+//OCC support
+#undef BRDO_OCC_ENABLED_FF
+
+//AT&T DownloadMgr path support flag
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
+//Music Store Warning Level Feature Flag
+#undef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
+
+//Single click support
+#undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#undef BRDO_IAD_UPDATE_ENABLED_FF
+
+// Flag for Multi touch enable 
+#undef BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification  
+#undef BRDO_SAPINTFN_ENABLED_FF
+
+//Flag for performance improvements in TB9.2
+#undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
+
+//To provide WidgetSIDChecker support 
+#undef APP_SID_CHECK_SUPPORT_FF 
+
+// Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2
+#undef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
 
 // Defines must accumulate versions. ie for 5.01 you must define BRDO_BROWSER_50_FF and BRDO_BROWSER_501_FF(To be reviewed)
 // The assumption is that anything that worked in 3.2 will work in 5.0 and 5.01.  For anything doesn't work
@@ -241,6 +343,9 @@ Default is WML support enabled
 
 // Defines WRT widgets feature to publish on homescreen
 #undef BRDO_WRT_HS_FF
+
+// Defines flag for OOM Monitor-2
+#undef BRDO_OOM_MONITOR2_COMPONENT_FF
 
 // Gallery App is present
 #define BRDO_APP_GALLERY_SUPPORTED_FF
@@ -257,33 +362,75 @@ Default is WML support enabled
 #define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../../platform/mw/##exported)
 #endif
 
-#define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
-#define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../ecom)
-#define APP_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../http)
-#define APP_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../connect)
-#define APP_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../swi)
-#define APP_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../kernel)
-#define APP_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
-#define APP_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
+#ifndef OS_LAYER_ESTLIB_SYSTEMINCLUDE
+#define OS_LAYER_ESTLIB_SYSTEMINCLUDE SYSTEMINCLUDE OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
+#endif
 
-#define MW_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
-#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../ecom)
-#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../http)
-#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../connect)
-#define MW_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../swi)
-#define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../kernel)
-#define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
-#define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
+#ifndef OS_LAYER_LIBC_SYSTEMINCLUDE
+#define OS_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis) \
+                                                   OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
+#endif
+
+#ifndef MW_LAYER_CONNECT_SYSTEMINCLUDE
+#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  /epoc32/include/connect
+#endif
+
+#ifndef MW_LAYER_ECOM_SYSTEMINCLUDE
+#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  /epoc32/include/ecom
+#endif
+#ifndef MW_LAYER_HTTP_SYSTEMINCLUDE
+#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  /epoc32/include/http
+#endif
 
 // Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
 //Flag need to be removed after this fix is supplied to Symbian 9.4
 #undef BRDO_HTTP_STACK_93
+
+
+//To disable modified cache-control = max-age 
+#undef BRDO_CACHE_MAX_AGE
+
 /*
 * ===================
-*        S60 5.0 PF5250+ / Ivalo / Saga
+*        S60 5.0 PF5250+
 * ===================
 */ 
-#elif defined(__PLATFORM_VERSION_50__)
+#elif defined(__PLATFORM_VERSION_5250__)
+
+//Video player 2, surface aware controller, 
+#undef BRDO_VIDEOPLAYER2_ENABLED_FF
+
+//AT&T DownloadMgr path support flag
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+
+//Music Store Warning Level Feature Flag
+#undef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF 
+
+//OCC support
+#undef BRDO_OCC_ENABLED_FF
+
+//Single click support
+#undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#define BRDO_IAD_UPDATE_ENABLED_FF
+
+
+// Flag for Multi touch enable 
+#undef BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification 
+#undef BRDO_SAPINTFN_ENABLED_FF
+
+//Flag for performance improvements in TB9.2
+#undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
+
+
+//To provide WidgetSIDChecker support 
+#undef APP_SID_CHECK_SUPPORT_FF 
+
+// Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2
+#undef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
 
 // Defines must accumulate versions. ie for 5.01 you must define BRDO_BROWSER_50_FF and BRDO_BROWSER_501_FF(To be reviewed)
 // The assumption is that anything that worked in 3.2 will work in 5.0 and 5.01.  For anything doesn't work
@@ -296,27 +443,20 @@ Default is WML support enabled
 #define BRDO_ADDED_EXPORT_LOCATION(exported) MW_LAYER_DOMAIN_EXPORT_PATH(../../platform/mw/##exported)
 #endif
 
-#define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
-#define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../ecom)
-#define APP_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../http)
-#define APP_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../connect)
-#define APP_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../swi)
-#define APP_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../kernel)
-#define APP_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
-#define APP_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
+#ifndef OS_LAYER_ESTLIB_SYSTEMINCLUDE
+#define OS_LAYER_ESTLIB_SYSTEMINCLUDE SYSTEMINCLUDE OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
+#endif
 
-#define MW_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../libc)
-#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../ecom)
-#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../http)
-#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../connect)
-#define MW_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../swi)
-#define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../kernel)
-#define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../push)
-#define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(../stdapis)
+#ifndef MW_LAYER_CONNECT_SYSTEMINCLUDE
+#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  /epoc32/include/connect
+#endif
 
 // Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
 //Flag need to be removed after this fix is supplied to Symbian 9.4
 #undef BRDO_HTTP_STACK_93
+
+//To enable modified cache-control = max-age 
+#define BRDO_CACHE_MAX_AGE
 /*
 * ===================
 *        S60 5.1
@@ -324,42 +464,84 @@ Default is WML support enabled
 */ 
 #elif defined(__PLATFORM_VERSION_51__)
 
+//Video player 2, surface aware controller, 
+#undef BRDO_VIDEOPLAYER2_ENABLED_FF
+
+//AT&T DownloadMgr path support flag
+#undef DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF
+
+//Music Store Warning Level Feature Flag
+#undef DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF 
+
+//OCC support
+#undef BRDO_OCC_ENABLED_FF
+//Single click support
+#undef BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#undef BRDO_IAD_UPDATE_ENABLED_FF
+
+// Flag for Multi touch enable 
+#undef BRDO_MULTITOUCH_ENABLED_FF
+
+// Flag for Sapi prompt notification 
+#undef BRDO_SAPINTFN_ENABLED_FF
+
+//Flag for performance improvements in TB9.2
+#undef BRDO_PERF_IMPROVEMENTS_ENABLED_FF
+
+//To provide WidgetSIDChecker support 
+#undef APP_SID_CHECK_SUPPORT_FF 
+
+// Flag for Multiple Font Support(Times New Roman,Arial and Courier).This feature is available only for TB9.2
+#undef BRDO_BROWSER_MULTIPLE_FONT_SUPPORT
+
 // Defines whether SAPI Security Manager Prompt Enhancement is available
 #undef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
 
 #define BRDO_BROWSER_50_FF
 #define BRDO_BROWSER_51_FF
 
-#define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
-#define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
-#define APP_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(http)
-#define APP_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
-#define APP_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(swi)
-#define APP_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(kernel)
-#define APP_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
-#define APP_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
-
-#define MW_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
-#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
-#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(http)
-#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
-#define MW_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(swi)
-#define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(kernel)
-#define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(push)
-#define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
+#ifndef OS_LAYER_ESTLIB_SYSTEMINCLUDE
+#define OS_LAYER_ESTLIB_SYSTEMINCLUDE SYSTEMINCLUDE OS_LAYER_PUBLIC_EXPORT_PATH(libc)
+#endif
 
 // Defines Symbian HTTP stack parameters specific for symbian 9.3 (e.g. EHttpEnableOptimalPipelining, EHttpOptimalPipelining)
 //Flag need to be removed after this fix is supplied to Symbian 9.4
 #undef BRDO_HTTP_STACK_93
+
+//To disable modified cache-control = max-age 
+#undef BRDO_CACHE_MAX_AGE
+
 /*
 * ===================
 *        S60 5.2
 * ===================
 */ 
-#elif defined(__PLATFORM_VERSION_52__)
+//Flag provieded to not fix the problem for Multiple heap created for in application startup
+#undef BRDO_STATIC_DATA_CLEANUP_SUPPORT_FF
+#elif defined(__PLATFORM_VERSION_52_TB92__)
+
+//Video player 2, surface aware controller, 
+#define BRDO_VIDEOPLAYER2_ENABLED_FF
 
 // Defines whether SAPI Security Manager Prompt Enhancement is available
 #undef BRDO_SEC_MGR_PROMPT_ENHANCEMENT_FF
+
+//Defines One Click Connectivity support
+#define BRDO_OCC_ENABLED_FF
+
+//AT&T DownloadMgr path support flag
+#define DOWNLOADMGR_PATH_PLUGIN_ENABLED_FF 
+
+//Music Store Warning Level Feature Flag
+#define DOWNLOADMGR_WARNINGLEVEL_ENABLED_FF
+
+//Single click support
+#define BRDO_SINGLE_CLICK_ENABLED_FF
+
+//To enable for IAD Update (For add-on Browser)
+#define BRDO_IAD_UPDATE_ENABLED_FF
 
 #define BRDO_BROWSER_50_FF
 #define BRDO_BROWSER_51_FF
@@ -373,30 +555,18 @@ Default is WML support enabled
 //Flag need to be removed after this fix is supplied to Symbian 9.4
 #undef BRDO_HTTP_STACK_93
 
-#define APP_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
-#define APP_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
-#define APP_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  MW_LAYER_PUBLIC_EXPORT_PATH(http)
-#define APP_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
-#define APP_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  MW_LAYER_PLATFORM_EXPORT_PATH(swi)  
-#define APP_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PLATFORM_EXPORT_PATH(kernel)  
-#define APP_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  MW_LAYER_PLATFORM_EXPORT_PATH(push)  
-
-#define APP_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
-
-#define MW_LAYER_LIBC_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(libc)
-#define MW_LAYER_ECOM_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(ecom)
-#define MW_LAYER_HTTP_SYSTEMINCLUDE SYSTEMINCLUDE  MW_LAYER_PUBLIC_EXPORT_PATH(http) 
-
-#define MW_LAYER_CONNECT_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(connect)
-#define MW_LAYER_SWI_SYSTEMINCLUDE SYSTEMINCLUDE  MW_LAYER_PLATFORM_EXPORT_PATH(swi)  
-#define MW_LAYER_OSKERNEL_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PLATFORM_EXPORT_PATH(kernel)  
-#define MW_LAYER_PUSH_SYSTEMINCLUDE SYSTEMINCLUDE  MW_LAYER_PLATFORM_EXPORT_PATH(push)  
-
-
-#define MW_LAYER_STDAPIS_SYSTEMINCLUDE SYSTEMINCLUDE  OS_LAYER_PUBLIC_EXPORT_PATH(stdapis)
+#ifndef OS_LAYER_ESTLIB_SYSTEMINCLUDE
+#define OS_LAYER_ESTLIB_SYSTEMINCLUDE SYSTEMINCLUDE OS_LAYER_PUBLIC_EXPORT_PATH(libc)
+#endif
 
 // Platform contains new Symbian Libxml implementation
 #define BRDO_SYMBIAN_LIBXML_FF
+
+// Static data initializtion on start up in E32Main() 
+#define BRDO_STATIC_DATA_CLEANUP_SUPPORT_FF
+
+//To provide WidgetSIDChecker support 
+#define APP_SID_CHECK_SUPPORT_FF 
 
 #endif // PLATFORM VERSION ID's
 
@@ -410,5 +580,8 @@ Default is WML support enabled
 #define BRDO_BROWSER_UPDATE_UI_FF 0
 #endif // KFeatureIdIAUpdate
 
+
+//To enable modified cache-control = max-age 
+#define BRDO_CACHE_MAX_AGE
 
 #endif // BROWSER_PLATFORM_VARIANT_HRH

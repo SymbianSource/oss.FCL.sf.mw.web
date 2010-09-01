@@ -19,8 +19,6 @@
 #ifndef FAVOURITES_SESSION_H
 #define FAVOURITES_SESSION_H
 
-#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 //  INCLUDES
 
 #include <e32base.h>
@@ -136,6 +134,6 @@ class RFavouritesSession : public RSessionBase
 
 #endif
 
-#include <FavouritesSession.inl>
+#include <favouritessession.inl>
 
 // End of File

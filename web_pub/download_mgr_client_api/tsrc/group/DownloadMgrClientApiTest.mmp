@@ -30,9 +30,9 @@ VENDORID        0
 DEFFILE         DownloadMgrClientApiTest.def
 
 SOURCEPATH      ../src
-SOURCE          DownloadMgrClientApiTest.cpp
-SOURCE          RHttpDownloadTestCases.cpp
-SOURCE          RHttpDownloadMgrTestCases.cpp
+SOURCE          downloadmgrclientapitest.cpp
+SOURCE          rhttpdownloadtestcases.cpp
+SOURCE          rhttpdownloadmgrtestcases.cpp
 
 USERINCLUDE     ../inc 
 MW_LAYER_SYSTEMINCLUDE

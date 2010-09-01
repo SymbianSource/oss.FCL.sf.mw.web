@@ -22,7 +22,7 @@
 
 #include <eikenv.h>
 #include <eikon.rsg>
-#include <aknnotewrappers.h>
+#include <AknNoteWrappers.h>
 
 #include <BrowserTelService.rsg>
 #include "BrowserTelServiceDlgs.h"

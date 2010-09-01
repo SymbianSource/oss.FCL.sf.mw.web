@@ -20,8 +20,6 @@
 #ifndef DOWNLOADSLISTDLGOBSERVER_H
 #define DOWNLOADSLISTDLGOBSERVER_H
 
-#warning This Download Manager UI API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 //  INCLUDES
 #include <e32def.h>
 #include <coedef.h>
@@ -67,6 +65,12 @@ NONSHARABLE_CLASS( MDownloadsListDlgObserver )
         * setting the downloadlist hide to the observer.
         */
         virtual void SetDownloadListHide( TBool aHide ) = 0;
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
+        /**
+        * Adding Aiw Commands for the given MenuPane to the observer.
+        */
+        virtual void AIWPlugInMenusL(TInt aResourceId,CEikMenuPane* aMenuPane) = 0;
+#endif        
     };
 
 #endif /* DOWNLOADSLISTDLGOBSERVER_H */

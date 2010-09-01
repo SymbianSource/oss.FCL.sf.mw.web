@@ -1,0 +1,29 @@
+#----------------------------------------------------------------------------
+# 
+# Copyright (c) 2001,2002. Nokia Mobile Phones
+#
+#----------------------------------------------------------------------------
+
+MAKEFILE    = MakeSrc2
+TARGET      = rbTempest_lmgr_src_src2_lib.a
+
+
+SUBDIRS   =  
+
+SUBMAKES  =  
+
+OBJS      = 
+
+SRCS      = AbstractTextBox.c AccessKey.c Action.c ActiveBox.c ActiveContainerBox.c \
+	    AnimatedImageBox.c AnimatedImageAggregate.c Box.c BoxVisitor.c BreakBox.c \
+	    ContainerBox.c EmptyBox.c EventHandler.c FlowBox.c FormatBox.c FormatContext.c \
+	    IActionTable.c IBoxTreeListener.c IEventListener.c ImageBox.c \
+	    LRFlowBox.c LineBox.c ListBullets.c MarqueeBox.c MediaBox.c \
+	    PropertyList.c RootBox.c RuleBox.c SimplePropertyList.c \
+	    SlavePropertyList.c SplitTextBox.c StaticTableBox.c StaticTableCellBox.c \
+	    StaticTableRowBox.c TextBox.c \
+	    TransientPropertyList.c
+
+################################################################################
+
+include $(CORESW_MAKE_TEMPLATE)

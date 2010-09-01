@@ -15,13 +15,11 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include    "HttpClientAppInstance.h"
 #include    "HttpClientApp.h"
 #include    "HttpDownloadManagerServerEngine.h"
-#include "HttpDownloadMgrLogger.h"
+#include    "HttpDownloadMgrLogger.h"
 
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;
@@ -562,6 +560,23 @@ EXPORT_C void CHttpClientAppInstance::SetStringAttributeL(
         case EDlMgrConnectionName:
             {
             iConnHandler->SetConnectionNameL( aValue );
+            //resume Download if paused by OCC
+            CArrayPtrFlat<CHttpDownload>* downloads = iClientApp->Downloads();
+
+            for( TInt i = 0; i < downloads->Count()  ; ++i )
+                {
+                if( (*downloads)[i]->ClientAppInstance() == this )
+                    {
+                    // this won't surely leave on this call
+                    if((*downloads)[i]->GetRetryFlag())
+                        {
+                        TRAP_IGNORE( (*downloads)[i]->StartL() );                      
+                        (*downloads)[i]->SetRetryFlag(EFalse);
+                        }
+                    
+                    }
+                }
+
             }
             break;
 

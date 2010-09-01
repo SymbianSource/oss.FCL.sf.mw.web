@@ -1,0 +1,40 @@
+/*
+* Copyright (c) 2007 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  build for widgetsidchecker
+*
+*/
+
+#include <platform_paths.hrh>
+
+TARGET widgetsidchecker.dll
+CAPABILITY All -Tcb
+TARGETTYPE plugin
+
+UID 0x10009d8d 0x10281FC0
+
+
+SOURCEPATH ../src
+SOURCE      widgetsidchecker.cpp
+
+USERINCLUDE     ../inc
+
+MW_LAYER_SYSTEMINCLUDE
+
+START RESOURCE ../data/10281FC0.rss
+target widgetsidchecker.rsc
+end
+
+LIBRARY euser.lib aplist.lib ecom.lib efsrv.lib  
+LIBRARY ws32.lib apparc.lib
+library apgrfx.lib

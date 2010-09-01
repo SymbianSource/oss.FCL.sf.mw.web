@@ -15,12 +15,11 @@
 *
 */
 
-
 #ifndef UIDALLOCATOR_H
 #define UIDALLOCATOR_H
 
 // INCLUDE FILES
-#include "WidgetRegistryConstants.h"
+#include <widgetregistryconstants.h>
 
 /**
  * This class allows clients to allocate a UID from a given range.
@@ -35,6 +34,6 @@ public:
     TInt AllocateL( const RUidArray& aUsedUids, TInt aDriveLetter );
 
     static TBool IsWidget( TUid aUid );
+    static TBool IsCWRTWidget( TUid aUid );
     };
 #endif
-

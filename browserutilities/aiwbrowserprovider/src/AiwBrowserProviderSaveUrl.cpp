@@ -27,11 +27,11 @@
 #include <AiwBrowserProvider.rsg>
 #include <data_caging_path_literals.hrh>  
 #include <aknnotewrappers.h> 
-#include <aknnotedialog.h>
-#include <FavouritesDb.h>
+#include <AknNoteDialog.h>
+#include <favouritesdb.h>
 #include <e32std.h>
+#include <aiwbrowsercommands.hrh>
 
-#include "AiwBrowserCommands.hrh"
 #include "logger.h"
 
 // LOCAL CONSTANTS AND MACROS

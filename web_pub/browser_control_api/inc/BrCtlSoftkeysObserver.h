@@ -19,8 +19,6 @@
 #ifndef BRCTLSOFTKEYSOBSERVER_H
 #define BRCTLSOFTKEYSOBSERVER_H
 
-#warning The Browser Control API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>
@@ -47,12 +45,12 @@ enum TBrCtlSoftkeyChangeReason
 * Usage:
 *
 * @code
-*  #include <BrCtlSoftkeysObserver.h>
+*  #include <brctlsoftkeysobserver.h>
 *
 *  
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
-* @file BrCtlSoftkeysObserver.h
+* @file brctlsoftkeysobserver.h
 * @endcode     *
 */
 class MBrCtlSoftkeysObserver

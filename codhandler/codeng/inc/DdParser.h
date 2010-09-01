@@ -24,7 +24,7 @@
 // INCLUDES
 
 #include <e32base.h>
-#include <xml/cxml/nw_dom_document.h>
+#include <nw_dom_document.h>
 
 // FORWARD DECLARATION
 

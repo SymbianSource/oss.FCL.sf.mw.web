@@ -21,17 +21,18 @@
 */
 
 #include "../osswebengine/cache/group/bld.inf"
-#include "../osswebengine/MemoryManager/Group/bld.inf"
+#include "../osswebengine/memorymanager/group/bld.inf"
 
-#include "../osswebengine/WebKit/s60/group/JavaScriptCore/bld.inf"
+#include "../osswebengine/webkit/s60/group/javascriptcore/bld.inf"
 
 #include "../osswebengine/npscript/group/bld.inf"
 
 #include "../webkitutils/group/bld.inf"
 #include "../pagescaler/group/bld.inf"
 #include "../widgetinstaller/group/bld.inf"
-#include "../widgetregistry/group/BLD.INF"
-#include "../osswebengine/WebKit/s60/group/bld.inf"
+#include "../widgetregistry/group/bld.inf"
+#include "../osswebengine/webkit/s60/group/bld.inf"
+#include "../wmlengine/group/bld.inf"
 
 #include "../device/group/bld.inf"
 

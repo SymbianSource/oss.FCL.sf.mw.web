@@ -15,8 +15,6 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include "HttpClientApp.h"
 #include "HttpClientAppInstance.h"
@@ -27,13 +25,24 @@
 #include "HttpDownloadMgrLogger.h"
 
 #include <in_sock.h>
-#include <commdbconnpref.h>
+#include <CommDbConnPref.h>
 #include <httpfilterauthenticationinterface.h>
 #include <uaproffilter_interface.h>
 #include <httpfiltercommonstringsext.h>
 #include <cdblen.h>
-//#include <DeflateFilterInterface.h>
+//#include <deflatefilterinterface.h>
 #include <cookiefilterinterface.h>
+#include <platform/mw/browser_platform_variant.hrh>
+#ifdef BRDO_OCC_ENABLED_FF
+#include <extendedconnpref.h>
+#include <FeatMgr.h>
+#include <CentralRepository.h>
+#include <CoreApplicationUIsSDKCRKeys.h>
+#include <cmgenconnsettings.h>
+#include <cmmanagerkeys.h>
+#include <etelmm.h>
+#include <rconnmon.h>
+#endif
 
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;
@@ -239,10 +248,12 @@ void CHttpConnStageNotifier::RunL()
     if( iStatus == KErrNone )
         {
         TInt stage = iProgressBuf().iStage;
-
+        if ( iProgressBuf().iStage == KLinkLayerClosed && iProgressBuf().iError == KErrDisconnected )
+            iConnHandler->RetryNeeded(ETrue);
+        
         iConnHandler->ConnectionStageChanged( stage );
 
-        if( stage > KConnectionUninitialised )
+        if( stage != KLinkLayerClosed )
             // connection is still alive
             {
             iConnHandler->Connection().ProgressNotification( iProgressBuf, iStatus );
@@ -288,6 +299,10 @@ void CHttpConnHandler::ConstructL()
     iHttpSession.OpenL();
     CLOG_WRITE8( "Session open" );
     InitSessionL();
+
+	//Set it to zero
+	iIapId = 0;
+	iRetryNeeded = EFalse;
     }
 
 // -----------------------------------------------------------------------------
@@ -352,7 +367,6 @@ void CHttpConnHandler::ConnectL()
             TName connName;
 
             connName.Copy( *iConnName );
-
             User::LeaveIfError( iConnection.Open( iClientApp->Engine()->SocketServ(), connName ) );
 
             CLOG_WRITE( "connection open" );
@@ -380,7 +394,46 @@ void CHttpConnHandler::ConnectL()
                 iPref.SetDialogPreference( ECommDbDialogPrefPrompt );
                 }
 
+        #ifdef BRDO_OCC_ENABLED_FF
+           TExtendedConnPref extPref;
+           CLOG_WRITE( "Setting OCC parameters");
+           CLOG_WRITE_1( "Iap: %d", iIapId );
+           if (iIapId)
+           {
+              CLOG_WRITE( "Iap is found");
+              extPref.SetSnapPurpose(CMManager::ESnapPurposeUnknown);
+              extPref.SetIapId(iIapId);
+           }
+           else
+           {
+              CLOG_WRITE( "Using Internet Snap");
+              extPref.SetSnapPurpose(CMManager::ESnapPurposeInternet);
+           }
+           //Default dialog behaviour
+           extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourConnSilent);
+           
+           if ( !IsPhoneOfflineL() )
+           {
+              TInt currentmode = KErrNone;
+              CRepository* rep = CRepository::NewLC( KCRUidCmManager );
+              rep->Get(KCurrentCellularDataUsage, currentmode );
+              CleanupStack::PopAndDestroy(); //rep
+              if(ECmCellularDataUsageConfirm == currentmode)
+              {
+                 if ( IsRoamingL() || (iIapId == 0) )
+                 {
+                    CLOG_WRITE( "Setting note behaviour as Default");
+                    extPref.SetNoteBehaviour(TExtendedConnPref::ENoteBehaviourDefault);
+                 }
+              }
+           }
+           
+           TConnPrefList prefList;
+           prefList.AppendL(&extPref);
+           iConnection.Start( prefList, iStatus );
+        #else
             iConnection.Start( iPref, iStatus );
+        #endif //BRDO_OCC_ENABLED_FF
 
             // RConnection will complete us.
             doComplete = EFalse;
@@ -714,7 +767,7 @@ void CHttpConnHandler::ConnectionStageChanged( TInt aStage )
 
     iConnStage = aStage;
 
-    if( iConnStage == KConnectionUninitialised || 
+   if( iConnStage == KLinkLayerClosed || 
         iConnStage == KDataTransferTemporarilyBlocked
         )
         {
@@ -722,24 +775,33 @@ void CHttpConnHandler::ConnectionStageChanged( TInt aStage )
         CArrayPtrFlat<CHttpDownload>* downloads = 
                                     iClientApp->Downloads();
         for( TInt i = 0; i < downloads->Count(); ++i )
-            {
+            {            
+            if(iRetryNeeded  && ((*downloads)[i]->State() == EHttpDlMultipleMOFailed || 
+               (*downloads)[i]->State() == EHttpDlInprogress ))
+                {
+                (*downloads)[i]->SetRetryFlag(ETrue);                
+                }
+            }        
+        
+        for( TInt i = 0; i < downloads->Count(); ++i )
+            {               
             if( (*downloads)[i]->ConnHandler() == this )
                 {
-                if( iConnStage == KConnectionUninitialised )
+                if( iConnStage == KLinkLayerClosed )
                     {
                     // from now on this name is invalid -> forget it!
-                    delete iConnName; iConnName = NULL;
-
-                    (*downloads)[i]->Disconnected();
+                     delete iConnName; iConnName = NULL;                     
+                     (*downloads)[i]->Disconnected();                  
+                                        
                     }
                 else
-                    {
+                    {                    
                     (*downloads)[i]->Suspended();
                     }
                 }
             }
 
-        if( iConnStage == KConnectionUninitialised )
+        if( iConnStage == KLinkLayerClosed )
             {
             ShutDown();
             }
@@ -753,6 +815,7 @@ void CHttpConnHandler::ConnectionStageChanged( TInt aStage )
         {
         Connected();
         }
+    iRetryNeeded = EFalse;
     }
 
 // -----------------------------------------------------------------------------
@@ -966,5 +1029,101 @@ void CHttpConnHandler::UpdateIapId()
         iConnection.GetIntSetting( query, iIapId );
         }
     }
+
+#ifdef BRDO_OCC_ENABLED_FF
+// ---------------------------------------------------------
+// CHttpConnHandler::IsPhoneOfflineL
+//
+// Checks if phone is in offline mode or not.
+// Return ETrue if phone is in offline mode.
+// Return EFalse if phone is not in offline mode.
+// ---------------------------------------------------------
+//
+TBool CHttpConnHandler::IsPhoneOfflineL() const
+     {
+     LOGGER_ENTERFN( "CHttpConnHandler::IsPhoneOfflineL" );
+     if ( FeatureManager::FeatureSupported( KFeatureIdOfflineMode ) )
+         {
+         CRepository* repository = CRepository::NewLC( KCRUidCoreApplicationUIs );
+         TInt connAllowed = 1;
+         repository->Get( KCoreAppUIsNetworkConnectionAllowed, connAllowed );
+         CleanupStack::PopAndDestroy();  // repository
+         if ( !connAllowed )
+             {
+             CLOG_WRITE( "Yes, Phone is in Offline mode" );
+             return ETrue;
+             }
+         }
+     CLOG_WRITE( "Phone is in Online mode" );
+     return EFalse;
+     }
+
+// ---------------------------------------------------------
+// CHttpConnHandler::IsRoamingL
+//
+// Checks if phone is in home network or in roam network.
+// Return ETrue if phone is in foriegn network.
+// Return EFalse if phone is in home network.
+// ---------------------------------------------------------
+//
+TBool CHttpConnHandler::IsRoamingL()
+    {
+        LOGGER_ENTERFN( "CHttpConnHandler::IsRoamingL" );
+        RTelServer telServer;
+        User::LeaveIfError( telServer.Connect());
+        
+        RTelServer::TPhoneInfo teleinfo;
+        User::LeaveIfError( telServer.GetPhoneInfo( 0, teleinfo ) );
+        
+        RMobilePhone phone;
+        User::LeaveIfError( phone.Open( telServer, teleinfo.iName ) );
+        User::LeaveIfError(phone.Initialise()); 
+        
+        RMobilePhone::TMobilePhoneNetworkMode mode;                     
+        TInt err = phone.GetCurrentMode( mode );
+        phone.Close();
+        telServer.Close();
+        TInt Bearer = EBearerIdGSM ;
+        if( KErrNone == err )
+        {
+           switch(mode)
+           {
+                case RMobilePhone::ENetworkModeGsm:     
+                {           
+                Bearer = EBearerIdGSM ;
+                    break;      
+                }
+                case RMobilePhone::ENetworkModeWcdma:
+                {                                   
+                    Bearer = EBearerIdWCDMA  ;
+                    break;  
+                }   
+                default: 
+                {                   
+                
+                }                       
+            }
+        }   
+        RConnectionMonitor monitor;
+        TRequestStatus status;
+        // open RConnectionMonitor object
+        monitor.ConnectL();
+        CleanupClosePushL( monitor );
+        TInt netwStatus ;
+        monitor.GetIntAttribute( Bearer, 0, KNetworkRegistration, netwStatus, status );
+        User::WaitForRequest( status );
+        CleanupStack::PopAndDestroy(); // Destroying monitor
+        if ( status.Int() == KErrNone && netwStatus == ENetworkRegistrationRoaming )
+        {
+            CLOG_WRITE( "Yes, Phone is in Forign network" );
+            return ETrue;
+        }
+        else //home n/w or some other state in n/w
+        {
+            CLOG_WRITE( "Phone is in Home network" );
+            return EFalse;
+        }
+   }
+#endif
 
 //  End of File  

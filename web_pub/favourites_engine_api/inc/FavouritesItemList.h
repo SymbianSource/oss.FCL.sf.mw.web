@@ -19,8 +19,6 @@
 #ifndef FAVOURITES_ITEM_LIST_H
 #define FAVOURITES_ITEM_LIST_H
 
-#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 // INCLUDE FILES
 
 #include <e32base.h>

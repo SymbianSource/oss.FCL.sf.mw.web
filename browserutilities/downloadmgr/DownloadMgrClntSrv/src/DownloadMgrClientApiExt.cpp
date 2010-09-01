@@ -15,8 +15,7 @@
 *
 */
 
-
-#include "DownloadMgrClientApiExt.h"
+#include <downloadmgrclientapiext.h>
 #include "DownloadMgrLogger.h"
 
 // ======== MEMBER FUNCTIONS ========

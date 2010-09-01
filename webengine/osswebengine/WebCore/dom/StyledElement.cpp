@@ -27,7 +27,7 @@
 #include "HashMap.h"
 #include "StyledElement.h"
 
-#include "cssstyleselector.h"
+#include "CSSStyleSelector.h"
 #include "CSSStyleSheet.h"
 #include "CSSValueKeywords.h"
 #include "Document.h"

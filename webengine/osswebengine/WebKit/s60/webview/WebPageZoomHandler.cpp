@@ -18,7 +18,7 @@
 
 // INCLUDE FILES
 #include <../bidi.h>
-#include <AknUtils.h>
+#include <aknutils.h>
 #include "WebPageZoomHandler.h"
 #include "SettingsContainer.h"
 #include <AknVolumePopup.h>
@@ -103,6 +103,8 @@ void WebPageZoomHandler::showZoomSliderL()
     if ( AknLayoutUtils::PenEnabled() )
         {
         if (m_zoomSlider) {
+            if( m_zoomSlider->IsVisible())
+                m_zoomSlider->CloseVolumePopup();
             delete m_zoomSlider;
             m_zoomSlider = NULL;
             }

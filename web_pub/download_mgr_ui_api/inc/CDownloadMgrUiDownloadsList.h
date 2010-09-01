@@ -15,18 +15,14 @@
 *
 */
 
-
-
 #ifndef CDOWNLOADMGRUIDOWNLOADSLIST_H
 #define CDOWNLOADMGRUIDOWNLOADSLIST_H
 
-#warning This Download Manager UI API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 //  INCLUDES
-#include <CDownloadMgrUiBase.h>
-#include <DownloadMgrClient.h>
-#include <HttpDownloadMgrCommon.h>
-#include <DownloadsListDlgObserver.h>
+#include <cdownloadmgruibase.h>
+#include <downloadmgrclient.h>
+#include <httpdownloadmgrcommon.h>
+#include <downloadslistdlgobserver.h>
 
 #include <AiwServiceHandler.h>
 #include <AiwCommon.hrh>
@@ -153,12 +149,12 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
         * @return TBool 
         */
         inline TBool GetDownloadHide() { return iDownloadListHide; }
-
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
         /**
-        * Sets the value of downloadlist hide
-        * @return void 
+        * Adding Aiw Commands to the given MenuPane
         */
-        virtual void SetDownloadListHide( TBool aHide );
+        void AIWPlugInMenusL(TInt aResourceId,CEikMenuPane* aMenuPane);
+#endif        
 
     public: // Functions from CDownloadMgrUiBase
 
@@ -251,6 +247,13 @@ NONSHARABLE_CLASS( CDownloadMgrUiDownloadsList ) :
                                       RHttpDownload& aDownload);
                                       
         void LaunchFileManagerApplication();
+
+    public:
+        /**
+        * Sets the value of downloadlist hide
+        * @return void 
+        */
+        void SetDownloadListHide( TBool aHide );
 
     private:  // Data
         

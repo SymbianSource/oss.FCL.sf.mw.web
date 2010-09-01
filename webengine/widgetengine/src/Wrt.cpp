@@ -21,7 +21,7 @@
 
 #include "Wrt.h"
 #include "WrtPlatform.h"
-#include <CUserAgent.h>
+#include <cuseragent.h>
 //#include "WrtFuncs.h"
 
 // EXTERNAL DATA STRUCTURES

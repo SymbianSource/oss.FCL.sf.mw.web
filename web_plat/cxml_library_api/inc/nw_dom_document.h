@@ -15,7 +15,6 @@
 *
 */
 
-
 /** ----------------------------------------------------------------------- **
     @package:     NW_DOM
 
@@ -27,11 +26,11 @@
 #ifndef NW_DOM_DOCUMENT_H
 #define NW_DOM_DOCUMENT_H
 
-#include "cxml_proj.h"
-#include "nw_dom_node.h"
-#include "nw_dom_text.h"
-#include "nw_dom_element.h"
-#include "nw_wbxml_dictionary.h"
+#include <cxml_proj.h>
+#include <nw_dom_node.h>
+#include <nw_dom_text.h>
+#include <nw_dom_element.h>
+#include <nw_wbxml_dictionary.h>
 
 #ifdef __cplusplus
 extern "C" {

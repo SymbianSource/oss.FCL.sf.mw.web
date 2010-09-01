@@ -28,9 +28,9 @@
 #include <SWInstDefs.h>
 #include <SWInstTaskManager.h>
 #include <SWInstLogTaskParam.h>
-#include <WidgetRegistryClient.h>
+#include <widgetregistryclient.h>
 #include <apgcli.h> // RApaLsSession
-#include "CUICancelTimer.h"
+#include "cuicanceltimer.h"
 #include "WidgetUIHandler.h"
 #include "IconConverter.h"
 
@@ -97,7 +97,7 @@ public: // New functions
      * Handle silent install request.
      * @since 3.1
      */
-    void SilentInstallL( RFile&, const TDesC8&, TRequestStatus& );
+    void SilentInstallL( RFile&, const TDesC8&, TChar&, TRequestStatus& );
 
     /**
      * Handle uninstall request.
@@ -127,7 +127,7 @@ public: // New functions
     /**
      * Called when install or uninstallation is finished, to update installer log
      */    
-    void HandleLogsL(const TDesC& aWidgetName, const TUid &aUid,TBool aVendor, SwiUI::TLogTaskAction aAction);
+    void HandleLogsL(const TDesC& aWidgetName, const TUid &aUid,TBool aVendor,const TDesC& version,SwiUI::TLogTaskAction aAction);
 
 
 public: // Functions from base classes
@@ -309,6 +309,7 @@ private: // Data
     
     TFileName iWidgetName;  // save the widget name during overwrite (only for HS widgets)
     TBool iWidgetInHS;      // indicates whether the widget was in HS
+    TInt iDrive;            //Drive to intall widgets in case of silent install
     };
 }
 

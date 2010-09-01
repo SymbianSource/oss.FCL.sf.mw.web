@@ -15,7 +15,6 @@
 *
 */
 
-
 #ifndef COD_DOWNLOAD_IMPL_H
 #define COD_DOWNLOAD_IMPL_H
 
@@ -32,8 +31,8 @@ class CAiwGenericParamList;
 
 #include <e32std.h>
 #include <f32file.h>
-#include <CodDownload.h>
-#include <CodLoadObserver.h>
+#include <coddownload.h>
+#include "CodLoadObserver.h"
 #include <AknServerApp.h>
 
 // CONSTANTS

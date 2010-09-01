@@ -37,7 +37,8 @@ bool cookiesEnabled()
 
 String cookies( const KURL& url )
 {
-    if (cookiesEnabled() && StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cookieHandler()) {
+    if (cookiesEnabled() && StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cookieHandler()&&
+    	StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cookieHandler()->cookieManager()) {
         long length = 0;
         unsigned short* cookies = StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cookieHandler()->cookiesForUrl(url.des(), length);
         if (cookies) {
@@ -52,7 +53,8 @@ String cookies( const KURL& url )
 
 void setCookies( const KURL& url, const KURL& policyURL, const String& cookieStr )
 {
-    if (cookiesEnabled() && StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cookieHandler()) {
+    if (cookiesEnabled() && StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cookieHandler()&&
+    	StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cookieHandler()->cookieManager()) {
         // <http://bugzilla.opendarwin.org/show_bug.cgi?id=6531>, <rdar://4409034>
         // cookiesWithResponseHeaderFields doesn't parse cookies without a value
         String cookieString = cookieStr.contains('=') ? cookieStr : cookieStr + "=";

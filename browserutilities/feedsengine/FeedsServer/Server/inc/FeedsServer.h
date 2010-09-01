@@ -15,15 +15,13 @@
 *
 */
 
-
 #ifndef FEEDS_SERVER_H
 #define FEEDS_SERVER_H
-
 
 //  INCLUDES
 #include <e32base.h>
 
-#include "LeakTracker.h"
+#include <leaktracker.h>
 #include "UpdateAllFeedsTask.h"
 #include "etel3rdparty.h"
 

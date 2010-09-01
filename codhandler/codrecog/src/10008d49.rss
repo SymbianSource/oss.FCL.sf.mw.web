@@ -20,7 +20,7 @@
 
 //  INCLUDES
 
-#include "registryinfo.rh"
+#include <ecom/registryinfo.rh>
 
 //  RESOURCE DEFINITIONS 
 

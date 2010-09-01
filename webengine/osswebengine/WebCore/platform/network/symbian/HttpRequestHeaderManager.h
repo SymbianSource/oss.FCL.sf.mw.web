@@ -21,7 +21,7 @@
 
 //  INCLUDES
 
-//#include "HttpFilterAcceptHeaderInterface.h"
+//#include "httpfilteracceptheaderinterface.h"
 #include <http/rhttpheaders.h>
 #include <centralrepository.h>
 

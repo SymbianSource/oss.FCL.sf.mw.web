@@ -35,14 +35,14 @@
 *****************************************************************/
 
 #include "cxml_internal.h"
-#include "nw_wbxml_reader.h"
-#include "nw_wbxml_dictionary.h"
-#include "nw_wbxml_event.h"
-#include "nw_wbxml_token.h"
-#include "nw_wbxml_opaque.h"
+#include <nw_wbxml_reader.h>
+#include <nw_wbxml_dictionary.h>
+#include <nw_wbxml_event.h>
+#include <nw_wbxml_token.h>
+#include <nw_wbxml_opaque.h>
 #include "nw_wbxml_parsei.h"
-#include "nw_string_char.h"
-#include "nw_tinydom.h"
+#include <nw_string_char.h>
+#include <nw_tinydom.h>
 
 /*
  * Initialize the parser

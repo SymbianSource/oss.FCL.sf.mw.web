@@ -21,10 +21,11 @@
 #define HTTPCONNHANDLER_H
 
 //  INCLUDES
+#include <platform/mw/browser_platform_variant.hrh>
 #include <e32base.h>
 #include <es_sock.h>
 #include <http.h>
-#include <commdbconnpref.h>
+#include <CommDbConnPref.h>
 
 // CONSTANTS
 //const ?type ?constant_var = ?constant;
@@ -352,6 +353,8 @@ NONSHARABLE_CLASS( CHttpConnHandler ) : public CActive,
         */
         void ShutDown( TBool aFromDestructor = EFalse );
         
+        void RetryNeeded(TBool aRetry) { iRetryNeeded = aRetry;}
+        
     protected:  // New functions
         
         /**
@@ -402,6 +405,10 @@ NONSHARABLE_CLASS( CHttpConnHandler ) : public CActive,
         * By default Symbian 2nd phase constructor is private.
         */
         void ConstructL();
+#ifdef BRDO_OCC_ENABLED_FF
+        TBool IsPhoneOfflineL() const;
+        TBool IsRoamingL();
+#endif
 
     public:     // Data
         // ?one_line_short_description_of_data
@@ -428,6 +435,7 @@ NONSHARABLE_CLASS( CHttpConnHandler ) : public CActive,
     private:    // Data
 
         TBool iNewConnection;
+        TBool iRetryNeeded;
         
         // Reserved pointer for future extension
         //TAny* iReserved;

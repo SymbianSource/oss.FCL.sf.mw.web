@@ -18,12 +18,12 @@
 // INCLUDE FILES
 #include "config.h"
 #include "MultipartContentHandler.h"
-#include "multipartparser.h"
-#include "bodypart.h"
+#include <multipartparser.h>
+#include <bodypart.h>
 #include "HttpSessionManager.h"
 #include "httpcachemanager.h"
 #include <http/rhttptransaction.h>
-#include <uri16.h>
+#include <Uri16.h>
 #include "httpfiltercommonstringsext.h"
 #include "WebCharsetData.h"
 #include "StaticObjectsContainer.h"
@@ -158,9 +158,17 @@ TInt MultipartContentHandler::HandleResponseHeadersL(
     const TStringTable& stringTable = session.GetTable();
     if(hdrs.GetParam(stringPool.StringF( HTTP::EContentType, stringTable ),
         stringPool.StringF( HttpFilterCommonStringsExt::EBoundary,
-        HttpFilterCommonStringsExt::GetTable()), hdrVal) == KErrNone) {
-        boundPtr.Set(hdrVal.StrF().DesC());
+        HttpFilterCommonStringsExt::GetTable()), hdrVal) != KErrNone) {
+            _LIT8(KBoundary, ".boundary");
+            RStringF boundaryStrf = stringPool.OpenFStringL(KBoundary);
+            if(hdrs.GetParam(stringPool.StringF(HTTP::EContentType, stringTable), boundaryStrf, hdrVal) == KErrNone) {
+                boundPtr.Set(hdrVal.StrF().DesC());
+                }
+        boundaryStrf.Close();
     }
+    else {
+        boundPtr.Set(hdrVal.StrF().DesC());
+        }
     // locate any cache control headers in top-level response
     TPtrC8 expiresPtr;
     TPtrC8 cacheControlPtr;

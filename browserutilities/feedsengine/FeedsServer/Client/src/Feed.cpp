@@ -15,13 +15,12 @@
 *
 */
 
-
 //#ifdef _DEBUG
 #include <f32file.h>
 //#endif
 
-#include "FeedAttributes.h"
-#include "FeedsServerFeed.h"
+#include <feedattributes.h>
+#include <feedsserverfeed.h>
 #include "Logger.h"
 
 // -----------------------------------------------------------------------------
@@ -208,6 +207,8 @@ EXPORT_C void CFeed::ItemStatusL(RArray<TInt>& aItemIds,
     {
     aItemIds.Reset();
     aItemStatus.Reset();
+    CleanupClosePushL(aItemIds);
+    CleanupClosePushL(aItemStatus);
 
     // Add the item attributes.
     for (TInt i = 0; i < iItems.Count(); i++)
@@ -215,6 +216,8 @@ EXPORT_C void CFeed::ItemStatusL(RArray<TInt>& aItemIds,
         User::LeaveIfError(aItemIds.Append(iItems[i]->Id()));
         User::LeaveIfError(aItemStatus.Append(iItems[i]->ItemStatus()));
         }
+    
+    CleanupStack::Pop(2); // aItemIds, aItemStatus
     }
 
 // -----------------------------------------------------------------------------

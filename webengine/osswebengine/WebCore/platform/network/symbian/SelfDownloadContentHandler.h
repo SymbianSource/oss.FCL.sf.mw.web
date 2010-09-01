@@ -22,7 +22,7 @@
 #include <e32base.h>
 #include <apparc.h>
 #include <http/rhttptransaction.h>
-#include <http/mhttptransactioncallback.h>
+#include <http/MHTTPTransactionCallback.h>
 #include <f32file.h>
 
 // FORWARD DECLARATIONS

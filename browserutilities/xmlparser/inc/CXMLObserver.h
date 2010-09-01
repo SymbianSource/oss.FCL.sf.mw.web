@@ -15,18 +15,15 @@
 *
 */
 
-
-
 #ifndef __CXMLOBSERVER_H
 #define __CXMLOBSERVER_H
 
 //  INCLUDES
 #include <e32std.h>
-#include <txtetext.h>
+#include <eikenv.h>
 #include "CXMLAttributes.h"
-#include "MXMLContentHandler.h"
-#include "MWBXMLContentHandler.h"
-
+#include <mxmlcontenthandler.h>
+#include <mwbxmlcontenthandler.h>
 
 // CLASS DECLARATION
 

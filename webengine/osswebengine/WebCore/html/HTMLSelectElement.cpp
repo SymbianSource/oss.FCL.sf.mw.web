@@ -26,7 +26,7 @@
 #include "HTMLSelectElement.h"
 
 #include "CSSPropertyNames.h"
-#include "cssstyleselector.h"
+#include "CSSStyleSelector.h"
 #include "CharacterNames.h"
 #include "Document.h"
 #include "Event.h"
@@ -668,7 +668,7 @@ void HTMLSelectElement::menuListDefaultEventHandler(Event* evt)
             evt->setDefaultHandled();
 
     }
-    if (evt->type() == mousedownEvent && evt->isMouseEvent() && static_cast<MouseEvent*>(evt)->button() == LeftButton) {
+    if (menuList && evt->type() == mousedownEvent && evt->isMouseEvent() && static_cast<MouseEvent*>(evt)->button() == LeftButton) {
         focus();
         if (menuList->popupIsVisible())
             menuList->hidePopup();

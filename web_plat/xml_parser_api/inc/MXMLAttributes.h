@@ -35,9 +35,6 @@
 #ifndef __MXMLATTRIBUTES_H
 #define __MXMLATTRIBUTES_H
 
-#warning The XML API has been deprecated
-
-
 //  INCLUDES
 #include <e32std.h>
 

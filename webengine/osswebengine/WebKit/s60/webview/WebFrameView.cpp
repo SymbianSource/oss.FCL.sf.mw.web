@@ -26,12 +26,16 @@
 #include "WebCoreGraphicsContext.h"
 #include "GraphicsContext.h"
 #include "PlatformScrollbar.h"
-#include "pagescaler.h"
-#include "WebKitLogger.h"
+#include "PageScaler.h"
+#include "webkitlogger.h"
 #include "BrCtl.h"
 #include "SettingsContainer.h"
 #include "StaticObjectsContainer.h"
 #include "WebTabbedNavigation.h"
+#include "WebPagePinchZoomHandler.h"
+#include "FocusController.h"
+#include "Frame.h"
+#include "page.h"
 
 using namespace WebCore;
 
@@ -71,10 +75,13 @@ WebFrameView* WebFrameView::initWithFrame(TRect frame)
 
 void WebFrameView::draw(WebCoreGraphicsContext& gc, const TRect& r)
 {
+    if (m_topView->isPinchZoom())  {
+        return;
+    }    
+    
     TRect vr(visibleRect());
     TRect rect(r);
-    if (isScaled() || m_frame->isFrameSet())
-        rect.Grow(1,1);             // eliminate rounding errors
+
     TRect frameRect(m_frameRect);
 
     rect.Move(-frameRect.iTl);
@@ -101,6 +108,10 @@ void WebFrameView::draw(WebCoreGraphicsContext& gc, const TRect& r)
         
         gc.setClippingRect( clip );
 
+		//Converting To Doc and View co-ordinates calculation will loose 1 px 
+		//if the scalling is other than default level
+        if (isScaled() || m_frame->isFrameSet())
+               rect.Grow(2,2);             // eliminate rounding errors
         // draw frame content
         m_frame->paintRect(gc, rect);
         gc.cancelClipping();
@@ -120,6 +131,7 @@ void WebFrameView::draw(WebCoreGraphicsContext& gc, const TRect& r)
             frameClip.Move(-cpos);
             gc.setClippingRect( frameClip );
         }
+  
         // draw frame border
         CFbsBitGc& realgc = gc.gc();
         if (m_hasBorder && !m_frame->isFrameSet()) {
@@ -276,8 +288,12 @@ TRect WebFrameView::visibleRect() const
     return TRect(m_contentPos, s );
 }
 
-void WebFrameView::scrollTo(const TPoint& aPoint)
+void WebFrameView::scrollTo(const TPoint& aPoint, TBool aPluginPause)
 {
+    
+    if(aPluginPause)
+        m_topView->scrollStatus(ETrue);
+
     if (m_parent) {
         // tot:fixme frame scrolling when frame-flat is off
         if (m_frame->isIframe()) {
@@ -285,7 +301,7 @@ void WebFrameView::scrollTo(const TPoint& aPoint)
             if (aPoint != m_contentPos) {
                 TPoint p(nearestPointInFrame(aPoint));
                 m_contentPos = p;
-                m_frame->notifyPluginsOfScrolling();
+                m_frame->notifyPluginsOfPositionChange();
                 m_topView->syncRepaint( TRect(0,0,KMaxTInt/2,KMaxTInt/2) );
             }
         }
@@ -320,7 +336,7 @@ void WebFrameView::scrollTo(const TPoint& aPoint)
             m_contentPos = p;
 
             
-            m_frame->notifyPluginsOfScrolling();
+            m_frame->notifyPluginsOfPositionChange();
             
             
             if( m_topView->pageScaler() && m_topView->pageScaler()->Visible())
@@ -405,13 +421,37 @@ void WebFrameView::resizeContent(const TSize &size)
         //maybe the content got smaller and we need to scroll back to view?
         TPoint p( nearestPointInFrame(m_contentPos) );
         if (p!=m_contentPos)
+        	{ 
             // this will also update scrollbars is necessary
             scrollTo(p);
+        	} 
         else if (!m_parent) {
             // top level
             m_topView->updateScrollbars(m_contentSize.iHeight, m_contentPos.iY, m_contentSize.iWidth, m_contentPos.iX);
         }
     }
+    moveFocus();
+}
+
+void WebFrameView::moveFocus()
+{
+    // After resizing, move the focus to the correct node
+	if (m_topView && m_topView->focusedElementType() == TBrCtlDefs::EElementAnchor &&
+        m_topView->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed) { 
+    	Frame* mainFrame = core(m_topView->mainFrame());
+        FocusController* focusController = m_topView->page()->focusController();
+        Frame* focusedFrame = focusController->focusedOrMainFrame();
+        if (focusedFrame == NULL) {
+	 	    focusedFrame = mainFrame;
+        }
+        Node* node = focusedFrame->document()->focusedNode();
+	 	if (node) {
+            TRect rect = node->getRect().Rect();
+            TPoint viewPoint = kit(focusedFrame)->frameView()->frameCoordsInViewCoords(rect.iTl);
+            WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
+            cursor->setPosition(viewPoint);
+	 	}
+	 }
 }
 
 void WebFrameView::setMayUseCopyScroll(TBool aCopy)

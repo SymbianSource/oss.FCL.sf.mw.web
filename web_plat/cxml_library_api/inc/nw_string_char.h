@@ -29,7 +29,7 @@
 #ifndef NW_STRING_CHARACTER_H
 #define NW_STRING_CHARACTER_H
 
-#include "cxml_proj.h"
+#include <cxml_proj.h>
 
 #ifdef __cplusplus
 extern "C" {

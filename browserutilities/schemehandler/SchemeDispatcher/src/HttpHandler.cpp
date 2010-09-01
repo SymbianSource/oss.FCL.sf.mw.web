@@ -17,7 +17,6 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "HttpHandler.h"
@@ -30,9 +29,9 @@
 #include <eikdoc.h>
 #include <eikproc.h>
 #include <f32file.h>
-#include <apgtask.h>
+#include <APGTASK.H>
 #include <w32std.h>
-#include <BrowserOverriddenSettings.h>
+#include <browseroverriddensettings.h>
 
 _LIT( KBrowserPrefix, "4 " );
 LOCAL_C const TUid KUidBrowser = { 0x10008D39 };
@@ -112,15 +111,15 @@ void CHttpHandler::HandleUrlEmbeddedL()
     buf16->Des().Copy( KBrowserPrefix );
     buf16->Des().Append( *iParsedUrl );
             
-//    iLauncher = CBrowserLauncher::NewL();
+    iLauncher = CBrowserLauncher::NewL();
     TBrowserOverriddenSettings settings;
     settings.SetBrowserSetting( EBrowserOverSettingsFullScreen, 1 );
     settings.SetBrowserSetting( EBrowserOverSettingsAutoLoadImages, 1 );
     settings.SetBrowserSetting( EBrowserOverSettingsFontSize, EBrowserOverFontSizeLevelNormal );
-/*    iLauncher->LaunchBrowserEmbeddedL( buf16->Des(), 
+    iLauncher->LaunchBrowserEmbeddedL( buf16->Des(), 
                                        NULL, 
                                        this,
-                                       &settings );*/
+                                       &settings );
     CleanupStack::PopAndDestroy();  // buf16  
 	CLOG_LEAVEFN( "CHttpHandler::HandleUrlEmbeddedL()" );
 	}

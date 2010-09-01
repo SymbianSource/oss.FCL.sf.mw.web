@@ -23,32 +23,75 @@
 #include "wrtharvesterpublisherobserver.h"
 
 #include "wrtharvesterconst.h"
-#include <WidgetRegistryConstants.h>
+#include <widgetregistryconstants.h>
 #include <wrtharvester.rsg>
+#include <startupdomainpskeys.h>
+#include <ecom/implementationproxy.h>
 
-#include <implementationproxy.h>
-
-#include <liwservicehandler.h>
-#include <liwvariant.h>
-#include <liwgenericparam.h>
+#include <LiwServiceHandler.h>
+#include <LiwVariant.h>
+#include <LiwGenericParam.h>
 #include <e32property.h>    //Publish & Subscribe
 #include <AknTaskList.h>
 #include <apaid.h>
 #include <apacmdln.h>
 #include <s32mem.h>
-#include <apgtask.h>
+#include <APGTASK.H>
 #include <coemain.h>
 #include <bautils.h>
 #include <f32file.h>
 #include <e32std.h>
 #include <AknNotify.h>
-#include <AknGlobalConfirmationQuery.h>
+#include <aknglobalconfirmationquery.h>
 #include <StringLoader.h>
 #include <data_caging_path_literals.hrh>
+#include <oommonitorsession.h>
+
+#ifndef BRDO_OOM_MONITOR2_COMPONENT_FF 
+#include <systemwarninglevels.hrh>
+#endif
+#include "browser_platform_variant.hrh"
 
 // CONSTANTS
 _LIT( KResourceFileName, "\\resource\\wrtharvester.rsc" );
 _LIT( KResourceDir, "Z:wrtharvester.rsc" );
+_LIT( KUid, "uid");
+_LIT( K0x, "0x");
+_LIT( KOpenPar, "(");
+_LIT( KClosePar, ")");
+_LIT8( KWidgetIcon, "widget_icon");
+#define KUidWidgetOOMPlugin 0x10282855
+const TInt KMemoryToLaunchWidgetUi = 17*1024*1024;
+
+
+
+/** 
+* Launch or bring foreground the asked widget.
+*
+* Launch widget.
+* @param aUid UID of the widget.
+* @param aOperation Operation to perform.
+*/
+static void LaunchWidgetL( const TUid& aUid, TUint32 aOperation );
+
+/** 
+* In case the widget cannot be launched because of OOM
+* Notify harvester and Clear event Queue
+* @return void
+*/
+static void NotifyCommandAndCleanUp();
+
+/** 
+* Launch new widget.
+*
+* Launch new widget.
+* @param aUid UID of the widget.
+* @param aOperation Operation to perform.
+*/
+static void LaunchWidgetUIL( 
+    const TUid& aUid, 
+    const TDesC8& aMessage, 
+    TUint32 aOperation );
 
 /**
 * Utility class to show the prompt for platform security access.
@@ -131,6 +174,7 @@ private:
 // Returns the app full name
 // ----------------------------------------------------------------------------
 //
+/*
 static HBufC* GetAppNameLC( RApaLsSession& aSession, const TUid& aUid )
     {
     TApaAppInfo info;
@@ -138,52 +182,8 @@ static HBufC* GetAppNameLC( RApaLsSession& aSession, const TUid& aUid )
     
     return info.iFullName.AllocLC();
     }
+*/
     
-    
-// ----------------------------------------------------------------------------
-// Sends the command to Widget launcher
-// ----------------------------------------------------------------------------
-//
-static void HandleWidgetCommandL( 
-    RApaLsSession& aSession, 
-    const TDesC& aWidget,
-    const TUid& aUid,
-    TUint32 aOperation )
-    {
-    const TInt size( 2* aWidget.Length() + 3*sizeof( TUint32 ) );
-    
-    // Message format is <filenameLength><unicode_filename><someintegervalue>
-    CApaCommandLine* cmd( CApaCommandLine::NewLC() );
-    HBufC8* opaque( HBufC8::NewLC( size ) );
-    
-    RDesWriteStream stream;
-    TPtr8 des( opaque->Des() );
-    
-    stream.Open( des );
-    CleanupClosePushL( stream );
-    
-    // Generate the command.
-    stream.WriteUint32L( aUid.iUid );
-    stream.WriteUint32L( aWidget.Length() );
-    stream.WriteL( reinterpret_cast< const TUint8* >( aWidget.Ptr() ),
-                   aWidget.Size() );
-    
-    stream.WriteInt32L( aOperation );
-    
-    CleanupStack::PopAndDestroy( &stream );
-    
-    // Generate command.
-    cmd->SetCommandL( EApaCommandBackgroundAndWithoutViews );
-    cmd->SetOpaqueDataL( *opaque );    
-
-    CleanupStack::PopAndDestroy( opaque );
-    
-    cmd->SetExecutableNameL( KLauncherApp );
-    
-    User::LeaveIfError( aSession.StartApp( *cmd ) );
-    CleanupStack::PopAndDestroy( cmd );
-    }
-
 // Map the interface UIDs to implementation factory functions
 const TImplementationProxy ImplementationTable[] = 
     {
@@ -220,15 +220,21 @@ CWrtHarvester::CWrtHarvester( MLiwInterface* aCPSInterface ):
 void CWrtHarvester::ConstructL()
     {
     User::LeaveIfError( iApaSession.Connect() );
+    	
+    iSystemShutdown = EFalse;
     iWidgetUIListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetUIState );
     iWidgetRegListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetRegAltered );
+    iWidgetSystemShutdownListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetSystemShutdown );
+    iMsModeListener = CWrtHarvesterPSNotifier::NewL( this, EWidgetMassStorageMode );
     
     User::LeaveIfError( iFs.Connect() );
-    iWidgetUsbListener = CWrtUsbHandler::NewL( this, iFs );
     
-    iWidgetUsbListener->Start();
     SetMSMode(0);
     
+    iCanAccessRegistry = ETrue;    
+	iReinstallingWidget = EFalse;
+	
+	    
     TFileName resourceFileName;  
     TParse parse;    
     Dll::FileName (resourceFileName);           
@@ -274,10 +280,19 @@ CWrtHarvester::~CWrtHarvester()
     iObservers.ResetAll();
     iWidgetInfo.ResetAll();
     iWidgetStateArray.ResetAll();
+    
     delete iWidgetUIListener;
-    delete iWidgetRegListener;
-    delete iWidgetMMCListener;
-    delete iWidgetUsbListener;
+    delete iWidgetRegListener;    
+    delete iMsModeListener;    
+    delete iWidgetSystemShutdownListener;
+    
+    if(iAsyncCallBack)
+        {
+        iAsyncCallBack->Cancel();       
+        }
+    delete iAsyncCallBack;
+    iAsyncCallBack = NULL;
+    iUid.Close();
     iWidgetOperations.Close();
     iHSWidgets.ResetAndDestroy();
     iApaSession.Close();
@@ -300,14 +315,30 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
     {
     
     //Do not send the Operations to the Widgets when in Mass storage mode.. . .  
-    if( IsInMSMode() == 1 )
-        {
-         if(aTrigger == KDeActive)
-         RemovePublisherAndObserverL(aContentId);
-         return;              
-        }
-   
     TUid uid( WidgetUid( aContentId ) );
+    
+    
+    if(iSystemShutdown && aTrigger == KDeActive )
+    	{
+    	return ;
+    	}
+    if( IsInMSMode() == 1 )
+      {
+      if( aTrigger == KDeActive && !iSystemShutdown )
+          {
+          RemovePublisherAndObserverL(aContentId);
+          RWidgetRegistryClientSession session;
+          CleanupClosePushL( session );
+          User::LeaveIfError( session.Connect() );
+          session.SetBlanketPermissionL( uid, EBlanketUnknown );
+          CleanupStack::PopAndDestroy( &session );
+          }
+      return; 
+      }
+      
+	if(!iCanAccessRegistry)
+		return;             
+		
     TWidgetOperations operation( Uninitialized );
     if( aTrigger == KActive )
         {
@@ -341,8 +372,20 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
             break;
             }
           }
-        delete temp;        
-        }
+        delete temp;
+        
+        // Removing . Miniview, shall remove full view as well. For blanket permissions
+        // will be revoked for miniview
+         
+      	if(!iSystemShutdown)
+      	    {        
+            RWidgetRegistryClientSession session;
+            CleanupClosePushL( session );
+            User::LeaveIfError( session.Connect() );
+            session.SetBlanketPermissionL( uid, EBlanketUnknown );
+            CleanupStack::PopAndDestroy( &session );
+            }
+      }
     else if( aTrigger == KSuspend )
         {
         operation = WidgetSuspend;
@@ -385,6 +428,11 @@ void CWrtHarvester::HandlePublisherNotificationL( const TDesC& aContentId, const
 //
 void CWrtHarvester::UpdatePublishersL() 
     {
+    if(iReinstallingWidget)
+        {        
+        iReinstallingWidget = EFalse;
+        return;
+        }
     iRegistryAccess.WidgetInfosL( iWidgetInfo );
     RemoveObsoletePublishersL();
     
@@ -481,8 +529,38 @@ void CWrtHarvester::RegisteredPublishersL( RPointerArray<HBufC>& publishers )
             if( publisherMap && publisherMap->FindL( KContentId , variant ))
                 {
                  HBufC* bundleId = variant.AsDes().AllocLC();
-                 publishers.AppendL( bundleId );
-                 CleanupStack::Pop( bundleId );
+                 variant.Reset();
+                 TBool isNokiaWidget = EFalse;
+                 if ( publisherMap->FindL( KDataMap, variant) )
+                     {
+                     CLiwDefaultMap* dataMap = CLiwDefaultMap::NewLC();
+                     variant.Get( *dataMap );
+                     variant.Reset();
+                     if ( dataMap->FindL( KWidgetInfo, variant ) )
+                         {
+                         CLiwDefaultMap* widgetInfoMap = CLiwDefaultMap::NewLC();
+                         variant.Get( *widgetInfoMap );
+                         if ( widgetInfoMap->FindL( KWidgetType, variant ) )
+                             {
+                             if ( KS60Widget == variant.AsTInt32())
+                                 {
+                                 isNokiaWidget = ETrue;
+                                 }
+                             }
+                         CleanupStack::PopAndDestroy( widgetInfoMap );
+                         }
+                     CleanupStack::PopAndDestroy( dataMap );
+                     }
+                 
+                 if (isNokiaWidget )
+                     {
+                     publishers.AppendL( bundleId );
+                     CleanupStack::Pop( bundleId );
+                     }
+                 else
+                     {
+                     CleanupStack::PopAndDestroy( bundleId );
+                     }
                  }
              CleanupStack::PopAndDestroy( publisherMap );     
              }
@@ -503,7 +581,17 @@ TInt CWrtHarvester::RegisterPublisherL( CWrtInfo& wrtInfo )
     __UHEAP_MARK;
     TInt id( KErrNotFound );
     if( iCPSInterface )
-        {   
+        {
+        TBuf<10> uid(wrtInfo.iUid.Name());  // [12345678]
+        uid.Delete(0,1);                    // 12345678]
+        uid.Delete( uid.Length()-1, 1);     // 12345678
+        TBuf<50> wrtuid;
+        wrtuid.Append(KUid);                // uid
+        wrtuid.Append(KOpenPar);            // uid(
+        wrtuid.Append(K0x);                 // uid(0x
+        wrtuid.Append(uid );			  // uid(0x12345678
+        wrtuid.Append(KClosePar);           // uid(0x12345678)
+   
         CLiwGenericParamList* inparam( CLiwGenericParamList::NewLC() );
         CLiwGenericParamList* outparam( CLiwGenericParamList::NewLC() );
 
@@ -517,21 +605,25 @@ TInt CWrtHarvester::RegisterPublisherL( CWrtInfo& wrtInfo )
         cpdatamap->InsertL( KPublisherId, TLiwVariant( KWRTPublisher ));
         cpdatamap->InsertL( KContentType, TLiwVariant( KTemplatedWidget ));
         cpdatamap->InsertL( KContentId, TLiwVariant( wrtInfo.iBundleId ));
-        // Widget info map
-    	CLiwDefaultMap* widgetInfo = CLiwDefaultMap::NewLC();
-		widgetInfo->InsertL( KTemplateType, TLiwVariant( KTemplateName ));
-		widgetInfo->InsertL( KWidgetName, TLiwVariant( wrtInfo.iDisplayName ));
-		datamap->InsertL( KWidgetInfo , TLiwVariant( widgetInfo ));
-		CleanupStack::PopAndDestroy( widgetInfo );
         
-		// Take dynamic menu items into use
-		if (networkAccess)
-		    {
-		    CLiwDefaultMap* mapMenu = CLiwDefaultMap::NewLC();
-		    mapMenu->InsertL( KItemOnlineOffline, TLiwVariant( KMyActionName ));
-		    datamap->InsertL( KMenuItems, TLiwVariant( mapMenu ));
-		    CleanupStack::PopAndDestroy(mapMenu);
-		    }
+        // Widget info map
+    	  CLiwDefaultMap* widgetInfo = CLiwDefaultMap::NewLC();
+		    widgetInfo->InsertL( KTemplateType, TLiwVariant( KTemplateName ));
+		    widgetInfo->InsertL( KWidgetName, TLiwVariant( wrtInfo.iDisplayName ));
+		    widgetInfo->InsertL( KWidgetIcon, TLiwVariant( wrtuid));  // uid(0x12345678) This is the expected format 
+            widgetInfo->InsertL( KWidgetType, TLiwVariant( TInt32 (wrtInfo.iType ) ));
+
+		    datamap->InsertL( KWidgetInfo , TLiwVariant( widgetInfo ));
+		    CleanupStack::PopAndDestroy( widgetInfo );
+        
+		    // Take dynamic menu items into use
+		    if (networkAccess)
+		        {
+		        CLiwDefaultMap* mapMenu = CLiwDefaultMap::NewLC();
+		        mapMenu->InsertL( KItemOnlineOffline, TLiwVariant( KMyActionName ));
+		        datamap->InsertL( KMenuItems, TLiwVariant( mapMenu ));
+		        CleanupStack::PopAndDestroy(mapMenu);
+		        }
 
         cpdatamap->InsertL( KDataMap, TLiwVariant(datamap) );
         
@@ -680,13 +772,42 @@ void CWrtHarvester::RequestForNotificationL( CWrtInfo& wrtInfo )
 void CWrtHarvester::QueueOperationL( TWidgetOperations aOperation, TUid aUid )
     {
     //Hack to find out if WidgetUi exist as Queue keeps filling up
-    if((iHSCount*3 <= iWidgetOperations.Count() && !CheckTaskExistsL()) || (aOperation == WidgetSelect))
-        {
+    SWidgetOperation op = { aOperation, aUid };
+    
+    TInt value = KErrNone;
+    TInt error = iWidgetUIListener->GetValue(value);
+    
+    if((iHSCount*3 <= iWidgetOperations.Count() && !CheckTaskExistsL() ) || (aOperation == WidgetSelect && !CheckTaskExistsL() && value ) )
+        {        
         ClearAllOperations();
         iWidgetUIListener->SetValue(1);
-        }        
-    SWidgetOperation op = { aOperation, aUid };
-    iWidgetOperations.Append( op );
+        } 
+    
+    TBool queued (EFalse);
+    for(TInt i =0; i < iWidgetOperations.Count() && (aOperation == WidgetResume || aOperation == WidgetSuspend ) ; i++)
+        {
+        SWidgetOperation opInQueue = iWidgetOperations[i];
+        //we get resume but we already have suspend in Queue
+        //make Resume as Suspend    
+        if(op.iOperation == WidgetResume && opInQueue.iUid == op.iUid && opInQueue.iOperation == WidgetSuspend )
+            {            
+            iWidgetOperations[i].iOperation = WidgetResume;
+            queued = ETrue;
+            break;
+            }            
+        //we get suspend but we already have resume in Queue
+        //make Suspend as Resume    
+        if(op.iOperation == WidgetSuspend  && opInQueue.iUid == op.iUid && opInQueue.iOperation == WidgetResume )
+            {            
+            iWidgetOperations[i].iOperation = WidgetSuspend;
+            queued = ETrue;
+            break;
+            }    
+        }
+            
+    if(!queued)
+        iWidgetOperations.Append( op );
+            
     TryLaunchNextOperationL();
     }
 
@@ -716,13 +837,17 @@ void CWrtHarvester::TryLaunchNextOperationL()
     {
     TInt value = KErrNone;
     TInt error = iWidgetUIListener->GetValue(value);
-    if( error == KErrNone && value == 1 && iWidgetOperations.Count() != 0 )
+    if( error == KErrNone && value == 1 && iWidgetOperations.Count() != 0 && iCanAccessRegistry )
         {
         // Set value to 0 so that next widget is not launched before Widget App sets value to 1.
         iWidgetUIListener->SetValue( 0 );
         //Always launch the first in operation
         LaunchWidgetOperationL( iWidgetOperations[0] );
-        iWidgetOperations.Remove( 0 );
+        
+        if(iWidgetOperations[0].iOperation == WidgetSelect)
+        	ClearAllOperations();        
+        else
+        	iWidgetOperations.Remove( 0 );
         }
     }
 
@@ -781,9 +906,7 @@ TInt CWrtHarvester::ExtractItemId( const CLiwGenericParamList& aInParamList )
 //
 void CWrtHarvester::LaunchWidgetOperationL( SWidgetOperation aOperation )
     {
-    HBufC* widgetName( GetAppNameLC( iApaSession, aOperation.iUid) );
-    HandleWidgetCommandL( iApaSession, *widgetName, aOperation.iUid, aOperation.iOperation );
-    CleanupStack::PopAndDestroy( widgetName );
+    LaunchWidgetL (aOperation.iUid, aOperation.iOperation );
     }
 
 // ----------------------------------------------------------------------------
@@ -795,12 +918,28 @@ void CWrtHarvester::QueueResumeL( TUid& aUid )
     RWidgetRegistryClientSession session;
     CleanupClosePushL( session );
     User::LeaveIfError( session.Connect() );
-    if ( session.IsBlanketPermGranted ( aUid ) == EBlanketUnknown && !iDialogShown )
+
+    CWidgetPropertyValue* property = session.GetWidgetPropertyValueL( aUid, EPreInstalled );
+    TBool preInstalled = property && *(property);
+    delete property;
+
+    // Set blanket permission to true for pre-installed widgets
+    if ( preInstalled )
+        {
+        session.SetBlanketPermissionL( aUid, EBlanketTrue );
+        }
+    
+    if ( session.IsBlanketPermGranted ( aUid ) == EBlanketUnknown && !iDialogShown 
+         &&  iCanAccessRegistry  )
         {
         iDialogShown = ETrue;            
         AllowPlatformAccessL( aUid );
         }
-    else if(!iDialogShown)
+    else if(session.IsBlanketPermGranted ( aUid ) == EBlanketUnknown)
+        {
+        iUid.Append(aUid);
+        }
+    else
         {
         QueueOperationL( WidgetResume, aUid );
         }        
@@ -874,10 +1013,41 @@ TBool CWrtHarvester::CheckNetworkAccessL( TUid& aUid )
     RWidgetRegistryClientSession session;
     CleanupClosePushL( session );
     User::LeaveIfError( session.Connect() );
-    TBool networkAccess = *(session.GetWidgetPropertyValueL( aUid, EAllowNetworkAccess ) );
+
+    CWidgetPropertyValue* value = session.GetWidgetPropertyValueL( aUid, EAllowNetworkAccess );
+    TBool networkAccess = value && *(value);
+    delete value;
+
     CleanupStack::PopAndDestroy( &session );
     
     return networkAccess;
+    }
+// ----------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------
+//
+TInt CWrtHarvester::DeleteCallback(TAny* aPtr)
+    {
+    CWrtHarvester* self = (CWrtHarvester*)aPtr;    
+    self->QueueResumeL(self->iUid[0]);
+    self->iUid.Remove(0);    
+    delete self->iAsyncCallBack;
+    self->iAsyncCallBack = NULL;
+    return 0;
+    }
+
+// ----------------------------------------------------------------------------
+// 
+// ----------------------------------------------------------------------------
+//
+void CWrtHarvester::DialogShown()
+    {
+    iDialogShown = EFalse;
+    if(iUid.Count())
+        {
+        iAsyncCallBack = new (ELeave) CAsyncCallBack(TCallBack(DeleteCallback,this),CActive::EPriorityUserInput);
+        iAsyncCallBack->CallBack(); 
+        }
     }
 
 // ----------------------------------------------------------------------------
@@ -993,5 +1163,147 @@ void CGlobalQueryHandlerAO::ShowGlobalQueryDialogL(const TDesC& aMessage, TInt a
                                 aMessage,
                                 aSoftkeys);
     }
+//======================================================================
+// Launch widget.
+//===========================================================================
+//
+void LaunchWidgetL( const TUid& aUid, TUint32 aOperation )
+    {
+    __UHEAP_MARK;
+    
+    TUid widgetAppUid( TUid::Uid( KWidgetAppUid ) );
+    
+    RWsSession wsSession;
+    ROomMonitorSession monitorSession;
+    TApaTaskList taskList( wsSession );
+    HBufC8* message( HBufC8::NewLC( KWidgetUiMaxMessageLength ) );
+    TPtr8 des( message->Des() );
+    TInt err(KErrNone);
+    RDesWriteStream stream( des );
+    
+    CleanupClosePushL( stream );
+    
+    // Make the message to be sent.
+    stream.WriteUint32L( 1 );
+    stream.WriteUint32L( aUid.iUid );
+    stream.WriteInt32L( aOperation );
+        
+    CleanupStack::PopAndDestroy( &stream );
+    
+    // Create Window server session
+    User::LeaveIfError( wsSession.Connect() );
+    User::LeaveIfError( monitorSession.Connect() );
+    CleanupClosePushL( wsSession );
 
+    // Get the task list
+    // Try to find out if stub ui is already running
+    TApaTask task = taskList.FindApp( widgetAppUid );
+
+    if ( task.Exists() )
+        {
+        // TODO make something here, or not...
+        widgetAppUid = TUid::Uid( 1 );
+        if ( aOperation == WidgetSelect )
+            {
+            task.BringToForeground();
+            }
+        task.SendMessage( widgetAppUid, des );
+        }
+    else
+        {
+        // TODO CONST
+        if ( aOperation == LaunchMiniview ||
+             aOperation == WidgetSelect ||
+             aOperation == WidgetResume ||
+             aOperation == WidgetRestart ) //WidgetUI has died -> re-launch
+            {
+            TInt bytesAvailaible(0);
+            if (aOperation != WidgetSelect )
+                {
+#ifdef BRDO_OOM_MONITOR2_COMPONENT_FF
+                err = monitorSession.RequestOptionalRam(KMemoryToLaunchWidgetUi, KMemoryToLaunchWidgetUi,KUidWidgetOOMPlugin, bytesAvailaible);
+#else
+                   TMemoryInfoV1Buf info;
+                   UserHal::MemoryInfo(info);
+                   err = info().iFreeRamInBytes > KMemoryToLaunchWidgetUi +  KRAMGOODTHRESHOLD ? KErrNone : KErrNoMemory;
+#endif
+                if( err == KErrNone)
+                    {
+                    LaunchWidgetUIL( widgetAppUid, *message, aOperation );
+                    }
+                }
+            else
+                {
+                //The modification is related to the manual starting of WRT widgets from HS. After noticing an issue when
+                //the user taps manually a WRT widget from the HS. 
+                //If RAM is not available with RequestOptionalRam() API, the manual tapping does nothing
+                //and that is incorrect behaviour. Therefore if widgetSelect -event is sent to the launcher we are using RequestFreeMemory() instead of using RequestOptionalRam() API. 
+                //This means that we apply mandatory RAM allocation when a widget is started manually from HS in order to make sure that RAM is released properly
+                err = monitorSession.RequestFreeMemory( KMemoryToLaunchWidgetUi );
+                if( err == KErrNone)
+                    {
+                    LaunchWidgetUIL( widgetAppUid, *message, aOperation );
+                    }
+                }
+            if(err != KErrNone)
+                NotifyCommandAndCleanUp();
+            }
+        else
+            {
+            NotifyCommandAndCleanUp();
+            }
+            
+        }
+        
+    CleanupStack::PopAndDestroy( 2, message );
+    monitorSession.Close();
+    __UHEAP_MARKEND;
+    }
+
+//===========================================================================
+// Launch Widget UI.
+//===========================================================================
+void LaunchWidgetUIL( 
+    const TUid& aUid, 
+    const TDesC8& aMessage, 
+    TUint32 aOperation )
+    {
+    HBufC* document( NULL );
+    CApaCommandLine* line( CApaCommandLine::NewLC() );
+    TApaAppInfo info;
+    RApaLsSession session;
+    
+    User::LeaveIfError( session.Connect() );
+    CleanupClosePushL( session );
+    
+    User::LeaveIfError( session.GetAppInfo( info, aUid ) );
+        
+    document = HBufC::NewMaxLC( TReal( TReal( aMessage.Length() )  / 2.0 ) + 0.5 );
+
+    Mem::Copy( 
+        reinterpret_cast< TUint8* >( const_cast< TUint16* >( document->Ptr() ) ),
+        aMessage.Ptr(),
+        KWidgetUiMaxMessageLength );
+        
+    line->SetDocumentNameL( *document );
+    line->SetExecutableNameL( info.iFullName );
+        
+    // TODO make const definitions.
+    if ( aOperation == 1 || aOperation == 3 )
+        {
+        line->SetCommandL( EApaCommandBackground );
+        }
+        
+    session.StartApp( *line );
+
+    CleanupStack::PopAndDestroy( 3, line );
+    }
+
+void NotifyCommandAndCleanUp()
+    {
+    const TUid KMyPropertyCat = { 0x10282E5A };
+    enum TMyPropertyKeys { EWidgetUIState = 109 };
+    TInt state( 2 );
+    RProperty::Set( KMyPropertyCat, EWidgetUIState , state );    
+    }
  //  End of File

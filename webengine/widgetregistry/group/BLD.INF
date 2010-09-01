@@ -16,17 +16,17 @@
 */
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
 
-../Data/Widget_lproj.xml                /epoc32/data/z/private/10282f06/Widget_lproj.xml
-../Data/Widget_lproj.xml                /epoc32/winscw/c/private/10282f06/Widget_lproj.xml
-../Data/WidgetAccessPolicy.xml          /epoc32/data/z/private/10282f06/WidgetAccessPolicy.xml
-../Data/WidgetAccessPolicy.xml          /epoc32/winscw/c/private/10282f06/WidgetAccessPolicy.xml
+../data/Widget_lproj.xml                /epoc32/data/z/private/10282f06/Widget_lproj.xml
+../data/Widget_lproj.xml                /epoc32/winscw/c/private/10282f06/Widget_lproj.xml
+../data/WidgetAccessPolicy.xml          /epoc32/data/z/private/10282f06/WidgetAccessPolicy.xml
+../data/WidgetAccessPolicy.xml          /epoc32/winscw/c/private/10282f06/WidgetAccessPolicy.xml
 ../Rom/WidgetRegistry.iby               CORE_MW_LAYER_IBY_EXPORT_PATH(WidgetRegistry.iby)
 
 PRJ_MMPFILES

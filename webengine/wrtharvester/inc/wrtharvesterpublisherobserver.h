@@ -20,7 +20,7 @@
 #define WRTHARVESTERPUBLISHEROBSERVER_H
 
 #include <e32base.h>
-#include <liwcommon.h>
+#include <LiwCommon.h>
 
 // FORWARD DECLARATIONS
 class CWrtHarvester;

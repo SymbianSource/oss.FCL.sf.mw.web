@@ -20,7 +20,7 @@
 
 #include <e32base.h>
 #include <http/rhttptransaction.h>
-#include <http/mhttptransactioncallback.h>
+#include <http/MHTTPTransactionCallback.h>
 
 class HttpSessionManager;
 

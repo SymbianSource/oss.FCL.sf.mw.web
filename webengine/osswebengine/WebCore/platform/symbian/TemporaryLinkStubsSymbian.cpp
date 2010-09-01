@@ -29,8 +29,8 @@
 #include "Cursor.h"
 #include "loader.h"
 #include "KURL.h"
-#include "ScrollBar.h"
-#include "ScrollBar.h"
+#include "Scrollbar.h"
+#include "Scrollbar.h"
 #include "Path.h"
 #include "PlatformScrollbar.h"
 #include "PlatformMouseEvent.h"
@@ -66,7 +66,7 @@
 #include "DocumentFragment.h"
 
 #include "../bidi.h"
-#include <StringLoader.h>
+#include <stringloader.h>
 #include <webkit.rsg>
 
 
@@ -112,8 +112,8 @@ int NumberOfPendingOrLoadingRequests(DocLoader*) { return 0; }
 
 void GraphicsContext::setShadow(IntSize const&,int,Color const&) { }
 void GraphicsContext::clearShadow() { }
-void GraphicsContext::beginTransparencyLayer(float) { }
-void GraphicsContext::endTransparencyLayer() { }
+/*void GraphicsContext::beginTransparencyLayer(float) { }
+void GraphicsContext::endTransparencyLayer() { }*/
 void GraphicsContext::clearRect(const FloatRect&) { }
 void GraphicsContext::strokeRect(const FloatRect&, float) { }
 void GraphicsContext::setLineCap(LineCap) { }

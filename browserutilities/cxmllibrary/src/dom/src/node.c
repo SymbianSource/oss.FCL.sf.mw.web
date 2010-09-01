@@ -17,9 +17,9 @@
 
 
 #include "cxml_internal.h"
-#include "nw_dom_node.h"
-#include "nw_dom_document.h"
-#include "nw_dom_element.h"
+#include <nw_dom_node.h>
+#include <nw_dom_document.h>
+#include <nw_dom_element.h>
 
 /**
  * GENERAL NODE METHODS - applicable to all node types

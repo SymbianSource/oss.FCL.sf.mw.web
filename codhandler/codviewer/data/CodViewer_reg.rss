@@ -17,10 +17,9 @@
 *
 */
 
-
 #include <appinfo.rh>
 #include <CodViewer.rsg>
-#include <CodDefs.h>
+#include "CodDefs.h"
 #include <data_caging_paths_strings.hrh>
 
 UID2 KUidAppRegistrationResourceFile

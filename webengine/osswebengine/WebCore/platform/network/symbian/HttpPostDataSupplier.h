@@ -21,8 +21,8 @@
 //  INCLUDES
 #include <e32base.h>
 #include <http/mhttpdatasupplier.h>
-#include <http/rhttptransaction.h>
-#include <wtf/Vector.h>
+#include <http/RHTTPTransaction.h>
+#include <wtf/vector.h>
 
 // CONSTANTS
 

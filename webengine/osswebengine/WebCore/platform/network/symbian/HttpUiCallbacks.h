@@ -21,7 +21,7 @@
 #include <e32base.h>
 #include <ApEngineConsts.h>
 #include <mconnectioncallback.h>
-#include <BrCtlDownloadObserver.h>
+#include <brctldownloadobserver.h>
 #include "HttpConnection.h"
 
 class RHTTPTransaction;

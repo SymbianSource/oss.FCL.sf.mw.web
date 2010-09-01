@@ -29,7 +29,7 @@
 #include "BarInfo.h"
 #include "CSSComputedStyleDeclaration.h"
 #include "CSSRuleList.h"
-#include "cssstyleselector.h"
+#include "CSSStyleSelector.h"
 #include "Chrome.h"
 #include "DOMSelection.h"
 #include "Document.h"

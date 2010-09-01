@@ -20,10 +20,11 @@
 #define __DEVICELIWBINDING_H
 
 #include <e32std.h>
-#include <liwcommon.h>
+#include <LiwCommon.h>
 #include "DeviceLiwMap.h"
 #include "DeviceBinding.h"
 #include "DeviceLiwIterable.h"
+#include "browser_platform_variant.hrh"
 
 class CLiwServiceHandler;
 class CRTSecMgrScriptSession;
@@ -173,6 +174,12 @@ namespace KJS
             **/
             void SetAppName();
 #endif
+            /**
+            * Calling attachL if sapi prompt is needed
+            * @return TInt
+            * @since 
+            **/
+            TInt sapiPromptNeededL(RCriteriaArray aCrit_arr);
         private:
 
             CLiwServiceHandler* m_serviceHandler;   // Owned

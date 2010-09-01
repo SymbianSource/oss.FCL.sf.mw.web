@@ -23,7 +23,7 @@
 #include <avkon.hrh>
 #include <widgetmenu.rsg>
 
-#include "brctlinterface.h"
+#include <brctlinterface.h>
 #include "MenuCallbacks.h"
 #include "MenuItemCallbacks.h"
 #include "WidgetEngineCallbacks.h"

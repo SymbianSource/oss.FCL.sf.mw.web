@@ -22,8 +22,8 @@
 //  INCLUDES
 #include <e32base.h>
 #include <e32std.h>
-#include <Browser_platform_variant.hrh>
-#include <BrCtlDefs.h>
+#include <Browser_Platform_Variant.hrh>
+#include <brctldefs.h>
 #include <brctlinterface.h>
 #include "WidgetEngineCallbacks.h"
 

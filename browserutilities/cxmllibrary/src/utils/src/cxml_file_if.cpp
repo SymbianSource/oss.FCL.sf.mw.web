@@ -15,12 +15,9 @@
 *
 */
 
-
-
-#include <f32file.h>
-#include "cxml_file_if.h"
-#include "nw_string_char.h"
-
+#include <F32File.h>
+#include <cxml_file_if.h>
+#include <nw_string_char.h>
 
 //
 //CXML_Read_From_File()

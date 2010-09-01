@@ -11,7 +11,7 @@
 *
 * Contributors:
 *
-* Description:  
+* Description:
 *
 */
 
@@ -160,7 +160,7 @@ void Widget::hide()
 
     data->visible = false;
 
-    if( getOuterView() )
+    if( getOuterView() && isFrameView() )
         {
         getOuterView()->makeVisible( EFalse );
         }
@@ -243,8 +243,8 @@ bool Widget::isFocusable() const
     return false;
     }
 
-void Widget::handleEvent(Event* event) 
-{ 
+void Widget::handleEvent(Event* event)
+{
     if (event->type() == keydownEvent && event->isKeyboardEvent()) {
         KeyboardEvent* kevt = static_cast<KeyboardEvent*>(event);
         if (kevt->keyIdentifier() == "Enter") {

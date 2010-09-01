@@ -17,10 +17,8 @@
 #ifndef BROWSERUIINTERNALCRKEYS_H
 #define BROWSERUIINTERNALCRKEYS_H
 
-#warning The Browser UI SDK keys will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
+#include <browseruisdkcrkeys.h>
 
-#include <BrowserUiSDKCRKeys.h>
-
-#pragma message ("Please include BrowserUiSDKCRKeys.h in place of BrowserUiInternalCRKeys.h")
+#pragma message ("Please include browseruisdkcrkeys.h in place of browseruiinternalcrkeys.h")
 
 #endif      // BROWSERUIINTERNALCRKEYS_H

@@ -54,7 +54,7 @@
 #include "HTMLDocument.h"
 
 #include "CSSPropertyNames.h"
-#include "cssstyleselector.h"
+#include "CSSStyleSelector.h"
 #include "CString.h"
 #include "CookieJar.h"
 #include "DocumentLoader.h"

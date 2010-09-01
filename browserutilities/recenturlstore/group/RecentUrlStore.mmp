@@ -16,7 +16,7 @@
 */
 
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET          RECENTURLSTORE.DLL
 TARGETTYPE      DLL
@@ -29,7 +29,7 @@ EPOCALLOWDLLDATA
 #if defined(ARMCC)
     DEFFILE ../EABI/RecentUrlStore.def
 #elif defined( WINSCW )
-    DEFFILE ../BWINSCW/RecentUrlStore.def
+    DEFFILE ../BWinsCw/RecentUrlStore.def
 #endif
 
 #include <data_caging_paths.hrh>

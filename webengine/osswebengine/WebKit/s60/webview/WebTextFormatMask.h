@@ -121,6 +121,7 @@ public:
 
     bool checkText(const WebCore::String&, ErrorBlock&);
     MaskBase* getMask(int aOffset);
+    bool acceptAll();
     
 public:    
     int getMultitude();

@@ -31,38 +31,41 @@
 #include "PluginStream.h"
 #include "PluginHandler.h"
 
-#include "NetscapePlugInStreamLoader.h"
+#include "NetScapePlugInStreamLoader.h"
 
 using namespace WebCore;
 
     
-NetscapePlugInStreamLoaderClient* NetscapePlugInStreamLoaderClient::NewL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata)
+NetscapePlugInStreamLoaderClient* NetscapePlugInStreamLoaderClient::NewL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata, TBool notify/*=EFalse*/)
 {
     NetscapePlugInStreamLoaderClient* self = new (ELeave) NetscapePlugInStreamLoaderClient();    
     CleanupStack::PushL( self );
-    self->ConstructL( url, pluginskin, frame, notifydata );
+    self->ConstructL( url, pluginskin, frame, notifydata, notify );
     CleanupStack::Pop();    
     return self;    
 }
 
 
-NetscapePlugInStreamLoaderClient* NetscapePlugInStreamLoaderClient::NewL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata)
+NetscapePlugInStreamLoaderClient* NetscapePlugInStreamLoaderClient::NewL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata, TBool notify/*=EFalse*/)
 {
     NetscapePlugInStreamLoaderClient* self = new (ELeave) NetscapePlugInStreamLoaderClient();
     CleanupStack::PushL( self );
             
-    self->ConstructL( request, pluginskin, frame, notifydata );
+    self->ConstructL( request, pluginskin, frame, notifydata, notify );
     
     CleanupStack::Pop();    
     return self;    
 }
 
-void NetscapePlugInStreamLoaderClient::ConstructL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata)  
+void NetscapePlugInStreamLoaderClient::ConstructL(const String& url, PluginSkin* pluginskin, Frame* frame, void* notifydata, TBool notify/*=EFalse*/)  
 {            
     m_loader = 0; 
     m_request = 0;
     m_pluginstream = 0;
+    m_pluginskin = pluginskin;
+    m_notifydata = notifydata;
     m_frame = frame;
+    m_notify = notify;
     m_pluginstream = new (ELeave) PluginStream(pluginskin, this, notifydata);
     m_request = new (ELeave) ResourceRequest(m_frame->loader()->completeURL(url));
     
@@ -78,13 +81,16 @@ void NetscapePlugInStreamLoaderClient::ConstructL(const String& url, PluginSkin*
         m_loader->setShouldBufferData(false);
 }
 
-void NetscapePlugInStreamLoaderClient::ConstructL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata)  
+void NetscapePlugInStreamLoaderClient::ConstructL(const ResourceRequest& request, PluginSkin* pluginskin, Frame* frame, void* notifydata, TBool notify/*=EFalse*/)  
 {            
     
     m_loader = 0; 
     m_request = 0;
     m_pluginstream = 0;
+    m_pluginskin = pluginskin;
+    m_notifydata = notifydata;
     m_frame = frame;
+    m_notify = notify;
     m_pluginstream = new (ELeave) PluginStream(pluginskin, this, notifydata);
     m_request = new (ELeave) ResourceRequest(request.url());
 
@@ -124,6 +130,8 @@ NetscapePlugInStreamLoaderClient::~NetscapePlugInStreamLoaderClient()
     
     delete m_request;     
     delete m_pluginstream;    
+    m_pluginskin = NULL;
+    m_notifydata = NULL;
     
 }
 
@@ -147,9 +155,10 @@ void NetscapePlugInStreamLoaderClient::stop()
 
 void NetscapePlugInStreamLoaderClient::cancelWithError(const ResourceError& error)
 {
-    if (m_loader && !m_loader->isDone()) 
-        m_loader->cancel(error);           
+    if (m_loader && !m_loader->isDone()){
+        m_loader->cancel(error);
     }
+}
 
 void NetscapePlugInStreamLoaderClient::didReceiveResponse(const ResourceResponse& response)
 {
@@ -158,11 +167,20 @@ void NetscapePlugInStreamLoaderClient::didReceiveResponse(const ResourceResponse
         cancelWithError(ResourceError(String(response.url()), KErrGeneral, String(response.url()), String(response.httpStatusText())));        
         return;
     }
-        
+    
+    // Currently we fill only response encoding type in the header field of NPStream structure, as url,MimeType and content-Length
+    // are already a part of NPStream Structure
+    
+    HBufC8* headerPtr = HBufC8::NewLC(response.textEncodingName().length() + 1);
+    headerPtr->Des().Copy(response.textEncodingName().des());
+    headerPtr->Des().Append('\0');
+    const char* headers = (const char*)headerPtr->Ptr();
+    
     if (m_pluginstream) {
-        TRAP(m_error, m_pluginstream->createNPStreamL(response.url().des(), response.mimeType().des(), response.expectedContentLength()));
+        TRAP(m_error, m_pluginstream->createNPStreamL(response.url().des(), response.mimeType().des(), response.expectedContentLength(), headers));
     }
-        
+    
+    CleanupStack::PopAndDestroy(headerPtr);
 }
 
 void NetscapePlugInStreamLoaderClient::didReceiveData(const char* data, int length, long long lengthReceived)
@@ -191,14 +209,22 @@ void NetscapePlugInStreamLoaderClient::didFinishLoading()
 void NetscapePlugInStreamLoaderClient::didFail(const ResourceError& error)
 {
     if (m_pluginstream) {
-        m_pluginstream->destroyStream(error.errorCode() ? error.errorCode() : KErrCancel);
+        int err = error.errorCode() ? error.errorCode() : KErrCancel;
+        HBufC* failedURL = HBufC::NewLC(error.failingURL().length());
+        failedURL->Des().Copy(error.failingURL());
+        m_pluginstream->destroyStream(err, failedURL);
+        CleanupStack::PopAndDestroy(failedURL);
     }
 }
 
 void NetscapePlugInStreamLoaderClient::didCancel(const ResourceError& error)
 {
     if (m_pluginstream) {
-        m_pluginstream->destroyStream(error.errorCode() ? error.errorCode() : KErrCancel);
+        int err = error.errorCode() ? error.errorCode() : KErrCancel;
+        HBufC* failedURL = HBufC::NewLC(error.failingURL().length());
+        failedURL->Des().Copy(error.failingURL());
+        m_pluginstream->destroyStream(err, failedURL);
+        CleanupStack::PopAndDestroy(failedURL);
     }
 }
 

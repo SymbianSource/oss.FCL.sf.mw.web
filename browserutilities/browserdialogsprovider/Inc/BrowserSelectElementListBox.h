@@ -22,7 +22,7 @@
 
 //  INCLUDES
 #include <aknlists.h>
-#include <BrCtlDialogsProvider.h>
+#include <brctldialogsprovider.h>
 
 // CLASSES
 

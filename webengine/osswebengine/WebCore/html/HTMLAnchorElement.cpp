@@ -24,7 +24,7 @@
 #include "config.h"
 #include "HTMLAnchorElement.h"
 
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "Document.h"
 #include "Event.h"
 #include "EventHandler.h"

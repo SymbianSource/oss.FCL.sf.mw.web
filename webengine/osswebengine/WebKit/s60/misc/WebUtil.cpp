@@ -22,7 +22,7 @@
 #include "Cache.h"
 #include "DocLoader.h"
 #include "IntPoint.h"
-#include "string.h"
+#include "String.h"
 #include "HTMLNames.h"
 #include "EventNames.h"
 #include "HTMLInputElement.h"
@@ -40,13 +40,13 @@
 #include "StaticObjectsContainer.h"
 #include "SelectionController.h"
 #include "WebUtil.h"
-#include "ErrorDefs.h"
+#include "errordefs.h"
 #include "RenderListBox.h"
 #include "RenderTextControl.h"
 #include "RenderView.h"
 #include "PlatformScrollbar.h"
 #include "HTMLSelectElement.h"
-#include "WebKitLogger.h"
+#include "webkitlogger.h"
 #include <StringLoader.h>
 #include <sslerr.h>
 #include <httperr.h>
@@ -119,7 +119,7 @@ TBrCtlDefs::TBrCtlElementType nodeTypeB(Node* node, Frame* frame)
             elType = ((HTMLInputElement*)ie)->checked() ? TBrCtlDefs::EElementRadioButtonSelected : TBrCtlDefs::EElementRadioButtonUnSelected;
         else if (ie->type() == "checkbox")
             elType = ((HTMLInputElement*)ie)->checked() ? TBrCtlDefs::EElementCheckBoxChecked : TBrCtlDefs::EElementCheckBoxUnChecked;
-        else if (ie->type() == "button" || ie->type() == "reset" || ie->type() == "submit")
+        else if (ie->hasLocalName( buttonTag )||ie->type() == "button" || ie->type() == "reset" || ie->type() == "submit")
             elType = TBrCtlDefs::EElementButton;
         else if (ie->type() == "file") {
             if (((HTMLInputElement*)ie)->value() == String())
@@ -628,7 +628,9 @@ int mapHttpErrors(int err )
         err == KErrHttpCannotEstablishTunnel) {
         return KErrSSLAlertHandshakeFailure;
     }
-
+    //Deal With Socket error
+   if( err <= KErrNetUnreach && err >= KErrUrgentData )
+        return err;
     // Deal with DNS lookup errors
     if ((err <= KErrInet6NoDestination) && (err > (KErrInet6NoDestination - 200))) {
         return KBrowserHTTP502;

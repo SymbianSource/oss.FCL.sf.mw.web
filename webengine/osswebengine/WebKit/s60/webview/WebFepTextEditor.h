@@ -17,14 +17,14 @@
 
 
 
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 
 #include <e32base.h>
 #include <fepbase.h>
 #include <coeinput.h>
 #include <fepipext.h>
 #include <frmtlay.h>
-#include <aknextendedinputcapabilities.h> 
+#include <AknExtendedInputCapabilities.h> 
 #include <eikccpu.h>
 #include <baclipb.h>
 
@@ -116,14 +116,13 @@ public:
     bool validateTextFormat();
 
     TBool IsDirectionRTL();
+    TBool IsLongKeyPress() const;
     
 #if defined(BRDO_BROWSER_50_FF)
     void SetAlignment(CAknExtendedInputCapabilities::TInputCapabilities aAlignment);
 #endif	// BRDO_BROWSER_50_FF
 
     bool IsTextAreaFocused() const;
-    
-    void EnableCcpu(TBool aSupport);
     void DoCcpuCanPasteL() const;
     void PlaceDataOnClipboardL();
     void RetrieveDataFromClipboardL();
@@ -132,7 +131,11 @@ public:
     void HandleMaskedInsertText(WebCore::Frame* frame, const String& text);
     void HandleMaskedDeleteText(WebCore::Frame* frame);
     bool IsWapMaskedModeInput(WebCore::Frame* frame);
-
+    void EnableCcpuL();
+    TBool IsInputElementFocused() const;
+    void ReportEventL();
+    
+    TBool inlineTextEditingStarted();
 private:
     void  findPrevSiblingTextLen(Node*, TInt&) const;
     Node* findTextNodeForCurPos(Node* aNode, TInt& aPos) const;
@@ -145,6 +148,9 @@ private:
     HBufC* m_inlineEditText;
     String m_inputTextColor;
     CAknExtendedInputCapabilities* m_ExtendedInputCapabilities;
+    CAknCcpuSupport* m_CcpuSupport;
+    TBool m_longKeyPress;
+    TBool m_inlineTextEditingStarted;
     };
 
 #endif

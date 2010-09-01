@@ -17,10 +17,9 @@
 *
 */
 
-
 // INCLUDE FILES
 
-#include "FavouritesSession.h"
+#include <favouritessession.h>
 #include "FavouritesSrv.h"
 #include "FavouritesVersion.h"
 #include "FavouritesDef.h"

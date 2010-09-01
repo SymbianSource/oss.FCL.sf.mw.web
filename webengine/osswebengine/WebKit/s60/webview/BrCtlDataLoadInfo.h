@@ -21,7 +21,7 @@
 #define BRCTLDATALOADINFO_H
 
 //  INCLUDES
-#include <BrCtlInterface.h>
+#include <brctlinterface.h>
 
 //  CONSTANTS
 

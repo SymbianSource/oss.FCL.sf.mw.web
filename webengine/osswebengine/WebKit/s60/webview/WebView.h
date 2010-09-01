@@ -23,10 +23,11 @@
 #include <e32std.h>
 #include <eikscrlb.h>
 #include "platform/Shared.h"
-#include "BrCtlDefs.h"
-#include "pagescaler.h"
+#include <brctldefs.h>
+#include "PageScaler.h"
 #include "Timer.h"
-#include "MemoryManager.h"
+#include <MemoryManager.h>
+#include <stmgesturelistener.h>
 
 namespace WebCore
 {
@@ -36,6 +37,11 @@ namespace WebCore
     class FormState;
     class Element;
     class Frame;
+}
+
+namespace KJS
+{
+    class PausedTimeouts;
 }
 
 class CPluginHandler;
@@ -66,6 +72,9 @@ class WebPointerEventHandler;
 class WebPageFullScreenHandler;
 class WebFrameView;
 class WebFrameBridge;
+class WebPagePinchZoomHandler;
+class CThumbnailGenerator;
+class PluginSkin;
 
 
 const TUint KMouseEventFired = 0x00000001;
@@ -158,6 +167,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void scrollBuffer(TPoint aTo, TPoint aFrom, TBool aMayUseCopyScroll);
         TRect offscreenRect() const {return m_offscreenrect;}
         CPageScaler* pageScaler() const{ return m_pageScaler; }
+        CThumbnailGenerator* pageThumbnailGenerator()const { return m_thumbnailGenerator;}
         //void updateScrollBarsL(CEikScrollBar::TOrientation aOrientation, const TInt aThumbPos, const int aScrollSpan);
         int scalingFactor() const;
         void openUrl(const TDesC& url);
@@ -294,13 +304,6 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void closeToolBarL();
 
         /**
-        * HandlePointerBufferReadyL
-        * From CCoeControl
-        *
-        */
-        void HandlePointerBufferReadyL();
-
-        /**
         * HandlePointerEventL
         * From CCoeControl
         *
@@ -312,7 +315,7 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         *
         *
         */
-        void setViewIsScrolling(bool scrolling) { m_viewIsScrolling = scrolling; };
+        void setViewIsScrolling(bool scrolling);
 
         /**
         * Return if the user is currently scrolling
@@ -349,7 +352,45 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         * Collects offscreen bitmap 
         */ 
         void  collectOffscreenbitmapL(CFbsBitmap& snapshot); 
+        
+        /**
+        * To get the pinch zoom handler
+        */
+        WebPagePinchZoomHandler* pinchZoomHandler() { return m_pinchZoomHandler; }
+        
+        /**
+        * To set the Bitmap zooming for Pinch
+        */
+        void setPinchBitmapZoomLevelL(int zoomLevel);
+        
+        /**
+        * To set the Bitmap zooming In for Pinch
+        */
+        void setPinchBitmapZoomIn(int zoomLevel);
+        
+        /**
+        * To set the Bitmap zooming Out for Pinch
+        */
+        void setPinchBitmapZoomOutL(int zoomLevel);
+        
+        TBool isPinchZoom() {return m_isPinchZoom; }
+        
+        /**
+         * Creates the checkerboard
+         */
+        void createCheckerBoardL();
+        
+        /**
+         * Destroys the checkerboard
+         */
+        void destroyCheckerBoard();
+        
+        /**
+         * Starts the checkerboard timer. End of this timer, checkerboard will be destroyed.
+         */
+        void startCheckerBoardDestroyTimer();
 
+        void scrollStatus(bool status);
     public: // from MPageScalerCallback
         /**
         *
@@ -472,7 +513,8 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool handleMSK(const TKeyEvent& keyevent, TEventCode eventcode, WebCore::Frame* frame);
 	    void sendMouseEventToEngineIfNeeded(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
 	    void setFocusedNodeUnderCursor(WebCore::Frame* frame);
-	    
+	    void waitTimerCB(WebCore::Timer<WebView>* t);
+	    void calculateZoomRect(TRect &aOldRect, TRect &aNewRect, TInt aOldZoom, TInt aNewZoom);
     public:
         void sendMouseEventToEngine(TPointerEvent::TType eventType, TPoint pos, WebCore::Frame* frame);
         void fepTimerFired(WebCore::Timer<WebView>*);
@@ -493,6 +535,15 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         void clearKeyEventFired() { m_firedEvent &= ~KKeyEventFired; }
         void clearEventFired() { m_firedEvent = 0; }
         
+        void wait(double t); 
+
+        // JavaScript timers - pause and resume
+        void pauseJsTimers();
+        void resumeJsTimers();
+        bool jsTimersPaused() { return (m_jsTimeouts) ? true : false; }
+        void resetJsTimers() { m_jsTimeouts = 0; }
+
+        WebCoreGraphicsContext* getGraphicsContext() {return m_webcorecontext; }
     private:
         WebCore::Page*          m_page;
         WebFrameView*           m_frameView;
@@ -560,14 +611,12 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         int                 m_startZoomLevel;
         bool                m_dirtyZoomMode;
         bool                m_zoomLevelChangedByUser;
-        bool                m_isPluginsVisible;
         bool                m_historyLoad;
         bool                m_redirectWithLockedHistory;
         // full screen mode
         WebPageFullScreenHandler* m_pageFullScreenHandler;  // owned
         bool m_viewIsScrolling;
         bool m_viewIsFastScrolling;
-        TPoint* m_ptrbuffer;
 
         // synchronous requests
         bool                m_synchRequestPending;
@@ -576,6 +625,29 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         bool                m_allowRepaints;
         bool                m_prevEditMode;
         int                 m_firedEvent;
+        
+        CActiveSchedulerWait*    m_waiter; 
+        WebCore::Timer<WebView>* m_waitTimer;
+        
+		//Pinch Zoom Handler
+        WebPagePinchZoomHandler* m_pinchZoomHandler;
+        TBool                    m_isPinchZoom;
+        TRealPoint               m_pinchDocDelta;
+        int                      m_drawsMissed;
+        CThumbnailGenerator* m_thumbnailGenerator;
+        
+        CFbsBitmap              *m_checkerBoardBitmap;
+        CFbsBitmapDevice        *m_checkerBoardDevice;
+        CFbsBitGc               *m_checkerBoardGc;
+        
+        CPeriodic               *m_checkerBoardDestroyTimer;
+        
+        TBool                    m_isPinchZoomOut;
+		
+   	    // JavaScript (DOMWindowTimer) timers
+        KJS::PausedTimeouts*     m_jsTimeouts;
+        
+        TBool                    m_scrollingstatus;
     };
 
 #endif

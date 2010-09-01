@@ -17,7 +17,7 @@
 
 #include "config.h"
 #include <../bidi.h>
-#include <uri8.h>
+#include <Uri8.h>
 #include <badesca.h>
 
 #include "ResourceLoaderDelegate.h"
@@ -30,18 +30,18 @@
 #include "ResourceHandleInternal.h"
 #include "DocumentLoader.h"
 #include "ResourceHandle.h"
-#include "KURL.h"
+#include "KUrl.h"
 #include "FrameLoader.h"
 #include "DocumentLoader.h"
 #include "Frame.h"
 
-#include "BrCtl.h"
-#include "Page.h"
+#include "brctl.h"
+#include "page.h"
 #include "WebUtil.h"
 #include "WebFrame.h"
 #include "SettingsContainer.h"
-#include "BrCtlSpecialLoadObserver.h"
-#include "BrCtlLinkResolver.h"
+#include <brctlspecialloadobserver.h>
+#include <brctllinkresolver.h>
 #include "WebDocumentLoader.h"
 #include "WebView.h"
 
@@ -196,6 +196,7 @@ bool ResourceLoaderDelegate::checkSecurityStatus(const ResourceRequest& request,
                     }
                     else {
                         enterStatus = HttpUiCallbacks::EExitingSecurePage;
+                        m_httpSessionManager.setInSecureConnection(EFalse);
                     }
                 } // if (!secureUrl)
                 else {

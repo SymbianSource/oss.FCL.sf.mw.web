@@ -248,7 +248,8 @@ void DocumentLoader::mainReceivedError(const ResourceError& error, bool isComple
     if (!frameLoader())
         return;
     setMainDocumentError(error);
-    if (isComplete)
+    //During LWS for invalid webpage framloader was returning Null which is causing Dataabort panic 
+    if (isComplete && frameLoader())
         frameLoader()->mainReceivedCompleteError(this, error);
 }
 
@@ -357,7 +358,7 @@ void DocumentLoader::commitLoad(const char* data, int length)
     if (FrameLoader* frameLoader = DocumentLoader::frameLoader())
 #if PLATFORM(SYMBIAN)
     {
-    unsigned int needMemory = length * 16;
+    unsigned int needMemory = length * 4;
     if(needMemory >= 1024*1024) {
         OOM_PRE_CHECK(needMemory, 0, "DocumentLoader::commitLoad");
 #endif    
@@ -418,7 +419,8 @@ void DocumentLoader::setupForReplaceByMIMEType(const String& newMIMEType)
 void DocumentLoader::updateLoading()
 {
     ASSERT(this == frameLoader()->activeDocumentLoader());
-    setLoading(frameLoader()->isLoading());
+    if(m_frame)
+        setLoading(frameLoader()->isLoading());
 }
 
 void DocumentLoader::setFrame(Frame* frame)
@@ -711,6 +713,7 @@ bool DocumentLoader::isLoadingMultipartContent() const
 bool DocumentLoader::startLoadingMainResource(unsigned long identifier)
 {
     ASSERT(!m_mainResourceLoader);
+    MemoryManager::ResetOOMDialogDisplayed();
     m_mainResourceLoader = MainResourceLoader::create(m_frame);
     m_mainResourceLoader->setIdentifier(identifier);
 

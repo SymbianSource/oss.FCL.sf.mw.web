@@ -20,7 +20,7 @@
 #define CBROWSERSELECTELEMENTITEMDRAWER_H
 
 // INCLUDES
-#include "BrCtlDialogsProvider.h"
+#include <brctldialogsprovider.h>
 
 #include <aknlists.h>
 #include <avkon.mbg>

@@ -19,7 +19,6 @@
 #ifndef LEAK_TRACKER_H
 #define LEAK_TRACKER_H
 
-#warning The Feeds Engine API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
 
 // Helper macros
 #if defined(__WINSCW__)

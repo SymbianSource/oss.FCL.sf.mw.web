@@ -24,11 +24,11 @@
 #include "BrowserTelService.h"
 #include "SchemeDispLogger.h"
 #include <e32base.h>
-#include <AknQueryDialog.h>
-#include <StringLoader.h>
+#include <aknquerydialog.h>
+#include <stringloader.h>
 #include <bautils.h>
-#include <escapeutils.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <EscapeUtils.h>
+#include <browseruisdkcrkeys.h>
 #include <centralrepository.h>
 
 #include <apgcli.h>

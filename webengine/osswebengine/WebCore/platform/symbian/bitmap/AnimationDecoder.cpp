@@ -100,7 +100,7 @@ CMaskedBitmap* CAnimationDecoder::Destination()
 // -----------------------------------------------------------------------------
 // OpenL
 // -----------------------------------------------------------------------------
-void CAnimationDecoder::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBool aIsComplete )
+void CAnimationDecoder::OpenL( WebCore::SharedBuffer* aData, TDesC* aMIMEType, TBool aIsComplete )
 {
     if (!iWrapped) {
         return;

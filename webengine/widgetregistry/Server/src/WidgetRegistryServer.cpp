@@ -15,13 +15,12 @@
 *
 */
 
-
 #include <e32base.h>
 #include <w32std.h>
 #include <apgcli.h>
-#include "WidgetRegistryConstants.h"
-#include "WidgetRegistryServer.h"
-#include "WidgetRegistrySession.h"
+#include <widgetregistryconstants.h>
+#include "widgetregistryserver.h"
+#include "widgetregistrysession.h"
 
 // ============================ MEMBER FUNCTIONS ===============================
 
@@ -127,8 +126,14 @@ void CWidgetRegistryServer::RunServerL()
         TRAP_IGNORE(
             apparcSession.RegisterNonNativeApplicationTypeL(
                 KUidWidgetLauncher, KLauncherApp()));
-        apparcSession.Close();
-        }
+
+
+       TRAP_IGNORE(
+            apparcSession.RegisterNonNativeApplicationTypeL(
+                KUidWgtWidgetLauncher, KWgtLauncherApp()));
+
+           apparcSession.Close();
+           }
 
     // First create and install the active scheduler
     CActiveScheduler* scheduler = new ( ELeave ) CActiveScheduler;

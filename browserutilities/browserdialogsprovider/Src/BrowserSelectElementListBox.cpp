@@ -22,7 +22,7 @@
 #include "BrowserSelectElementModel.h"
 #include "BrowserSelectElementItemDrawer.h"
 
-#include <aknsfld.h>
+#include <AknSfld.h>
 
 // CONSTANTS
 #include "BrowserDialogsProviderConstants.h"

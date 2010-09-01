@@ -18,7 +18,7 @@
 
 #include "OpmlWriter.h"
 
-#include <escapeutils.h>
+#include <EscapeUtils.h>
 
 _LIT(KTempDirName, "c:\\system\\temp\\");
 

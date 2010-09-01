@@ -15,29 +15,30 @@
 *
 */
 
-
 #include "FeedsDatabase.h"
 #include "FeedHandler.h"
 #include "FeedsServer.h"
-#include "FeedsServerMsg.h"
+#include <feedsservermsg.h>
 #include "FeedsServerSession.h"
 #include "OpmlParser.h"
 #include "OpmlWriter.h"
 #include "PackedFolder.h"
 #include "ServerHttpConnection.h"
 #include "Logger.h"
-#include "XMLUtils.h"
+#include <xmlutils.h>
 #include "BackRestoreHandler.h"
 #include "UpdateManager.h" 
 
 //  CONSTANTS
 _LIT(KFeedsServerPanic, "FeedsServer");
-
+// opml files are generally smaller in size.But if a malformed opml 
+// greater than 400kB would cause the system to be irresponsive.
+// So limit the max size to 400 kB
+const TInt KMaxOPMLFileSize = 409600;
 //_LIT(KFileSchema, "file://c:");
 _LIT(KDefaultFeed, "default_feeds.xml");
 
 _LIT(KDefaultOPMLFileParam, "");
-
 
 // -----------------------------------------------------------------------------
 // CFeedsServer::NewL
@@ -387,7 +388,10 @@ CPackedFolder* CFeedsServer::ImportFolderL(const RFile aFile, const TDesC& aOPML
 
     // Read file
     User::LeaveIfError(aFile.Size(size));
-
+    if ( size > KMaxOPMLFileSize )
+        {
+        User::Leave(KErrCorrupt);	
+        }
     buffer = HBufC8::NewLC(size);
     bufferPtr.Set(buffer->Des());
 
@@ -560,6 +564,7 @@ void CFeedsServer::SetAutoUpdateSettingsL( TInt aFolderListId, TBool aAutoUpdate
 void CFeedsServer::ScheduleUpdateManagerL()
     {
     RArray<TInt>     folderListIds;
+	CleanupClosePushL(folderListIds);
     TBool    autoUpdate = EFalse;
     TInt     autoUpdateFreq = 0;
     TUint32  autoUpdateAP = 0;
@@ -578,6 +583,8 @@ void CFeedsServer::ScheduleUpdateManagerL()
                 }
             }
         }
+    
+    CleanupStack::PopAndDestroy(); //folderListIds
     }
 
 // -----------------------------------------------------------------------------

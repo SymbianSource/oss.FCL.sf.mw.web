@@ -15,11 +15,10 @@
 *
 */
 
-
 #include "cxml_internal.h"
-#include "nw_wbxml_token.h"
-#include "nw_encoder_wbxmlwriter.h"
-#include "nw_wbxml_parse.h"
+#include <nw_wbxml_token.h>
+#include <nw_encoder_wbxmlwriter.h>
+#include <nw_wbxml_parse.h>
 #include "cxml_mem.h"
 
 // WLIU_DEBUG: #include "flogger.h"
@@ -29,7 +28,6 @@ dictionary for both tag names and attribute names */
 #define zzzunknownCharCount 10
 static const NW_Uint8 zzzunknown[] = {'z','z','z','u','n','k','n','o','w','n','\0'};
 #define zzzunknownEncoding HTTP_utf_8
-
 
 static
 NW_Status_t

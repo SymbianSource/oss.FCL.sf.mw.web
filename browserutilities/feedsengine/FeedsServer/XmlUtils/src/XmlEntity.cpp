@@ -15,16 +15,13 @@
 *
 */
 
-
-
-#include <escapeutils.h>
+#include <EscapeUtils.h>
 #include <libxml2_xmlmemory.h>
 #include <libxml2_globals.h>
 
 #include "CleanupLibXml2.h"
-#include "LeakTracker.h"
+#include <leaktracker.h>
 #include "XmlEntity.h"
-
 
 // Private consts.
 // -------------------------------------------------------------------------

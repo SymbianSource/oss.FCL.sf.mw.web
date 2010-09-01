@@ -19,8 +19,6 @@
 #ifndef COD_DOWNLOAD_H
 #define COD_DOWNLOAD_H
 
-#warning The COD Handler API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 // INCLUDES
 
 #include <e32base.h>

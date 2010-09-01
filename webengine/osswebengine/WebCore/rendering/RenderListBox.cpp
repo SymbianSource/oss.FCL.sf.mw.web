@@ -42,7 +42,7 @@
 #include "HTMLOptionElement.h"
 #include "HTMLSelectElement.h"
 #include "HitTestResult.h"
-#include "PlatformScrollbar.h" 
+#include "PlatformScrollBar.h" 
 #include "RenderTheme.h"
 #include "RenderView.h"
 #include "TextStyle.h"

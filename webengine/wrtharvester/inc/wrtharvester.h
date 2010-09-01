@@ -24,7 +24,6 @@
 #include <contentharvesterplugin.h>
 #include <widgetappdefs.rh>
 #include "wrtharvesterregistryaccess.h"
-#include "wrtusbhandler.h"
 
 // FORWARD DECLARATIONS
 class CWrtHarvesterPSNotifier;
@@ -113,11 +112,20 @@ class CWrtHarvester: public CContentHarvesterPlugin
     	*/
 		void QueueOperationL(  TWidgetOperations aOperation, TUid aUid );	
 		
-		void DialogShown(){ iDialogShown = EFalse; }
 		//to check if the device is in mass memory mode
 		TInt IsInMSMode() { return iMSMode; }
 		void  SetMSMode(TInt val)  { iMSMode = val; }
-		 
+		//To check if registry can be accessed
+		TInt CanAccessRegistry(){ return iCanAccessRegistry; }
+		void SetRegistryAccess(TBool aValue){ iCanAccessRegistry = aValue; }
+		
+		void SetReinstallWidget(TBool aValue){ iReinstallingWidget = aValue; }			
+
+        void DialogShown();
+
+        static TInt DeleteCallback(TAny* aPtr);		
+        
+        void SetSystemShutdown(TBool aState){ iSystemShutdown = aState; }
 		
 	private:
         
@@ -272,6 +280,18 @@ class CWrtHarvester: public CContentHarvesterPlugin
          * own
          */        
         CWrtUsbHandler* iWidgetUsbListener;
+                
+        /**
+         * Publish & Subscribe listener
+         * own
+         */        
+        CWrtHarvesterPSNotifier* iWidgetSystemShutdownListener;
+        
+        /**
+         * Publish & Subscribe listener
+         * own
+         */          
+        CWrtHarvesterPSNotifier* iMsModeListener;
         
 		/**
     	* 
@@ -329,6 +349,30 @@ class CWrtHarvester: public CContentHarvesterPlugin
          *
          */
          RPointerArray<HBufC> iHSWidgets;
+         /**
+          * 
+          */
+         TBool iCanAccessRegistry;
+         
+         /**
+          * 
+          */
+		 TBool iReinstallingWidget;
+		 
+        /**
+         * 
+         */
+		 RArray<TUid> iUid;
+		 
+        /**
+         * 
+         */
+		 CAsyncCallBack*  iAsyncCallBack;
+		
+		/**
+         * 
+         */
+		 TBool  iSystemShutdown;
     };
 
 #endif // C_WRTCONTENTHARVESTER_H 

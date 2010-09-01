@@ -29,13 +29,13 @@
 #ifndef __STATICOBJECTCONTAINER_H__
 #define __STATICOBJECTCONTAINER_H__
 
-#include <Browser_platform_variant.hrh>
+#include <Browser_Platform_Variant.hrh>
 #include <e32base.h>
 #include <e32std.h>
 #include <wtf/Noncopyable.h>
 #include <wtf/HashMap.h>
 #include <../bidi.h>
-#include <eikenv.h>
+#include <EIKENV.H>
 
 class ResourceLoaderDelegate;
 class LogStream;
@@ -100,6 +100,7 @@ public:
     const Vector<CBrCtl*>& activeBrowserControls() const;
     void setFullScreenMode(bool mode);
     bool fullScreenMode(void);
+    void setIconDatabaseEnabled(bool enabled);
     
 private:
     static StaticObjectsContainer* gInstance;

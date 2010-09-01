@@ -38,8 +38,8 @@ TInt TUidAllocator::AllocateL( const RUidArray& aUsedUids, TInt aDriveLetter )
                       KWidgetUidInternalMemoryStart :
                       KWidgetUidExternalMemoryStart );
     TInt uidStop = ( ('c' == aDriveLetter) ?
-                     KWidgetUidExternalMemoryStart :
-                     KWidgetUidExternalMemoryStop + 1);
+                     KWidgetUidWRTInternalMemoryStop :
+                     KWidgetUidWRTExternalMemoryStop);
 
     TInt uid = uidStart;
     for ( ; uid < uidStop; ++uid )
@@ -61,4 +61,25 @@ TBool TUidAllocator::IsWidget( TUid aUid )
     return ( ( aUid.iUid >= KWidgetUidLowerBound
                && aUid.iUid <= KWidgetUidUpperBound )?
              ETrue : EFalse );
+    }
+
+// ============================================================================
+// TUidAllocator::IsCWRTWidget()
+// Returns true if the Uid falls within the range specified for CWRT widgets
+// ============================================================================
+//
+TBool TUidAllocator::IsCWRTWidget( TUid aUid )
+    {
+    if ( ( ( aUid.iUid >= KWidgetUidCWRTInternalMemoryStart ) &&
+           ( aUid.iUid < KWidgetUidCWRTInternalMemoryStop ) ) ||
+         ( ( aUid.iUid >= KWidgetUidCWRTExternalMemoryStart ) &&
+           ( aUid.iUid < KWidgetUidCWRTExternalMemoryStop ) ) )
+        {
+        return ETrue;
+        }
+    else
+        {
+        return EFalse;
+        }
+
     }

@@ -19,7 +19,7 @@
 #include "UnknownContentHandler.h"
 #include "HttpConnection.h"
 #include "PlatformString.h"
-#include <uri8.h>
+#include <Uri8.h>
 #include <apgcli.h>
 using namespace WebCore;
 

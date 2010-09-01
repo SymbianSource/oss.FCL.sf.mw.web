@@ -24,9 +24,9 @@
 #include <apmrec.h>
 #include <apmstd.h>
 #include <f32file.h>
-#include <CodDefs.h>
-#include <charconv.h>
-#include <implementationproxy.h>
+#include "CodDefs.h"
+#include <CharConv.h>
+#include <ecom/implementationproxy.h>
 #include "CodRecog.h"
 #include "CodRecogLogger.h"
 

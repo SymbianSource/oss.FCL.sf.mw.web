@@ -22,8 +22,8 @@
 //  INCLUDES
 
 #include <e32base.h>
-#include <FavouritesDbObserver.h>
-#include "FavouritesEngineTest.h"
+#include <favouritesdbobserver.h>
+#include "favouritesenginetest.h"
 
 // FORWARD DECLARATION
 

@@ -124,3 +124,5 @@ EXPORTS
 	_ZN26CInternetConnectionManager17SetConnectionTypeEN9CMManager23TCmSettingSelectionModeE @ 123 NONAME
 	_ZThn8_N26CInternetConnectionManager16SetRequestedSnapEm @ 124 NONAME ; #<thunk>#
 	_ZThn8_N26CInternetConnectionManager17SetConnectionTypeEN9CMManager23TCmSettingSelectionModeE @ 125 NONAME ; #<thunk>#
+	_ZN27CConnectionStageNotifierWCB17GetProgressBufferEv @ 126 NONAME
+

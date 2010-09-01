@@ -28,7 +28,7 @@
 #ifndef NW_WBXMLWRITER_H
 #define NW_WBXMLWRITER_H
 
-#include "nw_wbxml_dictionary.h"
+#include <nw_wbxml_dictionary.h>
 
 #ifdef __cplusplus
 extern "C" {

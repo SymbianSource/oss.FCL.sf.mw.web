@@ -172,7 +172,7 @@ JSValue* TestFunctionImp::callAsFunction(ExecState* exec, JSObject*, const List 
     case Quit:
       exit(0);
     default:
-    ; //  abort();
+      abort();
   }
   return 0;
 }

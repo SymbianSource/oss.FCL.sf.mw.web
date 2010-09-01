@@ -18,7 +18,7 @@
 // INCLUDE FILES
 
 #include "kjs_console.h"
-#include "kjs/lookup.h"
+#include "kjs/Lookup.h"
 #include "Chrome.h"
 #include "PlatformString.h"
 #include "kjs/context.h"

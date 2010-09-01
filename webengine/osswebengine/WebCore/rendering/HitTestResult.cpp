@@ -23,7 +23,7 @@
 #include "config.h"
 #include "HitTestResult.h"
 
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "Document.h"
 #include "Frame.h"
 #include "FrameTree.h"
@@ -33,7 +33,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLNames.h"
 #include "KURL.h"
-#include "PlatformScrollbar.h"
+#include "PlatformScrollBar.h"
 #include "RenderImage.h"
 #include "RenderObject.h"
 #include "SelectionController.h"

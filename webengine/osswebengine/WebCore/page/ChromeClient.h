@@ -22,7 +22,7 @@
 #define ChromeClient_h
 
 #include "FocusDirection.h"
-#include "Chrome.h"
+#include "chrome.h"
 
 namespace WebCore {
 
@@ -110,6 +110,7 @@ namespace WebCore {
         virtual bool elementVisibilityChangedByMouse() = 0;
         virtual bool elementVisibilityChangedByKey() = 0;
         virtual void focusedElementChanged(Element*) = 0;
+        virtual void wait(double t) = 0;
 #endif
 };
 

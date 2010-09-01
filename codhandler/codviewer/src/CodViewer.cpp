@@ -15,11 +15,10 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include <eikstart.h>
-#include <CodViewerApp.h>
+#include "CodViewerApp.h"
 
 // ================= OTHER FUNCTIONS ==============
 

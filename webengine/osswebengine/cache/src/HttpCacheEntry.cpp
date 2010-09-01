@@ -166,7 +166,7 @@ void CHttpCacheEntry::SetFileNameL( const TFileName& aFileName )
     delete iFileName;
     iFileName = NULL;
 
-    iFileName = aFileName.AllocL();
+    iFileName = aFileName.AllocL(); 
     }
 
 
@@ -493,7 +493,12 @@ void CHttpCacheEntry::WriteBodyDataAsync(TRequestStatus& aStatus)
     {
     delete iWriteHelper;
     iWriteHelper = NULL;
-    TRAP_IGNORE( iWriteHelper = CHttpCacheEntryAsyncWriteHelper::NewL( this, aStatus ) );
+    TRAPD(err, iWriteHelper = CHttpCacheEntryAsyncWriteHelper::NewL( this, aStatus ) );
+    if(err != KErrNone)
+        {
+        TRequestStatus *stat = &aStatus;
+        User::RequestComplete(stat, err);
+        }
     }
 
 // -----------------------------------------------------------------------------

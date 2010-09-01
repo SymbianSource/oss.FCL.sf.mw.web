@@ -21,14 +21,14 @@
 // INCLUDE FILES
 
 #include <RoapEng.h>
-#include <RoapTrigger.h>
+#include <roaptrigger.h>
 #include <AiwGenericParam.h>
 #include "RoapAppDocument.h"
 #include "RoapAppData.h"
 #include "RoapAppUi.h"
 #include "RequestCompleteCallback.h"
 #include "RoapAppLogger.h"
-#include "DRMRights.h" 
+#include "DrmRights.h" 
 // ================= CONSTANTS =======================
 _LIT8( KRoResponseHeader, "<roap:roResponse" );
 

@@ -22,12 +22,12 @@
  */
 
 #include "config.h"
-#include "cssparser.h"
+#include "CSSParser.h"
 
 #include "CSSBorderImageValue.h"
 #include "CSSCharsetRule.h"
 #include "CSSCursorImageValue.h"
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "CSSImageValue.h"
 #include "CSSImportRule.h"
 #include "CSSInheritedValue.h"
@@ -1311,12 +1311,16 @@ bool CSSParser::parseValue(int propId, bool important)
         if (id == CSS_VAL_NONE || id == CSS_VAL_BOTH || id == CSS_VAL_HORIZONTAL || id == CSS_VAL_VERTICAL || id == CSS_VAL_AUTO)
             valid_primitive = true;
         break;
+	// webkit-column-count currently not supported
+    #if !PLATFORM(SYMBIAN)
     case CSS_PROP__WEBKIT_COLUMN_COUNT:
         if (id == CSS_VAL_AUTO)
             valid_primitive = true;
         else
             valid_primitive = !id && validUnit(value, FInteger | FNonNeg, false);
+
         break;
+    #endif
     case CSS_PROP__WEBKIT_COLUMN_GAP:         // normal | <length>
         if (id == CSS_VAL_NORMAL)
             valid_primitive = true;

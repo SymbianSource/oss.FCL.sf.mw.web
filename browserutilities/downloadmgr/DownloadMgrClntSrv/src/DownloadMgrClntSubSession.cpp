@@ -19,7 +19,7 @@
 
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
-#include "DownloadMgrClient.h"
+#include <downloadmgrclient.h>
 #include "DownloadMgrServer.h"
 #include "DownloadMgrHandler.h"
 #include "DownloadMgrStart.h"
@@ -31,11 +31,11 @@
 
 #include <hash.h>
 #include <e32svr.h>
-#include <CodDownload.h>
+#include <coddownload.h>
 #include <AiwGenericParam.h>
 #include <eikenv.h>
 #include <httpfiltercommonstringsext.h>
-#include <escapeutils.h>
+#include <EscapeUtils.h>
 
 // CONSTANTS
 _LIT8( KTransactionCallback, "TransactionCallback" );
@@ -252,7 +252,7 @@ NONSHARABLE_CLASS( CRHttpDlExtension ) : public CBase
         // EDlAttrPausable
         TBool   iPausable;             
         // EDlAttrDestRemovable
-        TBool   iRemovableDest;
+        TInt32   iDestMemType;
 
         //  EDlAttrState THttpDownloadState
          TInt32 iDlState;
@@ -400,7 +400,7 @@ void CRHttpDlExtension::SetBoolAttribute( const TUint aAttribute, TBool aValue )
                   
        case EDlAttrDestRemovable:
             {
-       	     iRemovableDest = aValue;
+       	     iDestMemType = (aValue) ? KDriveAttRemovable : KDriveAttLocal;
             }
             
         default:
@@ -472,6 +472,11 @@ void CRHttpDlExtension::SetIntAttribute( const TUint aAttribute, TInt32 aValue )
             iActiveDownload = aValue;
             }
             break;
+            
+        case EDlAttrDestRemovable:
+            {
+            iDestMemType = aValue;
+            }
             
         default:
             break;
@@ -667,7 +672,7 @@ TInt CRHttpDlExtension::GetBoolAttribute( const TUint aAttribute, TBool& aValue 
                   
 		case EDlAttrDestRemovable:
             {
-       	    aValue = iRemovableDest ;
+       	    aValue = (KDriveAttRemovable == iDestMemType) ? ETrue : EFalse ;
             }
             break;    
         default:
@@ -726,7 +731,7 @@ TInt CRHttpDlExtension::GetBoolAttribute( const TUint aAttribute,
    
         case EDlAttrDestRemovable:
             {
-            aValue = mediaData->DesRemovable();
+            aValue = ( KDriveAttRemovable == mediaData->DesRemovable()) ? ETrue : EFalse ;
             }
             break;
                 
@@ -805,6 +810,12 @@ TInt CRHttpDlExtension::GetIntAttribute( const TUint aAttribute, TInt32& aValue 
             }
             break;
             
+        case EDlAttrDestRemovable:
+            {
+            aValue = iDestMemType ;
+            }
+            break;            
+            
         default:
             {
             ret = KErrNotFound;
@@ -881,6 +892,12 @@ TInt CRHttpDlExtension::GetIntAttribute( const TUint aAttribute,
         case EDlAttrMethod:
             {
             aValue = mediaData->Method();
+            }
+            break;
+            
+        case EDlAttrDestRemovable:
+            {
+            aValue = mediaData->DesRemovable();
             }
             break;
 
@@ -1991,9 +2008,9 @@ void RHttpDownload::SaveDownloadInfoL()
     GetBoolAttribute(EDlAttrPausable, bPausable);
     iDlExtension->SetBoolAttribute( EDlAttrPausable, bPausable );
     
-    TBool bRemovableDest;
-    GetBoolAttribute(EDlAttrDestRemovable, bRemovableDest);
-    iDlExtension->SetBoolAttribute( EDlAttrDestRemovable, bRemovableDest );
+    TInt32 removableDestStatus;
+    GetIntAttribute(EDlAttrDestRemovable, removableDestStatus);
+    iDlExtension->SetIntAttribute( EDlAttrDestRemovable, removableDestStatus );
     
     //    
         
@@ -2720,7 +2737,7 @@ EXPORT_C TInt RHttpDownload::SetBoolAttribute( const TUint aAttribute, TBool aVa
     		return KErrGeneral;
     		}
     		iDlExtension->SetBoolAttribute( aAttribute, aValue);
-    		return;
+    		return KErrNone;
     	}
     	
 	if (aAttribute == EDlAttrProgressive)

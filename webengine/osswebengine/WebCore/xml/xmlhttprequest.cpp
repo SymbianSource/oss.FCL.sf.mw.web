@@ -19,7 +19,7 @@
  */
 
 #include "config.h"
-#include "xmlhttprequest.h"
+#include "XMLHttpRequest.h"
 
 #include "CString.h"
 #include "Cache.h"
@@ -725,7 +725,7 @@ void XMLHttpRequest::didReceiveData(SubresourceLoader*, const char* data, int le
         else if (responseIsXML())
             m_decoder = new TextResourceDecoder("application/xml");
         else if (responseMIMEType() == "text/html")
-            m_decoder = new TextResourceDecoder("text/html");
+            m_decoder = new TextResourceDecoder("text/html", "UTF-8");
         else
             m_decoder = new TextResourceDecoder("text/plain", "UTF-8");
     }

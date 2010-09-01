@@ -93,10 +93,11 @@ public:
 
     void paintRect(WebCoreGraphicsContext& gc, const TRect& r);
 
-    void notifyPluginsOfScrolling();
-    void notifyPluginOfScrolling(WebCore::RenderObject* renderer);
+    void notifyPluginsOfPositionChange();
+    void notifyPluginOfPositionChange(PluginSkin* plg);
     PluginSkin* focusedPlugin();
     WebFrame* frameAtPoint(const TPoint& pt_);
+    void reCreatePlugins();
     
     // utility functions
     int imageCount(bool visibleOnly_);
@@ -107,10 +108,14 @@ public:
     void makeVisiblePlugins(TBool visible);
     bool executeScript(const WebCore::String& script);
     WebCore::Node* getClosestAnchorElement(const TPoint& pt, TPoint& newPos);
-    
-    void setpluginToScroll(bool pluginScroll){m_pluginToScroll=pluginScroll;}
-    bool pluginToScroll(){return m_pluginToScroll;}
-    
+
+	void ScrollOrPinchStatus(bool status);
+	
+	/**
+    * Notify Flash Plugin FocusChangeEvent 
+    */
+	void notifyPluginFocusChangeEvent(TBool visible);
+
 private:
     WebFrame(const WebFrame&);                    // not implemented
     WebFrame& operator=(const WebFrame&);         // not implemented    

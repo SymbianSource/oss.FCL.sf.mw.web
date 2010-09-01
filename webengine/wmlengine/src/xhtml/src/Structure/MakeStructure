@@ -1,0 +1,20 @@
+#----------------------------------------------------------------------------
+# 
+# Copyright (c) 20012002. Nokia Mobile Phones
+#
+#----------------------------------------------------------------------------
+
+MAKEFILE    = MakeStructure
+TARGET      = rbTempest_xhtml_src_structure_lib.a
+
+SUBDIRS   = 
+
+SUBMAKES  = 
+
+OBJS      = 
+
+SRCS      =  titleElementHandler.c headElementHandler.c StructureModule.c
+
+################################################################################
+
+include $(CORESW_MAKE_TEMPLATE)

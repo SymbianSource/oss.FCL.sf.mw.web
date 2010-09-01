@@ -17,7 +17,6 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "DdParser.h"
@@ -27,8 +26,8 @@
 #include "CodLogger.h"
 #include "NwUtil.h"
 #include "DdDummyDict.h"
-#include "HttpDownloadData.h"
-#include <xml/cxml/nw_dom_document.h>
+#include <httpdownloaddata.h>
+#include <nw_dom_document.h>
 #include <utf.h>
 
 // ================= CONSTANTS =======================

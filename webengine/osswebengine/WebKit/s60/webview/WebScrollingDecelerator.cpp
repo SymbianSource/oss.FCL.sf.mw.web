@@ -170,7 +170,7 @@ void WebScrollingDecelerator::RunL()
         m_normalizedCurrentPosition += m_scrolldelta;
         newpos.iX = m_normalizedCurrentPosition.iX/100;
         newpos.iY = m_normalizedCurrentPosition.iY/100;
-        scrollingView->scrollTo(newpos);
+        scrollingView->scrollTo(newpos, ETrue);
 
         if (scrollingView->vScrollbar()) {
             scrollingView->vScrollbar()->setValue(newpos.iY);

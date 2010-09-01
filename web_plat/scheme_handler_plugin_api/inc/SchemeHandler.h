@@ -21,8 +21,6 @@
 #ifndef SCHEME_HANDLER_H
 #define SCHEME_HANDLER_H
 
-#warning The Scheme Handler API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 // INCLUDES
 
 #include <e32base.h>

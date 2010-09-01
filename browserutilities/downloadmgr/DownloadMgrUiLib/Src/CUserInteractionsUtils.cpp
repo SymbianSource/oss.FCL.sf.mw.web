@@ -15,21 +15,18 @@
 *
 */
 
-
-
 // INCLUDE FILES
-//#include <platform/mw/Browser_platform_variant.hrh>
-#include    <Browser_platform_variant.hrh>
+#include    <browser_platform_variant.hrh>
 #include    "CUserInteractionsUtils.h"
 #include    "MDownloadHandlerObserver.h"
-#include    "CDownloadMgrUiBase.h"
-#include    "CDownloadMgrUiLibRegistry.h"
-#include    "CDownloadMgrUiDownloadsList.h"
-#include    "CDownloadMgrUiUserInteractions.h"
+#include    <cdownloadmgruibase.h>
+#include    <cdownloadmgruilibregistry.h>
+#include    <cdownloadmgruidownloadslist.h>
+#include    <cdownloadmgruiuserinteractions.h>
 #include    "UiLibLogger.h"
 #include    "DMgrUiLibPanic.h"
 #include    <DownloadMgrUiLib.rsg>
-#include    <DownloadMgrClient.h>
+#include    <downloadmgrclient.h>
 #include    <AiwGenericParam.h>
 #include    <DocumentHandler.h>
 #include    <coemain.h>
@@ -42,25 +39,22 @@
 #include    <StringLoader.h>
 #include    <AknSoftNotificationParameters.h>
 #include    <AknSoftNotifier.h>
-#include    <aknnotewrappers.h>
-#include    <BrowserDialogsProvider.h>
-#include    <HttpDownloadMgrCommon.h>
-#include    <pathinfo.h>
-#include    <AknGlobalNote.h>
+#include    <AknNoteWrappers.h>
+#include    <browserdialogsprovider.h>
+#include    <httpdownloadmgrcommon.h>
+#include    <PathInfo.h>
+#include    <aknglobalnote.h>
 #include    <Oma2Agent.h>
 #include    <DRMCommon.h>
 #include	<apmrec.h>
 #include	<apgcli.h>
 #include    <s32mem.h>
-#include    "bautils.h"
+#include    <bautils.h>
 #include	<etelmm.h>
-#include	<mmtsy_names.h>
+#include	<MmTsy_names.h>
 #include    <rconnmon.h>
 #include    <DcfEntry.h>
 #include    <DcfRep.h>
-
-// following line is temporary: AVKON dependency removal
-#undef BRDO_APP_GALLERY_SUPPORTED_FF
 
 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MGXFileManagerFactory.h>
@@ -81,9 +75,9 @@ const TInt FilenameSuffixMaxValue = 9999;// Maximum file number
 // CUserInteractionsUtils::CUserInteractionsUtils
 // -----------------------------------------------------------------------------
 //
-CUserInteractionsUtils::CUserInteractionsUtils( CDownloadMgrUiBase& aDMgrUiBase,
+CUserInteractionsUtils::CUserInteractionsUtils( CDownloadMgrUiBase& aDMgrUiBase, 
                                                 MDownloadMgrUiLibRegModel& aRegistryModel )
-:   iCoeEnv( *CCoeEnv::Static() ),
+:   iCoeEnv( *CCoeEnv::Static() ), 
     iDMgrUiBase( aDMgrUiBase ),
     iRegistryModel( aRegistryModel ),
     iDocHandlerUsesTheUi( EFalse )
@@ -118,7 +112,7 @@ void CUserInteractionsUtils::ConstructL()
 CUserInteractionsUtils* CUserInteractionsUtils::NewL
 ( CDownloadMgrUiBase& aDMgrUiBase, MDownloadMgrUiLibRegModel& aRegistryModel )
     {
-    CUserInteractionsUtils* self =
+    CUserInteractionsUtils* self = 
         new ( ELeave ) CUserInteractionsUtils( aDMgrUiBase, aRegistryModel );
     CleanupStack::PushL( self );
     self->ConstructL();
@@ -142,7 +136,7 @@ CUserInteractionsUtils::~CUserInteractionsUtils()
     delete iUnderTenFormatter;
     CLOG_WRITE(" iUnderTenFormatter OK");
     delete iOverTenFormatter;
-    CLOG_WRITE(" iOverTenFormatter OK");
+    CLOG_WRITE(" iOverTenFormatter OK");    
     CLOG_LEAVEFN("CUserInteractionsUtils::~CUserInteractionsUtils");
     }
 
@@ -150,7 +144,7 @@ CUserInteractionsUtils::~CUserInteractionsUtils()
 // CUserInteractionsUtils::ShowErrorNoteL
 // -----------------------------------------------------------------------------
 //
-void CUserInteractionsUtils::ShowErrorNoteL( RHttpDownload& aDownload,
+void CUserInteractionsUtils::ShowErrorNoteL( RHttpDownload& aDownload, 
                                              TInt32 aErrorId )
     {
     TInt32 sysErrorId( KErrNone ); // Global (system-wide) error ID
@@ -248,7 +242,7 @@ void CUserInteractionsUtils::ShowErrorNoteL( RHttpDownload& aDownload,
         case EHttpRestartFailed:
             {
             // Show error note by ourself
-            HBufC* errorString =
+            HBufC* errorString = 
                    iCoeEnv.AllocReadResourceLC( R_DMUL_ERROR_START_FROM_BEGINNING );
             CAknGlobalNote* globalNote = CAknGlobalNote::NewL();
             CleanupStack::PushL( globalNote );
@@ -267,7 +261,7 @@ void CUserInteractionsUtils::ShowErrorNoteL( RHttpDownload& aDownload,
     if ( sysErrorId != KErrNone )
         {
         if ( sysErrorId == KErrHttpPartialResponseReceived )
-            { // FMLK-72653Y : as server closed connection unexpectedly,
+            { // FMLK-72653Y : as server closed connection unexpectedly,  
               // and there is no good error note, use KErrDisconnected instead.
             iErrorUi->ShowGlobalErrorNoteL( KErrDisconnected, CTextResolver::ECtxAutomatic );
             }
@@ -291,7 +285,7 @@ void CUserInteractionsUtils::ShowErrorNoteL( TInt aErrorId )
 // CUserInteractionsUtils::IsRecoverableFailL
 // -----------------------------------------------------------------------------
 //
-TBool CUserInteractionsUtils::IsRecoverableFailL( RHttpDownload& aDownload,
+TBool CUserInteractionsUtils::IsRecoverableFailL( RHttpDownload& aDownload, 
                                                   TInt32 aErrorId ) const
     {
     TBool recoverable( ETrue );
@@ -304,7 +298,7 @@ TBool CUserInteractionsUtils::IsRecoverableFailL( RHttpDownload& aDownload,
     TInt32 sysErrorId( 0 );
     User::LeaveIfError( aDownload.GetIntAttribute
                       ( EDlAttrGlobalErrorId, sysErrorId ) );
-
+    
     TBool pausable( ETrue );
     User::LeaveIfError( aDownload.GetBoolAttribute( EDlAttrPausable, pausable ) );
     if ( errorId == EObjectNotFound )
@@ -313,7 +307,7 @@ TBool CUserInteractionsUtils::IsRecoverableFailL( RHttpDownload& aDownload,
         recoverable = EFalse;
         }
     else if ( errorId == ETransactionFailed )
-        {
+        {        
         if ( sysErrorId == KBadMimeType || sysErrorId == -20000 || sysErrorId == KErrHttpPartialResponseReceived || !pausable )
         // KBadMimeType and -20000 is from DRMFilter
         // Transaction must be cancelled and download must be deleted
@@ -328,11 +322,11 @@ TBool CUserInteractionsUtils::IsRecoverableFailL( RHttpDownload& aDownload,
     else if ( errorId == EGeneral )
         {
         if ( sysErrorId == KErrNoMemory || sysErrorId == KErrDiskFull )
-        //Memory full or Disk Full can be Recoverable error if Download is Pausable
+        //Memory full or Disk Full can be Recoverable error if Download is Pausable    
             {
             recoverable = pausable;
             }
-        else
+        else 
             {
             recoverable = EFalse;
             }
@@ -355,9 +349,9 @@ void CUserInteractionsUtils::HandleContentL
     {
     CLOG_ENTERFN("CUserInteractionsUtils::HandleContentL");
 
-    __ASSERT_DEBUG( !iRegistryModel.UserInteractions().IsUiBusy(),
+    __ASSERT_DEBUG( !iRegistryModel.UserInteractions().IsUiBusy(), 
                     Panic( EUiLibPanDocHandlerAlreadyRunning ) );
-
+                    
     if ( iRegistryModel.UserInteractions().IsUiBusy() )
         {
         CLOG_WRITE(" IsUiBusy() true");
@@ -367,7 +361,7 @@ void CUserInteractionsUtils::HandleContentL
         iHandledDownload = &aDownload;
         iHandlerObserver = &aHandlerObserver;
 
-        // BEGIN: Get attributes for generic params
+        // BEGIN: Get attributes for generic params 
         //=========================
         //   EDlAttrCurrentUrl
         //=========================
@@ -401,10 +395,10 @@ void CUserInteractionsUtils::HandleContentL
             HBufC* infoPrompt = StringLoader::LoadLC( R_DMUL_ERROR_FILE_NOT_FOUND);
             CAknInformationNote* note = new(ELeave)  CAknInformationNote();
             note->ExecuteLD(*infoPrompt);
-            CleanupStack::PopAndDestroy(infoPrompt);
+            CleanupStack::PopAndDestroy(infoPrompt);	
 
             CleanupStack::PopAndDestroy( fileName ); // fileName
-            CleanupStack::PopAndDestroy( url ); // url
+            CleanupStack::PopAndDestroy( url ); // url            
             return;
             }
 
@@ -452,7 +446,7 @@ void CUserInteractionsUtils::HandleContentL
             {
             User::Leave( retVal );
             }
-        // END: Get attributes for generic params
+        // END: Get attributes for generic params 
 
         //Creating generic param list
         CAiwGenericParamList* genericParamList = CAiwGenericParamList::NewLC();
@@ -488,13 +482,13 @@ void CUserInteractionsUtils::HandleContentL
                 ( EGenericParamFile, fileNameVariant );
             genericParamList->AppendL( genericParamFileName );
             }
-
+        
         CLOG_WRITE_FORMAT(" iDocHandler: %x",iDocHandler);
     	delete iDocHandler;
     	iDocHandler = 0;
         iDocHandler = CDocumentHandler::NewL();
         iDocHandler->SetExitObserver( this );
-
+    
         RFile file;
         iDocHandler->OpenTempFileL( *fileName, file );
         CleanupClosePushL( file );
@@ -503,30 +497,30 @@ void CUserInteractionsUtils::HandleContentL
         TInt docErr( KErrNone );
         TInt trappedError( KErrNone );
         iDocHandlerUsesTheUi = ETrue;
-        TRAP( trappedError,
-              docErr = iDocHandler->OpenFileEmbeddedL( file,
-                                                       dataType,
+        TRAP( trappedError, 
+              docErr = iDocHandler->OpenFileEmbeddedL( file, 
+                                                       dataType, 
                                                        *genericParamList ) );
         CLOG_WRITE_FORMAT(" trappedError: %d",trappedError);
         CLOG_WRITE_FORMAT(" docErr: %d",docErr);
         CleanupStack::PopAndDestroy( &file ); // file
         CLOG_WRITE(" PopAndDestroy file OK");
-
+        
         if ( trappedError || docErr )
             {
             delete iDocHandler;
     	    iDocHandler = 0;
     	    iDocHandlerUsesTheUi = EFalse;
-    	    // Since we know this is an open file error, we should handle it by calling
-    	    // ShowErrorNotesL instead of propagating the error
-            if ( trappedError )
+    	    // Since we know this is an open file error, we should handle it by calling 
+    	    // ShowErrorNotesL instead of propagating the error 
+            if ( trappedError ) 
                 {
                 ShowErrorNoteL (aDownload, trappedError );
                 }
-            else
+            else 
                 {
                 ShowErrorNoteL (aDownload, docErr );
-                }
+                }            
             }
 
         CleanupStack::PopAndDestroy( genericParamList ); // genericParamList
@@ -550,7 +544,7 @@ TBool CUserInteractionsUtils::SaveContentL( RHttpDownload& aDownload )
     __ASSERT_DEBUG( iMemSelectionDialog == 0, Panic( EUiLibPanNull ) ); // Only one can run
 
     TBool boolRet( EFalse );
-
+    
     if ( !DrmDownloadL( aDownload ) )
         {
         boolRet = SaveContentWithPathSelectionL( aDownload );
@@ -576,7 +570,7 @@ TBool CUserInteractionsUtils::SaveContentL( RHttpDownload& aDownload )
             User::LeaveIfError
                 ( aDownload.GetStringAttribute( EDlAttrName, dlNamePtr ) );
             CLOG_WRITE_FORMAT(" EDlAttrName: %S",&dlNamePtr);
-
+            
             HBufC8* contentType = HBufC8::NewLC( KMaxContentTypeLength );
             TPtr8 contentTypePtr = contentType->Des();
             User::LeaveIfError
@@ -600,7 +594,7 @@ TBool CUserInteractionsUtils::SaveContentL( RHttpDownload& aDownload )
             CLOG_WRITE_FORMAT(" moveErr: %d",moveErr);
             CLOG_WRITE_FORMAT(" moveRet: %d",moveRet);
 
-            // Delete DocHandler, otherwise IsUiBusy returns ETrue.
+            // Delete DocHandler, otherwise IsUiBusy returns ETrue.        
             delete iDocHandler;
             iDocHandler = 0;
             iDocHandlerUsesTheUi = EFalse;
@@ -610,7 +604,7 @@ TBool CUserInteractionsUtils::SaveContentL( RHttpDownload& aDownload )
             dlName = 0;
             CleanupStack::PopAndDestroy( fileName ); // fileName
             fileName = 0;
-
+            
             if( moveRet == KUserCancel )
                 {
                 // The user cancelled the operation.
@@ -651,7 +645,7 @@ TBool CUserInteractionsUtils::SaveContentWithPathSelectionL
 
     // Select memory
     iMemSelectionDialog = CAknMemorySelectionDialog::NewL
-        ( ECFDDialogTypeSave, R_DMUL_MEMORY_SELECTION_DLG,
+        ( ECFDDialogTypeSave, R_DMUL_MEMORY_SELECTION_DLG, 
           /*aShowUnavailableDrives*/EFalse );
     CLOG_WRITE(" CAknMemorySelectionDialog::NewL OK");
     CAknMemorySelectionDialog::TMemory mem( CAknMemorySelectionDialog::EPhoneMemory );
@@ -659,12 +653,12 @@ TBool CUserInteractionsUtils::SaveContentWithPathSelectionL
     CLOG_WRITE_FORMAT(" MEM boolRet: %d",boolRet);
     delete iMemSelectionDialog;
     iMemSelectionDialog = 0;
-
+    
     if ( boolRet )
         {
         CLOG_WRITE_FORMAT(" mem: %d",(TInt)mem);
         TBool useMmc = (mem == CAknMemorySelectionDialog::EMemoryCard);
-
+        
         __ASSERT_DEBUG( iFileSelectionDialog == 0, Panic( EUiLibPanNull ) ); // Only one can run
 
         HBufC* fileName = HBufC::NewLC( KMaxPath );
@@ -674,13 +668,13 @@ TBool CUserInteractionsUtils::SaveContentWithPathSelectionL
         CLOG_WRITE(" EDlAttrName OK");
 
         // Select folder
-        TInt resourceId = useMmc ? R_DMUL_MMC_FILE_SELECTION_DLG :
+        TInt resourceId = useMmc ? R_DMUL_MMC_FILE_SELECTION_DLG : 
                                    R_DMUL_FILE_SELECTION_DLG;
         iFileSelectionDialog = CAknFileSelectionDialog::NewL
                              ( ECFDDialogTypeSave, resourceId );
         CLOG_WRITE(" CAknFileSelectionDialog::NewL OK");
         TPath selectedPath( KNullDesC );
-        // Execute dialog - it calls CActiveScheduler::Start(), so be careful
+        // Execute dialog - it calls CActiveScheduler::Start(), so be careful 
         // when using data members after ExecuteLD!
         // TODO introduce deleted, as it uses data after executeld.
         boolRet = iFileSelectionDialog->ExecuteL( selectedPath );
@@ -702,7 +696,7 @@ TBool CUserInteractionsUtils::SaveContentWithPathSelectionL
             User::LeaveIfError( aDownload.Move() );
             CLOG_WRITE(" Move OK");
             }
-
+            
         CleanupStack::PopAndDestroy( fileName ); // fileName
         }
 
@@ -814,7 +808,7 @@ TBool CUserInteractionsUtils::GenerateNewNameL( TPtr& aFileName, TInt& aCounter 
     CleanupStack::PopAndDestroy( 2, original ); // nameBuf, original
     return ret;
     }
-
+    
 // -----------------------------------------------------------------------------
 // CUserInteractionsUtils::IsDuplicateL
 // -----------------------------------------------------------------------------
@@ -867,13 +861,13 @@ void CUserInteractionsUtils::CancelFileSelectionDialog()
 TBool CUserInteractionsUtils::DeleteWithUserConfirmL( RHttpDownload& aDownload )
     {
     CLOG_ENTERFN("CUserInteractionsUtils::DeleteWithUserConfirmL");
-
+    
     TInt32 numMediaObjects(0);
     aDownload.GetIntAttribute( EDlAttrNumMediaObjects, numMediaObjects );
-
+    
     HBufC* fileName = HBufC::NewLC( KMaxPath );
     TPtr fileNamePtr = fileName->Des();
-
+    
     // In case of album, show the album name. Otherwise show file name.
     TInt err(KErrNone);
     if (numMediaObjects > 1)
@@ -884,7 +878,7 @@ TBool CUserInteractionsUtils::DeleteWithUserConfirmL( RHttpDownload& aDownload )
         {
         err = aDownload.GetStringAttribute( EDlAttrName, fileNamePtr );
         }
-
+        
     if ( err != KErrNone && err != KErrNotFound )
         {
         User::LeaveIfError( err );
@@ -899,7 +893,7 @@ TBool CUserInteractionsUtils::DeleteWithUserConfirmL( RHttpDownload& aDownload )
     CAknQueryDialog* dlg = CAknQueryDialog::NewL();
     delete iDeleteConfirmDlg;
     iDeleteConfirmDlg = dlg;
-    // Execute dialog - it calls CActiveScheduler::Start(), so be careful
+    // Execute dialog - it calls CActiveScheduler::Start(), so be careful 
     // when using data members after ExecuteLD!
     TInt resp = iDeleteConfirmDlg->ExecuteLD
                     ( R_DMUL_DOWNLOAD_YESNO_CONF_Q, *prompt );
@@ -909,26 +903,26 @@ TBool CUserInteractionsUtils::DeleteWithUserConfirmL( RHttpDownload& aDownload )
     if ( resp ) // We have to check only that the value is non-zero
         {
 
-        aDownload.GetBoolAttribute( EDlAttrCodDownload,iCodDownload );
-
-
+        aDownload.GetBoolAttribute( EDlAttrCodDownload,iCodDownload );	
+        
+	   
         if(iCodDownload)
 			{
-
+			
 			#ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 			CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL(
 	        CEikonEnv::Static()->FsSession() );
-
+	        
 	        #endif
-
+	        
 	        //Assume that all files to be deleted are valid.
 	        TBool fileNotFound = EFalse;
-
+	        
 			for(TInt i = 1; i <= numMediaObjects; i++)
 		    	{
                 HBufC* fileName = HBufC::NewLC( KMaxPath );
                 TPtr fileNamePtr = fileName->Des();
-                User::LeaveIfError( aDownload.GetStringAttribute( EDlAttrDestFilename,i,fileNamePtr ));
+                User::LeaveIfError( aDownload.GetStringAttribute( EDlAttrDestFilename,i,fileNamePtr ));		    			    	
                 RFs rfs;
                 User::LeaveIfError( rfs.Connect() );
                 CleanupClosePushL<RFs>( rfs );
@@ -942,7 +936,7 @@ TBool CUserInteractionsUtils::DeleteWithUserConfirmL( RHttpDownload& aDownload )
                     }
 
                 rfs.Delete( fileNamePtr );
-
+                
                 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
                 // Notify Media Gallery about new media file
                 if( fileNamePtr.Length() > 0 )
@@ -954,34 +948,34 @@ TBool CUserInteractionsUtils::DeleteWithUserConfirmL( RHttpDownload& aDownload )
                    {
                    TRAP_IGNORE( mgFileManager->UpdateL() );
                    }
-
+                 
                  #else
                     if( fileNamePtr.Length() > 0 )
                    {
                    TRAP_IGNORE( UpdateDCFRepositoryL( fileNamePtr ) );
                    }
-
-                 #endif
-
+                  
+                 #endif  
+                   
                 CleanupStack::PopAndDestroy( &rfs );
-                CleanupStack::PopAndDestroy( fileName );
+                CleanupStack::PopAndDestroy( fileName );    
                 }
-
+                
                 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
                 delete mgFileManager;
                 mgFileManager = NULL;
                 #endif
-
-                //Inform the user that atleast one file not found.
+                
+                //Inform the user that atleast one file not found.	
 	   		    if(fileNotFound)
 	   		        {
                     HBufC* infoPrompt = StringLoader::LoadLC( R_DMUL_ERROR_FILE_NOT_FOUND);
                     CAknInformationNote* note = new(ELeave)  CAknInformationNote();
                     note->ExecuteLD(*infoPrompt);
-                    CleanupStack::PopAndDestroy(infoPrompt);
+                    CleanupStack::PopAndDestroy(infoPrompt);	   		   				
 	   		        }
-			}
-
+			}    
+			
         User::LeaveIfError( aDownload.Delete() );
         CLOG_LEAVEFN("CUserInteractionsUtils::DeleteWithUserConfirmL");
         return ETrue; // Deleted
@@ -1013,7 +1007,7 @@ void CUserInteractionsUtils::CancelDeleteConfirmationDialog()
 TBool CUserInteractionsUtils::CancelWithUserConfirmL( RHttpDownload& aDownload )
     {
     CLOG_ENTERFN("CUserInteractionsUtils::CancelWithUserConfirmL");
-
+    
     HBufC* fileName = HBufC::NewLC( KMaxPath );
     TPtr fileNamePtr = fileName->Des();
     TInt err = aDownload.GetStringAttribute( EDlAttrName, fileNamePtr );
@@ -1031,7 +1025,7 @@ TBool CUserInteractionsUtils::CancelWithUserConfirmL( RHttpDownload& aDownload )
     CAknQueryDialog* dlg = CAknQueryDialog::NewL();
     delete iCancelConfirmDlg;
     iCancelConfirmDlg = dlg;
-    // Execute dialog - it calls CActiveScheduler::Start(), so be careful
+    // Execute dialog - it calls CActiveScheduler::Start(), so be careful 
     // when using data members after ExecuteLD!
     TInt resp = iCancelConfirmDlg->ExecuteLD
                     ( R_DMUL_DOWNLOAD_YESNO_CONF_Q, *prompt );
@@ -1051,7 +1045,7 @@ TBool CUserInteractionsUtils::CancelWithUserConfirmL( RHttpDownload& aDownload )
         return EFalse;
         }
     }
-
+    
 // -----------------------------------------------------------------------------
 // CUserInteractionsUtils::CancelAllWithUserConfirmL
 // -----------------------------------------------------------------------------
@@ -1064,13 +1058,13 @@ TBool CUserInteractionsUtils::CancelAllWithUserConfirmL( RHttpDownload& /* aDown
     CAknQueryDialog* dlg = CAknQueryDialog::NewL();
     delete iCancelConfirmDlg;
     iCancelConfirmDlg = dlg;
-    // Execute dialog - it calls CActiveScheduler::Start(), so be careful
+    // Execute dialog - it calls CActiveScheduler::Start(), so be careful 
     // when using data members after ExecuteLD!
     TInt resp = iCancelConfirmDlg->ExecuteLD
                     ( R_DMUL_DOWNLOAD_YESNO_CONF_Q, *prompt );
     iCancelConfirmDlg = 0;
     CleanupStack::PopAndDestroy(); // prompt
-
+    
     if ( resp ) // We have to check only that the value is non-zero
         {
         TInt count = iRegistryModel.DownloadMgr().CurrentDownloads().Count();
@@ -1092,7 +1086,7 @@ TBool CUserInteractionsUtils::CancelAllWithUserConfirmL( RHttpDownload& /* aDown
 		       {
 		       dlState  = EHttpDlMultipleMOFailed;
 		       }
-
+           
             if(dlState == EHttpDlInprogress || dlState == EHttpDlPaused )
         	    {
         	    i--;
@@ -1134,7 +1128,7 @@ void CUserInteractionsUtils::ShowMediaRemovedNoteL()
         {
         HBufC* value = iCoeEnv.AllocReadResourceLC
                         ( R_DMUL_ERROR_EXT_MEM_REMOVED );
-        iMediaRemovedNote =
+        iMediaRemovedNote = 
             new (ELeave) CAknInformationNote( &iMediaRemovedNote );
         iMediaRemovedNote->ExecuteLD( *value );
         CleanupStack::PopAndDestroy( value ); // value
@@ -1165,7 +1159,7 @@ TBool CUserInteractionsUtils::GetAndSetHttpAuthCredentialsL
     ( RHttpDownload& aDownload )
     {
     CLOG_ENTERFN("CUserInteractionsUtils::GetAndSetHttpAuthCredentialsL");
-
+    
     HBufC* username = 0;
     HBufC* password = 0;
 
@@ -1199,7 +1193,7 @@ TBool CUserInteractionsUtils::GetAndSetHttpAuthCredentialsL
 
     // Execute a wait dialog
     TBool resp = iDialogsProv->DialogUserAuthenticationLC
-            ( *url, *realm, *userName, username, password,
+            ( *url, *realm, *userName, username, password, 
               authScheme == EAuthBasic );
 
     if ( resp )
@@ -1222,7 +1216,7 @@ TBool CUserInteractionsUtils::GetAndSetHttpAuthCredentialsL
     CleanupStack::PopAndDestroy( realm ); // realm
     CleanupStack::PopAndDestroy( url ); // url
     CleanupStack::PopAndDestroy( userName ); // userName
-
+    
     CLOG_LEAVEFN("CUserInteractionsUtils::GetAndSetHttpAuthCredentialsL");
     return ( resp );
     }
@@ -1235,7 +1229,7 @@ TBool CUserInteractionsUtils::GetAndSetProxyAuthCredentialsL
     ( RHttpDownload& aDownload )
     {
     CLOG_ENTERFN("CUserInteractionsUtils::GetAndSetProxyAuthCredentialsL");
-
+    
     HBufC* username = 0;
     HBufC* password = 0;
 
@@ -1261,7 +1255,7 @@ TBool CUserInteractionsUtils::GetAndSetProxyAuthCredentialsL
 
     // Execute a wait dialog
     TBool resp = iDialogsProv->DialogUserAuthenticationLC
-            ( *url, *realm, *userName, username, password,
+            ( *url, *realm, *userName, username, password, 
               authScheme == EAuthBasic );
 
     if ( resp )
@@ -1284,7 +1278,7 @@ TBool CUserInteractionsUtils::GetAndSetProxyAuthCredentialsL
     CleanupStack::PopAndDestroy( realm ); // realm
     CleanupStack::PopAndDestroy( url ); // url
     CleanupStack::PopAndDestroy( userName ); // userName
-
+    
     CLOG_LEAVEFN("CUserInteractionsUtils::GetAndSetProxyAuthCredentialsL");
     return ( resp );
     }
@@ -1319,7 +1313,7 @@ TBool CUserInteractionsUtils::DisplaySecurityWarningL()
            ( KNullDesC, *message, *okMsg, *cancelMsg );
 
     // Clean up the basic authentication dialog memory
-    CleanupStack::PopAndDestroy( 3, message );
+    CleanupStack::PopAndDestroy( 3, message ); 
         // message, okMsg, cancelMsg
 
     return resp;
@@ -1339,7 +1333,7 @@ void CUserInteractionsUtils::CancelSecurityWarning()
 
 // -----------------------------------------------------------------------------
 // CUserInteractionsUtils::BrowserSettingSecWarningL
-// This method must behave the same as
+// This method must behave the same as 
 // CBrowserSettings::GetHttpSecurityWarnings().
 // See CBrowserSettings !
 // -----------------------------------------------------------------------------
@@ -1354,19 +1348,19 @@ TBool CUserInteractionsUtils::BrowserSettingSecWarningL()
 // CUserInteractionsUtils::InitializeSoftNotifStndL
 // -----------------------------------------------------------------------------
 //
-void CUserInteractionsUtils::InitializeSoftNotifStndL( TVwsViewId aViewId,
-                                                       TUid aCustomMessageId,
+void CUserInteractionsUtils::InitializeSoftNotifStndL( TVwsViewId aViewId, 
+                                                       TUid aCustomMessageId, 
                                                        const TDesC8& aViewActivationMsg ) const
     {
     CLOG_ENTERFN("CUserInteractionsUtils::InitializeSoftNotifStndL");
 
-    CAknSoftNotificationParameters* params =
+    CAknSoftNotificationParameters* params = 
         CAknSoftNotificationParameters::NewL
         (
-        iDMgrUiBase.ResourceFileName(), R_DMUL_GSN_STND, KMinimumSoftNotePriority,
-        R_AVKON_SOFTKEYS_YES_NO__YES,
-        CAknNoteDialog::EConfirmationTone, aViewId, aCustomMessageId,
-        EAknSoftkeyYes, aViewActivationMsg
+        iDMgrUiBase.ResourceFileName(), R_DMUL_GSN_STND, KMinimumSoftNotePriority, 
+        R_AVKON_SOFTKEYS_YES_NO__YES, 
+        CAknNoteDialog::EConfirmationTone, aViewId, aCustomMessageId, 
+        EAknSoftkeyYes, aViewActivationMsg 
         );
     CLOG_WRITE(" params OK");
     CleanupStack::PushL( params );
@@ -1382,19 +1376,19 @@ void CUserInteractionsUtils::InitializeSoftNotifStndL( TVwsViewId aViewId,
 // CUserInteractionsUtils::InitializeSoftNotifEmbL
 // -----------------------------------------------------------------------------
 //
-void CUserInteractionsUtils::InitializeSoftNotifEmbL( TVwsViewId aViewId,
-                                                      TUid aCustomMessageId,
+void CUserInteractionsUtils::InitializeSoftNotifEmbL( TVwsViewId aViewId, 
+                                                      TUid aCustomMessageId, 
                                                       const TDesC8& aViewActivationMsg ) const
     {
     CLOG_ENTERFN("CUserInteractionsUtils::InitializeSoftNotifEmbL");
 
-    CAknSoftNotificationParameters* params =
+    CAknSoftNotificationParameters* params = 
         CAknSoftNotificationParameters::NewL
         (
-        iDMgrUiBase.ResourceFileName(), R_DMUL_GSN_EMB, KMinimumSoftNotePriority,
-        R_AVKON_SOFTKEYS_YES_NO__YES,
-        CAknNoteDialog::EConfirmationTone, aViewId, aCustomMessageId,
-        EAknSoftkeyYes, aViewActivationMsg
+        iDMgrUiBase.ResourceFileName(), R_DMUL_GSN_EMB, KMinimumSoftNotePriority, 
+        R_AVKON_SOFTKEYS_YES_NO__YES, 
+        CAknNoteDialog::EConfirmationTone, aViewId, aCustomMessageId, 
+        EAknSoftkeyYes, aViewActivationMsg 
         );
     CLOG_WRITE(" params OK");
     CleanupStack::PushL( params );
@@ -1410,25 +1404,25 @@ void CUserInteractionsUtils::InitializeSoftNotifEmbL( TVwsViewId aViewId,
 // CUserInteractionsUtils::CancelSoftNotifStndL
 // -----------------------------------------------------------------------------
 //
-void CUserInteractionsUtils::CancelSoftNotifStndL( TVwsViewId aViewId,
-                                                  TUid aCustomMessageId,
+void CUserInteractionsUtils::CancelSoftNotifStndL( TVwsViewId aViewId, 
+                                                  TUid aCustomMessageId, 
                                                   const TDesC8& aViewActivationMsg ) const
     {
     CLOG_ENTERFN("CUserInteractionsUtils::CancelSoftNotifStndL");
 
-    CAknSoftNotificationParameters* params =
+    CAknSoftNotificationParameters* params = 
         CAknSoftNotificationParameters::NewL
         (
-        iDMgrUiBase.ResourceFileName(), R_DMUL_GSN_STND, KMinimumSoftNotePriority,
-        R_AVKON_SOFTKEYS_YES_NO__YES,
-        CAknNoteDialog::EConfirmationTone, aViewId, aCustomMessageId,
-        EAknSoftkeyYes, aViewActivationMsg
+        iDMgrUiBase.ResourceFileName(), R_DMUL_GSN_STND, KMinimumSoftNotePriority, 
+        R_AVKON_SOFTKEYS_YES_NO__YES, 
+        CAknNoteDialog::EConfirmationTone, aViewId, aCustomMessageId, 
+        EAknSoftkeyYes, aViewActivationMsg 
         );
     CLOG_WRITE(" params OK");
     CleanupStack::PushL( params );
 
     //TODO From avkon sources it seems that it identifies the soft notification
-    // with the AVKON_NOTE resource ID, which is the same in case of
+    // with the AVKON_NOTE resource ID, which is the same in case of 
     // all UI Lib clients!!
     iSoftNotifier->CancelCustomSoftNotificationL( *params );
 
@@ -1441,19 +1435,19 @@ void CUserInteractionsUtils::CancelSoftNotifStndL( TVwsViewId aViewId,
 // CUserInteractionsUtils::CancelSoftNotifEmbL
 // -----------------------------------------------------------------------------
 //
-void CUserInteractionsUtils::CancelSoftNotifEmbL( TVwsViewId aViewId,
-                                                 TUid aCustomMessageId,
+void CUserInteractionsUtils::CancelSoftNotifEmbL( TVwsViewId aViewId, 
+                                                 TUid aCustomMessageId, 
                                                  const TDesC8& aViewActivationMsg ) const
     {
     CLOG_ENTERFN("CUserInteractionsUtils::CancelSoftNotifEmbL");
 
-    CAknSoftNotificationParameters* params =
+    CAknSoftNotificationParameters* params = 
         CAknSoftNotificationParameters::NewL
         (
-        iDMgrUiBase.ResourceFileName(), R_DMUL_GSN_EMB, KMinimumSoftNotePriority,
-        R_AVKON_SOFTKEYS_YES_NO__YES,
-        CAknNoteDialog::EConfirmationTone, aViewId, aCustomMessageId,
-        EAknSoftkeyYes, aViewActivationMsg
+        iDMgrUiBase.ResourceFileName(), R_DMUL_GSN_EMB, KMinimumSoftNotePriority, 
+        R_AVKON_SOFTKEYS_YES_NO__YES, 
+        CAknNoteDialog::EConfirmationTone, aViewId, aCustomMessageId, 
+        EAknSoftkeyYes, aViewActivationMsg 
         );
     CLOG_WRITE(" params OK");
     CleanupStack::PushL( params );
@@ -1484,7 +1478,7 @@ void CUserInteractionsUtils::CancelAllDialogs()
     CancelMediaRemovedNote();
     CancelCredentialsQueries();
     CancelSecurityWarning();
-    // The soft notifications should not be cancelled here,
+    // The soft notifications should not be cancelled here, 
     // because they are used in a different context.
     }
 
@@ -1506,7 +1500,7 @@ void CUserInteractionsUtils::InfoNoteL( TInt aDialogResourceId, const TInt aProm
 void CUserInteractionsUtils::InfoNoteL( TInt aDialogResourceId, const TDesC& aPrompt )
     {
     CLOG_ENTERFN("CUserInteractionsUtils::InfoNoteL");
-
+    
     CAknNoteDialog* dialog = new (ELeave) CAknNoteDialog
 								( REINTERPRET_CAST( CEikDialog**, &dialog ) );
 	CLOG_WRITE(" new");
@@ -1515,7 +1509,7 @@ void CUserInteractionsUtils::InfoNoteL( TInt aDialogResourceId, const TDesC& aPr
     dialog->SetCurrentLabelL( EGeneralNote, aPrompt );
     CLOG_WRITE(" SetCurrentLabelL");
     dialog->RunDlgLD( CAknNoteDialog::ELongTimeout, CAknNoteDialog::ENoTone );
-
+    
     CLOG_LEAVEFN("CUserInteractionsUtils::InfoNoteL");
     }
 
@@ -1571,15 +1565,15 @@ TBool CUserInteractionsUtils::IsCorruptedDcfL
     HBufC8* mimeType = 0;
     HBufC8* contentURI = 0;
     TUint dataLength = 0;
-    TInt err = drmCommon->GetFileInfo( *fileName,
+    TInt err = drmCommon->GetFileInfo( *fileName, 
         prot, mimeType, contentURI, dataLength );
-
-    if ( err == DRMCommon::EVersionNotSupported ||
+    
+    if ( err == DRMCommon::EVersionNotSupported || 
          ( err == DRMCommon::EOk && ( !mimeType || !contentURI ) ) )
         {
         isCorruptedDcf = ETrue;
         }
-
+        
     delete mimeType;
     delete contentURI;
     CleanupStack::PopAndDestroy( fileName );
@@ -1616,9 +1610,9 @@ TBool CUserInteractionsUtils::IsBadMimeInDcfL
     HBufC8* mimeType = 0;
     HBufC8* contentURI = 0;
     TUint dataLength = 0;
-    TInt err = drmCommon->GetFileInfo( *fileName,
+    TInt err = drmCommon->GetFileInfo( *fileName, 
         prot, mimeType, contentURI, dataLength );
-
+    
     if ( err == DRMCommon::EOk )
         {
         if ( !mimeType || !contentURI )
@@ -1632,7 +1626,7 @@ TBool CUserInteractionsUtils::IsBadMimeInDcfL
             isBadMimeInDcfL = ETrue;
             }
         }
-
+        
     delete mimeType;
     delete contentURI;
     CleanupStack::PopAndDestroy( fileName );
@@ -1657,7 +1651,7 @@ void CUserInteractionsUtils::DownloadHasBeenDeleted( RHttpDownload* aDownload )
     CLOG_LEAVEFN("CUserInteractionsUtils::DownloadHasBeenDeleted");
     }
 
-
+ 
 // -----------------------------------------------------------------------------
 // CUserInteractionsUtils::LaunchPdAppL
 // -----------------------------------------------------------------------------
@@ -1667,7 +1661,7 @@ void CUserInteractionsUtils::LaunchPdAppL( RHttpDownload& aDownload, const TBool
     CLOG_ENTERFN("CUserInteractionsEventHandler::LaunchPdAppL");
 
     // Get the PD player application's UID for the download
-    TUid pdPlayerUid = { 0 };
+    TUid pdPlayerUid = { 0 };    
     HBufC8* contentType = ContentTypeL( aDownload, ETrue, KFirstMoIndex );
     TDataType dataType( *contentType );
     delete contentType;
@@ -1676,38 +1670,22 @@ void CUserInteractionsUtils::LaunchPdAppL( RHttpDownload& aDownload, const TBool
     CDocumentHandler* docHandler = CDocumentHandler::NewLC();
     TBool pdSupported = docHandler->CanHandleProgressivelyL( dataType, pdPlayerUid );
     CleanupStack::PopAndDestroy( docHandler ); // docHandler
-
+    
     if ( pdSupported )
         {
-
-        TInt downloadCnt = iRegistryModel.DownloadCount();
-        TBool isProg(EFalse);
-
-        const CDownloadArray& downloads = iRegistryModel.DownloadMgr().CurrentDownloads();
-
-        for ( TInt i = 0; i < downloadCnt ;i++ )
-			{
-        	RHttpDownload* dl = downloads.At(i); //current download
-        	dl->GetBoolAttribute( EDlAttrProgressive, isProg );
-        	if (isProg )
-				{
-                dl->SetBoolAttribute( EDlAttrProgressive, EFalse );
-                }
-			}
-
         TInt32 numMediaObjects = 0;
         User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrNumMediaObjects, numMediaObjects ) );
-
+        
         // Pack download ID into EGenericParamDownloadId.
         TInt32 downloadID( -1 );
         TInt32 activeDownloadID(-1);
         if ( aProgressively )
             {
-            User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrId, downloadID ) );
-            User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrActiveDownload, activeDownloadID ) );
+            User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrId, downloadID ) );        	
+            User::LeaveIfError( aDownload.GetIntAttribute( EDlAttrActiveDownload, activeDownloadID ) );       	
             }
 
-
+        
         CAiwGenericParamList* genParList = CAiwGenericParamList::NewLC();
         TAiwVariant downloadIdVariant( downloadID );
         TAiwGenericParam genericParam( EGenericParamDownloadId, downloadIdVariant );
@@ -1721,33 +1699,33 @@ void CUserInteractionsUtils::LaunchPdAppL( RHttpDownload& aDownload, const TBool
 		    User::LeaveIfError( aDownload.GetStringAttribute( EDlAttrDestFilename, KFirstMoIndex, fileNamePtr ) );
 		else
 		    User::LeaveIfError( aDownload.GetStringAttribute( EDlAttrDestFilename, fileNamePtr ) );
-
+		
         // check if file exists, if does not , don't continue
         if ( !IsDuplicateL( fileNamePtr ) )
             {
             HBufC* infoPrompt = StringLoader::LoadLC( R_DMUL_ERROR_FILE_NOT_FOUND);
             CAknInformationNote* note = new(ELeave)  CAknInformationNote();
             note->ExecuteLD(*infoPrompt);
-            CleanupStack::PopAndDestroy(infoPrompt);
+            CleanupStack::PopAndDestroy(infoPrompt);	
 
     		CleanupStack::PopAndDestroy( fileName );
             CleanupStack::PopAndDestroy( genParList );
 
             return;
             }
-
+		
 
 		TAiwVariant fileNameVariant( fileNamePtr );
 		TAiwGenericParam fileNameParam( EGenericParamFile, fileNameVariant );
-		genParList->AppendL( fileNameParam );
-
-
+		genParList->AppendL( fileNameParam ); 	
+        
+    	
     	// Since we don't have the EGenericParamId for track index we are using EGenericParamUnspecified.
     	// Once we get the generic parameter for the id in future,this will be changed.
         TAiwVariant activeIndexVariant( activeDownloadID );
         TAiwGenericParam activeIndexParam( EGenericParamUnspecified, activeIndexVariant );
-        genParList->AppendL( activeIndexParam );
-
+        genParList->AppendL( activeIndexParam );       
+        
         HBufC8* param8 = HBufC8::NewLC( KMinLength ); // Must be large enough!!
         TPtr8 paramPtr8 = param8->Des();
         RDesWriteStream writeStream( paramPtr8 );
@@ -1761,18 +1739,18 @@ void CUserInteractionsUtils::LaunchPdAppL( RHttpDownload& aDownload, const TBool
         CAknTaskList *taskList = CAknTaskList::NewL(CEikonEnv::Static()->WsSession());
         TApaTask task = taskList->FindRootApp(pdPlayerUid);
         TInt result = aDownload.SetBoolAttribute( EDlAttrProgressive, ETrue );
-
+    
         if ( task.Exists() )
             {
             task.BringToForeground();
-            // 8-bit buffer is required.
+            // 8-bit buffer is required. 
             task.SendMessage( TUid::Uid( 0 ), *param8 ); // Uid is not used
             }
-        else
+        else 
             {
             HBufC* param = HBufC::NewLC( param8->Length() );
             param->Des().Copy( *param8 );
-
+            
             RApaLsSession appArcSession;
             User::LeaveIfError( appArcSession.Connect() );
             CleanupClosePushL( appArcSession );
@@ -1781,24 +1759,24 @@ void CUserInteractionsUtils::LaunchPdAppL( RHttpDownload& aDownload, const TBool
                 (
                     appArcSession.StartDocument( *param, pdPlayerUid, id )
                 );
-
+                     
             CleanupStack::PopAndDestroy( &appArcSession );
             CleanupStack::PopAndDestroy( param );
             }
-
+        
         //Store the information whether progressive play is launched or not
         iRegistryModel.UserInteractions().SetProgressiveDownloadLaunched( ETrue );
         if( aProgressively )
             {
             User::LeaveIfError( aDownload.SetIntAttribute( EDlAttrActivePlayedDownload, activeDownloadID ) );
-            }
+            }   
 
         CleanupStack::PopAndDestroy( param8 );
 		CleanupStack::PopAndDestroy( fileName );
         CleanupStack::PopAndDestroy( genParList );
         }
-
-    CLOG_LEAVEFN("CUserInteractionsEventHandler::LaunchPdAppL");
+    
+    CLOG_LEAVEFN("CUserInteractionsEventHandler::LaunchPdAppL");    
     }
 
 
@@ -1829,7 +1807,7 @@ void CUserInteractionsUtils::TestLaunchPdAppL( RHttpDownload& aDownload )
 
     TAiwVariant fileNameVariant( fileNamePtr );
     TAiwGenericParam fileNameParam( EGenericParamFile, fileNameVariant );
-    genParList->AppendL( fileNameParam );
+    genParList->AppendL( fileNameParam );	
 
     HBufC8* param8 = HBufC8::NewLC( KMinLength );
     TPtr8 paramPtr8 = param8->Des();
@@ -1846,22 +1824,22 @@ void CUserInteractionsUtils::TestLaunchPdAppL( RHttpDownload& aDownload )
 
     if ( task.Exists() )
         {
-        // 8-bit buffer is required.
+        // 8-bit buffer is required. 
         task.SendMessage( TUid::Uid( 0 ), *param8 ); // Uid is not used
         task.BringToForeground();
         }
-    else
+    else 
         {
         HBufC* param = HBufC::NewLC( param8->Length() );
         param->Des().Copy( *param8 );
-
+        
         RApaLsSession appArcSession;
         User::LeaveIfError( appArcSession.Connect() );
         CleanupClosePushL( appArcSession );
         TThreadId id;
 
         User::LeaveIfError(appArcSession.StartDocument( *param, KTestPdPlayerUid, id ));
-
+	
         CleanupStack::PopAndDestroy( &appArcSession );
         CleanupStack::PopAndDestroy( param );
         }
@@ -1869,10 +1847,10 @@ void CUserInteractionsUtils::TestLaunchPdAppL( RHttpDownload& aDownload )
     CleanupStack::PopAndDestroy( param8 );
     CleanupStack::PopAndDestroy( fileName );
     CleanupStack::PopAndDestroy( genParList );
-
+    
     CLOG_LEAVEFN("CUserInteractionsEventHandler::TestLaunchPdAppL");
     }
-
+    
 #endif // __DMGR_PD_TESTHARNESS
 
 
@@ -1885,7 +1863,7 @@ void CUserInteractionsUtils::HandleServerAppExit( TInt aReason )
     CLOG_ENTERFN("CUserInteractionsUtils::HandleServerAppExit");
     CLOG_WRITE_FORMAT(" aReason: %d", aReason);
 
-    // DocHandler has finished its task.
+    // DocHandler has finished its task. 
     iDocHandlerUsesTheUi = EFalse;
     // Schedule the next download:
 #ifdef _DEBUG
@@ -1894,12 +1872,12 @@ void CUserInteractionsUtils::HandleServerAppExit( TInt aReason )
 #else
     TRAP_IGNORE( iRegistryModel.UserInteractions().SchedulePostponedDownloadL() );
 #endif // _DEBUG
-
+    
     if ( iHandlerObserver )
         {
         iHandlerObserver->NotifyHandlerExit( iHandledDownload, aReason );
         }
-
+        
     CLOG_LEAVEFN("CUserInteractionsUtils::HandleServerAppExit");
     }
 
@@ -1920,7 +1898,7 @@ TBool CUserInteractionsUtils::IsNetworkPdCompatibleL() const
     RTelServer  telServer;
     RMobilePhone    mobilePhone;
 
-    RMobilePhone::TMobilePhoneNetworkMode networkMode;
+    RMobilePhone::TMobilePhoneNetworkMode networkMode;	
     User::LeaveIfError( telServer.Connect() );
     User::LeaveIfError( telServer.LoadPhoneModule( KMmTsyModuleName ) );
 
@@ -1970,7 +1948,7 @@ void CUserInteractionsUtils::SendMsgTerminateToPdAppsL(TBool aProgressiveDownloa
         TAiwVariant terminateVariant( browserTerminate );
         TAiwGenericParam genericParamTerm( EGenericParamTerminate, terminateVariant );
         genParList->AppendL( genericParamTerm );
-
+        
         HBufC8* param8 = HBufC8::NewLC( KMinLength ); // Must be large enough!!
         TPtr8 paramPtr8 = param8->Des();
         RDesWriteStream writeStream( paramPtr8 );
@@ -1979,9 +1957,9 @@ void CUserInteractionsUtils::SendMsgTerminateToPdAppsL(TBool aProgressiveDownloa
 
         writeStream.CommitL();
         writeStream.Close();
-
+        
 		TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
-
+	    
 	    TBool isProgressive (EFalse);
  	    TInt downloadCnt = iRegistryModel.DownloadCount();
  	    const CDownloadArray& downloads = iRegistryModel.DownloadMgr().CurrentDownloads();
@@ -1992,31 +1970,31 @@ void CUserInteractionsUtils::SendMsgTerminateToPdAppsL(TBool aProgressiveDownloa
  	        dl->GetBoolAttribute( EDlAttrProgressive, isProgressive );
  	        if(isProgressive)
  	            {
- 	            break;
+ 	            break;                
  	            }
- 	        }
+ 	        } 
 	    for( TInt i = 0; i < KDocPDAppUidCount; i++ )
 	    {
 			TUid KTestPdPlayerUid = {KDocPDAppUidList[ i ]};
-			TApaTask task = taskList.FindApp(KTestPdPlayerUid );		// task for MP app
+			TApaTask task = taskList.FindApp(KTestPdPlayerUid );		// task for MP app    
 			if ( task.Exists() && ( isProgressive || aProgressiveDownloadLaunched ) )
 				{
 				if ( isProgressive )
-				    {
+				    {    
 				    RHttpDownload* dl = downloads.At(j); // current download
-                    //This Atribute will tell if MP called Delete
-				    //on exit of Browser
+                    //This Atribute will tell if MP called Delete  				
+				    //on exit of Browser				
  	                dl->SetBoolAttribute( EDlAttrProgressive, EFalse );
 				    }
-				// 8-bit buffer is required.
+				// 8-bit buffer is required. 
 				task.SendMessage( TUid::Uid( 0 ), *param8 ); // Uid is not used
 				task.BringToForeground();
 				}
 		}
         CleanupStack::PopAndDestroy( param8 );
         CleanupStack::PopAndDestroy( genParList );
-
-        CLOG_LEAVEFN("CUserInteractionsEventHandler::SendMsgTerminateToPdAppsL");
+    
+        CLOG_LEAVEFN("CUserInteractionsEventHandler::SendMsgTerminateToPdAppsL");    
 
     }
 
@@ -2034,28 +2012,28 @@ TBool CUserInteractionsUtils::GetWlanAvailabilityL() const
     CleanupClosePushL( connMon );
     User::LeaveIfError( connMon.ConnectL() );
 
-    TConnMonIapInfoBuf infoBuf;
-    infoBuf().iCount = 0;
-
+    TConnMonIapInfoBuf infoBuf; 
+    infoBuf().iCount = 0;      
+    
     // Get WLAN IAPs to infoBuf
     connMon.GetPckgAttribute( EBearerIdWLAN ,0 , KIapAvailability, infoBuf, status );
-    User::WaitForRequest( status );
+    User::WaitForRequest( status );    
 
-    CleanupStack::PopAndDestroy( &connMon );
+    CleanupStack::PopAndDestroy( &connMon ); 
 
     if ( !status.Int() && infoBuf().iCount )
         {
         return ETrue;
-        }
-
+        } 
+    
     return EFalse;
-    }
+    }    
 
 // ------------------------------------------------------------
 // CUserInteractionsUtils::CanLaunchAsProgDownload()
-// Check if several conditions are met for Progressive Playback
+// Check if several conditions are met for Progressive Playback 
 // ------------------------------------------------------------
-//
+// 
 TBool CUserInteractionsUtils::CanLaunchAsProgDownload(
     RHttpDownload& aDownload,
     CDownloadMgrUiDownloadsList& dlList,
@@ -2089,38 +2067,38 @@ TBool CUserInteractionsUtils::CanLaunchAsProgDownload(
 
 // ---------------------------------------------------------
 // CUserInteractionsUtils::UpdateDCFRepositoryL()
-// Update saved file to DCFRepository
+// Update saved file to DCFRepository  
 // ---------------------------------------------------------
-//
+// 
 void CUserInteractionsUtils::UpdateDCFRepositoryL(
     const TDesC& aFileName )
     {
     CLOG_ENTERFN( "CUserInteractionsUtils::UpdateDCFRepositoryL" );
     CLOG_WRITE_FORMAT( " :aFileName=%S", &aFileName );
     CDcfEntry* dcfEntry = NULL;
-    dcfEntry = CDcfEntry::NewL();
+    dcfEntry = CDcfEntry::NewL();    
     CleanupStack::PushL( dcfEntry );
-
+    
     CDcfRep* dcfRep = NULL;
     dcfRep = CDcfRep::NewL();
     CleanupStack::PushL( dcfRep );
 
-    dcfEntry->SetLocationL( aFileName, 0 );
+    dcfEntry->SetLocationL( aFileName, 0 );    
     CLOG_WRITE(" : SetLocationL OK");
     dcfRep->UpdateL( dcfEntry );
     CLOG_WRITE(" :UpdateL OK");
     CleanupStack::PopAndDestroy(2); // dcfEntry, dcfRep
     CLOG_LEAVEFN("CUserInteractionsUtils::UpdateDCFRepositoryL");
-    }
-
+    }              
+    
 // ---------------------------------------------------------
 // CUserInteractionsUtils::IsCodDownload()
-// return true if its a COD DL
+// return true if its a COD DL  
 // ---------------------------------------------------------
-//
+// 
 TBool CUserInteractionsUtils::IsCodDownload()
     {
     return iCodDownload;
-    }
+    }                
 
 // End of file.

@@ -11,25 +11,25 @@
 *
 * Contributors:
 *
-* Description: 
+* Description:
 *
 */
 
-#include "../browserdialogsprovider/Group/bld.inf"
+#include "../browserdialogsprovider/group/bld.inf"
 #include "../recenturlstore/group/bld.inf"
-//#include "../xmlparser/group/bld.inf"
-//#include "../cxmllibrary/group/BLD.INF"
-#include "../downloadmgr/Group/bld.inf"
-#include "../connectionmanager/Group/bld.inf"
+#include "../cxmllibrary/group/bld.inf"
+#include "../xmlparser/group/bld.inf"
+#include "../downloadmgr/group/bld.inf"
+#include "../connectionmanager/group/bld.inf"
 #include "../browsertelservice/group/bld.inf"
 #include "../favouritesengine/group/bld.inf"
 #include "../feedsengine/group/bld.inf"
 #ifdef BRDO_MULTIPART_PARSER_FF
 #include "../multipartparser/group/bld.inf"
 #endif
-#include "../schemehandler/Group/bld.inf"
+#include "../schemehandler/group/bld.inf"
 #include "../webutils/group/bld.inf"
-#include "../aiwbrowserprovider/Group/bld.inf"
+#include "../aiwbrowserprovider/group/bld.inf"
 
 PRJ_PLATFORMS
 

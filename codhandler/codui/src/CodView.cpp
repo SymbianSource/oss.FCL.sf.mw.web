@@ -15,7 +15,6 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include <eikrted.h>
@@ -24,18 +23,17 @@
 #include <AknUtils.h>
 #include <AknDef.h>
 #include <StringLoader.h>
-#include <CodData.h>
-#include <CodDefs.h>
+#include "CodData.h"
+#include "CodDefs.h"
 #include <avkon.rsg>
 #include <CodUi.rsg>
 #include "CodView.h"
 #include "CodLogger.h"
 #include <Oma2Agent.h>
 #include <AknUtils.h>
-#include <aknlayout.cdl.h>
+#include <AknLayout.cdl.h>
 
 #include "eikon.hrh"
-
 
 // ================= TYPES =======================
 

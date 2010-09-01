@@ -15,6 +15,8 @@
 *
 */
 
+
+
 #ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
 #include <txtetext_internal.h>
 #include <txtclipboard.h>
@@ -38,10 +40,10 @@
 
 #include "Frame.h"
 #include "Editor.h"
-#include "HTMLNames.h"
+#include "HtmlNames.h"
 #include "EventHandler.h"
-#include "HTMLInputElement.h"
-#include "HTMLTextAreaElement.h"
+#include "HtmlInputElement.h"
+#include "HtmlTextAreaElement.h"
 #include "PlatformKeyboardEvent.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
@@ -49,8 +51,12 @@
 #include <coemain.h>
 #include <eikpanic.h>
 #include <aknedsts.h>
-#include <AknUtils.h>
+#include <aknutils.h>
 #include "Text.h"
+
+#include <e32const.h>
+
+#define KLineEnterChar 0x21b2
 
 using namespace WebCore;
 
@@ -71,7 +77,9 @@ GLDEF_C void Panic(TEikPanic aPanic)
 CWebFepTextEditor::CWebFepTextEditor(WebView* aView)
     : m_webView(aView),
       m_textFormatMask(NULL),
-      m_inlineEditText(NULL)
+      m_inlineEditText(NULL),
+      m_longKeyPress(EFalse),
+      m_inlineTextEditingStarted(EFalse)
 {
     // Set up the extended capabilities
     TRAP_IGNORE(
@@ -83,7 +91,7 @@ CWebFepTextEditor::CWebFepTextEditor(WebView* aView)
 #if defined(BRDO_BROWSER_50_FF)
     SetAlignment( CAknExtendedInputCapabilities::EInputEditorAlignBidi );
 #endif
-	EnableCcpu(ETrue);
+    TRAP_IGNORE( EnableCcpuL() );
 }
 
 // -----------------------------------------------------------------------------
@@ -97,6 +105,7 @@ CWebFepTextEditor::~CWebFepTextEditor()
     delete m_inlineEditText;
     delete m_textFormatMask;
 	delete m_ExtendedInputCapabilities;
+	delete m_CcpuSupport;
     }
 
 // -----------------------------------------------------------------------------
@@ -129,18 +138,19 @@ void CWebFepTextEditor::UpdateEditingMode()
 {
     Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
     if (frame) {
-        Node *node = frame->document()->focusedNode();
+        Node *node = frame->document()->focusedNode(); 
         if (frame && frame->document() && node) {
-            if (node->hasTagName(HTMLNames::inputTag)
-                    && (static_cast<HTMLInputElement*>(node)->inputType() == HTMLInputElement::PASSWORD)
-                        && !static_cast<HTMLInputElement*>(node)->readOnly()) {
+            if (node->hasTagName(HTMLNames::inputTag) 
+                    && (static_cast<HTMLInputElement*>(node)->inputType() == HTMLInputElement::PASSWORD) 
+                        && !static_cast<HTMLInputElement*>(node)->readOnly()) {            
                 // Set the state as if it was the CEikSecretEditor
                 CAknEdwinState* state = static_cast<CAknEdwinState*>(State(KNullUid));
                 if (state) {
                     state->SetFlags( EAknEditorFlagNoLRNavigation |
                                         EAknEditorFlagLatinInputModesOnly |
                                         EAknEditorFlagNoT9 |
-                                        EAknEditorFlagUseSCTNumericCharmap );
+                                        EAknEditorFlagUseSCTNumericCharmap |
+                                        EAknEditorFlagNoLRNavigation);                    
                     state->SetDefaultInputMode(EAknEditorSecretAlphaInputMode);
                     state->SetCurrentInputMode(EAknEditorSecretAlphaInputMode);
                     state->SetPermittedCases(EAknEditorLowerCase|EAknEditorUpperCase);
@@ -148,7 +158,9 @@ void CWebFepTextEditor::UpdateEditingMode()
                     state->SetPermittedInputModes(EAknEditorSecretAlphaInputMode | EAknEditorNumericInputMode);
                     state->SetDefaultCase(EAknEditorLowerCase);
                     state->SetSpecialCharacterTableResourceId(R_AVKON_SPECIAL_CHARACTER_TABLE_DIALOG_LATIN_ONLY);
-                    state->SetNumericKeymap(EAknEditorPlainNumberModeKeymap);
+                    state->SetNumericKeymap(EAknEditorStandardNumberModeKeymap);
+                    state->SetCcpuState(NULL);
+                    TRAP_IGNORE( state->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate ) );
                 }
             }
             else {
@@ -157,9 +169,13 @@ void CWebFepTextEditor::UpdateEditingMode()
                     TUint permittedCase ( EAknEditorAllCaseModes ) ;
                     TUint inputMode( EAknEditorNullInputMode );
                     TUint permittedInputModes( EAknEditorAllInputModes );
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+                    TUint flags( EAknEditorFlagDefault | EAknEditorFlagSelectionVisible );
+#else
                     TUint flags( EAknEditorFlagDefault );
+#endif
                     TUint numericKeyMap( EAknEditorStandardNumberModeKeymap );
-
+    
                     if (GetStateFromFormatMask(currentCase, permittedCase, inputMode, permittedInputModes, flags, numericKeyMap)) {
                         UpdateFlagsState(flags);
                         UpdateInputModeState(inputMode, permittedInputModes, numericKeyMap);
@@ -171,6 +187,7 @@ void CWebFepTextEditor::UpdateEditingMode()
                             state->SetDefaultCase(EAknEditorLowerCase);
                             state->SetPermittedInputModes(EAknEditorAllInputModes);
                             state->SetPermittedCases(EAknEditorAllCaseModes);//allow everything
+                            state->SetCcpuState(this);
                         }
                     }
             }
@@ -190,9 +207,11 @@ void CWebFepTextEditor::CancelEditingMode()
 
     delete m_inlineEditText;
     m_inlineEditText = NULL;
+    
+    m_longKeyPress = EFalse ;
 
     UpdateInputModeState(EAknEditorNullInputMode, EAknEditorAllInputModes,EAknEditorStandardNumberModeKeymap);
-    UpdateFlagsState(EAknEditorFlagDefault);
+    UpdateFlagsState(EAknEditorFlagDefault);        
     UpdateCaseState(EAknEditorLowerCase, EAknEditorAllCaseModes);
 
     CancelFepInlineEdit();
@@ -237,7 +256,7 @@ TCoeInputCapabilities CWebFepTextEditor::InputCapabilities()
 
             if ( sc->isInPasswordField() ) {
                 caps |= TCoeInputCapabilities::ESecretText;
-                UpdateFlagsState(EAknEditorFlagNoT9);
+                UpdateFlagsState(EAknEditorFlagNoT9 | EAknEditorFlagLatinInputModesOnly);
             }
             else {
 
@@ -308,6 +327,7 @@ void CWebFepTextEditor::StartFepInlineEditL(
 {
     CCoeEnv::Static()->ForEachFepObserverCall(FepObserverHandleStartOfTransactionL);
     ClearInlineText();
+    m_inlineTextEditingStarted= ETrue;
     UpdateInlineText(aInitialInlineText);
 }
 
@@ -339,6 +359,22 @@ void CWebFepTextEditor::SetInlineEditingCursorVisibilityL(TBool /*aCursorVisibil
 // -----------------------------------------------------------------------------
 void CWebFepTextEditor::CancelFepInlineEdit()
 {
+    if (IsTextAreaFocused()||IsInputElementFocused()) {
+        if (m_inlineEditText && DocumentLengthForFep() < DocumentMaximumLengthForFep()) {
+            HBufC* tempBuf = HBufC::NewLC(DocumentLengthForFep());
+            TPtr ptr(tempBuf->Des());
+            GetEditorContentForFep(ptr, 0, DocumentLengthForFep());
+            TInt position = ptr.Locate(KLineEnterChar);
+            if(position != KErrNotFound){
+                TRAP_IGNORE(m_webView->fepTextEditor()->DoCommitFepInlineEditL());
+                Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
+				if(frame){
+                	frame->editor()->execCommand("BackwardDelete");
+				}
+            }
+            CleanupStack::PopAndDestroy();
+        }
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -388,6 +424,9 @@ TInt CWebFepTextEditor::DocumentMaximumLengthForFep() const
 	if ( m_textFormatMask && m_textFormatMask->getMultitude() > 0 )
         length = m_textFormatMask->getMultitude();
 
+    if (IsLongKeyPress() && 
+        (KMaxTInt != length))
+        length += 1 ;
     // TextArea node has no member function maxLength(), so return KMaxTInt
     return length;
 }
@@ -403,7 +442,7 @@ void CWebFepTextEditor::SetCursorSelectionForFepL(const TCursorSelection& aCurso
     // see WebEditorClient::handleKeypress
     Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
     Node*  focusedNode = frame->document()->focusedNode();
-    if ( frame && focusedNode) {
+    if ( focusedNode ) {
         TInt lowPos = aCursorSelection.LowerPos();
         TInt highPos = aCursorSelection.HigherPos();
         if (focusedNode->hasTagName(HTMLNames::textareaTag)) {
@@ -430,7 +469,7 @@ void CWebFepTextEditor::GetCursorSelectionForFep(TCursorSelection& aCursorSelect
 
     Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
     Node*  focusedNode = frame->document()->focusedNode();
-    if (frame && focusedNode) {
+    if (focusedNode) {
         if (focusedNode->hasTagName(HTMLNames::textareaTag)) {
             HTMLTextAreaElement* textArea = static_cast<HTMLTextAreaElement*>(focusedNode);
             TInt anchorPos = textArea->selectionStart();
@@ -513,13 +552,13 @@ if (frame &&
 		if ( sc ){
 			IntRect rect = sc->caretRect();
 			Node* editNode = sc->focusNode();
-			TPoint viewPoint = kit(frame)->frameView()->frameCoordsInViewCoords(editNode->getRect().Rect().iBr);
-			xPos = viewPoint.iX;
-			yPos = viewPoint.iY;
-			String str;
-			if ( editNode &&
-				 editNode->isTextNode() ) {
-				WebCore::Text* aText = (WebCore::Text*)editNode;
+			if ( editNode && editNode->isTextNode() ) {
+                TPoint viewPoint = kit(frame)->frameView()->frameCoordsInViewCoords(editNode->getRect().Rect().iBr);
+	            xPos = viewPoint.iX;
+	            yPos = frame->document()->focusedNode()->getRect().bottomLeft().y() + rect.height();
+	            
+	            String str;				
+	            WebCore::Text* aText = (WebCore::Text*)editNode;
 				str = aText->data();
 				aDocumentPosition =  aText->length();
 				TInt position = aDocumentPosition - ( str.reverseFind(KBlankDesC(), aDocumentPosition )+1);
@@ -557,13 +596,16 @@ void CWebFepTextEditor::DoCommitFepInlineEditL()
                 HandleMaskedInsertText(frame, (String(*m_inlineEditText)));
             }
             else {
-                frame->editor()->insertTextWithoutSendingTextEvent(String(*m_inlineEditText), false);
+                frame->editor()->insertTextWithoutSendingTextEvent(String(*m_inlineEditText), false);  
             }
         }
     }
     //delete the m_inlineEditText since text is commited
     delete m_inlineEditText;
     m_inlineEditText = NULL;
+    
+    m_longKeyPress = EFalse;
+    m_inlineTextEditingStarted= EFalse;
 
     HandleUpdateCursor();
     UpdateEditingMode();
@@ -635,6 +677,7 @@ void CWebFepTextEditor::StartFepInlineEditL(
 {
     aSetToTrue=ETrue;
     SetCursorSelectionForFepL(aCursorSelection);
+    m_longKeyPress = ETrue ;
     StartFepInlineEditL(aInitialInlineText, aPositionOfInsertionPointInInlineText, aCursorVisibility, aCustomDraw, aInlineTextFormatRetriever, aPointerEventHandlerDuringInlineEdit);
 }
 
@@ -693,15 +736,28 @@ void CWebFepTextEditor::UpdateFlagsState(TUint flags)
     CAknEdwinState* state = static_cast<CAknEdwinState*>(State(KNullUid));
 
     if ( IsTextAreaFocused() ) {
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
     	// If in a TextArea, allow "enter" key presses to be newline/paragraph
     	state->SetFlags( flags | EAknEditorFlagUseSCTNumericCharmap
-    					 | EAknEditorFlagAllowEntersWithScrollDown );
+     | EAknEditorFlagAllowEntersWithScrollDown | EAknEditorFlagSelectionVisible );
+#else
+      state->SetFlags( flags | EAknEditorFlagUseSCTNumericCharmap
+            | EAknEditorFlagAllowEntersWithScrollDown );
+#endif
     	}
     else {
-        state->SetFlags(flags | EAknEditorFlagUseSCTNumericCharmap);
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+        state->SetFlags(flags | EAknEditorFlagUseSCTNumericCharmap | EAknEditorFlagSelectionVisible);
+#else
+        state->SetFlags(flags | EAknEditorFlagUseSCTNumericCharmap );
+#endif
     	}
 
     state->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateFlagsUpdate);
+    if (m_CcpuSupport)
+    {
+        TRAP_IGNORE(m_CcpuSupport->HandleFocusChangeL());
+    }
 }
 
 // -----------------------------------------------------------------------------
@@ -729,7 +785,6 @@ void CWebFepTextEditor::UpdateInputModeState(TUint inputMode, TUint permittedInp
     state->SetCurrentInputMode(inputMode);
     state->SetPermittedInputModes(permittedInputModes);
     state->SetNumericKeymap(static_cast<TAknEditorNumericKeymap>(numericKeyMap));
-    state->ReportAknEdStateEventL(MAknEdStateObserver::EAknSyncEdwinState);
     state->ReportAknEdStateEventL(MAknEdStateObserver::EAknEdwinStateInputModeUpdate);
 }
 
@@ -771,6 +826,10 @@ void CWebFepTextEditor::HandleUpdateCursor()
     CAknEdwinState* state = static_cast<CAknEdwinState*>(State(KNullUid));
     if ( state ) {
         TRAP_IGNORE( state->ReportAknEdStateEventL( MAknEdStateObserver::EAknCursorPositionChanged ) );
+		if (m_CcpuSupport)
+		{
+			TRAP_IGNORE(m_CcpuSupport->HandleSelectionChangeL());
+		}
     }
 }
 
@@ -793,10 +852,11 @@ bool CWebFepTextEditor::GetStateFromFormatMask(TUint& currentCase,
         TInputFormatMaskType fm = m_textFormatMask->getInputFormatMaskType(frame, cursorpos);
         if (!cursorpos) {
             while(fm == EStatic) {
-                fm = m_textFormatMask->getInputFormatMaskType(frame, ++cursorpos);
+                fm = m_textFormatMask->getInputFormatMaskType(frame, ++cursorpos); 
             }
         }
         setSCTAvailability(true);
+        CAknEdwinState* state = static_cast<CAknEdwinState*>(State(KNullUid));
         switch( fm ) {
             case ELeUpSymPuc:       //A any upper case letter or symbolic
                 flags = EAknEditorFlagNoT9 | EAknEditorFlagFixedCase;
@@ -816,14 +876,14 @@ bool CWebFepTextEditor::GetStateFromFormatMask(TUint& currentCase,
                 flags = EAknEditorFlagNoT9 | EAknEditorFlagFixedCase;
                 currentCase = EAknEditorUpperCase;
                 permittedCase= EAknEditorUpperCase;
-                inputMode = EAknEditorTextInputMode;
+                inputMode = state->CurrentInputMode();
                 permittedInputModes= EAknEditorTextInputMode;
             break;
             case ELeLoNumSymPuc:    //x any lower case, number or symbolic
                 flags = EAknEditorFlagNoT9 | EAknEditorFlagFixedCase;
                 currentCase = EAknEditorLowerCase;
                 permittedCase= EAknEditorLowerCase;
-                inputMode = EAknEditorTextInputMode;
+                inputMode = state->CurrentInputMode();
                 permittedInputModes= EAknEditorTextInputMode | EAknEditorNumericInputMode;
             break;
             case EAnyLow:           //m any lower character can be changed to upper
@@ -868,6 +928,9 @@ bool CWebFepTextEditor::GetStateFromFormatMask(TUint& currentCase,
 
         return ETrue;
     }
+	else {
+    setSCTAvailability(true);
+    }
 
     return EFalse;
 }
@@ -905,10 +968,14 @@ bool CWebFepTextEditor::validateTextFormat()
             style->setProperty(CSS_PROP_COLOR, "red", false, ec);
             return false;
         }
+        else if ( m_textFormatMask->acceptAll() )
+        {
+            return true;
+        }
         else
         {
             style->setProperty(CSS_PROP_COLOR, m_inputTextColor, false, ec);
-            CancelEditingMode();
+            UpdateEditingMode();
             return true;
         }
     }
@@ -1055,7 +1122,7 @@ bool CWebFepTextEditor::IsTextAreaFocused() const
 // -----------------------------------------------------------------------------
 TBool CWebFepTextEditor::CcpuIsFocused() const
 {
-    return ETrue;
+    return (IsTextAreaFocused() || IsInputElementFocused());
 }
 
 // -----------------------------------------------------------------------------
@@ -1067,7 +1134,7 @@ TBool CWebFepTextEditor::CcpuCanCut() const
 {
     TCursorSelection selection;
     GetCursorSelectionForFep(selection);
-    return selection.Length();
+    return m_CcpuSupport && selection.Length();
 }
 
 // -----------------------------------------------------------------------------
@@ -1080,6 +1147,12 @@ void CWebFepTextEditor::CcpuCutL()
     PlaceDataOnClipboardL();
     TCursorSelection selection;
     GetCursorSelectionForFep(selection);
+    Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
+    if (frame) {      
+        frame->editor()->deleteWithDirection(SelectionController::BACKWARD,
+            CharacterGranularity, false, true);
+        }
+    HandleUpdateCursor();
 }
 
 // -----------------------------------------------------------------------------
@@ -1091,7 +1164,7 @@ TBool CWebFepTextEditor::CcpuCanCopy() const
 {
     TCursorSelection selection;
     GetCursorSelectionForFep(selection);
-    return selection.Length();
+    return m_CcpuSupport && selection.Length();
 }
 
 // -----------------------------------------------------------------------------
@@ -1102,6 +1175,8 @@ TBool CWebFepTextEditor::CcpuCanCopy() const
 void CWebFepTextEditor::CcpuCopyL()
 {
     PlaceDataOnClipboardL();
+    if (m_CcpuSupport)
+       m_CcpuSupport->HandleSelectionChangeL();
 }
 
 // -----------------------------------------------------------------------------
@@ -1112,7 +1187,7 @@ void CWebFepTextEditor::CcpuCopyL()
 TBool CWebFepTextEditor::CcpuCanPaste() const
 {
     TRAPD(err, DoCcpuCanPasteL());
-    return err == KErrNone;
+    return (err == KErrNone) && m_CcpuSupport;
 }
 
 // -----------------------------------------------------------------------------
@@ -1131,7 +1206,7 @@ void CWebFepTextEditor::CcpuPasteL()
 //
 // -----------------------------------------------------------------------------
 void  CWebFepTextEditor::DoCcpuCanPasteL() const
-{ 
+{
     CClipboard* cb=CClipboard::NewForReadingL(CCoeEnv::Static()->FsSession());
     CleanupStack::PushL(cb);
     TStreamId streamId=cb->StreamDictionary().At(KClipboardUidTypePlainText);
@@ -1182,8 +1257,8 @@ void CWebFepTextEditor::CopyToStoreL(CStreamStore& aStore,CStreamDictionary& aDi
 
 // -----------------------------------------------------------------------------
 // HandleMaskedInsertText
-//
-//
+// 
+// 
 // -----------------------------------------------------------------------------
 void CWebFepTextEditor::HandleMaskedInsertText(WebCore::Frame *frame, const String& text)
 {
@@ -1215,7 +1290,7 @@ void CWebFepTextEditor::HandleMaskedInsertText(WebCore::Frame *frame, const Stri
 // -----------------------------------------------------------------------------
 // HandleMaskedDeleteText
 //
-//
+//  
 // -----------------------------------------------------------------------------
 void CWebFepTextEditor::HandleMaskedDeleteText(WebCore::Frame* frame)
 {
@@ -1237,14 +1312,14 @@ void CWebFepTextEditor::HandleMaskedDeleteText(WebCore::Frame* frame)
 // -----------------------------------------------------------------------------
 // IsWapMaskedModeInput
 //
-//
+//  
 // -----------------------------------------------------------------------------
 bool CWebFepTextEditor::IsWapMaskedModeInput(WebCore::Frame* frame)
 {
     bool maskedInput(false);
-    if (m_textFormatMask && frame->document() && frame->document()->focusedNode()) {
+    if (m_textFormatMask && frame->document() && frame->document()->focusedNode()) { 
         RenderStyle* s = frame->document()->focusedNode()->renderStyle();
-        if (s && (!s->wapInputFormat().isEmpty() || s->wapInputRequired())){
+        if (s && (!s->wapInputFormat().isEmpty() || s->wapInputRequired())){            
             maskedInput = true;
         }
     }
@@ -1318,17 +1393,28 @@ void CWebFepTextEditor::PasteFromStoreL(CStreamStore& aStore,CStreamDictionary& 
 //
 //
 // -----------------------------------------------------------------------------
-void CWebFepTextEditor::EnableCcpu(TBool aSupport)
+void CWebFepTextEditor::EnableCcpuL()
 {
+    CAknCcpuSupport* ccpu = NULL;
     CAknEdwinState* edwinState = static_cast<CAknEdwinState*>(this->State(KNullUid));
-    if(aSupport)
+    if ( edwinState && edwinState->MenuBar() && edwinState->MenuBar()->IsDisplayed() )
         {
-        edwinState->SetCcpuState(this);
+        return;
         }
-    else
+    ccpu = new(ELeave) CAknCcpuSupport(this);
+    ccpu->SetMopParent(this);
+    CleanupStack::PushL(ccpu);
+    ccpu->ConstructL();
+    CleanupStack::Pop(ccpu);
+    delete m_CcpuSupport;
+    m_CcpuSupport = ccpu;
+    if (edwinState)
         {
-        edwinState->SetCcpuState(NULL);
-        }
+        edwinState->SetCcpuState(this);    
+        edwinState->SetMenu();
+        if (edwinState->MenuBar())
+            edwinState->MenuBar()->SetEditMenuObserver( m_CcpuSupport );
+        }        
 }
 
 // -----------------------------------------------------------------------------
@@ -1397,7 +1483,7 @@ Node* CWebFepTextEditor::findTextNodeForCurPos(Node* aNode, TInt& aPos) const
 // -----------------------------------------------------------------------------
 // SetSCTAvailability
 //
-// Set availibility of the special character table.
+// Set availibility of the special character table. 
 // -----------------------------------------------------------------------------
 void CWebFepTextEditor::setSCTAvailability(bool aAvailable)
 {
@@ -1412,4 +1498,32 @@ void CWebFepTextEditor::setSCTAvailability(bool aAvailable)
         m_ExtendedInputCapabilities->SetCapabilities(capabilities);
     }
 }
+
+// -----------------------------------------------------------------------------
+// IsLongKeyPress
+//
+// Called to know the status of the key pressed 
+// -----------------------------------------------------------------------------
+TBool CWebFepTextEditor::IsLongKeyPress() const
+    {
+    return m_longKeyPress ;	
+    }
+
+TBool CWebFepTextEditor::IsInputElementFocused() const
+    {
+    Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
+    return ( frame && frame->document()->focusedNode() &&
+             frame->document()->focusedNode()->hasTagName(HTMLNames::inputTag));
+    }
+
+void CWebFepTextEditor::ReportEventL()
+    {
+    m_ExtendedInputCapabilities->ReportEventL(CAknExtendedInputCapabilities::
+                        MAknEventObserver::EPointerEventReceived, NULL );
+    }
+
+TBool CWebFepTextEditor::inlineTextEditingStarted()
+    {
+    return m_inlineTextEditingStarted; 
+    }
 

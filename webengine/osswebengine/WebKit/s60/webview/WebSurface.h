@@ -21,6 +21,7 @@
 #ifndef __WEBKITSURFACE_H__
 #define __WEBKITSURFACE_H__
 
+#include <browser_platform_variant.hrh>
 #include <e32base.h>
 #include <gdi.h>
 
@@ -30,10 +31,13 @@ class CFbsBitmap;
 class CBitmapContext;
 class WebView;
 
+
+const TDisplayMode KDisplayMode = EColor16MU;
+
 class WebSurface : public CBase
 {
 public:
-    static WebSurface* NewL( TDisplayMode mode = EColor16MU );
+    static WebSurface* NewL( TDisplayMode mode = KDisplayMode );
 	
 	~WebSurface();
 	

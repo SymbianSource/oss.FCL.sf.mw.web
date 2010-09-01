@@ -45,7 +45,7 @@
 #define CRCTLSOFTKEYSOBSERVERIMPL_H
 
 //  INCLUDES
-#include <BrCtlSoftkeysObserver.h>
+#include <brctlsoftkeysobserver.h>
 
 
 /**

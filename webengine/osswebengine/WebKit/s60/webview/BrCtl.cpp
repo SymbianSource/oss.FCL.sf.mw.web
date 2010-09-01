@@ -16,7 +16,7 @@
 */
 
 // INCLUDE FILES
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 #include <../bidi.h>
 #include <avkon.hrh>
 #include <apmrec.h>
@@ -30,11 +30,11 @@
 #else
 #include <Webkit.rsg>
 #endif
-#include <gulicon.h>
+#include <GULICON.h>
 #include <e32uid.h>
-#include <BrowserDialogsProvider.h>
+#include <browserdialogsprovider.h>
 //tot:fixme
-//#include <oom.h>
+//#include "oom.h"
 
 #include "config.h"
 #include "BrCtl.h"
@@ -44,7 +44,8 @@
 #include "WebDataLoadConsumer.h"
 #include "WebFormFillPopup.h"
 #include "WebPageFullScreenHandler.h"
-#include "pagescaler.h"
+#include "PageScaler.h"
+#include "ThumbnailGenerator.h"
 #include "HistoryController.h"
 #include "HistoryEntry.h"
 #include "HistoryInterface.h"
@@ -71,24 +72,28 @@
 #include "httpcachemanager.h"
 #include "ResourceLoaderDelegate.h"
 #include "EventHandler.h"
-#include "Timer.h"
-#include "Page.h"
-#include "Range.h"
-#include "FocusController.h"
+#include "timer.h"
+#include "page.h"
+#include "range.h"
+#include "focusController.h"
 #include "IconDatabase.h"
-#include "HttpDownload.h"
+#include "httpDownload.h"
 #include "BrCtlSoftkeysObserverImpl.h"
 #include "BrCtlSpecialLoadObserverImpl.h"
+#include "WebFrameBridge.h"
 #include "BrCtlLayoutObserverImpl.h"
 #include "BrCtlWindowObserverImpl.h"
 #include "WidgetExtension.h"
 #include "PluginSkin.h"
 #include "HttpUiCallbacks.h"
 #include "PluginWin.h"
-#include <CUserAgent.h>
+#include "GCController.h"
+#include <BrowserVersion.h>
+#include <cuseragent.h>
+#include "kjs_window.h" 
 
 #ifndef BRDO_WML_DISABLED_FF
-#include "WmlInterface.h"
+#include "wmlinterface.h"
 #include "WmlInterfaceImpl.h"
 #include "WmlEngineInterface.h"
 #endif
@@ -413,9 +418,12 @@ CBrCtl::CBrCtl(
    , m_commandIdBase(aCommandIdBase)
    , m_capabilities(aBrCtlCapabilities)
    , m_suspendTimers(false)
+   , m_pageLoadFinished(false)
    , m_wmlEngineInterface(NULL)
    , m_brCtlDownloadObserver(aBrCtlDownloadObserver)
    , m_windoCloseTimer(NULL)
+   , m_didFirstLayout(false)
+   , m_NotifyPluginFocusChangeEvent(false)
 {
     m_documentHeight = 0;
     m_displayHeight = 0;
@@ -476,7 +484,7 @@ void CBrCtl::ConstructL(
     // Create and initialize the Layout Observer
     if (m_brCtlLayoutObserver == NULL)
         {
-        m_brCtlLayoutObserver = new (ELeave) CBrCtlLayoutObserver();
+        m_brCtlLayoutObserver = new (ELeave) CBrCtlLayoutObserver(m_webView);
         m_ownsLayoutObserver = true;
         }
     // Create and initialize the Dialog Provider
@@ -494,11 +502,12 @@ void CBrCtl::ConstructL(
         }
     
     LoadResourceFileL();
+
+    MemoryManager::InitOOMDialog();
+    
     // Set the rect for BrowserControl (a CCoeControl).
     SetRect(aRect);
     CCoeEnv::Static()->DisableExitChecks(true);
-    Window().AllocPointerMoveBuffer(256, 0);
-    Window().DisablePointerMoveBuffer();
     Window().PointerFilter(EPointerFilterMove | EPointerFilterDrag | EPointerFilterEnterExit, 0);
     ActivateL();
 }
@@ -582,16 +591,25 @@ void CBrCtl::HandleBrowserLoadEventL( TBrCtlDefs::TBrCtlLoadEvent aLoadEvent, TU
 
     switch (aLoadEvent) {
         case TBrCtlDefs::EEventNewContentStart:
+            m_pageLoadFinished = false;
             if (m_webView->pageScalerEnabled())
                 m_webView->pageScaler()->DocumentStarted();
             if (m_webView->formFillPopup() && m_webView->formFillPopup()->IsVisible()) 
                 m_webView->formFillPopup()->handleCommandL(TBrCtlDefs::ECommandCancel);            
             break;
+        case TBrCtlDefs::EEventNewContentDisplayed:
+            if(m_brCtlLayoutObserver && m_webView && !m_didFirstLayout)  {
+                m_brCtlLayoutObserver->NotifyLayoutChange( (webView()->mainFrame()->bridge()->m_rtl ? EOriginTopRight : EOriginTopLeft));
+                m_didFirstLayout = true;
+            }
+            break;
         case TBrCtlDefs::EEventContentFinished:
         case TBrCtlDefs::EEventUploadFinished:
+            m_pageLoadFinished = true;
+            m_didFirstLayout= false;
             if (m_suspendTimers) {
-                m_suspendTimers = false;
-                HandleCommandL(TBrCtlDefs::ECommandAppBackground);
+                m_suspendTimers = false;                
+                m_webView->pauseJsTimers();
             }
 #ifndef BRDO_WML_DISABLED_FF
             if (m_wmlUnloadPending)
@@ -653,11 +671,19 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
                     if (coreFrame)
                         coreFrame->eventHandler()->deactivatedEvent();
                 }
+                m_webView->setEditable(EFalse);
                 break;
             }
         case TBrCtlDefs::ECommandCancelFetch:
             {
-                m_webView->mainFrame()->stopLoading();
+                m_webView->Stop();
+                break;
+            }
+
+        case TBrCtlDefs::ECommandOOMExit:
+            {
+                WebCore::gcController().startedExit(true); 
+                KJS::setDeferringJSTimers(true); 
                 break;
             }
 
@@ -692,6 +718,9 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
             {
                 if (m_webView->pageView()) {
                     m_webView->closePageView();
+                    PluginSkin* plugin = m_webView->mainFrame()->focusedPlugin();
+					if(plugin)
+						plugin->setPluginWinClipedRect();
                 } else {
                     if (m_historyHandler->historyController()->historyView()) {
                         // this is a weird way of managing history view. needs fixing
@@ -763,20 +792,34 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
                     setDeferringTimers(false);
                 m_suspendTimers = false;
 #endif
-
+                m_webView->resumeJsTimers();
                 break;
             }
         case TBrCtlDefs::ECommandAppBackground:
             {
 #ifndef PERF_REGRESSION_LOG
-                if (m_webView->isLoading())
-                    m_suspendTimers = true;
-                else if (!isDeferringTimers())
-                    setDeferringTimers(true);
+                if(m_webView->widgetExtension())
+                    {
+                    if(m_pageLoadFinished)
+                        m_webView->pauseJsTimers();                        
+                    else 
+                        m_suspendTimers = true;
+                    }
+                else
+                    {
+                    if (m_webView->isLoading())
+                        m_suspendTimers = true;
+                    else 
+                        m_webView->pauseJsTimers();                        
+                        
+                    }
 #endif
 
                 //Disable the zooming bar when it goes to background
                 m_webView->hideZoomSliderL();
+                m_webView->scrollStatus(false); 
+                // Instruct JS to garbage collect
+                WebCore::gcController().garbageCollectSoon();                
                 break;
             }
         case TBrCtlDefs::ECommandClearAutoFormFillData:
@@ -932,6 +975,7 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
 
        case TBrCtlDefs::ECommandEnterFullscreenBrowsing:
             {
+             m_webView->resumeJsTimers();
              m_webView->EnterFullscreenBrowsingL();
              break;
             }
@@ -942,6 +986,81 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
              break;
             }
 
+       case TBrCtlDefs::ECommandSetRetryConnectivityFlag:
+            {
+            StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->setRetryConnectivityFlag();
+            break;
+            }
+       case TBrCtlDefs::ECommandUnSetRetryConnectivityFlag:
+            {
+            StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->unSetRetryConnectivityFlag();
+            break;
+            }
+       case TBrCtlDefs::ECommandRetryTransactions:
+            {
+             StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->retryTransactions();
+             m_webView->mainFrame()->reCreatePlugins(); 
+             break;
+            }
+       case TBrCtlDefs::ECommandClearQuedTransactions:
+           {
+           StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->handleError(KErrCancel);
+           break;
+           }
+       case TBrCtlDefs::ECommandConnToDownloadManager:
+           {
+           TInt connectionPtr = 0;
+           TInt sockSvrHandle = 0;
+           TBool newConn = ETrue;
+           TApBearerType bearerType;
+           TInt error = KErrNone;
+           
+           TRAP(error, m_brCtlSpecialLoadObserver->NetworkConnectionNeededL(&connectionPtr, &sockSvrHandle, &newConn, &bearerType));
+           if( error == KErrNone && connectionPtr ) 
+               {
+               RConnection* connPtr = REINTERPRET_CAST( RConnection*, connectionPtr );
+               TName name;
+               connPtr->Name( name );
+               StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->httpDownload()->connect(name);
+               }
+           break;
+           }
+       case TBrCtlDefs::ECommandLoseFocus:
+       case TBrCtlDefs::ECommandPauseScriptTimers:
+           {
+           m_webView->pauseJsTimers();
+           break;
+           }
+           
+       case TBrCtlDefs::ECommandGainFocus:
+       case TBrCtlDefs::ECommandResumeScriptTimers:
+           {
+           m_webView->resumeJsTimers();
+           break;
+           }
+       case TBrCtlDefs::ECommandCancelQueuedTransactions:
+           {
+           StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->cancelQueuedTransactions();
+		   break;
+           }
+
+	   // Messages sent by OOM monitor
+       case TBrCtlDefs::ECommandFreeMemory:
+           {
+           MemoryManager::FreeRam(); // invoke memory collect operation
+           break;
+           }
+       case TBrCtlDefs::ECommandMemoryGood:
+           {
+           MemoryManager::RestoreCollectors(); // restore collectors
+           break;
+           }
+       case TBrCtlDefs::ECommandNotifyPluginFocusChangeEvent:
+           {
+           m_NotifyPluginFocusChangeEvent = true;
+           break;
+           }
+                  
       default:
             {
             if ( m_wmlEngineInterface &&
@@ -973,6 +1092,13 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
             }
         }
 }
+
+
+EXPORT_C TBool CBrCtl::IsSynchRequestPending()
+    {
+    return m_webView->isSynchRequestPending();
+    }
+
 
 // -----------------------------------------------------------------------------
 // CBrCtl::HandleDownloadCommandL
@@ -1149,7 +1275,9 @@ EXPORT_C void CBrCtl::AddOptionMenuItemsL(CEikMenuPane& aMenuPane, TInt aResourc
     }
 
     int after = aAfter == -1 ? aAfter :0;
-    TBrCtlDefs::TBrCtlElementType focusedElementType = FocusedElementType();
+    TBrCtlDefs::TBrCtlElementType focusedElementType = TBrCtlDefs::EElementNone;
+    if(m_webView)
+       focusedElementType = FocusedElementType();
 
     int count = sizeof(commandsArray) / sizeof(TCommandsArray);
     bool found = false;
@@ -1175,9 +1303,11 @@ EXPORT_C void CBrCtl::AddOptionMenuItemsL(CEikMenuPane& aMenuPane, TInt aResourc
     // tot fixme
     //TPluginControl pluginControl(*iWebKitControl);
     //pluginControl.AddPluginOptionMenuItemsL(aMenuPane, TBrCtlDefs::ECommandIdPluginBase, aAfter);
-    PluginSkin* plugin = m_webView->mainFrame()->focusedPlugin();
-    if(plugin && plugin->pluginWin())
-        plugin->pluginWin()->addPluginOptionsL(aMenuPane, TBrCtlDefs::ECommandIdPluginBase, aAfter );
+    if(m_webView) {
+        PluginSkin* plugin = m_webView->mainFrame()->focusedPlugin();
+        if(plugin && plugin->pluginWin())
+            plugin->pluginWin()->addPluginOptionsL(aMenuPane, TBrCtlDefs::ECommandIdPluginBase, aAfter );
+    }
 
 }
 
@@ -1502,10 +1632,10 @@ EXPORT_C HBufC* CBrCtl::VersionInfoLC(TBrCtlDefs::TBrCtlVersionInfo aVersionInfo
           return versionInfo;
           }
 
-      /*case TBrCtlDefs::EVersionInfoBuild:
+      case TBrCtlDefs::EVersionInfoBuild:
           {
           return MobileBrowserBuild.AllocLC();
-          }*/
+          }
 
         case TBrCtlDefs::EBrowserVersion:
           {
@@ -1651,6 +1781,9 @@ EXPORT_C void CBrCtl::LoadUrlL(const TDesC& url, TInt apid,
         User::Leave(KErrArgument);
     // convert to 8
 
+    // reset timers ptr, if paused from last page
+    m_webView->resetJsTimers();
+        
     _LIT(KJs, "javascript:");
     if (url.Length() > KJs().Length()) {
         if (url.Left(KJs().Length()).FindF(KJs) == 0) {
@@ -1776,6 +1909,11 @@ void CBrCtl::MakeVisible(TBool visible)
         }
         else if(m_webView->mainFrame()->frameLoader()->checkScheduledRedirection())
           m_webView->mainFrame()->frameLoader()->startRedirectionTimerNow();
+        
+        if( m_NotifyPluginFocusChangeEvent ) {
+           m_NotifyPluginFocusChangeEvent = false; 
+           webView()->mainFrame()->notifyPluginFocusChangeEvent(visible);
+          }
         m_webView->MakeVisible(visible);
     }
 
@@ -1783,7 +1921,7 @@ void CBrCtl::MakeVisible(TBool visible)
         m_webView->checkForZoomChange();
     }
 
-    if( m_webView->pageFullScreenHandler() && m_webView->pageFullScreenHandler()->isFullScreenMode() ) {
+    if(m_webView && m_webView->pageFullScreenHandler() && m_webView->pageFullScreenHandler()->isFullScreenMode() ) {
         if (visible)
             m_webView->pageFullScreenHandler()->showEscBtnL();
         else
@@ -2007,7 +2145,12 @@ EXPORT_C TBrCtlImageCarrier* CBrCtl::FocusedImageLC()
 
 EXPORT_C TBool CBrCtl::OkToExit()
 {
-    return WebCore::StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->httpDownload()->okToExit();
+    HttpDownload* httpDownload = WebCore::StaticObjectsContainer::instance()->resourceLoaderDelegate()->httpSessionManager()->httpDownload();
+    if ( httpDownload )
+        {
+        return httpDownload->okToExit();
+        }
+    return ETrue;
 }
 
 EXPORT_C CGulIcon* CBrCtl::GetBitmapData(const TDesC& aUrl, TBrCtlDefs::TBrCtlBitmapInfo aBitmapInfo)
@@ -2021,8 +2164,14 @@ EXPORT_C CGulIcon* CBrCtl::GetBitmapData(const TDesC& aUrl, TBrCtlDefs::TBrCtlBi
                 if ( entry ) {
                     CFbsBitmap* bitmap = entry->thumbnail();
                     if(!bitmap) {
-                        // get scaled page from PageScaler;
-                        bitmap = m_webView->pageScaler()->ScaledPage();
+                        if(m_webView->pageThumbnailGenerator()) {
+                            //get the page thumbnail  
+                            bitmap = m_webView->pageThumbnailGenerator()->PageThumbnail();
+                        }
+                        else {
+                           // get scaled page from PageScaler;
+                           bitmap = m_webView->pageScaler()->ScaledPage();
+                        }
                     }
                     if(bitmap) {
                         // update the history with new bitmap
@@ -2075,6 +2224,7 @@ CBrCtl* CBrCtl::getWindowL(TDesC& windowName, bool userGesture)
          if(StaticObjectsContainer::instance()->isPluginFullscreen())
          {
             PluginSkin* plugin=m_webView->mainFrame()->focusedPlugin();
+            if(plugin)
             plugin->deActivate();
          }
          newBrctl = m_brCtlWindowObserver->OpenWindowL(emptyUrl, &windowName, userGesture, 0);            
@@ -2106,7 +2256,15 @@ void CBrCtl::doCloseWindowSoon()
 {
     m_windoCloseTimer->Cancel();
     if (brCtlWindowObserver())
-        TRAP_IGNORE(brCtlWindowObserver()->HandleWindowCommandL(KNullDesC(), ECloseWindow));
+        {
+        TRAPD(err,brCtlWindowObserver()->HandleWindowCommandL(KNullDesC(), ECloseWindow));
+		if ( err == KLeaveExit )
+		    { // while we exit the browser it actually leaves with KLeaveExit from the system.
+		      // If we block this here then the exit would not happen so propogate the leave 
+		      // condition to the system for handling
+		    User::Leave(KLeaveExit);
+		    }        
+        }
 }
 
 TBool CBrCtl::sendCommandsToClient(
@@ -2434,6 +2592,13 @@ void CBrCtl::SetScriptLogMode(TInt aMode)
     }
 }
 
+CWidgetExtension* CBrCtl::getWidgetExt()
+{
+    if ( m_webView) {
+        return m_webView->widgetExtension();
+    }
+    return NULL;
+}
 
 int CBrCtl::getMainScrollbarWidth() const
 {
@@ -2450,9 +2615,7 @@ MBrCtlDownloadObserver* CBrCtl::brCtlDownloadObserver()
 
 
 
-void CBrCtl::HandlePointerBufferReadyL()
-{
-    m_webView->HandlePointerBufferReadyL();
-}
+
+
 
 

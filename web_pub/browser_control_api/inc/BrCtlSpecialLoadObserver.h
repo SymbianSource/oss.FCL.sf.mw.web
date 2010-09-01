@@ -19,8 +19,6 @@
 #ifndef BRCTLSPECIALLOADOBSERVER_H
 #define BRCTLSPECIALLOADOBSERVER_H
 
-#warning The Browser Control API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>
@@ -65,12 +63,12 @@ enum TBrCtlDownloadParam
 * Usage:
 *
 * @code
-*  #include <BrCtlSpecialLoadObserver.h>
+*  #include <brctlspecialloadobserver.h>
 *
 *  
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
-* @file BrCtlSpecialLoadObserver.h
+* @file brctlspecialloadobserver.h
 * @endcode     *
 */
 class MBrCtlSpecialLoadObserver

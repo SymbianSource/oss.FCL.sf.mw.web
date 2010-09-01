@@ -23,7 +23,7 @@
 
 
 // INCLUDE FILES
-#include <AknQueryDialog.h>
+#include <aknquerydialog.h>
 
 // CLASS DECLARATION
 

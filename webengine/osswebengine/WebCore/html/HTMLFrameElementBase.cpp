@@ -25,7 +25,7 @@
 #include "config.h"
 #include "HTMLFrameElementBase.h"
 
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "Document.h"
 #include "EventNames.h"
 #include "FocusController.h"

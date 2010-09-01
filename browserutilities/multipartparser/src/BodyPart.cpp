@@ -15,9 +15,8 @@
 *
 */
 
-
 // INCLUDE FILES
-#include "BodyPart.h"
+#include <bodypart.h>
 
 // CONSTANTS
 

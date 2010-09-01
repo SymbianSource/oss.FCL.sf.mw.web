@@ -23,7 +23,7 @@
 #include "config.h"
 #include "CSSPrimitiveValue.h"
 
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "CSSValueKeywords.h"
 #include "Color.h"
 #include "Counter.h"

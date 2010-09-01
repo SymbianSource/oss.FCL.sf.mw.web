@@ -15,11 +15,9 @@
 *
 */
 
-
-
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET      AiwBrowserProvider.dll
 TARGETTYPE      PLUGIN
@@ -29,14 +27,13 @@ VENDORID    VID_DEFAULT
 UID     0x10009d8d 0x101FD682
 
 SOURCEPATH		../src
-SOURCE			Dllmain.cpp
+SOURCE			DllMain.cpp
 SOURCE          AiwBrowserProviderOpenUrl.cpp
 SOURCE          AiwBrowserProviderSaveUrl.cpp
 
 USERINCLUDE     ../inc ../data
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_ECOM_SYSTEMINCLUDE
 
 START RESOURCE    ../data/101FD682.rss
 TARGET      AiwBrowserProvider

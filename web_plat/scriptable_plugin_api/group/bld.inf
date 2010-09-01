@@ -15,13 +15,12 @@
 *
 */
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-
 ../inc/npscript.h  MW_LAYER_PLATFORM_EXPORT_PATH(npscript.h)
 
 PRJ_MMPFILES

@@ -1,0 +1,20 @@
+#----------------------------------------------------------------------------
+# 
+# Copyright (c) 2001,2002. Nokia Mobile Phones
+#
+#----------------------------------------------------------------------------
+
+MAKEFILE    = MakeMsg
+TARGET      = rbTempest_msg_lib.a
+
+SUBDIRS   =  src
+
+SUBMAKES  =  MakeSrc
+
+OBJS      =  src/rbTempest_msg_src_lib.a 
+
+SRCS      = 
+
+################################################################################
+
+include $(CORESW_MAKE_TEMPLATE_RECURSIVE)

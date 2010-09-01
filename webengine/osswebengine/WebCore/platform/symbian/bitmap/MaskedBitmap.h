@@ -138,7 +138,7 @@ class CMaskedBitmap : public CBase
         
         void CompressInBackground( );
 
-        CMaskedBitmap* ScaleImageToSize( TSize newSize );
+        CMaskedBitmap* ScaleImageToSize( TSize newSize, bool storeScaledImage = true);
 
   public: // Internal interface
 
@@ -209,6 +209,16 @@ class CMaskedBitmap : public CBase
        * Invert the mask
        */
        TBool InvertMask() const { return iInvertMask; }
+       
+       /**
+       * Check if the initialisation is comepleted
+       */
+       TBool IsCompletlyInitialised();
+       
+       /**
+       * Set True if the initialisation is comepleted
+       */
+       void SetInitialisationCompletionStatus(TBool aInitialisationCompleted);
 
   private: // Private constructors
 
@@ -230,6 +240,8 @@ class CMaskedBitmap : public CBase
         TBool iInvertMask;
 
     CMaskedBitmap* iScaledBitmap;
+    
+    TBool i_DecodingCompleted;
 
   };
 

@@ -20,7 +20,7 @@
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
 #include <bldvariant.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 // TARGET INFO
 TARGET          WidgetInstallerUI.dll
@@ -38,9 +38,8 @@ END
 
 START RESOURCE  ../data/WidgetInstallerUI.rss
 DEPENDS avkon.rsg
-DEPENDS swinstcommonui.rsg
 HEADER
-TARGETPATH      Resource
+TARGETPATH      resource
 #ifdef __S60_32__
 LANG sc 
 #else
@@ -51,7 +50,7 @@ END
 // Sources
 SOURCEPATH      ../src 
 SOURCE          WidgetUIMain.cpp
-SOURCE          WidgetInstallerUi.cpp
+SOURCE          WidgetInstallerUI.cpp
 SOURCE          WidgetUIOperationsWatcher.cpp
 SOURCE          WidgetUIHandler.cpp
 SOURCE          WidgetUIConfigHandler.cpp
@@ -59,11 +58,11 @@ SOURCE          WidgetRegistrationManager.cpp
 SOURCE          Iconconverter.cpp
 
 // Includes
-USERINCLUDE     ../inc
-USERINCLUDE     ../../../inc
+USERINCLUDE     ../Inc
+USERINCLUDE     ../../../Inc
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 // Libraries
 LIBRARY         euser.lib

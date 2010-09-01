@@ -15,12 +15,10 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include "DownloadMgrEventQueue.h"
 #include "DownloadMgrLogger.h"
-#include <HttpDownload.h>
+#include "HttpDownload.h"
 
 #ifdef __DOWNLOADMGR_LOG__
 //#define __DUMP_EVENT_QUEUE

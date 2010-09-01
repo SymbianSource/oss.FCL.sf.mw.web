@@ -24,7 +24,7 @@
 #include <eikapp.h>
 #include <eikdoc.h>
 #include <coeccntx.h>
-#include <aknViewAppUi.h>
+#include <AknViewAppUi.h>
 #include "ApiProvider.h"
 
 // CONSTANTS
@@ -101,6 +101,14 @@ class CWidgetUiAppUi : public CAknViewAppUi, MApiProvider
         * @return void
         */
         void SendAppToBackground();
+       
+        /**
+        * SendAppToForeground
+        * Send widget ui to foreground
+        * @since 
+        * @return void
+        */
+        void SendAppToForeground();
         
         /**
         * SetDisplayLandscapeL

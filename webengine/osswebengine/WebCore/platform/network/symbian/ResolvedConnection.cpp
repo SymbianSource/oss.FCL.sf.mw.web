@@ -20,7 +20,7 @@
 #include "ResolvedConnection.h"
 #include "ResourceRequest.h"
 
-#include "BrCtl.h"
+#include "Brctl.h"
 #include "WebFrame.h"
 
 // EXTERNAL DATA STRUCTURES
@@ -82,7 +82,9 @@ int ResolvedConnection::submit()
 
 void ResolvedConnection::cancel()
 {
-    control(m_frame)->brCtlLinkResolver()->CancelAll();
+	  if(m_frame) {
+        control(m_frame)->brCtlLinkResolver()->CancelAll();
+    }
 }
 
 void ResolvedConnection::download(ResourceHandle* handle,

@@ -16,9 +16,9 @@
 */
 
 
-#include <abclient.h>
+#include <connect/abclient.h>
 #include <e32property.h>
-#include "WidgetBackupRestore.h"
+#include "widgetbackuprestore.h"
 #include "WidgetActiveCallback.h"
 
 
@@ -170,7 +170,8 @@ void CWidgetBackupRestore::HandleBackupStateL( const TInt aValue )
         }
     else
         {
-        if ( type == conn::EBURNormal )
+        //If iLastType is EBURUnset, do not stop the activescheduler
+        if ( type == conn::EBURNormal && iLastType != conn::EBURUnset )
             {
             if ( iLastType == conn::EBURBackupFull || iLastType == conn::EBURBackupPartial )
                 {

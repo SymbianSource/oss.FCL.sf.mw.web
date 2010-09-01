@@ -1,0 +1,49 @@
+/*
+* Copyright (c) 1997-2001 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include  "../webkitcommon.mmpi"
+
+TARGET          css.lib
+TARGETTYPE      lib
+
+CAPABILITY CAP_GENERAL_DLL
+VENDORID        VID_DEFAULT
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER 1
+
+SOURCEPATH      ../../src/css/src
+
+#ifdef _DEBUG
+    #define _BROWSER_ENG_DEBUG
+#endif
+
+SOURCE	CSSBufferList.cpp
+SOURCE	CSSDeclListHandle.cpp
+SOURCE	CSSDefaultStyleSheet.cpp
+SOURCE	CSSPatternMatcher.cpp
+SOURCE	CSSProcessor.cpp
+SOURCE	CSSPropertyTable.cpp
+SOURCE	CSSPropVal.cpp
+SOURCE	CSSReader.cpp
+SOURCE	CSSRuleList.cpp
+SOURCE	CSSParser.cpp
+SOURCE	CSSTokenToInt.cpp
+SOURCE	CSSImageList.cpp
+SOURCE  CSSHandler.cpp
+SOURCE  CSSVariableStyleSheet.cpp
+

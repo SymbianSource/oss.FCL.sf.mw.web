@@ -27,7 +27,7 @@
 #include "config.h"
 #include "HTMLOptGroupElement.h"
 
-#include "cssstyleselector.h"
+#include "CSSStyleSelector.h"
 #include "Document.h"
 #include "HTMLNames.h"
 #include "HTMLSelectElement.h"

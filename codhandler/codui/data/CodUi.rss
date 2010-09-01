@@ -17,7 +17,6 @@
 *
 */
 
-
 // RESOURCE IDENTIFIER
 
 NAME CODU
@@ -25,9 +24,9 @@ NAME CODU
 // INCLUDES
 
 #include <eikon.rh>
-#include <CodDefs.h>
+#include "CodDefs.h"
 #include "CodUi.hrh"
-#include <CodViewer.loc>
+#include <codviewer.loc>
 #include "eikon.rsg"
 #include <avkon.loc>
 #include <avkon.rsg>
@@ -35,8 +34,8 @@ NAME CODU
 #include <avkon.mbg>
 #include <appinfo.rh>
 #include <CommonDialogs.rh>
-#include <pathconfiguration.hrh>
-#include <drmcommon.loc>
+#include <PathConfiguration.hrh>
+#include <DrmCommon.loc>
 
 // RESOURCE DEFINITIONS 
 

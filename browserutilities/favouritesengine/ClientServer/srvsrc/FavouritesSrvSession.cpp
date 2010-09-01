@@ -35,7 +35,7 @@
 #include "FavouritesItemImplList.h"
 #include "FavouritesUtil.h"
 #include "UidMap.h"
-#include "FavouritesLogger.h"
+#include "favouriteslogger.h"
 #include <utf.h>
 // CONSTANTS
 

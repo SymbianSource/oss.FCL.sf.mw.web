@@ -22,7 +22,7 @@
 #include "config.h"
 #include "MediaList.h"
 
-#include "cssparser.h"
+#include "CSSParser.h"
 #include "CSSRule.h"
 #include "CSSStyleSheet.h"
 #include "ExceptionCode.h"

@@ -15,11 +15,10 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include <RoapEng.h>
-#include <RoapTrigger.h>
+#include <roaptrigger.h>
 #include "RoapSaver.h"
 #include "RoapData.h"
 #include "CodLoadObserver.h"

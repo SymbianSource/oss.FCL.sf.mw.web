@@ -29,9 +29,8 @@ namespace WebCore {
 PluginInfo *PlugInInfoStore::createPluginInfoForPluginAtIndex(unsigned index)
 {
 
-    PluginInfo *pluginInfo = new PluginInfo;
     PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
-    
+    PluginInfo *pluginInfo = new PluginInfo;
     if (pluginInfo && pluginHandler) {
         TWebCorePluginInfo plugin;
         if (pluginHandler->objectAtIndex(index,plugin)) {

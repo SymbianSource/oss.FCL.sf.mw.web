@@ -28,9 +28,9 @@
 #ifndef NW_PARSER_WBXML_DOCUMENT_H
 #define NW_PARSER_WBXML_DOCUMENT_H
 
-#include "cxml_proj.h"
-#include "nw_string_string.h"
-#include "nw_encoder_stringtable.h"
+#include <cxml_proj.h>
+#include <nw_string_string.h>
+#include <nw_encoder_stringtable.h>
 
 #ifdef __cplusplus
 extern "C" {

@@ -15,13 +15,11 @@
 *
 */
 
-
-#include "FeedAttributes.h"
+#include <feedattributes.h>
 #include "FeedParserObserver.h"
-#include "LeakTracker.h"
+#include <leaktracker.h>
 #include "RssFeedParser.h"
-#include "XmlUtils.h"
-
+#include <xmlutils.h>
 
 // Element and attribute names used by this parser.
 _LIT8(KRssHead, "rss");

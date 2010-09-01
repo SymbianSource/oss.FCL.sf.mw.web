@@ -15,7 +15,6 @@
 *
 */
 #include "../common.mmpi"
-#include <platform/mw/Browser_platform_variant.hrh>
 
 TARGET          browserengine.dll
 TARGETTYPE      dll
@@ -37,7 +36,7 @@ deffile ../eabi/browserengine.def
 MACRO NOKIA_MOBILE_BROWSER
 #define NOKIA_MOBILE_BROWSER
 
-SOURCEPATH      ../../webview
+SOURCEPATH      ../../WebView
 SOURCE BrCtl.cpp
 
 STATICLIBRARY   WebKit.lib
@@ -121,8 +120,8 @@ LIBRARY         AknSkins.lib
 LIBRARY         aknicon.lib
 
 LIBRARY         ServiceHandler.lib
-//LIBRARY         PbkView.lib             
-//LIBRARY         PbkEng.lib              
+LIBRARY         PbkView.lib             
+LIBRARY         PbkEng.lib              
 LIBRARY         sendui.lib              
 LIBRARY         aknpictograph.lib
 LIBRARY         pbe.lib
@@ -135,7 +134,7 @@ LIBRARY         touchfeedback.lib
 #endif // BRDO_TOUCH_ENABLED_FF 
 
 #ifdef BRDO_USE_GESTURE_HELPER    
-LIBRARY         rt_gesturehelper.lib
+LIBRARY		stmgesturefw.lib
 #endif // BRDO_USE_GESTURE_HELPER    
 #if defined(GCCE)
 STATICLIBRARY edllstub.lib

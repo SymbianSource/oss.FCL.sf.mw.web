@@ -31,7 +31,7 @@
 #ifndef HEADER_GUARD_DdDummyDict_h
 #define HEADER_GUARD_DdDummyDict_h
 
-#include <xml/cxml/nw_wbxml_dictionary.h>
+#include <nw_wbxml_dictionary.h>
 
 #ifdef __cplusplus
 extern "C"

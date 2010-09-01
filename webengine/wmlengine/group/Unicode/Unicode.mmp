@@ -1,0 +1,63 @@
+/*
+* Copyright (c) 1997-2001 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include  "../webkitcommon.mmpi"
+
+TARGET          unicode.lib
+TARGETTYPE      lib
+SOURCEPATH      ../../src/Unicode/src/
+
+CAPABILITY CAP_GENERAL_DLL
+VENDORID        VID_DEFAULT
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER 1
+
+SOURCE	NW_Unicode_Category.c
+SOURCE	NW_Unicode_LetterLowercase.c
+SOURCE	NW_Unicode_LetterModifier.c
+SOURCE	NW_Unicode_LetterOther.c
+SOURCE  NW_Unicode_LetterChina.c
+SOURCE  NW_Unicode_LetterThai.c
+SOURCE  NW_Unicode_LetterJapan.c
+SOURCE	NW_Unicode_LetterTitlecase.c
+SOURCE	NW_Unicode_LetterUppercase.c
+SOURCE	NW_Unicode_MarkEnclosing.c
+SOURCE	NW_Unicode_MarkNonSpacing.c
+SOURCE	NW_Unicode_MarkSpacingCombining.c
+SOURCE	NW_Unicode_NumberDecimalDigit.c
+SOURCE	NW_Unicode_NumberLetter.c
+SOURCE	NW_Unicode_NumberOther.c
+SOURCE	NW_Unicode_OtherControl.c
+SOURCE	NW_Unicode_OtherFormat.c
+SOURCE	NW_Unicode_OtherNotAssigned.c
+SOURCE	NW_Unicode_OtherPrivateUse.c
+SOURCE	NW_Unicode_OtherSurrogate.c
+SOURCE	NW_Unicode_PunctuationClose.c
+SOURCE	NW_Unicode_PunctuationConnector.c
+SOURCE	NW_Unicode_PunctuationDash.c
+SOURCE	NW_Unicode_PunctuationFinal.c
+SOURCE	NW_Unicode_PunctuationInitial.c
+SOURCE	NW_Unicode_PunctuationOpen.c
+SOURCE	NW_Unicode_PunctuationOther.c
+SOURCE	NW_Unicode_SeparatorLine.c
+SOURCE	NW_Unicode_SeparatorParagraph.c
+SOURCE	NW_Unicode_SeparatorSpace.c
+SOURCE	NW_Unicode_SymbolCurrency.c
+SOURCE	NW_Unicode_SymbolMath.c
+SOURCE	NW_Unicode_SymbolModifier.c
+SOURCE	NW_Unicode_SymbolOther.c

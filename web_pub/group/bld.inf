@@ -19,7 +19,7 @@
 
 #include "../browser_control_api/group/bld.inf"
 #include "../download_mgr_client_api/group/bld.inf"
-#include "../download_mgr_ui_api/group/Bld.inf"
+#include "../download_mgr_ui_api/group/bld.inf"
 #include "../favourites_engine_api/group/bld.inf"
 #include "../browser_plugin_api/group/bld.inf"
 #include "../settings_api/group/bld.inf"

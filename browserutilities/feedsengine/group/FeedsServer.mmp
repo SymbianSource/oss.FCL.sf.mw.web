@@ -15,12 +15,10 @@
 *
 */
 
-
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
-
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET          FeedsServer.exe
 TARGETTYPE      exe
@@ -42,7 +40,6 @@ TARGETPATH      /sys/bin
 TARGETPATH      /System/Programs
 #endif
 
-
 // FeedsServer/Server sources
 SOURCEPATH        ../FeedsServer/Server/src
 SOURCE            FeedsDatabase.cpp
@@ -56,7 +53,6 @@ SOURCE            ImportFeedsTask.cpp
 SOURCE            BackRestoreHandler.cpp
 SOURCE            UpdateManager.cpp  
 SOURCE            UpdateQueue.cpp        
-
 
 // FeedsServer/FeedHandler sources
 SOURCEPATH        ../FeedsServer/FeedHandler/src
@@ -84,7 +80,6 @@ SOURCE            XmlEncoding.cpp
 SOURCE            XmlEntity.cpp
 SOURCE            XmlUtils.cpp
 
-
 // Utils sources
 SOURCEPATH        ../FeedsServer/Common/src
 SOURCE            LeakTracker.cpp
@@ -101,36 +96,40 @@ USERINCLUDE       ../FeedsServer/UrlHandler/inc
 USERINCLUDE       ../FeedsServer/XmlUtils/inc
 USERINCLUDE       ../../inc
 
-
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 // Libraries
-LIBRARY             euser.lib
+LIBRARY       euser.lib
 #ifdef _DEBUG
 	LIBRARY    flogger.lib
 #else
 	DEBUGLIBRARY    flogger.lib
 #endif
-LIBRARY             bafl.lib
-LIBRARY             InetProtUtil.lib
-LIBRARY             http.lib
-LIBRARY             efsrv.lib
-LIBRARY             XmlEngine.lib
-LIBRARY             XmlEngineDOM.lib
-LIBRARY             XmlEngineUtils.Lib
-LIBRARY             estlib.lib
-LIBRARY             HttpFilterCommon.lib
-LIBRARY             connectionmanager.lib
-LIBRARY             ecom.lib
-LIBRARY             commdb.lib
-LIBRARY             charconv.lib
-LIBRARY             edbms.lib
-LIBRARY             estor.lib
-LIBRARY             centralrepository.lib
+LIBRARY       bafl.lib
+LIBRARY       InetProtUtil.lib
+LIBRARY       http.lib
+LIBRARY       efsrv.lib
+LIBRARY       XmlEngine.lib
+LIBRARY       XmlEngineDOM.lib
+LIBRARY       XmlEngineUtils.Lib
+LIBRARY       estlib.lib
+LIBRARY       HttpFilterCommon.lib
+LIBRARY       connectionmanager.lib
+LIBRARY       ecom.lib
+LIBRARY       commdb.lib
+LIBRARY       charconv.lib
+LIBRARY       edbms.lib
+LIBRARY       estor.lib
+LIBRARY       centralrepository.lib
 LIBRARY				apengine.lib
-LIBRARY			    ESock.lib
+LIBRARY			  ESock.lib
 LIBRARY				Avkon.lib
 LIBRARY				etel3rdparty.lib 
 LIBRARY				webutils.lib
-LIBRARY             sysutil.lib
+LIBRARY       sysutil.lib
+
+#ifdef BRDO_OCC_ENABLED_FF
+LIBRARY    featmgr.lib
+#endif
+

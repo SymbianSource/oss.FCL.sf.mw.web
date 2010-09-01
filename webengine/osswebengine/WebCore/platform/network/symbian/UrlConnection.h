@@ -22,7 +22,7 @@
 #include "ResourceHandle.h"
 #include "ResourceHandleInternal.h"
 
-#include "BrCtlDefs.h"
+#include <brctldefs.h>
 
 namespace WebCore {
     class Frame;

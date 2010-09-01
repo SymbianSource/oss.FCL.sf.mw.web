@@ -22,8 +22,8 @@
 //  INCLUDES
 #include <e32base.h>
 #include <e32std.h>
-#include <AknPictographInterface.h>
-#include <AknPictographDrawerInterface.h>
+#include <aknpictographinterface.h>
+#include <aknpictographdrawerinterface.h>
 
 // CONSTANTS
 

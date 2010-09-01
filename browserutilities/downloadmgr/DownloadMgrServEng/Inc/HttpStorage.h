@@ -212,7 +212,7 @@ NONSHARABLE_CLASS( CHttpStorage ) : public CBase
         HBufC*  DestFilename()const { return iDestFilename; };
         HBufC*  DdFileName()const { return iDdFilename; };
         TBool   DestFNameSet()const { return iDestFNameSet; };
-        TBool   RemovableDest()const { return iRemovableDest; };
+        TInt32  RemovableDest()const { return iRemovableStatus; };
         TBool   ProgressiveDownload()const { return iProgressiveDownload; }
         TInt32  Length()const { return iLength; };
         TInt32  DownloadedSize()const { return iDownloadedSize; };
@@ -221,7 +221,7 @@ NONSHARABLE_CLASS( CHttpStorage ) : public CBase
         
         void    SetLength( TInt32 aLength ){ iLength = aLength; };
         void    SetDownloadedSize( TInt32 aSize ){ iDownloadedSize = aSize; iBufferedSize = aSize; };
-        void    SetRemovableDest( TBool aRemovable ){ iRemovableDest = aRemovable; };
+        void    SetRemovableDest( TInt32 aRemovable ){ iRemovableStatus = aRemovable; };
         void    SetLocalFilenameL(const TDesC16& aValue);
         void    SetPartialContentLength( TInt32 aLength ){ iPartialLength = aLength; };
         void    SetMoDownloadedSize( TInt32 aMoSize ){ iMoDownloadedSize = aMoSize ;};
@@ -279,7 +279,8 @@ NONSHARABLE_CLASS( CHttpStorage ) : public CBase
 
         TBool   iProgressiveDownload;   // EDlAttrProgressive
         
-        TBool   iRemovableDest;
+        TInt32  iRemovableStatus;
+        
         HBufC*  iDestFilename;          // EDlAttrDestFilename
         TBool   iDestFNameSet;          // iDestFilename is set by client app -> 
                                         // do not delete it in Reset()

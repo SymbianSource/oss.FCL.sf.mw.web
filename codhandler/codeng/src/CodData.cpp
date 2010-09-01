@@ -17,7 +17,6 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "CodData.h"
@@ -25,8 +24,7 @@
 #include "CodUtil.h"
 #include <badesca.h>
 #include "FileExt.h"
-#include "HttpDownloadData.h"
-
+#include <httpdownloaddata.h>
 
 // ================= MEMBER FUNCTIONS =======================
 

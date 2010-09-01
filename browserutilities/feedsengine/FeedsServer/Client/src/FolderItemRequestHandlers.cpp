@@ -17,8 +17,8 @@
 
 
 #include <e32base.h>
-#include <FeedsServerFolderItem.h>
-#include <s32mem.h>
+#include <feedsserverfolderitem.h>
+#include <S32Mem.h>
 #include <es_sock.h>
 
 #include "FolderItemRequestHandlers.h"

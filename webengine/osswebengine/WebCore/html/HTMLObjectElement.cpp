@@ -24,7 +24,7 @@
 #include "config.h"
 #include "HTMLObjectElement.h"
 
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "EventNames.h"
 #include "ExceptionCode.h"
 #include "Frame.h"
@@ -40,7 +40,7 @@
 #include "WebCoreWidget.h"
 #endif
 #include "Image.h"
-#include "MimeTypeRegistry.h"
+#include "MIMETypeRegistry.h"
 #include "RenderImage.h"
 #include "RenderPartObject.h"
 #include "RenderWidget.h"
@@ -534,6 +534,11 @@ bool HTMLObjectElement::isFocusable() const
         renderer()->width() == 0 || renderer()->height() == 0)
         return false;
     return static_cast<RenderPartObject*>(renderer())->isFocusable();
+}
+
+bool HTMLObjectElement::canStartSelection() const
+{
+return false;
 }
 #endif
 

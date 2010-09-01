@@ -14,30 +14,30 @@
 * Description:  Build information for the Feeds Server Api
 *
 */
+
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
+../inc/feedsserverclient.h          MW_LAYER_PLATFORM_EXPORT_PATH(feedsserverclient.h)
+../inc/feedsserverfeed.h            MW_LAYER_PLATFORM_EXPORT_PATH(feedsserverfeed.h)
+../inc/feedsserverfolderitem.h      MW_LAYER_PLATFORM_EXPORT_PATH(feedsserverfolderitem.h)
 
-../inc/FeedsServerClient.h          MW_LAYER_PLATFORM_EXPORT_PATH(FeedsServerClient.h)
-../inc/FeedsServerFeed.h            MW_LAYER_PLATFORM_EXPORT_PATH(FeedsServerFeed.h)
-../inc/FeedsServerFolderItem.h      MW_LAYER_PLATFORM_EXPORT_PATH(FeedsServerFolderItem.h)
+../inc/feedsservermsg.h             MW_LAYER_PLATFORM_EXPORT_PATH(feedsservermsg.h)
+../inc/transaction.h                MW_LAYER_PLATFORM_EXPORT_PATH(transaction.h)
+../inc/feedsentity.h                MW_LAYER_PLATFORM_EXPORT_PATH(feedsentity.h)
+../inc/feedsmap.h                   MW_LAYER_PLATFORM_EXPORT_PATH(feedsmap.h)
+../inc/feedsinterface.h             MW_LAYER_PLATFORM_EXPORT_PATH(feedsinterface.h)
+../inc/feedattributes.h             MW_LAYER_PLATFORM_EXPORT_PATH(feedattributes.h)
+../inc/folderattributes.h           MW_LAYER_PLATFORM_EXPORT_PATH(folderattributes.h)
 
-../inc/FeedsServerMsg.h             MW_LAYER_PLATFORM_EXPORT_PATH(FeedsServerMsg.h)
-../inc/Transaction.h                MW_LAYER_PLATFORM_EXPORT_PATH(Transaction.h)
-../inc/FeedsEntity.h                MW_LAYER_PLATFORM_EXPORT_PATH(FeedsEntity.h)
-../inc/FeedsMap.h                   MW_LAYER_PLATFORM_EXPORT_PATH(FeedsMap.h)
-../inc/FeedsInterface.h             MW_LAYER_PLATFORM_EXPORT_PATH(FeedsInterface.h)
-../inc/FeedAttributes.h             MW_LAYER_PLATFORM_EXPORT_PATH(FeedAttributes.h)
-../inc/FolderAttributes.h           MW_LAYER_PLATFORM_EXPORT_PATH(FolderAttributes.h)
-
-../inc/FeedsServerRequestHandler.h  MW_LAYER_PLATFORM_EXPORT_PATH(FeedsServerRequestHandler.h)
-../inc/FeedsServerSettings.h        MW_LAYER_PLATFORM_EXPORT_PATH(FeedsServerSettings.h)
-../inc/ConnectionObserver.h         MW_LAYER_PLATFORM_EXPORT_PATH(ConnectionObserver.h)
-../inc/LeakTracker.h                MW_LAYER_PLATFORM_EXPORT_PATH(LeakTracker.h)
-../inc/XmlEncoding.h                MW_LAYER_PLATFORM_EXPORT_PATH(XmlEncoding.h)
+../inc/feedsserverrequesthandler.h  MW_LAYER_PLATFORM_EXPORT_PATH(feedsserverrequesthandler.h)
+../inc/feedsserversettings.h        MW_LAYER_PLATFORM_EXPORT_PATH(feedsserversettings.h)
+../inc/connectionobserver.h         MW_LAYER_PLATFORM_EXPORT_PATH(connectionobserver.h)
+../inc/leaktracker.h                MW_LAYER_PLATFORM_EXPORT_PATH(leaktracker.h)
+../inc/xmlencoding.h                MW_LAYER_PLATFORM_EXPORT_PATH(xmlencoding.h)
 
 PRJ_MMPFILES

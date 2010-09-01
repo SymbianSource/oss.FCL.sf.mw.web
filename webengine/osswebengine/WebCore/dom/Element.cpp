@@ -26,7 +26,7 @@
 
 #include "Chrome.h"
 #include "ChromeClient.h"
-#include "cssstyleselector.h"
+#include "CSSStyleSelector.h"
 #include "Document.h"
 #include "Editor.h"
 #include "ExceptionCode.h"

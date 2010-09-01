@@ -17,7 +17,7 @@
 
 #include <f32file.h>
 #include <uri8.h>
-#include <escapeutils.h>
+#include <EscapeUtils.h>
 #include <apmrec.h>
 #include <apgcli.h>
 #include "ResourceHandle.h"
@@ -26,9 +26,10 @@
 #include "ResourceHandleManagerSymbian.h"
 #include "StaticObjectsContainer.h"
 #include "ResourceRequest.h"
-#include <BrCtlSpecialLoadObserver.h>
-#include "BrCtl.h"
+#include <brctlspecialloadobserver.h>
+#include "brctl.h"
 #include "DeprecatedString.h"
+#include <PluginHandler.h>
 
 const TInt KFileReadChunkSize = 23920; // bytes
 _LIT8( KResLoaderUCS2, "iso-10646-ucs-2" );
@@ -251,16 +252,40 @@ HBufC8* FileConnection::contentTypeL()
         else if( extPtr.CompareF( KEcmaScriptExt() ) == 0 ||
             extPtr.CompareF( KJavaScriptExt() ) == 0 ) {
             contentTypePtr.Set( _L8( "text/ecmascript" ) );
+        }        
+        else {
+            // Symbian/S60 may not be aware of the MIMEType for the given extension
+            // Need to query from Plugin handler if there exists a plugin which supports this extension.
+            return contentTypeFromPluginsL();
         }
-
-        // todo plugin is missing
-        // Check if it is a supported plugin
-        // CPluginHandler* pluginHandler = CPluginHandler::GetSingleton();
-        // TUint16* mimeType16 = pluginHandler->GetPluginMimeTypeL(iFileName);
     }
     if( contentTypePtr.Length() ) {
         contentType = HBufC8::NewL( contentTypePtr.Length() );
         contentType->Des().Copy( contentTypePtr );
+    }
+    return contentType; 
+}
+
+HBufC8* FileConnection::contentTypeFromPluginsL()
+{
+    HBufC8* contentType = NULL;
+    
+    // Get PluginHandler from StaticObjectsContainer
+    PluginHandler* plg = StaticObjectsContainer::instance()->pluginHandler();
+    
+    // Convert filename16 to filename8 required for pluginMimeByExtention(TPtrC8&)
+    HBufC8* filename = HBufC8::NewLC(m_fileName->Length());
+    filename->Des().Copy(m_fileName->Des());
+    
+    // Query MIMEtype for an extension from PluginHandler
+    HBufC* mimeTypePtr = plg->pluginMimeByExtention(filename->Des());
+    
+    CleanupStack::PopAndDestroy(); //filename
+    
+    if (mimeTypePtr) {
+        // Coversion from mimeType16 to mimeType8
+        contentType = HBufC8::NewL(mimeTypePtr->Length());
+        contentType->Des().Copy(mimeTypePtr->Des());
     }
     return contentType;
 }

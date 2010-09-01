@@ -20,7 +20,7 @@
 #define WIDGETACTIVECALLBACK_H
 
 #include <e32base.h>    // CBase
-#include <abclient.h>
+#include <connect/abclient.h>
 #ifdef _DEBUG
 #include <flogger.h>
 #endif

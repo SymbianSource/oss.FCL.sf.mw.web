@@ -16,10 +16,9 @@
 *
 */
 
-
-#include "FeedsServerFolderItem.h"
-#include "FolderAttributes.h"
-#include "FeedAttributes.h"
+#include <feedsserverfolderitem.h>
+#include <folderattributes.h>
+#include <feedattributes.h>
 #include "PackedFolder.h"
 
 // -----------------------------------------------------------------------------

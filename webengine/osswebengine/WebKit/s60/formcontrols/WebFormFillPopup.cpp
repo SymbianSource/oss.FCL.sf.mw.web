@@ -16,16 +16,21 @@
 */
 
 // INCLUDE FILES
+#include <browser_platform_variant.hrh>
 #include <../bidi.h>
+#include <brctldialogsprovider.h>
+
 #include "WebFormFillPopup.h"
 #include "WebView.h"
 #include "WebFrame.h"
 #include "WebFrameView.h"
-#include "BrCtlDefs.h"
+#include <brctldefs.h>
 #include "PopupSelectListBox.h"
-#include "BrCtlDialogsProvider.h"
+
 #include "WebFepTextEditor.h"
 #include "FormFillCallback.h"
+#include "Page.h"
+#include "WebChromeClient.h"
 
 #include <aknenv.h>
 #include <coemain.h>
@@ -35,14 +40,15 @@
 
 #include "eikon.hrh"
 
-
 static const TInt KMaxNumToShow = 6; // max number of list items to show
 static const TInt KInitArraySize = 10; // initial array size
 static const TInt KBorderSize = 1; // List Box Border size
 static const TInt KListBoxPadding = 12;
 static const TInt KListBoxMinWidth = 100;
 static const TInt KListBoxMargin = 6;
+// CONSTANTS
 
+const static TInt KItemSpacerInPixels = 2;
 WebFormFillPopup* WebFormFillPopup::NewL(WebView* parent, CFont* font, MFormFillCallback* callback)
 {
     WebFormFillPopup* self = new (ELeave) WebFormFillPopup(parent, font, callback);
@@ -191,7 +197,9 @@ TKeyResponse WebFormFillPopup::OfferKeyEventL(const TKeyEvent& aKeyEvent, TEvent
             break;
 
     }
-
+    if (response == EKeyWasConsumed) {
+          m_parent->page()->chrome()->client()->setElementVisibilityChanged(false);
+        }
     return response;
 }
 
@@ -242,6 +250,9 @@ TKeyResponse WebFormFillPopup::HandleKeyEventL(const TKeyEvent& aKeyEvent, TEven
 
     }
 
+    if (response == EKeyWasConsumed) {
+      m_parent->page()->chrome()->client()->setElementVisibilityChanged(false);
+    }
     return response;
 }
 
@@ -265,8 +276,11 @@ void WebFormFillPopup::HandleListBoxEventL(CEikListBox* aListBox, TListBoxEvent 
 {
     if (aListBox != m_listBox)
         return;
-
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF
+    if (aEventType == EEventItemDoubleClicked || aEventType == EEventEnterKeyPressed || aEventType == EEventItemSingleClicked || aEventType == EEventEmptyAreaClicked)
+#else        
     if (aEventType == EEventItemDoubleClicked || aEventType == EEventEnterKeyPressed)
+#endif        
     {
         // get the selected item from listbox
         m_listBox->View()->UpdateSelectionL(CListBoxView::ESingleSelection);
@@ -274,7 +288,8 @@ void WebFormFillPopup::HandleListBoxEventL(CEikListBox* aListBox, TListBoxEvent 
         if (m_listBox->IsFocused())
         {
             MakeVisible(EFalse);
-            m_callback->autoComplete(m_data[selected->At(0)]->Text());
+            if(selected != NULL && m_data[selected->At(0)] )
+               m_callback->autoComplete(m_data[selected->At(0)]->Text());
         }
     }
     else if (aEventType == EEventPenDownOnItem) {
@@ -358,6 +373,14 @@ void WebFormFillPopup::HandlePointerEventL(const TPointerEvent& aPointerEvent)
     else {
         m_callback->cancelPopup();
     }
+    m_parent->page()->chrome()->client()->setElementVisibilityChanged(false);
 }
 
+void WebFormFillPopup::setFont(CFont* font)
+{
+    m_font = font;
+    CTextListItemDrawer* itemDrawer = (CTextListItemDrawer*) m_listBox->View()->ItemDrawer();
+    itemDrawer->SetFont(font); 
+    m_listBox->SetItemHeightL(m_font->HeightInPixels()+ KItemSpacerInPixels);
+}
 //  End of File

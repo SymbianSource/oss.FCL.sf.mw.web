@@ -16,15 +16,13 @@
 *
 */
 
-
-
 #ifndef HTTPDOWNLOADMANAGER_H
 #define HTTPDOWNLOADMANAGER_H
 
 //  INCLUDES
 #include "HttpDownload.h"
 
-#include <HttpDownloadMgrCommon.h>
+#include <httpdownloadmgrcommon.h>
 #include <e32std.h>
 #include <f32file.h>
 
@@ -158,7 +156,7 @@ NONSHARABLE_CLASS( CHttpDownloadManagerServerEngine ) : public CBase
         * @param ?arg1 ?description
         * @return ?description
         */
-        IMPORT_C TInt ActiveDownloads() const;
+        EXPORT_C TInt ActiveDownloads() const;
 
         /**
         * Calculates the total size of all on-going downloads in the 

@@ -15,7 +15,6 @@
 *
 */
 
-
 /** ----------------------------------------------------------------------- **
     @package:     NW_Encoder
 
@@ -28,9 +27,9 @@
 #ifndef _NW_ENCODER_STRING_TABLE_HEADER_GUARD_
 #define _NW_ENCODER_STRING_TABLE_HEADER_GUARD_
 
-#include "nw_string_string.h"
-#include "nw_tinytree.h"
-#include "nw_wbxml_dictionary.h"
+#include <nw_string_string.h>
+#include <nw_tinytree.h>
+#include <nw_wbxml_dictionary.h>
 
 #ifdef __cplusplus
 extern "C"
@@ -50,7 +49,6 @@ extern "C"
     @description: default
  ** ----------------------------------------------------------------------- **/
 typedef NW_TinyTree_Node_t NW_DOM_DocumentNode_t;
-
 
 /*
  * StringItem methods
@@ -166,7 +164,6 @@ typedef struct NW_Encoder_StringTableIterator_s{
                   The string table or NULL if not success.
 
  ** ----------------------------------------------------------------------- **/
-IMPORT_C
 NW_Encoder_StringTable_t*
 NW_Encoder_StringTable_new(void);
 

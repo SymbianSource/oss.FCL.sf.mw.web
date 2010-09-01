@@ -16,12 +16,12 @@
 */
 
 #include "HttpDownload.h"
-#include <CDownloadMgrUiUserInteractions.h>
-#include <CDownloadMgrUiDownloadsList.h>
+#include <cdownloadmgruiuserinteractions.h>
+#include <cdownloadmgruidownloadslist.h>
 #include "HttpDlConnection.h"
 #include "HttpDefs.h"
 #include "HttpSessionManager.h"
-#include "BrCtl.h"
+#include "brctl.h"
 #include "StaticObjectsContainer.h"
 
 // CONSTANTS
@@ -30,14 +30,40 @@ const unsigned long KMinDataSizeToSend = (1024*5);
 
 using namespace WebCore;
 
-HttpDownload::HttpDownload(HttpSessionManager* sessionManager)
+// -----------------------------------------------------------------------------
+// HttpDownload::NewL
+//
+// Two-phased constructor.
+// -----------------------------------------------------------------------------
+//
+HttpDownload* HttpDownload::NewL(HttpSessionManager* sessionManager)
+    {
+    HttpDownload* self = new (ELeave) HttpDownload();
+
+    CleanupStack::PushL (self);
+    self->ConstructL ( sessionManager);
+    CleanupStack::Pop ();
+    return self;       
+    }
+
+HttpDownload::HttpDownload()
 {
-    m_sessionManager = sessionManager;
     m_dMgrReady = false;
     m_dMgrUiReg = NULL;
-	m_downloadObserver = StaticObjectsContainer::instance()->brctl()->brCtlDownloadObserver();
-    TRAP_IGNORE(PREPARE_DOWNLOAD_MANAGER)
 }
+
+// -----------------------------------------------------------------------------
+// HttpDownload::ConstructL
+// Symbian 2nd phase constructor can leave.
+// by this method.
+// -----------------------------------------------------------------------------
+//
+void HttpDownload::ConstructL(HttpSessionManager* sessionManager)
+    {
+    m_sessionManager = sessionManager;
+    m_downloadObserver = StaticObjectsContainer::instance()->brctl()->brCtlDownloadObserver();
+    PREPARE_DOWNLOAD_MANAGER;
+    }
 
 HttpDownload::~HttpDownload()
 {
@@ -72,7 +98,10 @@ void HttpDownload::initDownloadMgrL()
     if ( errMngr == KErrAlreadyExists && master ) { 
         m_downloadMgr.ConnectL( myProcess.Identity(), *this, EFalse );
     }
-    
+    else
+    {
+        User::LeaveIfError(errMngr);
+    }
     if( !master ){
         // Browser is embedded. Downloads must be paused when the user closes
         // the embedded Browser (that is always started from the Launcher), and

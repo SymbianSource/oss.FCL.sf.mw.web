@@ -19,7 +19,7 @@
 
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 
@@ -30,7 +30,7 @@ PRJ_EXPORTS
 // Move the includes into "Public Nokia implemented" in CORE_MW_LAYER_IBY_EXPORT_PATH
 
 
-../rom/xmlinterface.iby					CORE_MW_LAYER_IBY_EXPORT_PATH(Xmlinterface.iby)
+../rom/Xmlinterface.iby					CORE_MW_LAYER_IBY_EXPORT_PATH(Xmlinterface.iby)
 
 PRJ_MMPFILES
 

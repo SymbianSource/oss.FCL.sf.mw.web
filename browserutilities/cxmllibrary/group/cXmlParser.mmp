@@ -16,21 +16,19 @@
 */
 
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 TARGET          cXmlParser.dll
 TARGETTYPE      dll
 
-
-
 #if defined(ARMCC)
 UID	0x1000008D 	0x101F8710
-deffile eabi/CXMLPARSER.DEF
+deffile EABI/cXmlParser.def
 #elif defined( WINSCW )
-deffile BWINSCW/CXMLPARSER.DEF
+deffile Bwinscw/cXmlParser.def
 #elif defined( WINS )
 deffile Bwins/cXmlParser.def
 #else
-deffile bmarm/CXMLPARSER.DEF
+deffile Bmarm/cXmlParser.def
 #endif
 
 CAPABILITY CAP_GENERAL_DLL
@@ -51,7 +49,7 @@ SOURCE	tinydom/src/tiny_dom_utils.c
 SOURCE	tinydom/src/tiny_dom_write.c
 SOURCE	tinytree/src/EBuffer.c
 SOURCE	tinytree/src/tree.c
-SOURCE	tinytree/src/TreeVector.c
+SOURCE	tinyTree/src/TreeVector.c
 SOURCE	wbxmlp/src/dictionary.c
 SOURCE	wbxmlp/src/DictionaryContext.cpp
 SOURCE	wbxmlp/src/doc.c
@@ -70,11 +68,8 @@ SOURCE	encoder/src/WBXMLWriter.cpp
 SOURCE  utils/src/cxml_mem.c
 SOURCE  utils/src/cxml_vector.c
 SOURCE  utils/src/cxml_str.c
-SOURCE  utils/src/E32XMLParserDllEntryPoint.cpp
+SOURCE  utils/src/E32XMLPARSERDLLEntryPoint.cpp
 SOURCE  utils/src/cxml_file_if.cpp
-
-
-
 
 #if defined(WINS)
   #ifndef WINSCW
@@ -91,13 +86,10 @@ USERINCLUDE     ../src/tinydom/include
 USERINCLUDE     ../src/tinytree/include
 USERINCLUDE     ../src/utils/include
 
-
 // ===================================
 
-
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 // Symbian OS libraries
 //#if defined (WINS)

@@ -18,7 +18,7 @@
 #include <domain/osextensions/platform_paths.hrh>
 #include <data_caging_paths.hrh>
 //#include "/../../../../WebEngine/OssWebEngine/WebKit/s60/group/common.mmpi"
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET          WebViewApiTest.dll
 TARGETTYPE      dll
@@ -39,7 +39,7 @@ LANGUAGE_IDS
 DEFFILE         WebViewApiTest.def
 
 //
-MW_LAYER_SYSTEMINCLUDE
+APP_LAYER_SYSTEMINCLUDE
 USERINCLUDE ../inc
 USERINCLUDE ../../inc
 USERINCLUDE ../mock/inc
@@ -64,12 +64,11 @@ USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/loader
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/loader/icon
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebCore/loader/wml
 
-//
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/Plugins
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/WebCoreSupport
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/FormControls
 USERINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/Misc
-USERINCLUDE ../../../../WebEngine/OssWebEngine/MemoryManager/Inc 
+// USERINCLUDE ../../../../WebEngine/OssWebEngine/MemoryManager/Inc 
 USERINCLUDE ../../../../WebEngine/OssWebEngine/DerivedSources/WebCore
 
 SYSTEMINCLUDE ../../../../WebEngine/OssWebEngine/WebKit/S60/Plugins
@@ -207,8 +206,8 @@ LIBRARY         featmgr.lib
 LIBRARY         AknSkins.lib 
 LIBRARY         aknicon.lib
 LIBRARY         ServiceHandler.lib
-//LIBRARY         PbkView.lib             
-//LIBRARY         PbkEng.lib              
+LIBRARY         PbkView.lib             
+LIBRARY         PbkEng.lib              
 LIBRARY         sendui.lib              
 LIBRARY         aknpictograph.lib
 LIBRARY         pbe.lib

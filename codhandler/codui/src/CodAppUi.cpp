@@ -15,7 +15,6 @@
 *
 */
 
-
 #include <avkon.hrh>
 #include <eikbtgpc.h>
 #include <eikapp.h>
@@ -23,20 +22,20 @@
 #include <CodUi.rsg>
 #include <avkon.rsg>
 #include <AknQueryDialog.h>
-#include <ErrorUI.h>
-#include <textresolver.h>
+#include <ErrorUi.h>
+#include <TextResolver.h>
 #include <AiwGenericParam.h>
 #include <DocumentHandler.h>
 #include <DcfRep.h>
 #include <RoapDef.h>
 #include <DRMCommon.h>
 #include <StringLoader.h>
-#include <CodEng.h>
-#include <CodData.h>
-#include <CodError.h>
-#include <CodStatus.h>
-#include <CodUtil.h>
-#include <RoapData.h>
+#include "CodEng.h"
+#include "CodData.h"
+#include "CodError.h"
+#include "CodStatus.h"
+#include "CodUtil.h"
+#include "RoapData.h"
 #include "CodAppUi.h"
 #include "CodView.h" 
 #include "CodDocument.h" 

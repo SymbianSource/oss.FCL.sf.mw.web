@@ -20,14 +20,14 @@
 // INCLUDE FILES
 #include    "CDownloadUtils.h" 
 #include    "UiLibLogger.h"
-#include    <DownloadMgrClient.h>
+#include    <downloadmgrclient.h>
 #include    <DocumentHandler.h>
 #include    <Oma2Agent.h>
 #include    <DRMCommon.h>
 #include	<apgcli.h>
 #include    <caf/caf.h>
 #include    <utf.h>
-#include    <Browser_platform_variant.hrh>
+#include    <Browser_Platform_Variant.hrh>
 // LOCAL CONSTANTS AND MACROS
 
 #ifdef BRDO_WML_DISABLED_FF
@@ -46,6 +46,7 @@ _LIT8(Ksdp, "application/sdp");
 _LIT8(Krng, "application/vnd.nokia.ringing-tone");
 _LIT8(Krn, "application/vnd.rn-realmedia");
 _LIT8(Kpn, "application/x-pn-realmedia");
+_LIT8(KWmdrmLicenseResponseContentType,"application/vnd.ms-wmdrm.lic-resp" );
 
 // ============================ MEMBER FUNCTIONS ===============================
 
@@ -236,7 +237,7 @@ TBool CDownloadUtils::IsContentTypeSupportedL( const TDesC8& aContentType )
         CleanupStack::PopAndDestroy( docHandler ); // docHandler
 
         if ( !(aContentType.Compare(KOma2RoContentType)) || !(aContentType.Compare(KOma2ProtectedRoType))
-            || !(aContentType.Compare(KOma2TriggerContentType)) )
+            || !(aContentType.Compare(KOma2TriggerContentType)) || !(aContentType.Compare(KWmdrmLicenseResponseContentType)) )
             {
             canOpen = EFalse;
             }
@@ -273,6 +274,11 @@ TBool CDownloadUtils::IsContentTypeSupportedL( RHttpDownload& aDownload, const T
     	return EFalse; 
         }
 #endif         
+    else if ( !(aContentType.Compare(KOma2RoContentType)) || !(aContentType.Compare(KOma2ProtectedRoType))
+        || !(aContentType.Compare(KOma2TriggerContentType)) || !(aContentType.Compare(KWmdrmLicenseResponseContentType)) )
+        {
+        return EFalse;
+        }
     else
         {
         TBool canOpen( EFalse );
@@ -473,7 +479,7 @@ void CDownloadUtils::FindContentTypeFromFileL( RHttpDownload& aDownload, TUint8*
     
     if (ret == KErrNone &&
         (dataType.iConfidence == CApaDataRecognizerType::ECertain) ||
-        (dataType.iConfidence == CApaDataRecognizerType::EProbable))
+        (dataType.iConfidence == CApaDataRecognizerType::EProbable) ||(dataType.iConfidence == CApaDataRecognizerType::EPossible))
         {
         // If the file type was found, try to match it to a known file type
         TPtrC8 mimeTypePtr = dataType.iDataType.Des8();

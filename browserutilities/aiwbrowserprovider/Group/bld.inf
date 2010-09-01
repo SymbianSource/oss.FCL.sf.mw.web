@@ -19,13 +19,13 @@
 
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT
 
 PRJ_EXPORTS
-../loc/AiwBrowserProvider.loc  MW_LAYER_LOC_EXPORT_PATH(AiwBrowserProvider.loc)
+../loc/aiwbrowserprovider.loc  MW_LAYER_LOC_EXPORT_PATH(aiwbrowserprovider.loc)
 
 PRJ_MMPFILES
 AiwBrowserProvider.mmp

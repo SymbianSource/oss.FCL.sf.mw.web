@@ -20,7 +20,7 @@
 #include <lookup.h>
 #include <value.h>
 #include <interpreter.h>
-#include "liwservicehandler.h"
+#include "LiwServiceHandler.h"
 #include "DeviceLiwInterface.h"
 #include "ServiceEventHandler.h"
 #include "DeviceBinding.h"

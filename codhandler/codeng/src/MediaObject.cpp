@@ -27,7 +27,7 @@
 #include "FileExt.h"
 #include "CodStatus.h"
 #include "HeaderField.h"
-#include <apmstd.h>
+#include <ApmStd.h>
 
 
 // ================= MEMBER FUNCTIONS =======================

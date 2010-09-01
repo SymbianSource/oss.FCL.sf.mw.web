@@ -48,6 +48,7 @@ public:
     void invalidate();
     void clear();
     void setLocationHintInDoc(const TRect& r, WebCore::Frame* frame);
+    void setFont(CFont* font);
 
     // from CEikBorderedControl
     TCoeInputCapabilities InputCapabilities() const;

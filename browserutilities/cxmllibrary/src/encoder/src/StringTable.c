@@ -16,12 +16,12 @@
 */
 
 
-#include "nw_encoder_stringtable.h"
-#include "nw_wbxml_parse.h"
-#include "nw_dom_attribute.h"
-#include "nw_dom_element.h"
-#include "nw_dom_text.h"
-#include "nw_dom_document.h"
+#include <nw_encoder_stringtable.h>
+#include <nw_wbxml_parse.h>
+#include <nw_dom_attribute.h>
+#include <nw_dom_element.h>
+#include <nw_dom_text.h>
+#include <nw_dom_document.h>
 #include "cxml_internal.h"
 
 /* ------------------------------------------------------------------------- *

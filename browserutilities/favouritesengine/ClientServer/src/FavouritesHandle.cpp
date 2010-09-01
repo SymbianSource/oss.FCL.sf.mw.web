@@ -15,10 +15,9 @@
 *
 */
 
-
 // INCLUDE FILES
 
-#include "FavouritesHandle.h"
+#include <favouriteshandle.h>
 #include "FavouritesMsg.h"
 #include "FavouritesPanic.h"
 #include "FavouritesLogger.h" 

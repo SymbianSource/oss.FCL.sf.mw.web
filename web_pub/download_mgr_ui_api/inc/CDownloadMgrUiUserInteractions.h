@@ -20,11 +20,9 @@
 #ifndef CDOWNLOADMGRUIUSERINTERACTIONS_H
 #define CDOWNLOADMGRUIUSERINTERACTIONS_H
 
-#warning This Download Manager UI API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 //  INCLUDES
-#include <CDownloadMgrUiBase.h>
-#include <DownloadMgrClient.h>
+#include <cdownloadmgruibase.h>
+#include <downloadmgrclient.h>
 #include <vwsdef.h>
 
 // CONSTANTS

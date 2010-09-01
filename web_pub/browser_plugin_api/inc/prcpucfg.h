@@ -39,7 +39,6 @@
  * porting the file to the Symbian platform on May 1st, 2004.
  */
 
-#warning This NP API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
 
 #ifndef nspr_cpucfg___
 #define nspr_cpucfg___

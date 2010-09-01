@@ -24,7 +24,7 @@
 #include "config.h"
 #include "HTMLLinkElement.h"
 
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "CachedCSSStyleSheet.h"
 #include "DocLoader.h"
 #include "Document.h"
@@ -192,8 +192,13 @@ void HTMLLinkElement::process()
 
     // IE extension: location of small icon for locationbar / bookmarks
     // We'll record this URL per document, even if we later only use it in top level frames
-    if (m_isIcon && !m_url.isEmpty())
+    if (m_isIcon && !m_url.isEmpty()) {
         document()->setIconURL(m_url, type);
+        if(document()->frame() && document()->frame()->loader()) {
+            // Notify frame loader to retry icon loading
+            document()->frame()->loader()->iconLoadDecisionAvailable();
+        }
+    }
 
     // Stylesheet
     // This was buggy and would incorrectly match <link rel="alternate">, which has a different specified meaning. -dwh

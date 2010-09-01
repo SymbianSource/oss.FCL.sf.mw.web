@@ -19,11 +19,10 @@
 
 #include "FeedsApp.hrh"
 #include "FeedsAppUi.h"
-#include "LeakTracker.h"
+#include <leaktracker.h>
 #include "TestHarnessView.h"
 
 #include "Logger.h"
-
 
 // -----------------------------------------------------------------------------
 // CFeedsAppUi::ConstructL()

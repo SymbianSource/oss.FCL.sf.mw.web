@@ -19,7 +19,7 @@
 #include <defaultcaps.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET          DownloadMgrUiLib.dll
 TARGETTYPE      dll
@@ -61,12 +61,12 @@ END // RESOURCE
 USERINCLUDE     ../Inc
 USERINCLUDE     ../../DownloadMgrClntSrv/inc
 
-//APP_LAYER_SYSTEMINCLUDE
-/* SF TODO: resolve APP LAYER DEPENDENCY: 
-	s60/app/gallery/gallery_dom/media_file_api/inc/CMGXFileManager.h
-	s60/app/gallery/gallery_dom/media_file_api/inc/MGXFileManagerFactory.h
-*/
 MW_LAYER_SYSTEMINCLUDE
+
+#if defined(__PLATFORM_VERSION_S60_50__) || defined( __PLATFORM_VERSION_5250__)
+APP_LAYER_SYSTEMINCLUDE
+MW_LAYER_HTTP_SYSTEMINCLUDE
+#endif
 
 SOURCEPATH      ../Src
 SOURCE          AsyncEventHandlerArray.cpp
@@ -83,6 +83,9 @@ SOURCE          CDownloadUtils.cpp
 SOURCE          DMgrUiLibPanic.cpp
 SOURCE          ProgressInfoCreator.cpp
 SOURCE          UserInteractionsEventHandler.cpp
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF 
+SOURCE          CDownloadsStylusPopupMenu.cpp
+#endif
 
 LIBRARY         AKNNOTIFY.lib
 LIBRARY         AknNotifyPlugin.lib

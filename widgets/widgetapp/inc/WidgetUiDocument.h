@@ -21,7 +21,7 @@
 
 // INCLUDES
 
-#include <AknDoc.h>
+#include <akndoc.h>
 
 // CONSTANTS
 

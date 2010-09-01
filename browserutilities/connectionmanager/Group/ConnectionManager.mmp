@@ -21,28 +21,28 @@
 #include <data_caging_paths.hrh>
 #include <bldvariant.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET  ConnectionManager.dll
 TARGETTYPE  dll
 UID  0x1000008d 0x10008D3F
-SOURCEPATH ../Src
+SOURCEPATH ../src
 
 VENDORID VID_DEFAULT
 CAPABILITY	CAP_GENERAL_DLL
 
-USERINCLUDE ../Inc
+USERINCLUDE ../inc
 USERINCLUDE ../../inc
 
 MW_LAYER_SYSTEMINCLUDE
 
-START RESOURCE ../Data/connectionmanager.rss
+START RESOURCE ../data/ConnectionManager.rss
 DEPENDS avkon.rsg
 HEADER
 TARGETPATH  RESOURCE_FILES_DIR
 END
 
-SOURCE Idpair.cpp
+SOURCE IdPair.cpp
 SOURCE InternetConnectionManager.cpp
 SOURCE ConnectionObservers.cpp
 SOURCE ConnManActiveConnector.cpp
@@ -78,6 +78,12 @@ LIBRARY     centralrepository.lib
 LIBRARY     featmgr.lib
 LIBRARY     cmmanager.lib
 DEBUGLIBRARY    flogger.lib
+
+//Below libs are required for One-Click-Connectivity feature
+#ifdef BRDO_OCC_ENABLED_FF
+LIBRARY    extendedconnpref.lib
+LIBRARY    netmeta.lib
+#endif
 
 #if defined(ARMCC)
     DEFFILE ../EABI/CONNECTIONMANAGERU_EKA2.def

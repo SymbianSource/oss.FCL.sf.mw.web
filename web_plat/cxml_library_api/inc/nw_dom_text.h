@@ -27,13 +27,12 @@
 #ifndef NW_DOM_TEXT_H
 #define NW_DOM_TEXT_H
 
-#include "cxml_proj.h"
-#include "nw_dom_node.h"
+#include <cxml_proj.h>
+#include <nw_dom_node.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
 
 /** ----------------------------------------------------------------------- **
     @typedef:     NW_DOM_TextItemIterator

@@ -20,11 +20,11 @@
 
 // INCLUDES
 #include <coecntrl.h>
-#include <BrCtlInterface.h> // interface under test
+#include <brctlinterface.h> // interface under test
 
-#include "BrCtlApiTestObserver.h"
-#include "BrCtlApiTestStateChangeObserver.h"
-#include "BrCtlApiTestDialogsProvider.h"
+#include "brctlapitestobserver.h"
+#include "brctlapiteststatechangeobserver.h"
+#include "brctlapitestdialogsprovider.h"
    
 // CONSTATNS
 const TInt KThisAppUid = 0xA0000181;

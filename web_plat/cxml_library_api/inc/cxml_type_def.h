@@ -19,7 +19,6 @@
 #ifndef CXML_TYPE_DEF_H
 #define CXML_TYPE_DEF_H
 
-#warning The CXML API has been deprecated
 /*
  *  ANSI/ISO C header files needed to define basic data types
  * (ie. NULL, etc)

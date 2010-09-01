@@ -15,18 +15,15 @@
 *
 */
 
-
 #ifndef POPUPSELECTLISTBOX_H
 #define POPUPSELECTLISTBOX_H
 
 //  INCLUDES
-#include <e32def.h>
+#include <E32DEF.H>
 #include <eiktxlbx.h>
 #include <eikfrlb.h> //CFormattedCellListBox
 
-
 // CONSTANTS
-
 
 // FORWARD DECLARATIONS
 

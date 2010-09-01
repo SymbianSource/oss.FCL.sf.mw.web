@@ -22,7 +22,7 @@
 #include "HttpCacheUtil.h"
 #include "HttpCacheHandler.h"
 #include <centralrepository.h>
-#include <sysutildomaincrkeys.h>
+#include <SysUtilDomainCRKeys.h>
 
 // EXTERNAL DATA STRUCTURES
 
@@ -478,6 +478,17 @@ TBool CHttpCacheStreamHandler::FlushL( CHttpCacheEntry& aCacheEntry )
     }
 
 // -----------------------------------------------------------------------------
+// CHttpCacheStreamHandler::CancelFlush
+//
+// -----------------------------------------------------------------------------
+//
+void CHttpCacheStreamHandler::CancelFlush(CHttpCacheEntry& aEntry)
+    {
+    aEntry.CancelBodyWrite();
+    }
+
+
+// -----------------------------------------------------------------------------
 // CHttpCacheStreamHandler::FlushAsync
 //
 // -----------------------------------------------------------------------------
@@ -512,6 +523,8 @@ TInt CHttpCacheStreamHandler::FlushAsync(CHttpCacheEntry& aEntry, TRequestStatus
             // !enoughSpace
             saveOk = KErrDiskFull;
             aEntry.BodyData().Reset();
+            TRequestStatus *stat = &aStatus;
+            User::RequestComplete(stat, saveOk);
             }
         }
     else

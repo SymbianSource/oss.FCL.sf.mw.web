@@ -474,8 +474,10 @@ void RenderFrameSet::layout()
             // make the top level frameset at least 800*600 wide/high
             calcPrefWidths();
             m_width = max(m_width, m_minPrefWidth);
+#ifndef PLATFORM(SYMBIAN)            
             if (!v->frame()->ownerElement())
                 m_height = max(m_height, 600);
+#endif                
         }
     }
 
@@ -518,9 +520,11 @@ void RenderFrameSet::calcPrefWidths()
     if (!flattenFrameset())
         return;
 
+#ifndef PLATFORM(SYMBIAN)    
     // make the top level frameset at least 800*600 wide/high
     if (!parent()->isFrameSet() && !element()->document()->frame()->ownerElement())
         m_minPrefWidth = max(m_minPrefWidth, 800);
+#endif
 
     m_maxPrefWidth = m_minPrefWidth;
 

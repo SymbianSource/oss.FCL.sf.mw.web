@@ -25,10 +25,10 @@
 
 #include "BaseHandler.h"
 #include <e32base.h>
-#include <DocumentHandler.h>
+#include <documentHandler.h>
 #include <eikdoc.h>
 #include <apparc.h>
-#include <BrowserLauncher.h>
+#include <browserlauncher.h>
 
 // FORWARD DECLARATION
 

@@ -24,7 +24,7 @@
 //  INCLUDES
 
 #include <e32base.h>
-#include <FavouritesItem.h>
+#include <favouritesitem.h>
 
 // CLASS DECLARATION
 

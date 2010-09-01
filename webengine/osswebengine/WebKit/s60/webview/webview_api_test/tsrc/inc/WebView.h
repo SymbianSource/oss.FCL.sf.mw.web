@@ -47,10 +47,10 @@
 #include <e32std.h>
 #include <eikscrlb.h>
 #include "Shared.h"
-#include "BrCtlDefs.h"
+#include <brctldefs.h>
 #include "PageScaler.h"
 #include "Timer.h"
-#include "MemoryManager.h"
+#include <MemoryManager.h>
 
 namespace WebCore
 {

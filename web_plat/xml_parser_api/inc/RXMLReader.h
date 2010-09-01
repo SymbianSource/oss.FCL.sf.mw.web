@@ -41,9 +41,6 @@
 #ifndef __RXMLREADER_H
 #define __RXMLREADER_H
 
-#warning The XML API has been deprecated
-
-
 //  INCLUDES
 #include <F32File.h>
 

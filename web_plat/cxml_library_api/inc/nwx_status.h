@@ -15,7 +15,6 @@
 *
 */
 
-
 /***************************************************************************
 **   File: nwx_status.h
 **   Purpose: Contains definitions of status values common throughout 

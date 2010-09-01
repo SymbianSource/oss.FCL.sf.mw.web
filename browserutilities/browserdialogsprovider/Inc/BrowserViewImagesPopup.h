@@ -24,12 +24,12 @@
 // INCLUDES
 #include <e32base.h>
 #include <e32def.h>
-#include <aknPopup.h>
+#include <aknpopup.h>
 #include <aknlists.h>
-#include <mdaimageconverter.h>
+#include <MdaImageConverter.h>
 
 // Browser as a Plugin includes
-#include <BrCtlDialogsProvider.h>
+#include <brctldialogsprovider.h>
 
 // FORWARD DECLARATIONS
 class CCoeControl;

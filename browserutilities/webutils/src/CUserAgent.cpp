@@ -15,19 +15,17 @@
 *
 */
 
-
 // INCLUDE FILES
 #include <e32std.h>
 #include <f32file.h>
 #include <eikenv.h>
 
-#include <Browser_platform_variant.hrh>
-#include "WebUtilsCommon.h"
-#include "CUserAgent.h"
+#include <browser_platform_variant.hrh>
+#include "webUtilsCommon.h"
+#include <cuseragent.h>
 #include "WebUtilsLogger.h"
 
-#include "WebUtilsInternalCRKeys.h"
-
+#include <webutilsinternalcrkeys.h>
 
 #define KPlaceHolderMozillaVer		_L("Mozilla/5.0")
 #define KPlaceHolderComponent		_L("AppleWebKit/525 (KHTML, like Gecko) Version/3.0")
@@ -692,7 +690,8 @@ void CUserAgent::GetBrowserVersionL()
     TInt ret(0);
     TBuf<64> BrowserVersionMajor(0);
     TBuf<64> BrowserVersionMinor(0);
-    TBuf<64> BrowserVersionSVNRev(0);
+    TBuf<64> BrowserVersionFeatureRev(0);
+    TBuf<64> BrowserVersionPatchRev(0);
     
 	iBrowserVersionStr = HBufC::NewL(KMaxBrowserVersionStringLength);
 	
@@ -701,21 +700,37 @@ void CUserAgent::GetBrowserVersionL()
    
     ret = iRepository->Get(KWebUtilsBrowserVersionMajor, BrowserVersionMajor);
     if(ret == KErrNone)
-    	{   
-	    ret = iRepository->Get(KWebUtilsBrowserVersionMinor, BrowserVersionMinor);
-	    if(ret == KErrNone)
-	    	{
-			    ret = iRepository->Get(KWebUtilsBrowserVersionSVNRev, BrowserVersionSVNRev);
-			    if(ret == KErrNone)
-			    {
-			   	BrowserVersionPtr.Append(BrowserVersionMajor);
-    			BrowserVersionPtr.Append(KPlaceHolderPeriod);    
-    	       	BrowserVersionPtr.Append(BrowserVersionMinor);  	
-    			BrowserVersionPtr.Append(KPlaceHolderPeriod);  
-    	    	BrowserVersionPtr.Append(BrowserVersionSVNRev); 	;	   		
-			    }
-	    	}
-	    }
+      {   
+        ret = iRepository->Get(KWebUtilsBrowserVersionMinor, BrowserVersionMinor);
+        if(ret == KErrNone)
+         {
+          ret = iRepository->Get(KWebUtilsBrowserVersionFeatureRev, BrowserVersionFeatureRev);
+          if(ret == KErrNone)
+            {
+             ret = iRepository->Get(KWebUtilsBrowserVersionPatchRev, BrowserVersionPatchRev);
+             if(ret == KErrNone)
+               {
+                BrowserVersionPtr.Append(BrowserVersionMajor);
+                BrowserVersionPtr.Append(KPlaceHolderPeriod);    
+                BrowserVersionPtr.Append(BrowserVersionMinor);  	
+                BrowserVersionPtr.Append(KPlaceHolderPeriod);  
+                BrowserVersionPtr.Append(BrowserVersionFeatureRev);
+                //Incase of Feature releases we do not show Patch number.
+                //Therefore, if the patch version is 0 or empty then we do not show the content
+                if( (BrowserVersionPatchRev.CompareF(_L("0")) == 0)
+                    || (BrowserVersionPatchRev.CompareF(KNullDesC) == 0))
+                 {
+                  //Do Nothing 
+                 }
+                 else
+                 {
+                  BrowserVersionPtr.Append(KPlaceHolderPeriod);  
+                  BrowserVersionPtr.Append(BrowserVersionPatchRev);
+                 }
+                }	   		
+              }
+            }
+           }
 	    
 	if(ret != KErrNone)
 	{		

@@ -29,6 +29,7 @@
 #include <SWInstLogTaskParam.h>
 #include <apacmdln.h>
 #include <s32mem.h>
+#include <e32property.h>
 
 #include <widgetappdefs.rh>
 #include "WidgetUIOperationsWatcher.h"
@@ -59,6 +60,14 @@ const TUint KMaxDescLength = 0x0fffffffu;
 // drive letter is separated because support for multiple drives and
 // removable memory cards means that drive letters may change.
 
+
+static void NotifyCommandHandled()
+    {
+    const TUid KMyPropertyCat = { 0x10282E5A };
+    enum TMyPropertyKeys { EMyPropertyState = 109 };
+    TInt state( 3 );
+    RProperty::Set( KMyPropertyCat, EMyPropertyState , state );
+    }
 
 using namespace SwiUI;
 
@@ -124,7 +133,7 @@ void CWidgetUIOperationsWatcher::ConstructL()
         CWidgetPropertyValue* value = CWidgetPropertyValue::NewL();
         User::LeaveIfError( iPropertyValues.Insert( value, i ) );
         }
-    *(iPropertyValues[EWidgetPropertyListVersion]) = WIDGETPROPERTYLISTVERSION;
+    *(iPropertyValues[EWidgetPropertyListVersion]) = KWidgetPropertyListVersion71;
 
     iTaskManager = CTaskManager::NewL();
     }
@@ -176,9 +185,11 @@ CWidgetUIOperationsWatcher::~CWidgetUIOperationsWatcher()
 void CWidgetUIOperationsWatcher::SilentInstallL(
     RFile& aFile,
     const TDesC8& aMIME,
+    TChar& aDrive,
     TRequestStatus& aRequestStatus )
     {
     iSilent = ETrue;
+    iRfs.CharToDrive(aDrive,iDrive);
     InstallL( aFile, aMIME, aRequestStatus );
     }
 
@@ -206,6 +217,27 @@ void CWidgetUIOperationsWatcher::InstallSubfunctionL(
     if ( PromptUserForInstallL( replaceExisting )
          && PromptUserForUntrustedWidgetL( ) )
         {
+        if ( replaceExisting )
+            {
+            //Runnning widget should be first closed
+            RApaLsSession apaLsSession;
+            apaLsSession.Connect();
+            TApaAppInfo info;
+            TUid aUid = TUid::Uid( *(iPropertyValues[EUid]) );
+                        
+            User::LeaveIfError( apaLsSession.GetAppInfo( info, aUid ) );
+            iWidgetName = info.iFullName;
+            HBufC *widgetName = iWidgetName.AllocLC();
+            if(iWidgetInHS)
+                NotifyCommandHandled();
+            
+            HandleWidgetCommandL(apaLsSession, *widgetName, aUid, Deactivate);
+                        
+            CleanupStack::PopAndDestroy( widgetName );
+            apaLsSession.Close();
+            }
+        
+        
         // reinitialize
         delete iMembers;
         iMembers = NULL;
@@ -273,7 +305,7 @@ void CWidgetUIOperationsWatcher::InstallSubfunctionL(
         if ( !iSilent ) { iUIHandler->DisplayCancelL(); }
 
         TRequestStatus* status = &aRequestStatus;
-        User::RequestComplete( status, KErrNone );
+        User::RequestComplete( status, KErrCancel );
         }
     }
 
@@ -447,26 +479,17 @@ TBool CWidgetUIOperationsWatcher::PreprocessWidgetBundleL()
         found = ETrue;
         TUid aUid = TUid::Uid( *(iPropertyValues[EUid]) );
         iWidgetInHS = iRegistry.IsWidgetInMiniView( aUid );
-        if ( iRegistry.IsWidgetRunning( aUid ) )
-            {
-            //Runnning widget should be first closed
-            RApaLsSession apaLsSession;
-            apaLsSession.Connect();
-            TApaAppInfo info;
-
-            User::LeaveIfError( apaLsSession.GetAppInfo( info, aUid ) );
-            iWidgetName = info.iFullName;
-            HBufC *widgetName = iWidgetName.AllocLC();
-            HandleWidgetCommandL(apaLsSession, *widgetName, aUid, Deactivate);
-
-            CleanupStack::PopAndDestroy( widgetName );
-            apaLsSession.Close();
-            }
         // get original install dir from registry in case user
         // decides to "overrite" to another memory location
-        iOriginalDir = *( iRegistry.GetWidgetPropertyValueL(
+        CWidgetPropertyValue *propValue = iRegistry.GetWidgetPropertyValueL(
                               TUid::Uid( *(iPropertyValues[EUid]) ),
-                              EBasePath ) );
+                              EBasePath );
+                              
+        iOriginalDir.Zero();
+        if(propValue)
+            iOriginalDir = *propValue;
+            
+        delete propValue;
         }
     // uid for a new widget will be gotten once install location (c: or
     // e:) is selected
@@ -753,13 +776,12 @@ void CWidgetUIOperationsWatcher::FinishInstallL()
         if ( iOverwriting )
             {
             TUid uid = TUid::Uid( *(iPropertyValues[EUid]) );
-            iRegistry.DeRegisterWidgetL( uid );
             iAppManager->DeregisterWidgetL( uid );
+            iRegistry.DeRegisterWidgetL( uid );
             }
 
         // TODO if registration steps fail does it leave inconsistent state???
 
-        iRegistry.RegisterWidgetL( iPropertyValues );
 
         iAppManager->RegisterWidgetL( *(iPropertyValues[EMainHTML]),
                                       *(iPropertyValues[EBundleDisplayName]),
@@ -767,29 +789,22 @@ void CWidgetUIOperationsWatcher::FinishInstallL()
                                       *(iPropertyValues[EDriveName]),
                                       TUid::Uid( *(iPropertyValues[EUid]) ) );
 
+        iRegistry.RegisterWidgetL( iPropertyValues );
+
+
+
         if ( iOverwriting )
             {
             // delete backup
-            (void)iFileMgr->RmDir( iBackupDir );
-            if ( iWidgetInHS )
-                {
-                RApaLsSession apaLsSession;
-                apaLsSession.Connect();
-
-                HBufC* widgetName = iWidgetName.AllocLC();
-                HandleWidgetCommandL(apaLsSession, *widgetName, TUid::Uid( *(iPropertyValues[EUid]) ), WidgetRestart);
-                CleanupStack::PopAndDestroy( widgetName );
-
-                apaLsSession.Close();
-                }
+            (void)iFileMgr->RmDir( iBackupDir );            
             }
         if ( !iSilent )
             {
             iUIHandler->CloseFinalizeDialogL();
             iUIHandler->DisplayCompleteL();
             }
-
-        HandleLogsL(*(iPropertyValues[EBundleDisplayName]), TUid::Uid( *(iPropertyValues[EUid]) ), *(iPropertyValues[ENokiaWidget]), SwiUI::ELogTaskActionInstall);
+        
+        HandleLogsL(*(iPropertyValues[EBundleDisplayName]), TUid::Uid( *(iPropertyValues[EUid]) ), *(iPropertyValues[ENokiaWidget]), *(iPropertyValues[EBundleVersion]), SwiUI::ELogTaskActionInstall);
         }
     else // cancelled
         {
@@ -990,8 +1005,16 @@ void CWidgetUIOperationsWatcher::UninstallL(
         if ( !iSilent ) { iUIHandler->DisplayUninstallInProgressL(); }
         TBuf<KWidgetRegistryVal> widgetPath;
         iRegistry.GetWidgetPath( aUid, widgetPath );
-        TBool aVendor = *(iRegistry.GetWidgetPropertyValueL(aUid, ENokiaWidget));
-
+        
+        CWidgetPropertyValue* propValue = iRegistry.GetWidgetPropertyValueL(aUid, ENokiaWidget);
+        TBool aVendor = propValue && *(propValue);
+        delete propValue;
+        propValue = NULL; 
+        propValue = iRegistry.GetWidgetPropertyValueL(aUid,EBundleVersion);
+        TBuf<KWidgetRegistryVal> version;
+        if(propValue)
+            version = (const TDesC& )*propValue;
+        delete propValue;
 
         // TODO if any of next steps leave does state become inconsistent?
 
@@ -1013,13 +1036,13 @@ void CWidgetUIOperationsWatcher::UninstallL(
             CleanupStack::PopAndDestroy(fileName);
             }
 
-        iRegistry.DeRegisterWidgetL( aUid );
         iAppManager->DeregisterWidgetL( aUid );
+        iRegistry.DeRegisterWidgetL( aUid );
         TInt err = KErrNone;
         TRAP(err, FinishUninstallL( KErrNone ));
         if(err == KErrNone)
            {
-           HandleLogsL(bundleName, aUid, aVendor, SwiUI::ELogTaskActionUninstall);
+           HandleLogsL(bundleName, aUid, aVendor, version, SwiUI::ELogTaskActionUninstall);
            }
         }
     else
@@ -1210,7 +1233,7 @@ TBool CWidgetUIOperationsWatcher::PromptUserForInstallL( TBool aOverwrite )
         }
     else
             {
-            TDriveUnit selectedDrive(_L("C"));        // in real should be read from install options which are ignore too at the moment.
+            TDriveUnit selectedDrive(iDrive);            
             UpdateWidgetBasePathL( selectedDrive );
             *(iPropertyValues[EDriveName]) = selectedDrive.Name();
             }
@@ -1308,7 +1331,7 @@ void CWidgetUIOperationsWatcher::RestoreL()
 // CWidgetUIOperationsWatcher::HandleLogsL
 //
 // ============================================================================
-void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUid &aUid, TBool aVender, SwiUI::TLogTaskAction aAction)
+void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUid &aUid, TBool aVender, const TDesC& aVersion, SwiUI::TLogTaskAction aAction)
     {
     CTask* task = CTask::NewL( KLogTaskImplUid, EFalse );
     CleanupStack::PushL(task);
@@ -1322,7 +1345,24 @@ void CWidgetUIOperationsWatcher::HandleLogsL(const TDesC& aWidgetName, const TUi
     TTime time;
     time.UniversalTime();
     params.iTime = time;
-
+    
+    TLex lex(aVersion);
+    TInt i[] = {0,0,0}, j = 0;
+    while((lex.Get()) != 0 )
+        {
+        TInt num = 0; 
+        while ( lex.Peek() && (lex.Peek()) != '.')
+            lex.Inc();
+        TLex toNum(lex.MarkedToken());
+        toNum.Val(num);
+        i[j++] = num;
+        lex.Inc();
+        lex.Mark();
+        }
+    params.iVersion.iMajor = i[0];
+    params.iVersion.iMinor = i[1];
+    params.iVersion.iBuild = i[2];
+    
     TLogTaskParamPckg pckg( params );
     task->SetParameterL( pckg, 0 );
     iTaskManager->AddTaskL( task );

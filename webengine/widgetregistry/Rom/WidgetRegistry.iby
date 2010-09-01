@@ -19,7 +19,11 @@
 #ifndef __WIDGETREGISTRY_IBY__
 #define __WIDGETREGISTRY_IBY__
 
-#include <platform/mw/Browser_platform_variant.hrh>
+#ifdef __S60_32__
+#include <browser_platform_variant.hrh>
+#else
+#include <platform/mw/browser_platform_variant.hrh>
+#endif
 
 // app exe
 S60_APP_EXE(WidgetRegistry)

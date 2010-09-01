@@ -760,6 +760,8 @@ void RenderBlock::computeHorizontalPositionsForLine(RootInlineBox* lineBox, bool
                         int maxTextWidth = v->frameView()->frame()->bridge()->maxBidiWidth();
                         maxTextWidth = max(maxTextWidth - leftOffset(m_height), 0);
                         availableWidth = min(availableWidth, maxTextWidth);
+                        //total width is more then availaible width.Dont justify based on screen width
+                        availableWidth = totWidth > availableWidth ? lineWidth(m_height) : availableWidth ;
                     }
 #endif                    
                     spaceAdd = (availableWidth - totWidth)*spaces/numSpaces;

@@ -17,7 +17,6 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "CodEngBase.h"
@@ -40,19 +39,19 @@
 
 #include <AiwGenericParam.h>
 #include <DocumentHandler.h>
-#include <apmstd.h>
+#include <ApmStd.h>
 #include <Oma2Agent.h>
 #include <RoapDef.h>
 #include <f32file.h>
 #include <bodypart.h>
-#include <sysutil.h>
+#include <SysUtil.h>
 #include <pathinfo.h>
 #include "CodDefs.h"
 #include <CodUi.rsg>
 #include <AknQueryDialog.h>
-#include <StringLoader.h>
-#include  <bautils.h>
-#include    "FileExt.h"
+#include <stringloader.h>
+#include <bautils.h>
+#include "FileExt.h"
 
 #ifdef __SYNCML_DM_FOTA
 #include <fotaengine.h>
@@ -66,7 +65,7 @@ LOCAL_D const TInt KCodDefaultFotaPkgId = -1;
 #ifdef RD_MULTIPLE_DRIVE
 #include <centralrepository.h>
 #include <driveinfo.h>
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #endif //RD_MULTIPLE_DRIVE
 
 #include <bldvariant.hrh>
@@ -483,7 +482,7 @@ EXPORT_C void CCodEngBase::Stop()
 //
 EXPORT_C TBool CCodEngBase::RemovableMedia() const
     {
-    return iRemovableMedia;
+    return ( KDriveAttRemovable == iRemovableMediaStatus ) ? ETrue : EFalse ;
     }
 
 // ---------------------------------------------------------
@@ -581,7 +580,7 @@ CCodEngBase::CCodEngBase( MCodLoadObserver* aObserver )
   iPhoneMemoryOk( EFalse ),
   iMmcOk( EFalse ),
 #endif
-  iRemovableMedia( EFalse ),
+  iRemovableMediaStatus( KDriveAttLocal ),
   iStatusCode( KHttp902UserCancelled ),
   iResult( KErrGeneral ),
   iContentTypeCheck ( EFalse ),
@@ -1703,9 +1702,6 @@ void CCodEngBase::CapabilityCheckL()
     __ASSERT_DEBUG( iData->ActiveDownload(),CodPanic( ECodInternal ));
     // 1. Data type checking.
     TInt typeErr( KErrNone );    
-#ifdef __SYNCML_DM_FOTA
-    TBool fota( EFalse );
-#endif /*def __SYNCML_DM_FOTA */
     for ( TInt i = 0; i < (*iData)[iData->ActiveDownload()]->Types().MdcaCount() && !iContentTypeCheck; i++ )
         {
         const TDataType& type( (*iData)[iData->ActiveDownload()]->Types().MdcaPoint( i ) );
@@ -1746,7 +1742,6 @@ void CCodEngBase::CapabilityCheckL()
             {
             // Accept FOTA download. Special storage (not saved to FS).
             CLOG(( ECodEng, 4, _L8("  <%S> FOTA OK"), &mime ));
-            fota = ETrue;
             }
 #endif /*def __SYNCML_DM_FOTA */
         else 
@@ -1880,10 +1875,7 @@ CCodSaver* CCodEngBase::CreateSaverL( const TDesC8& aType )
             CodUtil::GetIntParam( pkgId, EGenericParamFotaPkgId, *iParams );
             }
         iSaver = CFotaSaver::NewL( aType, pkgId );
-        iSaver->SetObserver( iObserver );
-        iSaver->SetParams( iParams );
-        iSaver->SetMaxSize( iData->Size() );
-        iSaver->OpenStoreL();   // TODO unneeded method, put to construction.
+        FotaSaverSettingL();
         }
 #endif /*def __SYNCML_DM_FOTA */
     else
@@ -1892,17 +1884,34 @@ CCodSaver* CCodEngBase::CreateSaverL( const TDesC8& aType )
         //__ASSERT_DEBUG( iFsUsed, CodPanic( ECodInternal ) );
 
         TBool contentTypeMisMatch ( ETrue );
+        TBool fotadownload(EFalse);
         for ( TInt i = 0; i < (*iData)[iData->ActiveDownload()]->Types().MdcaCount(); i++ )
             {
             const TDataType& type( (*iData)[iData->ActiveDownload()]->Types().MdcaPoint( i ) );
-            if( ( aType.Find (type.Des8()) != KErrNotFound ) || 
+            if( type.Des8().Find(KFotaPackageDataType) !=KErrNotFound )
+                {
+                 fotadownload = ETrue;
+                 break;
+                }
+            if((aType.Find (type.Des8()) != KErrNotFound) || iDocHandler->CanOpenL(TDataType(aType)) || 
                             ( (type.Des8().Find(KOma1DrmMessageContentType)!= KErrNotFound) && (aType.Find(KOma1DcfContentType)!= KErrNotFound )  ))             
                 {
                 contentTypeMisMatch = EFalse;
                 break;
                 }                
             }
-        if(contentTypeMisMatch)
+        if (fotadownload)
+            {
+             TInt pkgId( KCodDefaultFotaPkgId );
+             if ( iParams )
+                {
+                 CodUtil::GetIntParam( pkgId, EGenericParamFotaPkgId, *iParams );
+                }
+             iSaver = CFotaSaver::NewL(KFotaPackageDataType(), pkgId );
+             FotaSaverSettingL();
+             return iSaver;
+           }
+       if(contentTypeMisMatch)
             {
             User::Leave(KErrCodAttributeMismatch);
             }
@@ -1958,6 +1967,18 @@ CCodSaver* CCodEngBase::CreateSaverL( const TDesC8& aType )
     }
 
 // ---------------------------------------------------------
+// CCodEngBase::FotaSaverSettingL
+// ---------------------------------------------------------
+//
+void CCodEngBase::FotaSaverSettingL()
+    {
+    iSaver->SetObserver( iObserver );
+    iSaver->SetParams( iParams );
+    iSaver->SetMaxSize( iData->Size() );
+    iSaver->OpenStoreL();   // TODO unneeded method, put to construction.
+    }
+
+// ---------------------------------------------------------
 // CCodEngBase::SetPathsL
 // ---------------------------------------------------------
 //
@@ -2009,16 +2030,39 @@ void CCodEngBase::SetPathsL()
     (*iData)[iData->ActiveDownload()]->iTempPath.Append(rootPath.Drive());
     (*iData)[iData->ActiveDownload()]->iTempPath.Append(tempBuf);
 
-    TDriveInfo info;
+
     TDriveUnit unit( rootPath.Drive() );
-    User::LeaveIfError( iFs.Drive( info, unit ) );
-    // Create the temp directory earlier in case it's not created yet
-    iFs.MkDirAll( (*iData)[iData->ActiveDownload()]->iTempPath ); 
+
+#ifdef RD_MULTIPLE_DRIVE    
+    TUint aStatus ;
+    
+    if( KErrNone == DriveInfo::GetDriveStatus( iFs, unit , aStatus ))
+            {
+            iRemovableMediaStatus = (aStatus & DriveInfo::EDriveExternallyMountable) ? aStatus : 0 ;
+            if( iRemovableMediaStatus )
+                {
+                iRemovableMediaStatus = (aStatus & DriveInfo::EDriveRemovable) ? KDriveAttRemovable : KDriveAttInternal ;				
+                }
+            else
+                {
+                iRemovableMediaStatus = KDriveAttLocal ;
+                }
+            }    	
+#else
+    TDriveInfo info;
+    User::LeaveIfError( iFs.Drive( info, unit ) );	
     if ( info.iDriveAtt & KDriveAttRemovable )
         {
-        iRemovableMedia = ETrue;
+        iRemovableMediaStatus = KDriveAttRemovable;
         }
-        
+    else
+        {
+        iRemovableMediaStatus = KDriveAttLocal;
+        }
+#endif
+    // Create the temp directory earlier in case it's not created yet
+    iFs.MkDirAll( (*iData)[iData->ActiveDownload()]->iTempPath );
+    
     CLOG(( ECodEng, 2, _L("<- CCodEngBase::SetPathsL root<%S> temp<%S>"), \
         &(*iData)[iData->ActiveDownload()]->iRootPath, &(*iData)[iData->ActiveDownload()]->iTempPath ));
     }
@@ -2039,7 +2083,8 @@ void CCodEngBase::ResetPaths()
 #endif
     //(*iData)[iData->ActiveDownload()]->iTempPath = KNullDesC;
     //(*iData)[iData->ActiveDownload()]->iRootPath = KNullDesC;
-    iRemovableMedia = EFalse;
+
+    iRemovableMediaStatus = KDriveAttLocal;
     }
 
 #ifdef RD_MULTIPLE_DRIVE

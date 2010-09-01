@@ -62,7 +62,9 @@ public:
 #if USE(JAVASCRIPTCORE_BINDINGS)
     virtual KJS::Bindings::Instance* getInstance() const;
 #endif
-
+#if PLATFORM(SYMBIAN)
+    virtual bool canStartSelection() const;
+#endif
     String archive() const;
     void setArchive(const String&);
 

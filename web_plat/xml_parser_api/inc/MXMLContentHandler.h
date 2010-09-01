@@ -15,31 +15,12 @@
 *
 */
 
-
-
-
-
-
-
 /**
  * DO NOT USE THIS API. DEPRECATED AND REMOVED IN S60 5.0. USE SYMBIAN XML FRAMEWORK INSTEAD.
  */
 
-
-
-
-
-
-
-
-
-
-
 #ifndef __MXMLCONTENTHANDLER_H
 #define __MXMLCONTENTHANDLER_H
-
-#warning The XML API has been deprecated
-
 
 //  INCLUDES
 #include <MXMLAttributes.h>

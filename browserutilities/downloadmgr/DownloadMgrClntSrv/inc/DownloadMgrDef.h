@@ -101,13 +101,14 @@ enum TDownloadMgrRqst
     
     EHttpDownloadDataAttribute,                   // =42
     EHttpDownloadTrackAttribute,				  // =43
+    EHttpDownMgrNumOfSubSessions,                       // =44
 
     /* 
     * This should be the last item and the opcode must be incremented as well.
     * It is also important to make the changes on KDMgrServerPolicyRanges
     * in DownloadMgrServer.cpp according to this!!!
     */
-    EHttpDownloadMgrNotSupported                  // =44 (n+1)
+    EHttpDownloadMgrNotSupported                  // =45 (n+1)
 	};
 
 #endif /* __DOWNLOADMGR_DEF_H__ */

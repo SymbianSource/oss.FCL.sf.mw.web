@@ -22,7 +22,7 @@
 #include "minimapscaler.h"
 
 #include <fbs.h>
-#include <bitmaptransforms.h>
+#include <BitmapTransforms.h>
 
 // EXTERNAL DATA STRUCTURES
 

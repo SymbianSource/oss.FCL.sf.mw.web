@@ -1,0 +1,79 @@
+/*
+* Copyright (c) 1997-2004 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include  "../webkitcommon.mmpi"
+
+TARGET          image.lib
+TARGETTYPE      lib
+SOURCEPATH      ../../src/image/src/
+
+VENDORID        VID_DEFAULT
+CAPABILITY CAP_GENERAL_DLL
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER 1
+
+START BITMAP browserbitmaps.mbm
+HEADER     
+SOURCEPATH /epoc32/s60/bitmaps
+
+TARGETPATH APP_BITMAP_DIR
+
+SOURCE C8 qgn_prop_wml_square.bmp
+SOURCE c8 qgn_prop_wml_disc.bmp
+SOURCE c8 qgn_prop_wml_circle.bmp
+SOURCE c8 qgn_prop_wml_image_not_shown.bmp
+SOURCE c8 qgn_prop_wml_selectarrow.bmp
+SOURCE c8 qgn_prop_wml_object.bmp 
+SOURCE c8 qgn_prop_wml_radiobutt_off.bmp
+SOURCE c8 qgn_prop_wml_radiobutt_on.bmp
+SOURCE c8 qgn_prop_wml_radiobutt_on_sel.bmp
+SOURCE c8 qgn_prop_wml_radiobutt_off_sel.bmp
+SOURCE c8 qgn_prop_wml_checkbox_off.bmp
+SOURCE c8 qgn_prop_wml_checkbox_on.bmp
+SOURCE c8 qgn_prop_wml_checkbox_on_sel.bmp
+SOURCE c8 qgn_prop_wml_checkbox_off_sel.bmp
+SOURCE c8 qgn_prop_wml_selectfile.bmp
+SOURCE c8 qgn_prop_wml_image_map.bmp
+
+// Masks 
+SOURCE 1 qgn_prop_wml_square_mask.bmp
+SOURCE 1 qgn_prop_wml_disc_mask.bmp
+SOURCE 1 qgn_prop_wml_circle_mask.bmp
+SOURCE 1 qgn_prop_wml_image_not_shown_mask.bmp
+SOURCE 1 qgn_prop_wml_selectarrow_mask.bmp
+SOURCE 1 qgn_prop_wml_object_mask.bmp
+SOURCE 1 qgn_prop_wml_radiobutt_off_mask.bmp
+SOURCE 1 qgn_prop_wml_radiobutt_on_mask.bmp
+SOURCE 1 qgn_prop_wml_radiobutt_on_sel_mask.bmp
+SOURCE 1 qgn_prop_wml_radiobutt_off_sel_mask.bmp
+SOURCE 1 qgn_prop_wml_checkbox_off_mask.bmp
+SOURCE 1 qgn_prop_wml_checkbox_on_mask.bmp
+SOURCE 1 qgn_prop_wml_checkbox_on_sel_mask.bmp
+SOURCE 1 qgn_prop_wml_checkbox_off_sel_mask.bmp
+SOURCE 1 qgn_prop_wml_selectfile_mask.bmp
+SOURCE 1 qgn_prop_wml_image_map_mask.bmp
+END
+
+SOURCE	IMAGEAbstractImage.cpp
+SOURCE	Epoc32CannedImage.cpp
+SOURCE  Epoc32CannedImages.cpp
+SOURCE	IMAGEFactory.cpp
+SOURCE  Epoc32SimpleImage.cpp
+SOURCE	IMAGEVirtualImage.cpp
+SOURCE  Epoc32ImageDecoder.cpp
+SOURCE  nw_image_iimageobserver.cpp

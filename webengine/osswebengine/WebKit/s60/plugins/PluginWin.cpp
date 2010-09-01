@@ -23,14 +23,14 @@
 #include <eikdef.h>
 #include <eikenv.h>
 #include <eikappui.h>
-#include <sysutil.h>
+#include <SysUtil.h>
 #include <AknUtils.h>
 
 #include "WebFrame.h"
 #include "HttpDefs.h"
-#include "BrCtlDefs.h"
+#include <brctldefs.h>
 #include "StaticObjectsContainer.h"
-#include <PluginAdapterInterface.h>
+#include <pluginadapterinterface.h>
 #include "PluginWin.h"
 #include "PluginSkin.h"
 #include "PluginHandler.h"
@@ -44,9 +44,13 @@
 #include "WebPointerEventHandler.h"
 #include "WebPageScrollHandler.h"
 #include "WebKitLogger.h"
+#include "WebCoreGraphicsContext.h"
+
+#include <rt_gestureif.h>
 
 using namespace WebCore;
 using namespace RT_GestureHelper;
+using namespace stmGesture; 
 // CONSTANTS
 const TInt KPluginGranularity = 3;
 _LIT(KPath,"c:\\system\\temp\\");
@@ -64,7 +68,7 @@ void panicPlugin(TInt error = KErrNone)
 //
 PluginWin::PluginWin(PluginSkin* pluginskin)
     : m_pluginskin(pluginskin)
-    , m_windowedPlugin(true), m_fullscreen(false), m_windowCreated(false)
+    , m_windowedPlugin(true), m_fullscreen(false), m_windowCreated(false), m_visibilty(false)
 {
 }
 
@@ -86,6 +90,9 @@ void PluginWin::ConstructL( const WebView& view )
     }
     // Add the focus/foreground observer
     ControlEnv()->AddForegroundObserverL( *this ) ;
+    m_pluginHasBitmap = false;
+    m_pausedBitmap = NULL;
+    m_BitmapSupported = false;
 }
 
 // -----------------------------------------------------------------------------
@@ -95,12 +102,21 @@ void PluginWin::ConstructL( const WebView& view )
 //
 PluginWin::~PluginWin()
 {
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+
+    int index = pluginHandler->getVisiblePlugins().Find(m_pluginskin);
+    if (index != KErrNotFound)
+        pluginHandler->getVisiblePlugins().Remove(index);
 
     TRAP_IGNORE( setPluginFocusL( EFalse ) );
 
     // Remove the foreground observer
     ControlEnv()->RemoveForegroundObserver( *this );
     delete m_bitmap;
+   if (m_pausedBitmap)
+        {
+        delete m_pausedBitmap;
+        }
 }
 
 // -----------------------------------------------------------------------------
@@ -220,6 +236,7 @@ void PluginWin::processEventL( TPluginEventType eventType,
             cursor->cursorUpdate(EFalse);
             consumed = ETrue;
             setPluginFocusL( ETrue );
+            m_pluginskin->pluginFocusChanged(ETrue);
             }
 
             else
@@ -272,12 +289,16 @@ TKeyResponse PluginWin::OfferKeyEventL( const TKeyEvent& aKeyEvent,
         ret = m_control->OfferKeyEventL( aKeyEvent, aType );
     }
     else if (!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event) {
+        WebCursor* c = StaticObjectsContainer::instance()->webCursor();
+        TPoint pt = (c->position());
+        pt = m_pluginskin->frame()->frameView()->viewCoordsInFrameCoords(pt);
+        pt -= m_pluginskin->rect().iTl;
         NPEvent event;
         NPEventKey eventKey;
         event.event = ENppEventKey;
         eventKey.keyEvent = &aKeyEvent;
         eventKey.type = aType;
-        eventKey.reserved = NULL;
+        eventKey.reserved = static_cast<void*>(&pt);
         event.param = &eventKey;
         ret = (TKeyResponse)m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), static_cast<void*>(&event));
     }
@@ -365,10 +386,26 @@ TInt PluginWin::refreshPlugin(CFbsBitGc& bitmapContext,TRect aRect)
 //
 void PluginWin::makeVisible( TBool visible )
     {
-    if(IsVisible() != visible) 
+    WebView* view = control(m_pluginskin->frame())->webView();
+    if(!view)
+        return;
+    
+    if((!m_pluginHasBitmap) && (IsVisible() != visible) && (!view->isPinchZoom()))
     {
         CCoeControl::MakeVisible(visible);
     }
+    
+    PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
+    int index = pluginHandler->getVisiblePlugins().Find(m_pluginskin);
+    if (visible && (m_visibilty != visible) && (index == KErrNotFound)) {
+        pluginHandler->getVisiblePlugins().AppendL(m_pluginskin);
+        m_visibilty = visible;
+    }
+    else if (!visible && (index != KErrNotFound)) {
+        pluginHandler->getVisiblePlugins().Remove(index);
+        m_visibilty = visible;
+    }
+    
     NotifyPluginVisible(visible);
     if (!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event) {
         NPEvent event;
@@ -453,6 +490,11 @@ void PluginWin::resizePluginRect(TRect& rect)
 void PluginWin::HandleGainingForeground()
 {
     if (m_notifier) {
+        if(m_pluginHasBitmap)
+            { 
+            ClearPluginBitmap(); 
+            m_pluginskin->activateVisiblePlugins(); 
+            }
         TRAP_IGNORE(m_notifier->NotifyL(MPluginNotifier::EApplicationFocusChanged, (void*)1));
     }
 }
@@ -534,11 +576,12 @@ void PluginWin::forceRedraw(bool drawNow)
     }
     else {
         WebFrame* mf = (m_pluginskin->frame());
-        WebFrameView* fv = mf->frameView();
-        TRect rect(Rect());
-        rect = TRect(fv->viewCoordsInFrameCoords(Rect().iTl), fv->viewCoordsInFrameCoords(Rect().iBr));
-    if (mf && mf->frameView())
-            mf->frameView()->invalidateRect(rect, drawNow);
+        if (mf && mf->frameView()) {
+            WebFrameView* fv = mf->frameView();
+            TRect rect(Rect());
+            rect = TRect(fv->viewCoordsInFrameCoords(Rect().iTl), fv->viewCoordsInFrameCoords(Rect().iBr));
+            fv->invalidateRect(rect, drawNow);
+        }
     }
 }
 
@@ -566,6 +609,7 @@ void PluginWin::moveWindow(const TPoint& aOffset)
 		    TPoint newPos ((aOffset.iX  * 100)/zoomlevel, (aOffset.iY  * 100)/zoomlevel);
 	        c->offsetCursor( aOffset );
             mf->frameView()->scrollTo(oldPos + newPos);
+            view->scrollStatus(false); 
             c->cursorUpdate(EFalse);        
         }
 
@@ -708,28 +752,124 @@ void PluginWin::PlayPausePluginL ()
     }
 }
 
+TBool PluginWin::IsCollectBitmapSupported ()
+{
+    if(m_notifier) {
+        m_BitmapSupported = m_notifier->NotifyL( MPluginNotifier::ECollectBitmapSupported, (void*)0 ) ;
+    }
+    return m_BitmapSupported;
+}
+
+
+void PluginWin::GetBitmapFromPlugin (bool status)
+    {
+    if(m_notifier) {
+         if (status) {
+             //if plugin fails to send bitmap even though the "ECollectBitmapSupported"
+             CBrCtl*   brCtl = control(m_pluginskin->frame());    
+             WebView*  view = brCtl->webView();
+             
+             if(view && view->isPinchZoom())
+                 m_PluginInvisibleOnPinchZoom = ETrue; 
+             m_notifier->NotifyL( MPluginNotifier::ECollectBitmap, (void*)1 );
+			 
+			 //if Notify CollectBitmap failed to send bitmap to SetBitmapFromPlugin, 
+			 //Then forcefully make the plugin window invisible for pinch zoom 
+             if(m_PluginInvisibleOnPinchZoom)
+                 { 
+                 m_PluginInvisibleOnPinchZoom = EFalse; 
+                 if (IsVisible())
+                     {
+                     MakeVisible(false);
+                     }
+                 }
+         }
+         else {
+             m_notifier->NotifyL( MPluginNotifier::ECollectBitmap, (void*)0 );
+             
+             m_pluginHasBitmap = 0;
+             if(m_pausedBitmap)
+                 {
+                 delete m_pausedBitmap;
+                 m_pausedBitmap = NULL;
+                 }
+         }
+       }
+}
+
+
 void PluginWin::HandlePointerEventFromPluginL(const TPointerEvent& aEvent)
 {
     CBrCtl*   brCtl = control(m_pluginskin->frame());    
     WebView*  view = brCtl->webView();
-    TPointerEvent event(aEvent);
-    
-    if (!StaticObjectsContainer::instance()->isPluginFullscreen()) {
-        event.iPosition = aEvent.iPosition - view->PositionRelativeToScreen();
+#ifdef BRDO_MULTITOUCH_ENABLED_FF	
+    if (aEvent.IsAdvancedPointerEvent()) {
+        TAdvancedPointerEvent tadvp = *(static_cast<const TAdvancedPointerEvent *>(&aEvent));
+        if (!StaticObjectsContainer::instance()->isPluginFullscreen()) {
+            tadvp.iPosition = aEvent.iPosition - view->PositionRelativeToScreen();
+        }
+        view->pointerEventHandler()->HandlePointerEventL(tadvp);
     }
-    view->pointerEventHandler()->HandlePointerEventL(event);
+    else {
+#endif 	
+        TPointerEvent event(aEvent);
+        if (!StaticObjectsContainer::instance()->isPluginFullscreen()) {
+            event.iPosition = aEvent.iPosition - view->PositionRelativeToScreen();
+        }
+        view->pointerEventHandler()->HandlePointerEventL(event);
+#ifdef BRDO_MULTITOUCH_ENABLED_FF			
+    }
+#endif 	
 }
 
 
-TBool PluginWin::HandleGesture(const TGestureEvent& aEvent)
+TBool PluginWin::HandleGesture(const TStmGestureEvent& aEvent)
 {
     TBool ret = EFalse;
+    
+    TGestureEvent eventForPlugin; 
+    switch(aEvent.Code()) 
+        {
+        case EGestureUidUnknown :
+            eventForPlugin.SetCode(EGestureUnknown); 
+            break; 
+        case EGestureUidTouch :
+            eventForPlugin.SetCode(EGestureStart);
+            break; 
+        case EGestureUidTap : 
+            if(aEvent.Type() == ETapTypeSingle)
+                eventForPlugin.SetCode(EGestureTap); 
+            else 
+                eventForPlugin.SetCode(EGestureDoubleTap); 
+            break; 
+        case EGestureUidLongPress :
+            eventForPlugin.SetCode(EGestureLongTap); 
+            break; 
+        case EGestureUidPan :
+            eventForPlugin.SetCode(EGestureDrag);
+            break; 
+        case EGestureUidRelease :
+            eventForPlugin.SetCode(EGestureReleased); 
+            break; 
+        case EGestureUidFlick :
+            eventForPlugin.SetCode(EGestureFlick);
+            break; 
+        case EGestureUidPinch :
+            eventForPlugin.SetCode(EGesturePinch);
+            break; 
+        default : 
+            break; 
+
+        }
+    
+    
+    
     if (m_control) {
-        TGestureEvent gestEvent(aEvent);
         CBrCtl*   brCtl = control(m_pluginskin->frame());    
         WebView*  view = brCtl->webView();
         TPoint newPos = aEvent.CurrentPos();
-        TPoint startPos = aEvent.StartPos();
+        // Not sure plugins need the start position of the gesture. Not inlcuded in the new struct
+        TPoint startPos = aEvent.CurrentPos();
         TPoint viewPos = view->PositionRelativeToScreen();
         TPoint ctrlPos = m_control->PositionRelativeToScreen();
         
@@ -737,16 +877,15 @@ TBool PluginWin::HandleGesture(const TGestureEvent& aEvent)
         // adjust the position to make it relative to top left corner of 
             newPos += viewPos; 
             startPos += viewPos;
-            gestEvent.SetCurrentPos(newPos);
-            gestEvent.SetStartPos(startPos);
         }
-    
-        if (StaticObjectsContainer::instance()->isPluginFullscreen() || 
+        eventForPlugin.SetCurrentPos(newPos);
+        eventForPlugin.SetStartPos(startPos);
+        if (StaticObjectsContainer::instance()->isPluginFullscreen() ||
 	    m_control->Rect().Contains(newPos - ctrlPos)) {
             NPEvent event;
             NPEventPointer ev;
             event.event = ENppEventPointer;
-            ev.reserved = &gestEvent;
+            ev.reserved = &eventForPlugin;
             ev.pointerEvent = NULL;
             event.param = &ev;
             ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
@@ -755,13 +894,15 @@ TBool PluginWin::HandleGesture(const TGestureEvent& aEvent)
     }
     else if(!m_windowedPlugin && m_pluginskin->getNPPluginFucs() && m_pluginskin->getNPPluginFucs()->event){
         TRect cliprect = m_pluginskin->getClipRect();
-        TPoint newpos = aEvent.CurrentPos();
-        if(cliprect.Contains(newpos)){
-           TGestureEvent gestEvent(aEvent);
+        TPoint newPos = aEvent.CurrentPos();
+        eventForPlugin.SetCurrentPos(newPos);
+        eventForPlugin.SetCurrentPos(newPos);
+
+        if(cliprect.Contains(newPos)){
            NPEvent event;
            NPEventPointer ev;
            event.event = ENppEventPointer;
-           ev.reserved = &gestEvent;
+           ev.reserved = &eventForPlugin;
            ev.pointerEvent = NULL;
            event.param = &ev;
            ret = m_pluginskin->getNPPluginFucs()->event(m_pluginskin->getNPP(), 
@@ -770,4 +911,103 @@ TBool PluginWin::HandleGesture(const TGestureEvent& aEvent)
     }    
     return ret;
 
+}
+
+bool PluginWin::containsPoint(WebView& view, const TPoint& pt)
+{
+    if (m_control) {
+        if (StaticObjectsContainer::instance()->isPluginFullscreen()) {
+            return true;
+        }
+        else {
+            TPoint point = pt;
+            TPoint viewPos = view.PositionRelativeToScreen();
+            TPoint ctrlPos = m_control->PositionRelativeToScreen();
+            point += viewPos;
+            return m_control->Rect().Contains(point - ctrlPos);
+        }
+    }
+    else 
+        return false;   
+}
+// -----------------------------------------------------------------------------
+// PluginWin::SetBitmapFromPlugin
+// Plugin video is captured in CFBsBitmap and handle is passed to plugin window 
+// Duplicate the bitmap handle and use it to draw while Panning or Pinch zoom
+// -----------------------------------------------------------------------------
+void PluginWin::SetBitmapFromPlugin(TInt aHandle)
+    {
+    m_PluginInvisibleOnPinchZoom = EFalse;
+
+    if (aHandle)
+        {
+        if (m_pausedBitmap)
+            {
+            delete m_pausedBitmap;
+            m_pausedBitmap = NULL;
+            }
+        m_pausedBitmap = new (ELeave) CFbsBitmap();
+        TInt dupStatus = m_pausedBitmap->Duplicate(aHandle);
+        if(dupStatus == KErrNone)
+            { 
+            m_pluginHasBitmap = true;
+            
+            
+            if (IsVisible())
+                   {
+                   MakeVisible(false);
+                   }
+            //setPluginFocusL(false);
+            drawBitmapToWebCoreContext();
+            } 
+       }
+    else
+        {
+        if(m_pausedBitmap)
+        {
+            delete m_pausedBitmap;
+        	m_pausedBitmap = NULL;
+		}
+        m_pluginHasBitmap = false;
+        }
+    }
+
+void PluginWin::ClearPluginBitmap()
+    {
+    if(m_pausedBitmap)
+        {
+        delete m_pausedBitmap;
+        m_pausedBitmap = NULL;
+        m_pluginHasBitmap = false; //clearing plugin bitmap
+        }
+    }
+
+void PluginWin::drawBitmapToWebCoreContext()
+    { 
+    CBrCtl* brCtl = control(m_pluginskin->frame());
+    WebView* view = brCtl->webView();
+    WebCoreGraphicsContext* context = view->getGraphicsContext();
+    CFbsBitGc& gc = context->gc();
+    TRect plWinRect(m_pluginskin->getPluginWinRect());
+
+    TRect oldcontextrect = context->clippingRect();
+    TRect clippingRect = context->clippingRect();
+
+    // save the gc state
+    TWebCoreSavedContext saved(context->save());
+    
+    if(plWinRect != clippingRect)
+        {
+        context->setClippingRect(plWinRect);
+        }
+    gc.DrawBitmap(plWinRect, m_pausedBitmap);
+    context->restore(saved);
+    }
+
+// Notify Plugins about the change in Access Point during Upgrade / Downgrade
+void PluginWin::notifyAPChange(void* ap)
+{
+    if (m_notifier) {
+        m_notifier->NotifyL( MPluginNotifier::EAccesPointChanged, ap );
+    }
 }

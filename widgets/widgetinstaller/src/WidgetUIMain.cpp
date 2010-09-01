@@ -21,7 +21,7 @@
 
 #include <e32std.h>
 #include <ecom/implementationproxy.h>
-#include "WidgetInstallerUi.h"
+#include "WidgetInstallerUI.h"
 #include "SWInstWidgetUid.h"
 
 using namespace SwiUI;

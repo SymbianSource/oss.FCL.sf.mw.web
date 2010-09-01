@@ -38,7 +38,7 @@ using namespace std;
 
 namespace WebCore {
 
-static const int cDefaultCacheCapacity = 8192 * 1024;
+static const int cDefaultCacheCapacity = 4*1024*1024; // 4MB
 
 static const double cMinDelayBeforeLiveDecodedPrune = 1; // Seconds.
 static const float cTargetPrunePercentage = .95f; // Percentage of capacity toward which we prune, to avoid immediately pruning again.
@@ -106,7 +106,7 @@ CachedResource* Cache::requestResource(DocLoader* docLoader, CachedResource::Typ
 {
     // FIXME: Do we really need to special-case an empty URL?
     // Would it be better to just go on with the cache code and let it fail later?
-    if (url.isEmpty())
+    if (url.isEmpty() || url.url().lower() == "about:blank")
         return 0;
     
     // Look up the resource in our map.

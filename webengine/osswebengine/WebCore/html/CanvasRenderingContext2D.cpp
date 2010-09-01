@@ -29,7 +29,7 @@
 #include "CanvasRenderingContext2D.h"
 
 #include "AffineTransform.h"
-#include "cssparser.h"
+#include "CSSParser.h"
 #include "CachedImage.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"

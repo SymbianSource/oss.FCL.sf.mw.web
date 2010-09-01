@@ -437,7 +437,7 @@ String Frame::searchForLabelsAboveCell(RegularExpression* regExp, HTMLTableCellE
 
 String Frame::searchForLabelsBeforeElement(const Vector<String>& labels, Element* element)
 {
-    RegularExpression* regExp = regExpForLabels(labels);
+    OwnPtr<RegularExpression> regExp( regExpForLabels(labels) );
     // We stop searching after we've seen this many chars
     const unsigned int charsSearchedThreshold = 500;
     // This is the absolute max we search.  We allow a little more slop than
@@ -463,7 +463,7 @@ String Frame::searchForLabelsBeforeElement(const Vector<String>& labels, Element
         } else if (n->hasTagName(tdTag) && !startingTableCell) {
             startingTableCell = static_cast<HTMLTableCellElement*>(n);
         } else if (n->hasTagName(trTag) && startingTableCell) {
-            String result = searchForLabelsAboveCell(regExp, startingTableCell);
+            String result = searchForLabelsAboveCell(regExp.get(), startingTableCell);
             if (!result.isEmpty())
                 return result;
             searchedCellAbove = true;
@@ -484,7 +484,7 @@ String Frame::searchForLabelsBeforeElement(const Vector<String>& labels, Element
     // If we started in a cell, but bailed because we found the start of the form or the
     // previous element, we still might need to search the row above us for a label.
     if (startingTableCell && !searchedCellAbove) {
-         return searchForLabelsAboveCell(regExp, startingTableCell);
+         return searchForLabelsAboveCell(regExp.get(), startingTableCell);
     }
     return String();
 }
@@ -496,7 +496,7 @@ String Frame::matchLabelsAgainstElement(const Vector<String>& labels, Element* e
     name.replace(RegularExpression("[[:digit:]]"), " ");
     name.replace('_', ' ');
     
-    RegularExpression* regExp = regExpForLabels(labels);
+    OwnPtr<RegularExpression> regExp( regExpForLabels(labels) );
     // Use the largest match we can find in the whole name string
     int pos;
     int length;
@@ -1774,6 +1774,14 @@ void Frame::pageDestroyed()
             w->disconnectFrame();
 
     d->m_page = 0;
+    if(d->m_lifeSupportTimer.isActive()){
+        //m_lifeSupportTimer is still active. It is not going to get triggered. So the frame needs to be dereferenced   
+        deref();   
+        d->m_lifeSupportTimer.stop();
+#ifndef NDEBUG
+        keepAliveSet().remove(this);
+#endif  
+    }
 }
 
 void Frame::disconnectOwnerElement()

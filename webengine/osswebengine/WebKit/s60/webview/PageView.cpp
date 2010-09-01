@@ -18,12 +18,13 @@
 
 
 // INCLUDE FILES
+#include <browser_platform_variant.hrh>
 #include <../bidi.h>
 #include "PageView.h"
 #include  <coemain.h>
 #include "pagescaler.h"
 #include "WebView.h"
-#include "BrCtl.h"
+#include "brctl.h"
 
 // EXTERNAL DATA STRUCTURES
 //extern  ?external_data;
@@ -88,8 +89,15 @@ CPageView* CPageView::NewL( WebView& aView )
 // Destructor
 CPageView::~CPageView()
     {
-    m_webView->pageScaler()->SetVisible(EFalse);
-    m_webView->pageScaler()->SetFullScreenMode(EFalse);
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF 
+    if (m_webView && m_webView->pageScaler())
+        {
+#endif    
+        m_webView->pageScaler()->SetVisible(EFalse);
+        m_webView->pageScaler()->SetFullScreenMode(EFalse);
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF        
+        }
+#endif    
     }
 
 

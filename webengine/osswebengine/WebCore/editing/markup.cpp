@@ -32,7 +32,7 @@
 #include "CSSRule.h"
 #include "CSSRuleList.h"
 #include "CSSStyleRule.h"
-#include "cssstyleselector.h"
+#include "CSSStyleSelector.h"
 #include "CSSValueKeywords.h"
 #include "Comment.h"
 #include "DeleteButtonController.h"

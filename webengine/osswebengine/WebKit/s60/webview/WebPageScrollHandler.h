@@ -24,7 +24,7 @@
 #include <e32base.h>
 #include <coedef.h>
 #include <w32std.h>
-#include <rt_gesturehelper.h>
+#include <stmgestureinterface.h>
 #include "WebScrollingDecelerator.h"
 
 
@@ -175,17 +175,18 @@ class WebPageScrollHandler: public CBase
         * return
         */
         WebScrollbarDrawer*  scrollbarDrawer() {return m_scrollbarDrawer;}
+        
+        WebScrollingDeceleratorGH* ScrollingDeceleratorGH() {return m_decelGH;} 
 
         //callbacks
         static int pageOverviewScrollCallback( TAny* aPtr );
         //static int handleScrollTimerEventCallback( TAny* ptr);
         void scrollPageOverviewGH();
-        void handleScrollingGH(const RT_GestureHelper::TGestureEvent& aEvent);
-        void handleTouchDownGH(const RT_GestureHelper::TGestureEvent& aEvent);
-        void handleTouchUpGH(const RT_GestureHelper::TGestureEvent& aEvent);
+        void handleScrollingGH(const TStmGestureEvent& aGesture);
+        void handleTouchDownGH(const TStmGestureEvent& aGesture);
+        void handleTouchUpGH(const TStmGestureEvent& aGesture);
         void updateScrollbars(const TPoint& scrollPos, TPoint& newscrollDelta);
-
-public:
+        void stopScrolling();
 
      private:
         void calculateScrollDirection(int absX, int absY);
@@ -193,7 +194,7 @@ public:
         bool calculateScrollableElement(const TPoint& aNewPosition);
         
         void scrollPageOverview(const TPointerEvent& pointerEvent);
-        bool startDeceleration(const RT_GestureHelper::TGestureEvent& aEvent);
+        bool startDeceleration(const TStmGestureEvent& aGesture);
         
      private:  
         // Pointer to owning view
@@ -212,7 +213,7 @@ public:
         TTime m_lastMoveEventTime;
         TTime m_pageOverviewEventTime;
         WebScrollingDecelerator* m_decel;
-	WebScrollingDeceleratorGH* m_decelGH; 
+        WebScrollingDeceleratorGH* m_decelGH; 
         TPointerEvent m_lastDragEvent;
         CPeriodic* m_scrollTimer;
         ScrollableView m_scrollableView;

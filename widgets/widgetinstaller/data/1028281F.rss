@@ -15,7 +15,7 @@
 *
 */
 
-#include <ecom/registryinfov2.rh>
+#include <Ecom/RegistryInfoV2.rh>
 #include <SWInstUid.h>
 #include "SWInstWidgetUid.h"
 

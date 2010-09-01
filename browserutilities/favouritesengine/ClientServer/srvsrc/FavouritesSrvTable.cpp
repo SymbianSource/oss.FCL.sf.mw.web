@@ -17,13 +17,12 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include <s32strm.h>
 #include "FavouritesSrvTable.h"
 #include "FavouritesPanic.h"
-#include "FavouritesItemData.h"
+#include <favouritesitemdata.h>
 #include "FavouritesFilter.h"
 
 // CONSTANTS

@@ -22,7 +22,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-#include "cssstyleselector.h"
+#include "CSSStyleSelector.h"
 
 #include "CSSBorderImageValue.h"
 #include "CSSCursorImageValue.h"

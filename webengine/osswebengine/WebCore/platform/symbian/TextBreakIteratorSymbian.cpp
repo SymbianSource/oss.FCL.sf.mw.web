@@ -24,7 +24,7 @@
 #include "TextBreakIteratorSymbian.h"
 #include "TextBreakIterator.h"
 #include <e32cmn.h>
-#include <kjs/ustring.h>
+#include <KJS/ustring.h>
 
 namespace WebCore {
 

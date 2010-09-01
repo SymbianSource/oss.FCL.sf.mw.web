@@ -25,7 +25,7 @@ NAME    TBAR
 #include <avkon.rh>
 #include <avkon.loc>
 #include <CommonDialogs.rh>
-#include <Toolbar.loc>
+#include <ToolBar.loc>
 
 RESOURCE RSS_SIGNATURE { }
 

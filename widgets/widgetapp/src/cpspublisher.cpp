@@ -18,17 +18,22 @@
 
 #include "cpspublisher.h"
 
-#include <liwservicehandler.h>
-#include <liwvariant.h>
-#include <liwgenericparam.h>
-#include <liwcommon.h>
+#include <LiwServiceHandler.h>
+#include <LiwVariant.h>
+#include <LiwGenericParam.h>
+#include <Liwcommon.h>
 #include <liwcommon.hrh>
 #include <AknsFrameBackgroundControlContext.h>
 #include <fbs.h>
-#include <AknsDrawUtils.h> 
+#include <aknsdrawutils.h> 
 
 
 // TODO use global definitions!
+_LIT8( KWidgetId, "widget_id");
+_LIT8( KBitmapHandle, "bitmap_handle");
+_LIT8( KDelete, "Delete" );
+_LIT( KWidgetUi, "widget_ui");
+_LIT( KScreenshot, "screenshot");
 
 _LIT8( KCPService, "Service.ContentPublishing" );
 _LIT8( KCPInterface, "IDataSource" );
@@ -72,6 +77,7 @@ _LIT8( KChangeInfo, "change_info" );
 _LIT( KWRTPublisher, "wrt_publisher");
 
 const TInt KSkinGfxInnerRectShrink = 5;
+const TUint KDisablePersist = 0x1000;
 
 static void DoResetAndDestroy( TAny* aPtr )
     {
@@ -455,7 +461,7 @@ void CCpsPublisher::AddImageHandleL( const TDesC& aBundleId, const TInt& aHandle
        
     inparam.AppendL( item );
     
-    iCpsInterface->ExecuteCmdL( KAdd , inparam, outparam);
+    iCpsInterface->ExecuteCmdL( KAdd , inparam, outparam, KDisablePersist);
     
  
     CleanupStack::PopAndDestroy(); // item
@@ -556,6 +562,143 @@ void CCpsPublisher::InitCpsInterfaceL()
     inParam.Reset();    
     iCpsInterface = msgInterface;
     }
+    
+    
+    // --------------------------------------------------------------------------
+// CCpsPublisher::PublishScreenshotL
+// --------------------------------------------------------------------------
+//
+void CCpsPublisher::PublishScreenshotL(const TDesC& aWidget,
+        TInt aWidgetId, CFbsBitmap* aBmp)
+    {
+    StoreBitmapL(aWidgetId, aBmp);
+    PublishScreenshotToCpsL(aWidget, aWidgetId, aBmp ? aBmp->Handle() : 0);
+    }
+
+// --------------------------------------------------------------------------
+// CCpsPublisher::ClearScreenshotL
+// --------------------------------------------------------------------------
+//
+void CCpsPublisher::ClearScreenshotL(const TDesC& aWidget,
+        TInt aWidgetId)
+    {
+    RemoveScreenshotFromCpsL(aWidget);
+    RemoveBitmapL(aWidgetId);
+    }
+
+// --------------------------------------------------------------------------
+// CCpsPublisher::ClearScreenshotL
+// --------------------------------------------------------------------------
+//
+void CCpsPublisher::StoreBitmapL(TInt aWidgetId, CFbsBitmap* aBmp)
+    {
+    CFbsBitmap** oldbmp = iScreenshots.Find( aWidgetId );
+    if ( oldbmp )
+        {
+        delete *oldbmp;
+        }
+    if ( iScreenshots.Insert( aWidgetId, aBmp ) != KErrNone )
+        {
+        delete aBmp;
+        iScreenshots.Remove( aWidgetId );
+        }
+    }
+
+// --------------------------------------------------------------------------
+// CCpsPublisher::RemoveBitmapL
+// --------------------------------------------------------------------------
+//
+void CCpsPublisher::RemoveBitmapL(TInt aWidgetId)
+    {
+    CFbsBitmap** bmp = iScreenshots.Find( aWidgetId );
+    if ( bmp )
+        {
+        delete *bmp;
+        iScreenshots.Remove( aWidgetId );
+        }
+    }
+
+// --------------------------------------------------------------------------
+// CCpsPublisher::PublishScreenshotToCpsL
+// --------------------------------------------------------------------------
+//
+void CCpsPublisher::PublishScreenshotToCpsL(const TDesC& aWidget,
+        TInt aWidgetId, TInt aBitmap)
+    {
+    CLiwGenericParamList& inparam = iServiceHandler->InParamListL();
+    CLiwGenericParamList& outparam = iServiceHandler->OutParamListL();
+
+    TLiwGenericParam cptype( KType, TLiwVariant( KCpData ));
+    cptype.PushL();
+    
+    inparam.AppendL( cptype );
+    
+    CLiwDefaultMap* cpdatamap = CLiwDefaultMap::NewLC();
+    CLiwDefaultMap* map = CLiwDefaultMap::NewLC();
+    
+    // Add bitmap handle to data map
+    map->InsertL( KWidgetId,  TLiwVariant( TInt32(aWidgetId) )); // key - aKey, value - map (stringsMap)
+    map->InsertL( KBitmapHandle,  TLiwVariant( TInt32(aBitmap) )); // key - aKey, value - map (stringsMap)
+
+    // Create content data map
+    cpdatamap->InsertL( KPublisherId, TLiwVariant( KWidgetUi ));
+    cpdatamap->InsertL( KContentType, TLiwVariant( KScreenshot )); 
+    cpdatamap->InsertL( KContentId, TLiwVariant( aWidget ));
+    cpdatamap->InsertL( KDataMap, TLiwVariant(map) );
+            
+    TLiwGenericParam item( KItem, TLiwVariant( cpdatamap ));     
+    item.PushL(); 
+       
+    inparam.AppendL( item );
+    
+    iCpsInterface->ExecuteCmdL( KAdd , inparam, outparam);
+ 
+    CleanupStack::PopAndDestroy( &item );
+    CleanupStack::PopAndDestroy( map );
+    CleanupStack::PopAndDestroy( cpdatamap );
+    CleanupStack::PopAndDestroy( &cptype );
+
+    outparam.Reset();
+    inparam.Reset();
+    }
+
+
+// --------------------------------------------------------------------------
+// CCpsPublisher::PublishScreenshotToCpsL
+// --------------------------------------------------------------------------
+//
+void CCpsPublisher::RemoveScreenshotFromCpsL(const TDesC& aWidget)
+    {
+    CLiwGenericParamList& inparam = iServiceHandler->InParamListL();
+    CLiwGenericParamList& outparam = iServiceHandler->OutParamListL();
+    
+    TLiwGenericParam cptype( KType, TLiwVariant( KCpData ));
+    cptype.PushL();
+
+    inparam.AppendL( cptype );
+
+    CLiwDefaultMap* cpdatamap = CLiwDefaultMap::NewLC();
+    
+    // Create content data map
+    cpdatamap->InsertL( KPublisherId, TLiwVariant( KWidgetUi ));
+    cpdatamap->InsertL( KContentType, TLiwVariant( KScreenshot )); 
+    cpdatamap->InsertL( KContentId, TLiwVariant( aWidget ));
+            
+    TLiwGenericParam item( KItem, TLiwVariant( cpdatamap ));     
+    item.PushL(); 
+       
+    inparam.AppendL( item );
+    
+    iCpsInterface->ExecuteCmdL( KDelete , inparam, outparam);
+ 
+    CleanupStack::PopAndDestroy( &item );
+    CleanupStack::PopAndDestroy( cpdatamap );
+    CleanupStack::PopAndDestroy( &cptype );
+
+    outparam.Reset();
+    inparam.Reset();
+    }
+
 // END OF FILE
 
 

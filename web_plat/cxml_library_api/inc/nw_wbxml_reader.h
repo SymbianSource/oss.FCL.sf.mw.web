@@ -15,7 +15,6 @@
 *
 */
 
-#warning The CXML API has been deprecated
 
 /** ----------------------------------------------------------------------- **
     @package:     NW_WBXML
@@ -33,15 +32,14 @@
 #ifndef NW_PARSER_WBXML_READER_H
 #define NW_PARSER_WBXML_READER_H
 
-#include "cxml_proj.h"
-#include "nw_wbxml_document.h"
-#include "nw_wbxml_opaque.h"
-#include "nw_wbxml_parse.h"
+#include <cxml_proj.h>
+#include <nw_wbxml_document.h>
+#include <nw_wbxml_opaque.h>
+#include <nw_wbxml_parse.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
-
 
 /* The "parser-reader" interface */
 

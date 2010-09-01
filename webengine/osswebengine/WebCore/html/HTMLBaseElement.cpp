@@ -25,7 +25,7 @@
 #include "config.h"
 #include "HTMLBaseElement.h"
 
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "Document.h"
 #include "Frame.h"
 #include "FrameLoader.h"

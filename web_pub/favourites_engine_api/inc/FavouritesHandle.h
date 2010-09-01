@@ -19,12 +19,10 @@
 #ifndef FAVOURITES_HANDLE_H
 #define FAVOURITES_HANDLE_H
 
-#warning The Favorites API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 //  INCLUDES
 
 #include <e32base.h>
-#include <FavouritesSession.h>
+#include <favouritessession.h>
 
 // CLASS DECLARATION
 
@@ -128,7 +126,7 @@ class RFavouritesHandle
 
     };
 
-#include <FavouritesHandle.inl>
+#include <favouriteshandle.inl>
 
 #endif
             

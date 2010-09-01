@@ -15,7 +15,6 @@
 *
 */
 
-
 TARGET          webkitutils.dll
 TARGETTYPE      dll
 UID 0x1000008D  0x2000B19D  
@@ -23,7 +22,7 @@ UID 0x1000008D  0x2000B19D
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 #include "SqliteMacros.mmpi"
 
@@ -34,12 +33,12 @@ EPOCALLOWDLLDATA
 MACRO __OOM__
 
 #if defined(WINSCW)
-deffile Bwinscw/WebKitUtils.def
+deffile BWINSCW/WebKitUtils.def
 #elif defined(ARMCC)
 deffile EABI/WebKitUtils.def
 #endif
 
-START RESOURCE ../data/WebKitUtils.rss
+START RESOURCE ../data/webkitutils.rss
 HEADER
 TARGETPATH      RESOURCE_FILES_DIR
 #ifdef __S60_32__
@@ -50,8 +49,8 @@ LANGUAGE_IDS
 END
 
 SOURCEPATH      ../ToolBar
-SOURCE          ToolBar.cpp
-SOURCE          ToolBarButton.cpp
+SOURCE          toolbar.cpp
+SOURCE          toolbarbutton.cpp
 
 SOURCEPATH      ../HistoryProvider
 SOURCE          HistoryEntry.cpp
@@ -101,15 +100,15 @@ SOURCE          vdbemem.c
 SOURCE          vtab.c
 SOURCE          where.c
 
-USERINCLUDE     ../../osswebengine/WebKit/s60/webview
+USERINCLUDE     ../../osswebengine/WebKit/s60/WebView
 
-USERINCLUDE     ../ToolBar
+USERINCLUDE     ../toolbar
 USERINCLUDE     ../HistoryProvider
 USERINCLUDE     ../SqliteSymbian
 
 MW_LAYER_SYSTEMINCLUDE
-SYSTEMINCLUDE   ../../../inc 
-MW_LAYER_LIBC_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
+// SYSTEMINCLUDE   ../../../inc 
 
 LIBRARY         estlib.lib 
 LIBRARY         euser.lib 
@@ -132,3 +131,4 @@ LIBRARY         efsrv.lib
 LIBRARY         eikcore.lib 
 LIBRARY         eikcoctl.lib 
 LIBRARY         MemMan.lib
+

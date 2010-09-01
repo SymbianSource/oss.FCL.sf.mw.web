@@ -15,12 +15,11 @@
 *
 */
 
-
-#include "LeakTracker.h"
+#include <leaktracker.h>
 #include "Logger.h"
 #include "StatusPane.h"
 #include "TestHarness.h"
-#include <InternetConnectionManager.h>
+#include <internetconnectionmanager.h>
 #include "FeedsWaitDialog.h"
 
 #include <FeedsApp.Rsg>

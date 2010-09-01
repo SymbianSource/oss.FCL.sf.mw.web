@@ -30,7 +30,7 @@
 #include "AffineTransform.h"
 #include "GraphicsContext.h"
 #include "IntRect.h"
-#include "MimeTypeRegistry.h"
+#include "MIMETypeRegistry.h"
 
 #include <math.h>
 

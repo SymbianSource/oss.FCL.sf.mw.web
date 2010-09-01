@@ -19,8 +19,6 @@
 #ifndef BRCTLLINKRESOLVER_H
 #define BRCTLLINKRESOLVER_H
 
-#warning The Browser Control API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 //  INCLUDES
 #include <e32std.h>
 #include <e32base.h>
@@ -64,12 +62,12 @@ class MBrCtlLinkContent;
 * Usage:
 *
 * @code
-*  #include <BrCtlLinkResolver.h>
+*  #include <brctllinkresolver.h>
 *
 *  
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
-* @file BrCtlLinkResolver.h
+* @file brctllinkresolver.h
 * @endcode     *
 */
 class MBrCtlLinkResolver
@@ -126,12 +124,12 @@ class MBrCtlLinkResolver
 * Usage:
 *
 * @code
-*  #include <BrCtlLinkResolver.h>
+*  #include <brctllinkresolver.h>
 *
 *  
 * @see S60 Platform: Browser Control API Developer's Guide Version 2.0
 * @lib BrowserEngine.lib
-* @file BrCtlLinkResolver.h
+* @file brctllinkresolver.h
 * @endcode     *
 */
 class MBrCtlLinkContent

@@ -196,7 +196,7 @@ private:
 #endif
 #if PLATFORM(SYMBIAN)
     mutable CMaskedBitmap* m_maskedBitmap; 
-    ImageObserver* m_imageObserver;
+    
 #endif
 
     Color m_solidColor;  // If we're a 1x1 solid color, this is the color to use to fill.

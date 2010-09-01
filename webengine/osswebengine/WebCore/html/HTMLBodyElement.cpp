@@ -24,10 +24,10 @@
 #include "config.h"
 #include "HTMLBodyElement.h"
 
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "CSSMutableStyleDeclaration.h"
 #include "CSSPropertyNames.h"
-#include "cssstyleselector.h"
+#include "CSSStyleSelector.h"
 #include "CSSStyleSheet.h"
 #include "CSSValueKeywords.h"
 #include "Document.h"

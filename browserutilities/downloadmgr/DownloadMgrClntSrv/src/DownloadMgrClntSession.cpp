@@ -19,23 +19,24 @@
 
 // INCLUDE FILES
 #include "DownloadMgrLogger.h"
-#include "DownloadMgrClient.h"
+#include <downloadmgrclient.h>
 #include "DownloadMgrServer.h"
 #include "DownloadMgrStart.h"
 #include "DownloadMgrDef.h"
 #include "DownloadMgrDefAttrib.h"
 #include "DownloadMgrHandler.h"
 #include <e32svr.h>
-#include <escapeutils.h>
+#include <EscapeUtils.h>
 #include <centralrepository.h>
 #include "DownloadMgrCRKeys.h"
-#include <BrowserUiSDKCRKeys.h>
-#include <CodDownload.h>
+#include <browseruisdkcrkeys.h>
+#include <coddownload.h>
 
 // CONSTANTS
 const TInt KHttpDownloadMgrObserverArrayGranularity = 4;
 const TInt KHttpDownloadMgrDefalutAttribsGranularity = 4;
 const TInt KDefaultMsgSlots = 16;
+const TInt KNumOfSubSessions = 16;
 
 _LIT8( KHttpScheme, "http" );
 _LIT8( KHttpsScheme, "https" );
@@ -599,6 +600,11 @@ EXPORT_C RHttpDownload& RHttpDownloadMgr::CreateDownloadL( const TDesC8& aUrl )
     
     CLOG_ENTERFN( "RHttpDownloadMgr::CreateDownloadL" )
     
+    //Leave if the number of parallel downloads exceeds 16.
+    if(!IsNewDownloadPossible()){
+        User::LeaveIfError(KErrServerBusy);
+        }
+    
     RHttpDownload* download = new (ELeave) RHttpDownload ( this );
     CleanupStack::PushL( download );
     CleanupClosePushL( *download );
@@ -837,6 +843,22 @@ EXPORT_C TInt RHttpDownloadMgr::DeleteAll()
 
     return err;
     }
+
+// ---------------------------------------------------------
+// RHttpDownloadMgr::IsNewDownloadPossible()
+// ---------------------------------------------------------
+ TBool RHttpDownloadMgr::IsNewDownloadPossible()
+{
+    TInt32 value(0);    
+    TPckg<TInt32> pckg( value );
+    if(KErrNone ==  SendReceive( EHttpDownMgrNumOfSubSessions, 
+                           TIpcArgs(&pckg ) )){
+        if(value < KNumOfSubSessions){
+            return ETrue;
+        }
+    }
+    return EFalse;
+}
 
 // ---------------------------------------------------------
 // RHttpDownloadMgr::Disconnect

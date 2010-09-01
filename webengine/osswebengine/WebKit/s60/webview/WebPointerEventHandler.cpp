@@ -11,19 +11,19 @@
 *
 * Contributors:
 *
-* Description:   
+* Description:
 *
 */
 
-#include <Browser_platform_variant.hrh>
+#include <browser_platform_variant.hrh>
 #include "config.h"
 #include "../../bidi.h"
 #include <AknUtils.h>
 #ifdef BRDO_TOUCH_ENABLED_FF
 #include <touchfeedback.h>
 #endif // BRDO_TOUCH_ENABLED_FF
-#include "BrCtl.h"
-#include "BrCtlDefs.h"
+#include "brctl.h"
+#include <brctldefs.h>
 #include "WebPointerEventHandler.h"
 #include "WebView.h"
 #include "WebFrame.h"
@@ -33,20 +33,9 @@
 #include "WebFormFillPopup.h"
 #include "WebPageScrollHandler.h"
 #include "WebFepTextEditor.h"
-#include "WebCoreFrameBridge.h"
-#include "StaticObjectsContainer.h"
 #include "PluginSkin.h"
 #include "WebUtil.h"
-#include "Element.h"
-#include "Document.h"
-#include "Frame.h"
-#include "FrameView.h"
-#include "EventHandler.h"
-#include "EventNames.h"
-#include "HitTestResult.h"
-#include "MouseEvent.h"
 #include "WebPageFullScreenHandler.h"
-#include "PluginSkin.h"
 #include "PluginWin.h"
 #include "WebFrameBridge.h"
 #include "Page.h"
@@ -56,16 +45,12 @@
 #include "WebTabbedNavigation.h"
 #include "SettingsContainer.h"
 #include "PluginHandler.h"
+#include "WebGestureInterface.h"
+#include "WebPagePinchZoomHandler.h"
+#include "WebScrollingDeceleratorGH.h"
 
 #include "WebKitLogger.h"
-using namespace WebCore;
-using namespace EventNames;
-using namespace RT_GestureHelper;
 
-static const int KMinScrollAndTapInterval = 200000;				// 200 ms
-static const int KDoubleTapMinActivationInterval = 100000;     // 100 ms
-static const int KDoubleTapMaxActivationInterval = 500000;     // 500 ms
-static const int KDoubleTapIdleInterval = 700000;			// 700 ms, to prevent triple-tap effects
 #define IS_NAVIGATION_NONE      (m_webview->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeNone)
 #define IS_TABBED_NAVIGATION    (m_webview->brCtl()->settings()->getNavigationType() == SettingsContainer::NavigationTypeTabbed)
 
@@ -88,8 +73,8 @@ WebPointerEventHandler::WebPointerEventHandler(WebView* view)
     : m_webview(view),
       m_isHighlighted(false),
       m_highlightedNode(NULL),
-      m_buttonDownTimer( this, &WebPointerEventHandler::buttonDownTimerCB ),
-      m_ignoreTap(false)
+      m_ignoreTap(false),
+      m_gestureInterface(NULL)
 {
 }
 
@@ -98,8 +83,7 @@ WebPointerEventHandler::WebPointerEventHandler(WebView* view)
 //-----------------------------------------------------------------------------
 WebPointerEventHandler::~WebPointerEventHandler()
 {
-    delete m_gestureHelper;
-    delete m_waiter;
+   delete m_gestureInterface;
 }
 
 //-----------------------------------------------------------------------------
@@ -107,129 +91,143 @@ WebPointerEventHandler::~WebPointerEventHandler()
 //-----------------------------------------------------------------------------
 void WebPointerEventHandler::ConstructL()
 {
-#ifdef BRDO_USE_GESTURE_HELPER  
-  m_gestureHelper = CGestureHelper::NewL( *this );
-  m_gestureHelper->SetDoubleTapEnabled(true);
-  m_gestureHelper->SetHoldingEnabled(false);
+#ifdef BRDO_USE_GESTURE_HELPER
+  m_gestureInterface = WebGestureInterface::NewL(m_webview);
 #else
-  m_gestureHelper = NULL;
-#endif  
-  m_waiter = new(ELeave) CActiveSchedulerWait();
+  m_gestureInterface = NULL;
+#endif
 }
-/**
- * EGestureStart is sent on touch down
- * EGestureReleased is sent on touch up
- * EGestureTap = touch down + touch up - events sent: EGestureStart, EGestureTap
- *                EGestureReleased
- * EGestureDrag = touch down + "move" - events sent: EGestureStart, EGestureDrag
- * EGestureDoubleTap = 2 * (touch down + touch up) - events sent EGestureStart, 
- *                     EGestureDoubleTap, EGestureReleased
- * EGestureLongTap = touch down + "long touch" - events sent: EGestureStart, 
- *                   EGestureLongTap
- * EGestureSwipe<Up/Down/Left/Right> - drag + touch up, where movements is
- *                   close to particular direction - event sent: EGestureSwipe, 
- *                   EGestureReleased
- * EGestureFlick - "fast" drag + touch up - events sent: EGestureFlick, 
- *                  EGestureReleased
- * EGestureDrop -  drag + touch up, !(EGestureSwipe || EGestureFlick) - events
- *                 sent: EGestureDrop, EGestureReleased
- */
-void WebPointerEventHandler::HandleGestureL( const TGestureEvent& aEvent )
+
+
+// ======================================================================
+// WebPointerEventHandler::HandleGestureEventL
+// ======================================================================
+void  WebPointerEventHandler::HandleGestureEventL(const TStmGestureEvent& aGesture)
 {
-    TGestureCode gtype = aEvent.Code(EAxisBoth);
-    TPoint gpos = aEvent.CurrentPos();
+    TStmGestureUid uid = aGesture.Code();
+    if (m_webview->pinchZoomHandler()->isPinchActive() && uid != stmGesture::EGestureUidPinch)
+        return;
     
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
     
-    PluginSkin* plugin = m_webview->mainFrame()->focusedPlugin();
-    if (plugin && plugin->pluginWin()) {
-      if (plugin->pluginWin()->HandleGesture(aEvent)) {
-          return;
-      }
+    bool pluginConsumable = isPluginConsumable(uid);
+    PluginHandler* pluginHandler = StaticObjectsContainer::instance()->pluginHandler();
+    
+    if (pluginConsumable && pluginHandler->getVisiblePlugins().Count() > 0) {
+        for ( int i=0; i < pluginHandler->getVisiblePlugins().Count(); i++) {
+             PluginSkin* plugin = pluginHandler->getVisiblePlugins()[i];
+             if (plugin && plugin->pluginWin() && plugin->pluginWin()->containsPoint(*m_webview,aGesture.CurrentPos())) {
+                 if (plugin->pluginWin()->HandleGesture(aGesture)) {
+                     // Above call can end up in the deletion of the plugin, so check if the plugin is still alive
+                     if (pluginHandler->getVisiblePlugins().Find(plugin) != KErrNotFound) {
+                         if(!plugin->isActive()) {
+                             plugin->activate();
+                         }
+                         else {
+                             m_webview->mainFrame()->frameView()->topView()->setFocusedElementType(TBrCtlDefs::EElementActivatedObjectBox);
+                             m_webview->page()->focusController()->setFocusedNode(plugin->getElement(), m_webview->page()->focusController()->focusedOrMainFrame());                        
+                             m_webview->brCtl()->updateDefaultSoftkeys();
+                         }
+                     }
+                     return;
+                 }
+                 break;
+             }
+        }
     }
-    updateCursor(aEvent.CurrentPos());
-    if (IS_TABBED_NAVIGATION) {
-        m_webview->tabbedNavigation()->updateCursorPosition(m_highlightPos);
-    }
-    switch (gtype) {
-      // sent on touch down
-      case EGestureStart:  
-      {
-          if (m_webview->viewIsScrolling()) {
-              m_ignoreTap = true;
-              m_webview->pageScrollHandler()->handleTouchDownGH(aEvent);
-          }
-          else {
-              handleTouchDownL(aEvent);   
-          }
-          break;
-      }
-      
-      // sent on tap
-      case EGestureTap:
-      {
-          if (!m_ignoreTap) {
-              handleTapL(aEvent);
-          }
-          break;    
-      }
-      
-      // sent on double tap
-      case EGestureDoubleTap:
-      {
-          handleDoubleTap(aEvent);
-          break;    
-      }
-      
-      // sent on long tap
-      case EGestureLongTap:
-      {
-          break;    
-      }
 
-      // sent on touch up after drag
-      case EGestureDrop:
-      case EGestureFlick:
-      case EGestureSwipeLeft:
-      case EGestureSwipeRight:
-      case EGestureSwipeUp:
-      case EGestureSwipeDown:
-      {
-          m_ignoreTap = false;
-          if (!IS_NAVIGATION_NONE) {
-              handleTouchUp(aEvent);
-          }
-          else {
-              Frame* frm = m_webview->page()->focusController()->focusedOrMainFrame();
-              m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Up, m_highlightPos, frm);
-          }
-          break;    
-      }
-      // sent on move
-      case EGestureDrag:
-      {
-          handleMove(aEvent);
-          break;    
-      }
-      
-      // sent on touch up after tap double tap and long tap
-      case EGestureReleased:
-      {
-          m_ignoreTap = false;
-          handleTouchUp(aEvent);      
-          break;    
-      }
+    updateCursor(aGesture.CurrentPos());
+    if (IS_TABBED_NAVIGATION) {
+        m_webview->tabbedNavigation()->updateCursorPosition(aGesture.CurrentPos());
     }
+
+    switch(uid) {
+        case stmGesture::EGestureUidTouch:
+        {
+            if (m_webview->viewIsScrolling()) {
+                m_ignoreTap = true;
+                m_webview->pageScrollHandler()->handleTouchDownGH(aGesture);
+            }
+            else {
+                handleTouchDownL(aGesture);
+            }
+            break;
+        }
+
+
+        case stmGesture::EGestureUidTap:
+        {
+            if (aGesture.Type() == stmGesture::ETapTypeSingle) {
+                if (!m_ignoreTap) {
+                    handleTapL(aGesture);
+                }
+            }
+            else {
+                handleDoubleTap(aGesture);
+            }
+
+                break;
+        }
+
+        case stmGesture::EGestureUidRelease:
+        {
+            m_ignoreTap = false;
+            handleTouchUp(aGesture);
+			m_webview->resumeJsTimers(); // resume js timers
+			m_webview->setViewIsScrolling(false); 
+            break;
+        }
+
+        case stmGesture::EGestureUidPan:
+        {
+            // pause js timers (if not already done)
+            if(!m_webview->jsTimersPaused()) 
+                m_webview->pauseJsTimers();
+
+            handleMove(aGesture);
+            break;
+        }
+        case stmGesture::EGestureUidFlick:
+        {
+            m_ignoreTap = false;
+            if (!IS_NAVIGATION_NONE) {
+                handleTouchUp(aGesture);
+            }
+            else {
+                Frame* frm = m_webview->page()->focusController()->focusedOrMainFrame();
+                m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Up, m_highlightPos, frm);
+            }
+            break;
+        }
+
+        case stmGesture::EGestureUidPinch:
+        {
+        if (m_webview->viewIsScrolling()) {
+            m_webview->pageScrollHandler()->stopScrolling();
+        }
+        if(!m_webview->inPageViewMode())
+            {
+            handlePinchZoomL(aGesture);
+            if(aGesture.GestureState() != EGestureEnter) {
+                m_webview->resumeJsTimers(); // resume js timers
+                }
+            }
+            break;
+        }
+        default:
+            break;
+
+    }
+    return;
 }
 
 
 // ======================================================================
 // WebPointerEventHandler::handleTap
 // ======================================================================
-void WebPointerEventHandler::handleTapL(const TGestureEvent& aEvent)
+void WebPointerEventHandler::handleTapL(const TStmGestureEvent& aGesture)
 {
-    m_buttonDownTimer.stop();
-    m_lastTapEvent = m_currentEvent; 
+    m_lastTapEvent = m_currentEvent;
     if(!m_webview->inPageViewMode()){
     	doTapL();
     }
@@ -237,12 +235,12 @@ void WebPointerEventHandler::handleTapL(const TGestureEvent& aEvent)
 // ======================================================================
 //  WebPointerEventHandler::handleDoubleTap
 //======================================================================
-void WebPointerEventHandler::handleDoubleTap(const TGestureEvent& aEvent)
+void WebPointerEventHandler::handleDoubleTap(const TStmGestureEvent& aGesture)
 {
     if ( !m_webview->viewIsScrolling() &&
          (m_webview->brCtl()->capabilities() & TBrCtlDefs::ECapabilityFitToScreen)) {
         if (m_isHighlighted){
-            dehighlight();                
+            dehighlight();
         }
         m_webview->setZoomLevelAdaptively();
     }
@@ -254,20 +252,17 @@ void WebPointerEventHandler::handleDoubleTap(const TGestureEvent& aEvent)
 // ======================================================================
 // WebPointerEventHandler::handleTouchDownL
 //======================================================================
-void WebPointerEventHandler::handleTouchDownL(const TGestureEvent& aEvent)
+void WebPointerEventHandler::handleTouchDownL(const TStmGestureEvent& aGesture)
 {
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
     PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
     PluginSkin* pluginToActivate = pluginHandler->pluginToActivate();
     m_buttonDownEvent = m_currentEvent;
-    m_highlightPos = aEvent.CurrentPos();
-    
-    if ( !m_buttonDownTimer.isActive() && !m_webview->inPageViewMode()){
-        m_buttonDownTimer.startOneShot(0.1f);        
-    }
+    m_highlightPos = aGesture.CurrentPos();
+
 
     if (!IS_NAVIGATION_NONE) {
-        m_webview->pageScrollHandler()->handleTouchDownGH(aEvent);
+        m_webview->pageScrollHandler()->handleTouchDownGH(aGesture);
     }
 
     if ( TBrCtlDefs::EElementActivatedObjectBox == elType) {
@@ -282,53 +277,41 @@ void WebPointerEventHandler::handleTouchDownL(const TGestureEvent& aEvent)
         }
     }
     
-    /*
-     * After introducing "link selection" pointer down action is done in 
-     * buttondown timer callback. When "down" gesture event is arrived we start 
-     * timer end exit, so gesture helper is ready to deliver next gesture event. 
-     * Meanwhile the processing of the first gesture event hasn't been finished yet. 
-     * The gesture helper doesn't "know" about our plans to handle the event inside 
-     * timer callback and only way for us to "tell" about this is to stop RunL() 
-     * of CGestureEventSender (HandleGestureL() is inside it) and finish buttondown 
-     * timer callback first.  
-     */    
-    if ( m_buttonDownTimer.isActive()){
-    	m_waiter->Start();	
-    }
+    doTouchDownL();
 }
 
 // ======================================================================
-// WebPointerEventHandler::handleTouchUp 
+// WebPointerEventHandler::handleTouchUp
 // ======================================================================
-void WebPointerEventHandler::handleTouchUp(const TGestureEvent& aEvent)
+void WebPointerEventHandler::handleTouchUp(const TStmGestureEvent& aGesture)
 {
     m_highlightPos = TPoint(-1,-1);
     m_highlightedNode = NULL;
     PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
     pluginHandler->setPluginToActivate(NULL);
     if (!IS_NAVIGATION_NONE) {
-        m_webview->pageScrollHandler()->handleTouchUpGH(aEvent);
+        m_webview->pageScrollHandler()->handleTouchUpGH(aGesture);
     }
 }
 
 // ======================================================================
 // WebPointerEventHandler::handleMoveL
 // ======================================================================
-void WebPointerEventHandler::handleMove(const TGestureEvent& aEvent)
+void WebPointerEventHandler::handleMove(const TStmGestureEvent& aGesture)
 {
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
-    TPoint curPos = aEvent.CurrentPos();
+    TPoint curPos =  aGesture.CurrentPos();
     PluginHandler* pluginHandler = WebCore::StaticObjectsContainer::instance()->pluginHandler();
     pluginHandler->setPluginToActivate(NULL);
-    m_buttonDownTimer.stop();
+
     if (IS_NAVIGATION_NONE) {
         Frame* frm = m_webview->page()->focusController()->focusedOrMainFrame();
         m_webview->sendMouseEventToEngine(TPointerEvent::EMove, curPos, frm);
     }
     else {
     HandleHighlightChange(curPos);
-    
-    m_webview->pageScrollHandler()->handleScrollingGH(aEvent);
+
+    m_webview->pageScrollHandler()->handleScrollingGH(aGesture);
     }
 }
 
@@ -339,11 +322,11 @@ void WebPointerEventHandler::handleMove(const TGestureEvent& aEvent)
 void WebPointerEventHandler::HandlePointerEventL(const TPointerEvent& aPointerEvent)
 {
     m_currentEvent = aPointerEvent;
-    
-    if (m_webview->isSynchRequestPending()) { 
+
+    if (m_webview->isSynchRequestPending()) {
        return;
     }
-    
+
     // Handle graphical history - should never happen, as HistoryView handles this event by itself
     if ( m_webview->brCtl()->historyHandler()->historyController()->historyView()) {
         return;
@@ -355,18 +338,21 @@ void WebPointerEventHandler::HandlePointerEventL(const TPointerEvent& aPointerEv
         return;
     }
     
-    if (!m_webview->inPageViewMode()) {
-        if (aPointerEvent.iType == TPointerEvent::EButton1Down) {
-            m_webview->GetContainerWindow().EnablePointerMoveBuffer();
-        }
-        else if (aPointerEvent.iType == TPointerEvent::EButton1Up) {
-            m_webview->GetContainerWindow().DisablePointerMoveBuffer();
+    //if scrolling is going on, it need to be stopped immediately when user touches down    
+    if (aPointerEvent.iType == TPointerEvent::EButton1Down && m_webview->viewIsScrolling()) {
+        WebScrollingDeceleratorGH* scrollDecelGH = m_webview->pageScrollHandler()->ScrollingDeceleratorGH();
+        if(scrollDecelGH) {
+            scrollDecelGH->cancelDecel();            
         }
     }
-
+    
+    // pause JS timers for better ui response    
+    if (aPointerEvent.iType == TPointerEvent::EButton1Down) {
+        m_webview->pauseJsTimers();    
+    }
 #ifdef BRDO_USE_GESTURE_HELPER
-    m_gestureHelper->HandlePointerEventL(aPointerEvent);
-#endif    
+      m_gestureInterface->HandlePointerEventL(aPointerEvent);
+#endif
 }
 
 //-----------------------------------------------------------------------------
@@ -382,24 +368,6 @@ void WebPointerEventHandler::HandleHighlightChange(const TPoint &aPoint)
 }
 
 //-----------------------------------------------------------------------------
-// WebPointerEventHandler::checkForEventListener
-//-----------------------------------------------------------------------------
-bool WebPointerEventHandler::checkForEventListener(WebCore::Node* node)
-{
-    EventTargetNode* etnfound = NULL;
-    for (Node* np = node; np; np = np->parentNode()) {
-        //check for a mouseover event listener
-        if (np->isEventTargetNode()) {
-            if (m_webview->page()->chrome()->client()->elementVisibilityChanged()) {
-                return true;
-            }
-        }
-    }
-    return false;
-}
-
-
-//-----------------------------------------------------------------------------
 // WebPointerEventHandler::highlitableElement
 //-----------------------------------------------------------------------------
 TBrCtlDefs::TBrCtlElementType WebPointerEventHandler::highlitableElement()
@@ -408,16 +376,16 @@ TBrCtlDefs::TBrCtlElementType WebPointerEventHandler::highlitableElement()
     TBrCtlDefs::TBrCtlElementType elType = TBrCtlDefs::EElementNone;
     Frame* coreFrame = core(m_webview->mainFrame());
     WebCursor* cursor = StaticObjectsContainer::instance()->webCursor();
-    
+
     TPointerEvent event;
     TPoint pos = cursor->position();
     WebFrame* wfrm = cursor->getFrameAtPoint(pos);
     Frame* frm = core(wfrm);
     TPoint pt(wfrm->frameView()->viewCoordsInFrameCoords(pos));
     TPoint nodePoint;
-    
-    Element* eventNode = frm->document()->elementFromPoint(pos.iX, pos.iY);
-    
+
+    Element* eventNode = frm->document()->elementFromPoint(pt.iX, pt.iY);
+
     m_highlightedNode = NULL;
 
     Node* retNode = 0;
@@ -425,10 +393,12 @@ TBrCtlDefs::TBrCtlElementType WebPointerEventHandler::highlitableElement()
 
     if (elType == TBrCtlDefs::EElementNone) {
         Node* n = wfrm->getClosestAnchorElement(cursor->position(), pos);
-        if (n) {          
+        if (n) {
             wfrm = cursor->getFrameAtPoint(pos);
             frm = core(wfrm);
-            eventNode = frm->document()->elementFromPoint(pos.iX, pos.iY);
+            //eventNode = frm->document()->elementFromPoint(pos.iX, pos.iY);
+            TPoint newPos(wfrm->frameView()->viewCoordsInFrameCoords(pos));
+            eventNode = frm->document()->elementFromPoint(newPos.iX, newPos.iY);
             frm->bridge()->getTypeFromElement(eventNode, elType, elRect, retNode);
             TPoint nodePoint = n->getRect().Rect().Center();
             m_offset = (pt.iX- nodePoint.iX)*(pt.iX- nodePoint.iX) +
@@ -473,7 +443,7 @@ void WebPointerEventHandler::doTapL()
 {
     TBrCtlDefs::TBrCtlElementType elType = m_webview->focusedElementType();
     Frame* coreFrame = core(m_webview->mainFrame());
-    
+
 #ifdef BRDO_TOUCH_ENABLED_FF
     if (m_isHighlighted)
     {
@@ -486,15 +456,15 @@ void WebPointerEventHandler::doTapL()
 #endif // BRDO_TOUCH_ENABLED_FF
     
      /*
-      * We assume that if element visibility has been changed  
-      * between "up" and "down" that means that some node event 
-      * listener (onMouseOver etc) handling happened and we don't 
-      * want to send a click (mouse press = mouse release) event.
+      * We assume that if element visibility has been changed
+      * between "up" and "down" that means that some node event
+      * listener (onMouseOver etc) handling happened and we don't
+      * want to send a click (mouse press + mouse release) event.
       * The exception is editable element, since we want VKB anyway
       */
      if (!IS_NAVIGATION_NONE &&
-         elType != TBrCtlDefs::EElementActivatedInputBox && 
-         elType != TBrCtlDefs::EElementTextAreaBox &&     
+         elType != TBrCtlDefs::EElementActivatedInputBox &&
+         elType != TBrCtlDefs::EElementTextAreaBox &&
          m_webview->page()->chrome()->client()->elementVisibilityChangedByMouse()) {
          return;
      }
@@ -503,10 +473,13 @@ void WebPointerEventHandler::doTapL()
      m_lastTapEvent.iType = TPointerEvent::EButton1Up;
      m_lastTapEvent.iModifiers = 0;
 
-    // don't pass the event if the text input is not in valid format
-    if (isHighlitableElement(elType) || m_webview->fepTextEditor()->validateTextFormat()) {
-        m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Up,  m_lastTapEvent.iPosition, coreFrame);
-    }
+     m_webview->fepTextEditor()->validateTextFormat();
+     
+     if (!IS_NAVIGATION_NONE) {
+         // in case of navigation none button down was sent in buttonDownTimerCB()
+         m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
+     }
+     m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Up,  m_highlightPos, coreFrame);
 
     // special handling for broken image (why is this here??)
     if (elType == TBrCtlDefs::EElementBrokenImage) {
@@ -537,10 +510,9 @@ void  WebPointerEventHandler::dehighlight()
     Frame* frm = m_webview->page()->focusController()->focusedOrMainFrame();
     m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, frm);
 
-    
     m_highlightedNode = NULL;
-       
-    m_webview->syncRepaint();   
+
+    m_webview->syncRepaint();
 }
 
 
@@ -581,21 +553,17 @@ void  WebPointerEventHandler::dehighlight()
 //-----------------------------------------------------------------------------
 // WebPointerEventHandler::buttonDownTimerCallback
 //-----------------------------------------------------------------------------
-void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
+void WebPointerEventHandler::doTouchDownL()
 {
-    m_buttonDownTimer.stop();
-
-    
     Frame* coreFrame = core(m_webview->mainFrame());
     TPointerEvent event;
     
     TBrCtlDefs::TBrCtlElementType elType = highlitableElement();
-    
+
     if (!isHighlitableElement(elType)) {
         elType = TBrCtlDefs::EElementNone;
     }
     m_isHighlighted = (m_highlightedNode != NULL) && (elType != TBrCtlDefs::EElementNone) ;
-    
     m_webview->page()->chrome()->client()->setElementVisibilityChanged(false);
     
     /*
@@ -603,18 +571,20 @@ void WebPointerEventHandler::buttonDownTimerCB(Timer<WebPointerEventHandler>* t)
      * If it's the same as m_highlightedNode FocuseController::setFocusedNode()
      * wouldn't do anything and setEditable won't be called.
      * So we are setting focused node to NULL here and let mouse event handler
-     * set it through ocuseController::setFocusedNode()
+     * set it through FocuseController::setFocusedNode()
      */
     if (IS_TABBED_NAVIGATION &&
-        elType == TBrCtlDefs::EElementInputBox || 
-        elType == TBrCtlDefs::EElementTextAreaBox) {
-        coreFrame->document()->setFocusedNode(NULL);
+       (elType == TBrCtlDefs::EElementInputBox || elType == TBrCtlDefs::EElementTextAreaBox)) {
+           coreFrame->document()->setFocusedNode(NULL);
     }
-         
-    m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
 
-    m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, coreFrame);
-    m_waiter->AsyncStop();
+    if (!IS_NAVIGATION_NONE) {
+		m_webview->sendMouseEventToEngine(TPointerEvent::EMove, m_highlightPos, coreFrame);
+    } 
+    else {
+        m_webview->sendMouseEventToEngine(TPointerEvent::EButton1Down, m_highlightPos, coreFrame);
+    }
+
 }
 
 
@@ -631,7 +601,36 @@ void WebPointerEventHandler::updateCursor(const TPoint& pos)
         if (m_webview->showCursor()) {
             cursor->resetTransparency();
             m_webview->setShowCursor(false);
-            cursor->cursorUpdate(false); 
+            cursor->cursorUpdate(false);
         }
     }
+}
+
+
+//-----------------------------------------------------------------------------
+// WebPointerEventHandler::handlePinchZoom
+//----------------------------------------------------------------------------
+void  WebPointerEventHandler::handlePinchZoomL(const TStmGestureEvent& aGesture)
+{
+ //dehighlight anything which is highlighted already
+    if (m_isHighlighted){
+        dehighlight();
+    }
+    m_webview->pinchZoomHandler()->handlePinchGestureEventL(aGesture);
+}
+
+
+//-----------------------------------------------------------------------------
+// WebPointerEventHandler::isPluginConsumable
+//-----------------------------------------------------------------------------
+bool WebPointerEventHandler::isPluginConsumable(const TStmGestureUid uid)
+{
+    //  Gestures which a Plugin can consume
+    return ( uid == stmGesture::EGestureUidRelease ||
+             uid == stmGesture::EGestureUidTap ||
+             uid == stmGesture::EGestureUidTouch ||
+             uid == stmGesture::EGestureUidLongPress ||
+             (uid == stmGesture::EGestureUidPan && m_webview->widgetExtension()) ||     // Currently Pan is consumed in Widget mode
+             (uid == stmGesture::EGestureUidFlick && m_webview->widgetExtension())
+           ); 
 }

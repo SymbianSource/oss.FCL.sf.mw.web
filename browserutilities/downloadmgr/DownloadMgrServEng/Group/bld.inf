@@ -23,6 +23,6 @@ DEFAULT
 PRJ_EXPORTS
 
 PRJ_MMPFILES
-../Group/HttpDMServEng.mmp
+../group/HttpDMServEng.mmp
 
 // End of File

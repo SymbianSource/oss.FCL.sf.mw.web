@@ -18,8 +18,8 @@
 
 // INCLUDE FILES
 #include <../bidi.h>
-#include <aknappui.h>
-#include <AknUtils.h>
+#include <aknAppUi.h>
+#include <aknutils.h>
 #include "StaticObjectsContainer.h"
 #include "WebCannedImages.h"
 #include "WebPageFullScreenHandler.h"
@@ -28,9 +28,8 @@
 
 using namespace WebCore;
 
-const int KFullScreenButtonHeight = 60;
-const int KFullScreenButtonWidth = 60;
-const int KFullScreenButtonBuff  = 5;
+const int KFullScreenButtonOffset = 50;
+const int KFullScreenButtonBuff  = 15;
 
 // -----------------------------------------------------------------------------
 // WebPageFullScreenHandler::NewL
@@ -66,6 +65,9 @@ void WebPageFullScreenHandler::ConstructL()
     m_buttonIcon = StaticObjectsContainer::instance()->webCannedImages()->getImage(WebCannedImages::EImageEscFullScreen);
     TPoint pos = CalculatePosition();
     BaseConstructL(m_webView, pos, m_buttonIcon.m_img, m_buttonIcon.m_msk, ETrue);
+     if (AknLayoutUtils::PenEnabled()) {
+         DrawableWindow()->SetPointerGrab(ETrue);
+     }
     Hide();   
 }
 
@@ -87,6 +89,13 @@ TPoint WebPageFullScreenHandler::CalculatePosition()
     pos -= TPoint(KFullScreenButtonBuff, KFullScreenButtonBuff);
     //pos -= m_webView->PositionRelativeToScreen();
     return pos;
+}
+
+TSize WebPageFullScreenHandler::CalculateSize()
+{
+    TSize size = m_buttonIcon.m_img->SizeInPixels();
+    size += TSize(KFullScreenButtonBuff, KFullScreenButtonBuff);
+    return size;
 }
 
 //-------------------------------------------------------------------------------
@@ -123,6 +132,8 @@ void WebPageFullScreenHandler::SizeChanged(void)
     if (AknLayoutUtils::PenEnabled()) {
         TPoint pos = CalculatePosition();
         SetPos(pos);
+        TSize size = CalculateSize();
+        SetSizeWithoutNotification(size);
     }
 }
 
@@ -147,11 +158,18 @@ void WebPageFullScreenHandler::HandlePointerEventL(const TPointerEvent& aPointer
 
        case TPointerEvent::EButton1Up:
            {
-           if (m_isTouchDown) {
-               Hide();
-               m_webView->notifyFullscreenModeChangeL( false );
-           }
-           m_isTouchDown = EFalse;
+           	TPoint fsPostion = PositionRelativeToScreen();
+            TRect fsRect = TRect(fsPostion,Size());
+            fsRect = TRect(fsRect.iTl - TPoint(KFullScreenButtonOffset,KFullScreenButtonOffset), fsRect.iBr);
+           	TPoint pointerPosition = fsPostion + aPointerEvent.iPosition;
+           	if( fsRect.Contains(pointerPosition))
+           	{
+             if (m_isTouchDown) {
+                  Hide();
+                  m_webView->notifyFullscreenModeChangeL( false );
+               }
+               m_isTouchDown = EFalse;
+            }
            }
            break;          
         }       

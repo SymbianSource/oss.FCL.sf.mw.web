@@ -21,7 +21,7 @@
 #define BROWSERSCRIPTPROMPTDIALOG_H
 
 //  INCLUDES
-#include <AknQueryDialog.h>
+#include <aknquerydialog.h>
 
 // CLASS DECLARATION
 

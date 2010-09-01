@@ -24,8 +24,6 @@
 #ifndef RECENTURLSTORE_H
 #define RECENTURLSTORE_H
 
-#warning The Recent URL Store API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 // INCLUDES
 #include <e32base.h>
 #include <s32file.h>
@@ -123,6 +121,11 @@ class CRecentUrlStore : public CBase
 	    *  Create the database
 	    */
 	    void CreateDatabaseL();
+	    
+	    /**
+      *  Insert the Escape Sequence
+      */
+      TInt InsertEscapeSequence(TChar aChar,TUint16* aDestPtr,const TDesC& aString);
 	    
     /*  Private Members  */
 

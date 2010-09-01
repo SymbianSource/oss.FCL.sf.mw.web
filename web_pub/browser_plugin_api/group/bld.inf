@@ -14,24 +14,22 @@
 * Description:  
 *
 */
-#ifndef __BROWSER_SDK
+
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
-#endif
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
-DEFAULT GCCE
+DEFAULT
 
 PRJ_EXPORTS
-
-../inc/BrowserPluginInterface.h      MW_LAYER_PUBLIC_EXPORT_PATH(BrowserPluginInterface.h)
-../inc/CEcomBrowserPluginInterface.h MW_LAYER_PUBLIC_EXPORT_PATH(CEcomBrowserPluginInterface.h)
+../inc/browserplugininterface.h      MW_LAYER_PUBLIC_EXPORT_PATH(browserplugininterface.h)
+../inc/cecombrowserplugininterface.h MW_LAYER_PUBLIC_EXPORT_PATH(cecombrowserplugininterface.h)
 ../inc/npapi.h                       MW_LAYER_PUBLIC_EXPORT_PATH(npapi.h)
 ../inc/np_defines.h                  MW_LAYER_PUBLIC_EXPORT_PATH(np_defines.h)
 ../inc/npupp.h                       MW_LAYER_PUBLIC_EXPORT_PATH(npupp.h)
 ../inc/jri.h                         MW_LAYER_PUBLIC_EXPORT_PATH(jri.h)
 ../inc/prcpucfg.h                    MW_LAYER_PUBLIC_EXPORT_PATH(prcpucfg.h)
-../inc/PluginAdapterInterface.h      MW_LAYER_PUBLIC_EXPORT_PATH(PluginAdapterInterface.h)
+../inc/pluginadapterinterface.h      MW_LAYER_PUBLIC_EXPORT_PATH(pluginadapterinterface.h)
 ../inc/prtypes.h                     MW_LAYER_PUBLIC_EXPORT_PATH(prtypes.h)
 ../inc/obsolete/protypes.h           MW_LAYER_PUBLIC_EXPORT_PATH(obsolete/protypes.h)
                       

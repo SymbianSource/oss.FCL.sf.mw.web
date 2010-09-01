@@ -15,10 +15,8 @@
 *
 */
 
-
 #ifndef IMPORT_FEEDS_TASK_H
 #define IMPORT_FEEDS_TASK_H
-
 
 // INCLUDES
 #include <e32base.h>
@@ -28,7 +26,7 @@
 #include "PackedFolder.h"
 #include "PackedAttributes.h"
 #include "FeedsDatabase.h"
-#include "FolderAttributes.h"
+#include <folderattributes.h>
 
 // CONSTANTS
 
@@ -43,7 +41,6 @@ class CIdle;
 class RFile;
 
 // CLASS DECLARATION
-
 
 /**
 *  The ImportFeedsTask's observer.

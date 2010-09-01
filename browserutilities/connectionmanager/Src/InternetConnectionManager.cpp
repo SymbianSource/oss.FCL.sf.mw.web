@@ -23,9 +23,9 @@
 
 	//System Includes
 #include <bldvariant.hrh>
-
+#include <browser_platform_variant.hrh>
 #include <ApAccessPointItem.h>
-#include <VpnApEngine.h>
+#include <VpnAPEngine.h>
 #include <AknNotifyStd.h>
 #include <AknGlobalNote.h>
 #include <e32std.h>
@@ -35,47 +35,50 @@
 #include <coemain.h>
 #include <bautils.h>
 #include <connectionmanager.rsg>
-#include <barsread.h>
+#include <BARSREAD.H>
 #include <Avkon.rsg>
-#include <ErrorUI.h>
-#include <AknGlobalConfirmationQuery.h>
-#include <AknQueryDialog.h>
-#include <AknWaitDialog.h>
+#include <errorui.h>
+#include <aknglobalconfirmationquery.h>
+#include <aknquerydialog.h>
+#include <aknwaitdialog.h>
 #include <cdblen.h>
 #include <StringLoader.h>
 #include <connectprog.h>
 #include <nd_err.h>
-#include <commdbconnpref.h>
-#include <mmtsy_names.h>
+#include <CommDbConnPref.h>
+#include <MmTsy_names.h>
 #include <etelmm.h>
 #include <data_caging_path_literals.hrh>
 #include <AknsUtils.h> 
 #include <avkon.mbg>
 #include <ConnMan.mbg>
 #include <rconnmon.h>
-#include <agentdialog.h>
+#include <AgentDialog.h>
 #include <ConnectionUiUtilities.h>
 #include <AknQueryDialog.h>
 #include <WlanCdbCols.h>
 #include <etelpckt.h>
-#include <featmgr.h>
+#include <FeatMgr.h>
 #include <cmmanagerext.h>
 #include <cmdestinationext.h>
 #include <commsdat.h>
-#include <commsdattypeinfov1_1.h>
+#include <CommsDatTypeInfoV1_1.h>
 
 	//User Includes
-#include "InternetConnectionManager.h"
-#include "ConnMan.hrh"
-#include "ConnectionManagerLogger.h"
-#include "ConnectionObservers.h"
-#include "ConnManActiveConnector.h"
+#include <internetconnectionmanager.h>
+#include "connman.hrh"
+#include "connectionmanagerlogger.h"
+#include <connectionobservers.h>
+#include "connmanactiveconnector.h"
 
 using namespace CMManager;
 
 // CONSTANTS
 _LIT(KConnectionResourceFile, "\\resource\\ConnectionManager.rsc");
-
+#ifdef BRDO_OCC_ENABLED_FF
+//As per OCC, number of Connection observer states
+const TInt KMaxOccStages = 1;
+#endif
 // ============================ MEMBER FUNCTIONS ===============================
 //--------------------------------------------------------------------------
 //CInternetConnectionManager::ConnectL( TUint32 aIAPId1, TUint32 aIAPId2 )
@@ -207,6 +210,8 @@ TInt CInternetConnectionManager::ConnectWithoutCheckL( TUint32 aIAPId )
             User::LeaveIfError( iConnection.GetDesSetting( query, val ) );
 
             iConnName = val.AllocL();
+            CLOG_WRITE_1( "Iap id used : %d", iapId );
+            CLOG_WRITE_1( "Conn name   : %S", iConnName);
             }
         else if( !iRequestedAPIds.iFirstPreference )
             {
@@ -452,17 +457,16 @@ TInt CInternetConnectionManager::ConnectL
 			}
 		else
 			{               
+            if(iConnection.SubSessionHandle() <= 0)
+                {
+				//  RConnection handle is invalid, we haven't opened the RConnection yet.
 		        connErr = iConnection.Open( iServ, KAfInet );
+		       	}
 		        CLOG_WRITE_1( "RConnection: %d", connErr );
 		        if( connErr == KErrNone )
 		            {
 		            // Always pass the IAP Id to RConnection even in silent mode
 		            connErr = iSyncConnector->Connect( overrides );
-		            }
-		        if( connErr != KErrNone )
-		            {
-		            CLOG_WRITE( "Closing all" );
-		            iConnection.Close();
 		            }
 			}
 		}
@@ -513,11 +517,6 @@ CInternetConnectionManager::~CInternetConnectionManager()
 		delete iCommsDb;
 		}
 
-    if( iConnected )
-        {
-        iConnection.Close();
-        }
-
     if( !iSilentMode )
         // Temp fix for CDMA
         {
@@ -532,8 +531,8 @@ CInternetConnectionManager::~CInternetConnectionManager()
 	delete iNoteDialog;
 	delete iSyncConnector;
 	iRFs.Close();
-
-    iServ.Close();
+	iConnection.Close();
+	iServ.Close();
     
 	CLOG_CLOSE;
 	}
@@ -582,7 +581,11 @@ TBool CInternetConnectionManager::CheckNetworkL( TBool& aGPRSAvailable )
 TApBearerType CInternetConnectionManager::BearerTypeL( TUint32 aIAPId )
 	{
 	TApBearerType apbearerType = EApBearerTypeAllBearers;
-    if( iSilentMode || !iRequestedAPIds.iFirstPreference )
+#ifdef BRDO_OCC_ENABLED_FF
+	if( !iRequestedAPIds.iFirstPreference )
+#else
+	if( iSilentMode || !iRequestedAPIds.iFirstPreference )
+#endif
         // Temp fix for CDMA 
         {
         return EApBearerTypeAllBearers;
@@ -643,7 +646,19 @@ EXPORT_C void CInternetConnectionManager::StopConnectionL()
     CLOG_ENTERFN( "StopConnectionL()" );
 
     StopConnectionObserving();
-    iConnection.Close();
+    
+    if( iConnected )
+        {
+        CLOG_WRITE( "StopConnectionL() Stop the Connection" );        
+        iConnection.Close();
+        TInt err = iConnection.Open( iServ, KAfInet );        
+        }    
+    else
+        {
+        CLOG_WRITE( "Cancel the Connection" );
+        CancelConnection();
+        }
+    
 //    iServ.Close();
     iConnected = EFalse;
     iEasyWlan = EFalse;
@@ -1041,7 +1056,7 @@ EXPORT_C TInt CInternetConnectionManager::StartConnectionL( TBool aDisableConnNe
     
     if (iConnectionType == EDestination)
     	{
-    	err = ConnectWithSnapId(iRequestedSnapId);	
+    	err = ConnectWithSnapIdL(iRequestedSnapId);	
     	return err;
     	}
     	else
@@ -1325,12 +1340,17 @@ void CInternetConnectionManager::StartConnectionObservingL()
     TName* name = ConnectionNameL();
     __ASSERT_DEBUG( name, User::Panic( KNullDesC, KErrCorrupt ) );
     CleanupStack::PushL( name );
-    
+
+#ifdef BRDO_OCC_ENABLED_FF
+    iSatges[0] = KLinkLayerClosed;
+    iStageNotifier->StartNotificationL( name,iSatges,KMaxOccStages,this, ETrue );
+#else
     iSatges[0] = KConnectionUninitialised;
     iSatges[1] = KConnectionClosed;
     iSatges[2] = KLinkLayerClosed;
 
     iStageNotifier->StartNotificationL( name,iSatges,KMaxStages,this, ETrue );
+#endif
 
     CleanupStack::PopAndDestroy( name );
     }
@@ -1360,7 +1380,6 @@ void CInternetConnectionManager::ConnectionStageAchievedL(TInt /*aStage*/)
      {
      	// this is a connection closed event
         CLOG_WRITE( "ConnectionStageAchievedL() Stoping the connection instead of closing" );
-        iConnection.Stop();
     	iConnected = EFalse;
 
     	if( !iSilentMode )
@@ -1642,6 +1661,19 @@ EXPORT_C void CInternetConnectionManager::ShowConnectionChangedDlg()
     }
     
 //------------------------------------------------------------------------
+//CInternetConnectionManager::CancelConnection
+//    
+ void CInternetConnectionManager::CancelConnection()
+    {
+    CLOG_ENTERFN("CInternetConnectionManager::CancelConnection");
+    if(iSyncConnector && iSyncConnector->IsActive()) 
+        {
+        CLOG_WRITE( "Connection is cancelled" );        
+        iSyncConnector->Cancel();
+        }
+	}
+		
+//------------------------------------------------------------------------
 //CInternetConnectionManager::AskIap
 //------------------------------------------------------------------------
 EXPORT_C TInt CInternetConnectionManager::AskIap( TUint32& aNewIap )
@@ -1679,7 +1711,6 @@ EXPORT_C void CInternetConnectionManager::SetConnectionType( TCmSettingSelection
 	CLOG_WRITE_1( "CInternetConnectionManager::SetConnectionType - %d", aConnectionType );
 	iConnectionType = aConnectionType;
 	}
-    
 //-------------------------------------------------------------------
 //CInternetConnectionManager::SetRequestedSnap
 //-------------------------------------------------------------------
@@ -1994,15 +2025,14 @@ void CInternetConnectionManager::InitializeL()
         {
         User::LeaveIfError( iServ.Connect() );
         }
-
     CLOG_WRITE( "Fully initialized" );
     iInitialized = ETrue;    
     }
     
 //------------------------------------------------------------------------
-//CInternetConnectionManager::ConnectWithSnapId
+//CInternetConnectionManager::ConnectWithSnapIdL
 //------------------------------------------------------------------------    
-TInt CInternetConnectionManager::ConnectWithSnapId(TUint32 aRequestedSnapId)
+TInt CInternetConnectionManager::ConnectWithSnapIdL(TUint32 aRequestedSnapId)
 	{
 
     CLOG_WRITE_1( "CInternetConnectionManager::ConnectWithSnapId - %d", aRequestedSnapId );
@@ -2017,16 +2047,37 @@ TInt CInternetConnectionManager::ConnectWithSnapId(TUint32 aRequestedSnapId)
 #ifndef __WINS__
     if( KErrNone == connErr )
         {
-        TUint32 iIapID;
-        TBuf<20> query;
-        query.Format( _L("%s\\%s"), IAP, COMMDB_ID );
-        if( iConnection.GetIntSetting( query, iIapID ) == KErrNone )
-            {
-            CLOG_WRITE_1( "ConnectWithSnapId::AccessPoint - %d", iIapID );
-            CApAccessPointItem* ap = APItemFromIAPIdLC( iIapID );
-            UpdateCurrentAPL( *ap, EFalse );
-            CleanupStack::PopAndDestroy();  // ap
-            }
+        if( iSilentMode )
+        // Temp fix for CDMA
+           {
+           TUint32 iapId;
+           TBuf<20> query;
+           TBuf<40> val;
+        
+           query.Format( _L("%s\\%s"), IAP, COMMDB_ID );
+           User::LeaveIfError( iConnection.GetIntSetting( query, iapId ) );
+           iCurrentAP = (CApAccessPointItem*)iapId;
+        
+           query.Format(_L("%s\\%s"), IAP, COMMDB_NAME);
+           User::LeaveIfError( iConnection.GetDesSetting( query, val ) );
+        
+           iConnName = val.AllocL();
+           CLOG_WRITE_1( "Iap id used : %d", iapId );
+           CLOG_WRITE_1( "Conn name   : %S", iConnName);
+           }
+        else
+           {
+           TUint32 iIapID;
+           TBuf<20> query;
+           query.Format( _L("%s\\%s"), IAP, COMMDB_ID );
+           if( iConnection.GetIntSetting( query, iIapID ) == KErrNone )
+               {
+               CLOG_WRITE_1( "ConnectWithSnapId::AccessPoint - %d", iIapID );
+               CApAccessPointItem* ap = APItemFromIAPIdLC( iIapID );
+               UpdateCurrentAPL( *ap, EFalse );
+               CleanupStack::PopAndDestroy();  // ap
+               }
+           }
         }
             
 #endif
@@ -2101,17 +2152,16 @@ TInt CInternetConnectionManager::ConnectWithSnapId(TUint32 aRequestedSnapId)
 
 	if ( !connErr )
 		{
+		if(iConnection.SubSessionHandle() <= 0)
+			{
+			//  RConnection handle is invalid, we haven't opened the RConnection yet.
         connErr = iConnection.Open( iServ, KAfInet );
+        	}
         CLOG_WRITE_1( "RConnection: %d", connErr );
         if( connErr == KErrNone )
             {
            //connect with snap id
             connErr = iSyncConnector->ConnectSnap( overrides );
-            }
-        if( connErr != KErrNone )
-            {
-            CLOG_WRITE( "Closing all" );
-            iConnection.Close();
             }
 		}
 	
@@ -2153,6 +2203,16 @@ void CInternetConnectionManager::StartWaitDialogL( HBufC* aLabel, TWaitIconType 
         iWaitDialog->SetTextL( aLabel->Des() );
         }
     iWaitDialog->RunLD();
+    }
+
+//-------------------------------------------------------------------
+//CInternetConnectionManager::SetOccPreferences
+//-------------------------------------------------------------------
+
+void CInternetConnectionManager::SetOccPreferences( TSetOCCPreferences aOCCPreferences)
+    {
+    if( iSyncConnector )
+       iSyncConnector->SetOccPreferences(aOCCPreferences);
     }
     
 // End of File

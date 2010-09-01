@@ -21,7 +21,7 @@
 #include <e32svr.h>
 #include <StifParser.h>
 #include <Stiftestinterface.h>
-#include "BrCtlApiTest.h"
+#include "brctlapitest.h"
 
 #define RETURN_FAILURE_ON_ERROR     \
     if ( err )                      \
@@ -196,7 +196,7 @@ TInt CBrowserControlApiTest::CreateBrCtlL(
 						TBrCtlDefs::ECapabilityClientResolveEmbeddedURL |
 						TBrCtlDefs::ECapabilityLoadHttpFw |
 						TBrCtlDefs::ECapabilitySavedPage |
-						TBrCtlDefs::ECapabilityDisplayScrollBar ;
+						TBrCtlDefs::ECapabilityDisplayScrollBar|TBrCtlDefs::ECapabilityGraphicalHistory ;
 		
     TRAP( err, 
         iBrCtlTestContainer = new (ELeave) CBrCtlApiTestContainer;

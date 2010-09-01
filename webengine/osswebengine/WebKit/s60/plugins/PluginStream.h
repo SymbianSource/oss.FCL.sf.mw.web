@@ -37,9 +37,9 @@ public:
     virtual ~PluginStream();
     
 public:
-    void createNPStreamL(TPtrC8 url, TPtrC16 mimetype, long long length);
+    void createNPStreamL(TPtrC8 url, TPtrC16 mimetype, long long length, const char* headers);
     void writeStreamL(const char* data, int length);
-    void destroyStream(int reason);  
+    void destroyStream(int reason, TDesC* failedUrl=NULL);  
     void close();
     
 private:

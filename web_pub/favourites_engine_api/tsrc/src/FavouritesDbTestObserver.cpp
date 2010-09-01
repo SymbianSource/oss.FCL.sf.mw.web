@@ -15,13 +15,12 @@
 *
 */
 
-
 // INCLUDE FILES
 
-#include <FavouritesDb.h>
-#include "FavouritesDbTestObserver.h"
+#include <favouritesdb.h>
+#include "favouritesdbtestobserver.h"
 //#include "FavouritesDbTester.h"
-#include "ActiveFavouritesDbNotifier.h"
+#include <activefavouritesdbnotifier.h>
 
 // CONSTANTS
 

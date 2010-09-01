@@ -133,6 +133,7 @@ namespace WebCore {
 
 #if PLATFORM(SYMBIAN)
     void setElementVisibilityChanged(bool visibility);
+    void wait(double t);
 #endif
     private:
         Page* m_page;

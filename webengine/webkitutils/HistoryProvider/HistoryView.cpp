@@ -46,8 +46,9 @@ const int KMaxAnimFactor = 100;
 const int KMinAnimFactor = 0;
 const int KMinimumScroll = 20;
 
-#define KCenterImageBorderColor KRgbRed
+#define KCenterImageBorderColor TRgb(179,179,181)
 #define KSideImageBorderColor KRgbBlack
+#define KSideImageMaskColor TRgb(170, 170, 170)
 
 // ============================= LOCAL FUNCTIONS ===============================
 
@@ -141,6 +142,7 @@ HistoryView::~HistoryView()
         m_autoScrollPeriodic->Cancel();
         delete m_autoScrollPeriodic;
     }
+    delete m_maskBitmap;
 }
 
 bool HistoryView::calcRepaintRect()
@@ -265,6 +267,15 @@ void HistoryView::updateDisplay()
 {
     m_bitmapContext->Clear();
     m_bitmapContext->Reset();
+    
+    m_bitmapContext->SetPenColor(TRgb(45,44,50));
+    m_bitmapContext->SetPenStyle(CGraphicsContext::ESolidPen);
+    m_bitmapContext->SetBrushColor(KRgbDarkGray);
+    m_bitmapContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
+    m_bitmapContext->DrawRect(Rect());
+	m_bitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
+    m_bitmapContext->SetPenStyle(CGraphicsContext::ENullPen);
+	
 
     // updateDisplay something to the bitmap
     m_centerEntry = m_historyController->entryByIndex( m_centerPageIndex );
@@ -275,10 +286,18 @@ void HistoryView::updateDisplay()
             TRAP_IGNORE(leftEntry->constructThumbnailL());
         }
         if (leftEntry->thumbnail()) {
-            m_bitmapContext->BitBlt( m_leftPlaceHolderRect.iTl, leftEntry->thumbnail(), TRect(TPoint(0,0), m_leftPlaceHolderRect.Size()) );
+            if(!m_maskBitmap) {
+                TSize maskBitmapSize(m_leftPlaceHolderRect.Size());
+                TRAP_IGNORE(CreateMaskBitmapForLeftRightThumbnailL(maskBitmapSize, EGray256, KSideImageMaskColor));
+            }
+            if(m_maskBitmap) {
+                m_bitmapContext->BitBltMasked(m_leftPlaceHolderRect.iTl, leftEntry->thumbnail(), TRect(TPoint(0,0), m_leftPlaceHolderRect.Size()), m_maskBitmap, EFalse);
+            }
+            else {
+                //if failed to create a mask, just draw the left entry thumbnail.
+                m_bitmapContext->BitBlt( m_leftPlaceHolderRect.iTl, leftEntry->thumbnail(), TRect(TPoint(0,0), m_leftPlaceHolderRect.Size()) );
+            }
         }
-        m_bitmapContext->SetPenColor( KSideImageBorderColor );
-        m_bitmapContext->DrawRect(m_leftPlaceHolderRect);
     }
     // updateDisplay the next thumbnail
     if (rightEntry) {
@@ -286,10 +305,18 @@ void HistoryView::updateDisplay()
             TRAP_IGNORE(rightEntry->constructThumbnailL());
         }
         if (rightEntry->thumbnail()) {
-            m_bitmapContext->BitBlt( m_rightPlaceHolderRect.iTl, rightEntry->thumbnail(), TRect(TPoint(0,0), m_rightPlaceHolderRect.Size()) );
+            if(!m_maskBitmap) {
+                TSize maskBitmapSize(m_rightPlaceHolderRect.Size());
+                TRAP_IGNORE(CreateMaskBitmapForLeftRightThumbnailL(maskBitmapSize, EGray256, KSideImageMaskColor));
+            }
+            if(m_maskBitmap) {
+                m_bitmapContext->BitBltMasked(m_rightPlaceHolderRect.iTl, rightEntry->thumbnail(), TRect(TPoint(0,0), m_rightPlaceHolderRect.Size()), m_maskBitmap, EFalse);
+            }
+            else {
+                //if failed to create a mask, just draw the right entry thumbnail.
+                m_bitmapContext->BitBlt( m_rightPlaceHolderRect.iTl, rightEntry->thumbnail(), TRect(TPoint(0,0), m_rightPlaceHolderRect.Size()) );
+            }
         }
-        m_bitmapContext->SetPenColor( KSideImageBorderColor );
-        m_bitmapContext->DrawRect(m_rightPlaceHolderRect);
     }
     // updateDisplay the center thumbnail
     if (m_centerEntry ) {
@@ -297,16 +324,24 @@ void HistoryView::updateDisplay()
             TRAP_IGNORE(m_centerEntry->constructThumbnailL());
         }
         if (m_centerEntry->thumbnail()) {
+            m_bitmapContext->SetBrushColor(KRgbWhite);
+            m_bitmapContext->SetBrushStyle(CGraphicsContext::ESolidBrush);
+            m_bitmapContext->DrawRect(m_centerPlaceHolderRect);    
+            m_bitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
+            TSize bitSize = m_centerEntry->thumbnail()->SizeInPixels();
             m_bitmapContext->BitBlt( m_centerPlaceHolderRect.iTl, m_centerEntry->thumbnail(), TRect(TPoint(0,0), m_centerPlaceHolderRect.Size()) );
         }
     }
+    
+    //Draw border for center thumbnail
+    m_bitmapContext->SetPenStyle( CGraphicsContext:: ESolidPen );
     m_bitmapContext->SetPenColor( KCenterImageBorderColor );
-
     m_bitmapContext->DrawRect( m_centerPlaceHolderRect );
 
     // Reset Brush
     m_bitmapContext->SetBrushColor(TRgb(255,255,255));
     m_bitmapContext->SetBrushStyle(CGraphicsContext::ENullBrush);
+    m_bitmapContext->SetPenStyle(CGraphicsContext::ENullPen);
   // updateState(-1);
 }
 
@@ -805,5 +840,24 @@ void HistoryView::updateState(int dir)
         }
 
     }
+}
+
+void HistoryView::CreateMaskBitmapForLeftRightThumbnailL(TSize& aSize, TDisplayMode aDisplayMode, TRgb aRgb)
+{
+    if(m_maskBitmap) {
+        delete m_maskBitmap;
+        m_maskBitmap = NULL;
+    }
+    m_maskBitmap = new (ELeave) CFbsBitmap();
+    User::LeaveIfError(m_maskBitmap->Create(aSize, aDisplayMode));
+    CFbsBitmapDevice* maskBitmapDevice = CFbsBitmapDevice::NewL(m_maskBitmap);
+    CFbsBitGc* maskBitmapContext;
+    User::LeaveIfError(maskBitmapDevice->CreateContext(maskBitmapContext));
+    maskBitmapContext->SetPenStyle( CGraphicsContext::ENullPen );
+    maskBitmapContext->SetBrushColor( aRgb );
+    maskBitmapContext->SetBrushStyle( CGraphicsContext::ESolidBrush );
+    maskBitmapContext->DrawRect(TRect(TPoint(0,0), m_maskBitmap->SizeInPixels()));
+    delete maskBitmapContext;
+    delete maskBitmapDevice;
 }
 //  End of File

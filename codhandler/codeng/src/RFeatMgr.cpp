@@ -20,7 +20,7 @@
 
 // INCLUDE FILES
 
-#include <featmgr.h>
+#include <FeatMgr.h>
 #include "RFeatMgr.h"
 #include "CodPanic.h"
 

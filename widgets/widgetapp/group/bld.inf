@@ -17,14 +17,14 @@
 
 
 #include <platform_paths.hrh>
-#include "../../../web_plat/browser_platform_api/inc/Browser_platform_variant.hrh"
+#include "../../../web_plat/browser_platform_api/inc/browser_platform_variant.hrh"
 
 PRJ_PLATFORMS
 DEFAULT gcce
 
 PRJ_EXPORTS
 // export localization files
-../loc/WidgetUi.loc       MW_LAYER_LOC_EXPORT_PATH(WidgetUi.loc)
+../loc/widgetui.loc       MW_LAYER_LOC_EXPORT_PATH(widgetui.loc)
 
 ../inc/widgetappdefs.rh   MW_LAYER_PLATFORM_EXPORT_PATH(widgetappdefs.rh)
 

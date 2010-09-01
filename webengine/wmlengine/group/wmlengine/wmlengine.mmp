@@ -1,0 +1,167 @@
+/*
+* Copyright (c) 2006 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  WMLENGINE
+*
+*/
+
+#include  "../webkitcommon.mmpi"
+
+TARGET          wmlEngine.dll
+TARGETTYPE      dll
+
+//Modify for Dynamic DLL
+//UID	0x1000008D 	0x1028190F
+UID	0x10000079 	0x1028190F
+
+VENDORID	VID_DEFAULT
+CAPABILITY	CAP_GENERAL_DLL
+EPOCALLOWDLLDATA
+
+#if defined(WINSCW)
+deffile ../Bwinscw/WmlEngine.def
+#elif defined(ARMCC)
+deffile ../EABI/WmlEngine.def
+#endif
+
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER
+
+#include "mvc.mmpi"
+// Include to solve circular references with script.lib
+MACRO INCLUDE_UTILS_MMP
+#define INCLUDE_UTILS_MMP
+#include "utils.mmp"
+
+SOURCEPATH      ../../src/wmlcontrol/src
+
+SOURCE			WmlControl.cpp
+SOURCE			WmlContentInterface.cpp
+
+SOURCEPATH      ../../src/htmlp/src
+SOURCE          htmlp_to_wbxml.cpp
+
+SOURCEPATH    	../../src/browser/src
+SOURCE	      	BROWSEREpoc32MimeTable.cpp
+
+SOURCEPATH    	../../src/utils/src
+SOURCE        	nwx_settings_epoc32.cpp
+SOURCE          CBrowserSettings.cpp
+
+// This file moved from lmgr.mmp to fix __fixunssfsi warnings
+SOURCEPATH      ../../src/lmgr/src
+SOURCE          LMgrBox.cpp
+//--
+
+STATICLIBRARY    RbBrowser.lib
+// Rainbow tempest libraries
+STATICLIBRARY    xhtml.lib
+STATICLIBRARY    script.lib
+STATICLIBRARY    imagech.lib
+
+// Rainbow Core libraries
+STATICLIBRARY    wml.lib
+// Rainbow libraries
+STATICLIBRARY    wml1x.lib
+STATICLIBRARY    css.lib
+STATICLIBRARY    hed.lib
+STATICLIBRARY    text.lib
+STATICLIBRARY    markup.lib
+STATICLIBRARY    fbox.lib
+STATICLIBRARY    RbGdi.lib
+STATICLIBRARY    wmlscriptch.lib
+STATICLIBRARY    lmgr.lib
+STATICLIBRARY    evt.lib
+STATICLIBRARY    object.lib
+STATICLIBRARY    msg.lib
+STATICLIBRARY    system.lib
+STATICLIBRARY    adt.lib
+STATICLIBRARY    image.lib
+STATICLIBRARY    unicode.lib
+STATICLIBRARY    htmlp.lib
+STATICLIBRARY    urlloader.lib
+STATICLIBRARY    fileloader.lib
+
+LIBRARY			 aknskins.lib
+LIBRARY			 WebKitUtils.lib
+LIBRARY			 BrowserEngine.lib
+LIBRARY			 BitmapTransforms.lib
+
+LIBRARY			 ESTLIB.lib 
+LIBRARY			 http.lib 
+LIBRARY			 EFSRV.lib 
+LIBRARY			 bafl.lib 
+LIBRARY 		 InetProtUtil.lib 
+LIBRARY			 HttpFilterCommon.lib
+LIBRARY			 ecom.lib 
+LIBRARY			 CommonEngine.lib
+DEBUGLIBRARY	 flogger.lib
+LIBRARY			 cone.lib
+LIBRARY			 browserdialogsprovider.lib
+LIBRARY			 avkon.lib
+LIBRARY			 caf.lib
+LIBRARY			 cafutils.lib
+
+LIBRARY         cxmlparser.lib
+LIBRARY    		aknpictograph.lib
+LIBRARY    		DIRECTORYLOCALIZER.lib
+
+LIBRARY			ConnectionManager.lib
+LIBRARY         CommonUI.LIB
+
+LIBRARY		    fbscli.lib 
+LIBRARY		    bitgdi.lib 
+LIBRARY		    charconv.lib 
+LIBRARY		    gdi.lib 
+LIBRARY		    apparc.lib 
+LIBRARY		    eikcore.lib 
+LIBRARY		    eikcoctl.lib
+LIBRARY		    egul.lib
+LIBRARY		    fntstr.lib
+LIBRARY         ws32.lib
+LIBRARY     	insock.lib
+LIBRARY		    esock.lib
+LIBRARY		    euser.lib 
+LIBRARY		    ImageConversion.lib
+LIBRARY		    edbms.lib
+LIBRARY		    estor.lib
+LIBRARY		    CookieManager.lib 
+LIBRARY		    WebUtils.lib 
+LIBRARY         MultipartParser.lib
+LIBRARY         DownloadMgr.lib
+LIBRARY         DownloadMgrUiLib.lib
+LIBRARY         imut.lib
+
+LIBRARY         eikctl.lib 
+LIBRARY         form.lib 
+LIBRARY         etext.lib 
+LIBRARY   		fepbase.lib 
+LIBRARY         sysutil.lib 
+LIBRARY		    apgrfx.lib
+LIBRARY		    apmime.lib
+
+LIBRARY		pagescaler.lib
+LIBRARY         SysLangUtil.lib
+LIBRARY 	centralrepository.lib
+LIBRARY 	CenRepNotifHandler.lib
+LIBRARY 	featmgr.lib
+#ifdef __USE_CCC_AUTO_FORM_FILL_POPUP
+LIBRARY 	broaffpopup.lib
+#endif
+LIBRARY	   	aknicon.lib

@@ -112,9 +112,8 @@ void ImageSource::setDataL(SharedBuffer* data, bool allDataReceived)
         // sync decoding if no observer is passed
         m_decoder = CAnimationDecoder::NewL( NULL );
     if( m_decoder ) {
-        TPtrC8 ptr( (const TUint8*)data->data(), data->size() );
         TPtrC16 ptr16(m_mimeType.des());        
-        m_decoder->OpenL( ptr, &ptr16, ETrue );
+        m_decoder->OpenL( data, &ptr16, ETrue );
     }
 }
 

@@ -19,19 +19,20 @@
 
 
 // USER INCLUDES
-#include "BrowserDialogsProvider.h"
+#include <browser_platform_variant.hrh>
+#include <browserdialogsprovider.h>
 #include "BrowserDialogsProvider.hrh"
 #include "BrowserViewImagesPopup.h"
 #include "PhotoOperationWait.h"
 #include "BrowserViewImagesListBox.h"
 
 // SYSTEM INCLUDES
-#include <DocumentHandler.h>
+#include <documenthandler.h>
 #include <apmstd.h>
-#include <uri16.h>
+#include <Uri16.h>
 #include <aknenv.h>
 #include <avkon.mbg>
-#include <aknEditStateIndicator.h>
+#include <akneditstateindicator.h>
 #include <AknsListBoxBackgroundControlContext.h>
 #include <AiwGenericParam.h>
 
@@ -140,7 +141,11 @@ void CBrowserViewImagesPopup::ConstructL( CEikListBox *aListBox,
 void CBrowserViewImagesPopup::HandleListBoxEventL( CEikListBox* aListBox, 
                                                     TListBoxEvent aEventType )
     {
-    if((aEventType==EEventEnterKeyPressed || aEventType==EEventItemDoubleClicked) && aListBox==ListBox())
+#ifdef BRDO_SINGLE_CLICK_ENABLED_FF      
+    if((aEventType==EEventEnterKeyPressed || aEventType==EEventItemDoubleClicked || aEventType==EEventItemSingleClicked) && aListBox==ListBox())
+#else
+    if((aEventType==EEventEnterKeyPressed || aEventType==EEventItemDoubleClicked ) && aListBox==ListBox())
+#endif        
         {
         ProcessCommandL( EDialogsProviderCmdViewImagesView );
         }

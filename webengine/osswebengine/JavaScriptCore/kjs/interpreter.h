@@ -105,7 +105,7 @@ namespace KJS {
      * Resets the global object's default properties and adds the default object 
      * prototype to its prototype chain.
      */
-    IMPORT void initGlobalObject();
+    void initGlobalObject();
 
     /**
      * Returns the object that is used as the global object during all script
@@ -352,7 +352,7 @@ namespace KJS {
     int refCount() const { return m_refCount; }
     
 protected:
-    IMPORT virtual ~Interpreter(); // only deref should delete us
+    virtual ~Interpreter(); // only deref should delete us
     virtual bool shouldInterruptScript() const { return true; }
 
     unsigned m_timeoutTime;

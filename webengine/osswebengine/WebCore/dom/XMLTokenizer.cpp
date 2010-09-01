@@ -50,7 +50,7 @@
 #include "ResourceResponse.h"
 #ifndef USE_QXMLSTREAM
 #include <libxml/parser.h>
-#include <libxml/parserinternals.h>
+#include <libxml/parserInternals.h>
 #else
 #include <QDebug>
 #endif

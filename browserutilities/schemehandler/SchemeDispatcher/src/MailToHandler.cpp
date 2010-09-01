@@ -17,7 +17,6 @@
 *
 */
 
-
 // INCLUDE FILES
 
 #include "MailToHandler.h"
@@ -30,7 +29,7 @@
 #include <eikdoc.h>
 #include <eikproc.h>
 #include <f32file.h>
-
+#include <utf.h> 
 
 // ================= CONSTANTS =======================
 
@@ -109,9 +108,16 @@ void CMailToHandler::ConstructL( const TDesC& aUrl )
 void CMailToHandler::HandleUrlEmbeddedL()
 	{
 	CLOG_ENTERFN( "CMailToHandler::HandleUrlEmbeddedL()" );
-
-    //TPtrC path = iParsedUrl->Des();
-
+    /* Convert to UCS-2, conversion from HBufC16 to HBufC8 should do no harm because the original string is HBufC8 */ 
+    HBufC8 *tempbuf8 =  HBufC8::NewLC(iParsedUrl->Length());
+    tempbuf8->Des().Copy(iParsedUrl->Des());
+    TInt errEncode = CnvUtfConverter::ConvertToUnicodeFromUtf8( *static_cast<TDes16*>(&iParsedUrl->Des()),*tempbuf8);
+    if (errEncode != KErrNone)
+        {
+        iParsedUrl->Des().Copy(tempbuf8->Des());
+        }
+    CleanupStack::PopAndDestroy(tempbuf8); 
+    
 	iTelService = CBrowserTelService::NewL();
 	iTelService->AddObserver( this );
 

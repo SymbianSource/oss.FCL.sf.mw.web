@@ -28,7 +28,7 @@
 #include <libxml2_parser.h>
 #include <libxml2_tree.h>
 
-#include "Browser_platform_variant.hrh"
+#include "browser_platform_variant.hrh"
 
 #ifdef BRDO_SYMBIAN_LIBXML_FF
 #include <xmlengxestd.h>
@@ -64,7 +64,7 @@ _LIT( KXmlDataTypeUid, "uid" );
 _LIT( KWidgetAppDir, "\\private\\10282822\\" );
 _LIT( KBackSlash, "\\" );
 // todo: other keystring.dat for preference
-_LIT(KWidgetPref, "prefs.dat");
+_LIT(KWidgetPref, "prefs.dat*");
 
 
 // =========================== MEMBER FUNCTIONS ===============================
@@ -126,7 +126,7 @@ void CWidgetInstaller::ConstructL()
         CWidgetPropertyValue* value = CWidgetPropertyValue::NewL();
         User::LeaveIfError( iPropertyValues.Insert( value, i ) );
         }
-    *(iPropertyValues[EWidgetPropertyListVersion]) = WIDGETPROPERTYLISTVERSION;
+    *(iPropertyValues[EWidgetPropertyListVersion]) = KWidgetPropertyListVersion71;
 
 #ifdef _DEBUG
     _LIT(KDir, "WidgetBUR");
@@ -472,14 +472,16 @@ void CWidgetInstaller::FixWidgetPropsL()
                     break;
                     
                     case EWidgetPropTypeInt:
-                    TLex toInt( value->Des() );
-                    TInt k;
-                    if ( KErrNone != toInt.Val( k ) )
-                       {
-                       User::Leave( KErrCorrupt );
-                       }
-                    if ( propId ==  EBlanketPermGranted )
-                        backupBlanketPerm = k;        
+                        {
+                        TLex toInt( value->Des() );
+                        TInt k;
+                        if ( KErrNone != toInt.Val( k ) )
+                            {
+                            User::Leave( KErrCorrupt );
+                            }
+                        if ( propId ==  EBlanketPermGranted )
+                            backupBlanketPerm = k;
+                        }
                     break;                    
 					          
 					          case EWidgetPropTypeString:
@@ -776,9 +778,14 @@ void CWidgetInstaller::ProcessRestoreDirL( TDesC& aRestoreDir )
 
     //////////////////////////////////////////////////////////////////////////////////////////////////
     // delete "\private\[WidgetUIUid]\bundleID\prefs.dat"
+    CFileMan* fileManager = CFileMan::NewL( iRfs );
+    CleanupStack::PushL( fileManager );
+    	 
     TFileName   widgetPref( *newDir );
     widgetPref.Append(KWidgetPref);
-    err = iRfs.Delete( widgetPref );
+    
+	err = fileManager->Delete(widgetPref);
+    CleanupStack::PopAndDestroy( fileManager );  // fileMananger       	
     // it's ok not to have pref.dat
     if( err != KErrNone && err != KErrNotFound )
         {
@@ -867,6 +874,11 @@ EXPORT_C void CWidgetInstaller::DeregisterWidgetL( const TUid& aUid )
     iAppManager->DeregisterWidgetL( aUid );
     }
 
+EXPORT_C void CWidgetInstaller::DeregisterWidgetsL( const RArray<TUid>& aUidList)
+	{
+	iAppManager->DeregisterWidgetsL( aUidList );
+	}
+	
 // ============================================================================
 // CWidgetInstaller::RunError()
 // It is called by WidgetActiveCallback when InstallL leaves.
@@ -1170,7 +1182,7 @@ CWidgetInstaller::WidgetPropertiesFromInstalledWidgetL(
         CWidgetPropertyValue* value = CWidgetPropertyValue::NewL();
         User::LeaveIfError( propertyValues->Insert( value, i ) );
         }
-    *(*propertyValues)[EWidgetPropertyListVersion] = WIDGETPROPERTYLISTVERSION;
+    *(*propertyValues)[EWidgetPropertyListVersion] =  KWidgetPropertyListVersion71;
     // UID
     *(*propertyValues)[EUid] = aUid.iUid;
     // size

@@ -16,8 +16,7 @@
 *      
 *
 */
-
-
+ 
 // INCLUDE FILES
 
 #include "MmsHandler.h"
@@ -31,10 +30,12 @@
 #include <eikproc.h>
 #include <f32file.h>
 #include <AknLaunchAppService.h>
-
-// ================= CONSTANTS =======================
-
+#ifdef __S60_32__
 LOCAL_C const TUid KUidMediaPlayer = { 0x10005A3E };
+#else
+#include <videoplayeruid.hrh>
+#endif
+// ================= CONSTANTS =======================
 
 // ================= MEMBER FUNCTIONS =======================
 
@@ -128,9 +129,13 @@ void CMmsHandler::HandleUrlEmbeddedL()
     	paramList->AppendL(*iParamList);  
     }
 
-
+#ifdef __S60_32__
     iLaunchAppService = 
         CAknLaunchAppService::NewL( KUidMediaPlayer, this, paramList );
+#else
+    iLaunchAppService = 
+        CAknLaunchAppService::NewL( TUid::Uid(KVideoPlayerUID), this, paramList );
+#endif    
     iSync = ETrue;
     iWait.Start();
     CleanupStack::PopAndDestroy( paramList );   
@@ -149,9 +154,11 @@ void CMmsHandler::HandleUrlStandaloneL()
 	RApaLsSession appArcSession;
 	User::LeaveIfError( appArcSession.Connect() );
 	TThreadId id;
-
-	appArcSession.StartDocument( iParsedUrl->Des(), KUidMediaPlayer , id );
-
+#ifdef __S60_32__
+    appArcSession.StartDocument( iParsedUrl->Des(), KUidMediaPlayer , id );
+#else
+    appArcSession.StartDocument( iParsedUrl->Des(), TUid::Uid(KVideoPlayerUID) , id );
+#endif
 	appArcSession.Close();
 
 	CLOG_LEAVEFN( "CMmsHandler::HandleUrlStandaloneL()" );
@@ -180,4 +187,5 @@ void CMmsHandler::HandleServerAppExit(TInt aReason)
 
 	CLOG_LEAVEFN( "CMmsHandler::HandleServerAppExit" );	
 	}
+
 

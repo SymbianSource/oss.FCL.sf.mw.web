@@ -19,12 +19,10 @@
 #ifndef MPLUGINADAPTER_H
 #define MPLUGINADAPTER_H
 
-#warning This NP API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 //  INCLUDES
-#include "coecntrl.h"
-#include "coecobs.h"
-#include "npupp.h"
+#include <coecntrl.h>
+#include <coecobs.h>
+#include <npupp.h>
 
 // FORWARD DECLARATIONS
 class MPluginNotifier;
@@ -126,7 +124,10 @@ class MPluginNotifier
        EPluginActivated,
        EPluginDeactivated,
        EMenuOptionEnableDecider,
-       EPluginPause
+       EPluginPause, 
+       ECollectBitmap,
+       ECollectBitmapSupported,
+       EAccesPointChanged
     };
 
 

@@ -16,17 +16,17 @@
 */
 
 // INCLUDE FILES
-#include "HttpCacheManager.h"
+#include "httpcachemanager.h"
 #include "HttpCacheHandler.h"
 #include "HttpCacheUtil.h"
 #include "HttpCacheFileWriteHandler.h"
-#include <cenrepnotifyhandler.h>
+#include <CenRepNotifyHandler.h>
 #include <httpcachemanagerinternalcrkeys.h>
 #include <CoreApplicationUIsSDKCRKeys.h>
 #include <centralrepository.h>
-#include <featmgr.h>
-#include <http/rhttptransaction.h>
-#include <sysutildomaincrkeys.h>
+#include <FeatMgr.h>
+#include <http/RHTTPTransaction.h>
+#include <SysUtilDomainCRKeys.h>
 #include <eikenv.h>
 #include <f32file.h>
 #include <e32hashtab.h>
@@ -941,9 +941,12 @@ void CHttpCacheManager::GetCriticalDriveLevelsL( CRepository& aRepository, const
     // get critical level
     // RAM drive can have different critical level
     TVolumeInfo vinfo;
-    User::LeaveIfError(CCoeEnv::Static()->FsSession().Volume(vinfo, drive));
-    //
+    RFs fsSession;
+    User::LeaveIfError(fsSession.Connect());
+    CleanupClosePushL( fsSession );
+    User::LeaveIfError(fsSession.Volume(vinfo, drive));
     User::LeaveIfError(aRepository.Get((vinfo.iDrive.iType == EMediaRam ? KRamDiskCriticalLevel : KDiskCriticalThreshold), aCriticalLevel));
+    CleanupStack::PopAndDestroy(&fsSession);
     }
 
 void CHttpCacheManager::CreateHttpCacheL( const TInt& aSecIdInt, const TInt& aCacheSize, const TInt& aCriticalLevel, const THttpCachePostponeParameters& aPostpone )

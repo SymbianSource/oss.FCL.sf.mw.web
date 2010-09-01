@@ -22,22 +22,22 @@ UID             0x10009d8d 0x10281f93
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 CAPABILITY      CAP_ECOM_PLUGIN
 VENDORID        VID_DEFAULT
 
 USERINCLUDE     .
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_ECOM_SYSTEMINCLUDE
 
 START RESOURCE	../data/10281f93.rss
-TARGET 					memoryplugin.rsc
+TARGET 			memoryplugin.rsc
 END
 
 SOURCEPATH    	../src
-SOURCE 					memoryplugin.cpp
+SOURCE 			memoryplugin.cpp
 
-LIBRARY 				ECOM.LIB
+LIBRARY 		ECOM.LIB
 LIBRARY         euser.lib
 LIBRARY         oommonitor.lib
+

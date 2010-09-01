@@ -15,7 +15,6 @@
 *
 */
 
-
 /** ----------------------------------------------------------------------- **
     @package:     NW_Encoder
 
@@ -27,18 +26,17 @@
 #ifndef _NW_ENCODER_WRITER_HEADER_GUARD_
 #define _NW_ENCODER_WRITER_HEADER_GUARD_
 
-#include "nw_encoder_stringtable.h"
-#include "nw_encoder_wbxmlwriter.h"
-#include "nw_dom_attribute.h"
-#include "nw_dom_element.h"
-#include "nw_dom_text.h"
-#include "nw_dom_document.h"
+#include <nw_encoder_stringtable.h>
+#include <nw_encoder_wbxmlwriter.h>
+#include <nw_dom_attribute.h>
+#include <nw_dom_element.h>
+#include <nw_dom_text.h>
+#include <nw_dom_document.h>
 
 #ifdef __cplusplus
 extern "C"
 {
 #endif /* __cplusplus */
-
 
 #define MEMORY_INCREMENT 100
 

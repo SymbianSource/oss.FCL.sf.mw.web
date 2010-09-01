@@ -20,7 +20,7 @@
 #define PlatformScrollbar_h
 
 #include "Widget.h"
-#include "ScrollBar.h"
+#include "Scrollbar.h"
 #include "IntRect.h"
 
 const int KScrollbarWidth = 4;

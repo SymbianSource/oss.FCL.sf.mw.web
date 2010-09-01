@@ -29,8 +29,15 @@ class CWidgetInfo;
 const TUid KWidgetRegistryServerUid = { 0x10282F06 };
 const TUid KUidWidgetUi = { 0x10282822 };
 const TUid KUidWidgetLauncher = { 0x10282821 };
+const TUid KUidWgtWidgetLauncher = { 0x200267DC };
 
-#define WIDGETPROPERTYLISTVERSION 3
+
+#define WIDGETPROPERTYLISTVERSION 4
+
+const TInt KWidgetPropertyListVersion32 = 1;
+const TInt KWidgetPropertyListVersion71 = 3;
+const TInt KWidgetPropertyListVersion71CWRT = 4;
+
 // Before changing these, consider that there will be widgets
 // installed on removable memory cards according to an allocation
 // scheme using these bounds.
@@ -44,6 +51,15 @@ const TInt32 KWidgetUidUpperBound = 0x2000DEB9;
 const TInt32 KWidgetUidInternalMemoryStart = KWidgetUidLowerBound;
 const TInt32 KWidgetUidExternalMemoryStart = (KWidgetUidLowerBound + KWidgetUidUpperBound + 1) / 2; // half way
 const TInt32 KWidgetUidExternalMemoryStop = KWidgetUidUpperBound;
+
+// Additions for separation of CWRT Widget UID space from WRT Widget UID space
+const TInt32 KWidgetUidWRTInternalMemoryStop = (KWidgetUidInternalMemoryStart + KWidgetUidExternalMemoryStart + 1) / 2;
+const TInt32 KWidgetUidCWRTInternalMemoryStart = KWidgetUidWRTInternalMemoryStop;
+const TInt32 KWidgetUidCWRTInternalMemoryStop = KWidgetUidExternalMemoryStart;
+const TInt32 KWidgetUidWRTExternalMemoryStop = (KWidgetUidExternalMemoryStart + KWidgetUidExternalMemoryStop + 1) / 2;
+const TInt32 KWidgetUidCWRTExternalMemoryStart = KWidgetUidWRTExternalMemoryStop;
+const TInt32 KWidgetUidCWRTExternalMemoryStop = KWidgetUidUpperBound + 1;
+
 
 const TInt KWidgetRegistryClientVersionMajor = 0;
 const TInt KWidgetRegistryClientVersionMinor = 1;
@@ -59,6 +75,7 @@ _LIT( KWidgetRegistryName, "!WidgetRegistry" ); // name to connect to
 _LIT( KWidgetRegistryImage, "WidgetRegistry" ); // DLL/EXE name
 _LIT8( KWidgetMime, "application/x-nokia-widget");
 _LIT( KLauncherApp, "widgetlauncher.exe" );
+_LIT( KWgtLauncherApp, "wgtwidgetlauncher.exe" );
 
 
 // Enumerations
@@ -125,9 +142,15 @@ enum TWidgetPropertyId
     EFileSize,                  // int
     EUid,                       // TUid
     ENokiaWidget,               // int 0 (not Nokia DTD) or 1 (Nokia DTD)
-    EMiniViewEnable,            //optional; int internally 0 0r 1
-    EBlanketPermGranted,              //optional; int internally 0 0r 1
+    // Do not add enums prior to this, if you are adding enums here 
+    // take into consideration the compatibility problems, i.e widgets working after firmware update.  
+
+    EMiniViewEnable,            // optional; int internally 0 0r 1
+    EBlanketPermGranted,        // optional; int internally 0 0r 1
     EPreInstalled,              // optional; int internally 0 or 1
+    
+    EProcessUid,                // int (UID of widget execution process)
+    EMimeType,
 
     // end property list, begin special values
     EWidgetPropertyIdCount,     // must be at end of properties

@@ -15,15 +15,13 @@
 *
 */
 
-
 #ifndef FILE_HANDLER_H
 #define FILE_HANDLER_H
-
 
 // INCLUDES
 #include <e32base.h>
 
-#include "LeakTracker.h"
+#include <leaktracker.h>
 #include "UrlHandler.h"
 
 // CONSTANTS

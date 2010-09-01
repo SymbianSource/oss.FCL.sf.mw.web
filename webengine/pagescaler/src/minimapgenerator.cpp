@@ -47,7 +47,7 @@ const TInt KExtraLQUpdateHeight = 0; // lq update this much pixels outsize the v
 
 // MODULE DATA STRUCTURES
 #ifdef __OOM__
-#include <oom.h>
+#include "oom.h"
 
 class CMinimapOOMCollector : public CBase, MMemoryCollector
     {

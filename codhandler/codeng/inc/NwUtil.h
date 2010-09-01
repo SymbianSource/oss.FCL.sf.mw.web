@@ -17,17 +17,16 @@
 *
 */
 
-
 #ifndef NW_UTIL_H
 #define NW_UTIL_H
 
 // INCLUDES
 
 #include <e32base.h>
-#include <xml/cxml/nwx_status.h>
-#include <xml/cxml/nw_wbxml_dictionary.h>
-#include <xml/cxml/nw_encoder_stringtable.h>
-#include <xml/cxml/nw_string_string.h>
+#include <nwx_status.h>
+#include <nw_wbxml_dictionary.h>
+#include <nw_encoder_stringtable.h>
+#include <nw_string_string.h>
 
 // FUNCTION DECLARATION
 

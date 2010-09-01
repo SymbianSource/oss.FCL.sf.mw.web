@@ -15,16 +15,15 @@
  *
 */
 
-
-#include "FeedsEntity.h"
-#include "FeedsMap.h"
+#include <feedsentity.h>
+#include <feedsmap.h>
 #include "PackedAttributes.h"
-#include "FeedAttributes.h"
-#include <FolderAttributes.h>
+#include <feedattributes.h>
+#include <folderattributes.h>
 #include "Packed.h"
 #include "PackedFeed.h"
 #include "PackedFolder.h"
-#include "FeedsInterface.h"
+#include <feedsinterface.h>
 
 // Constant definitions
 _LIT(KNew, "new");
@@ -355,6 +354,7 @@ void CFeedsEntity::ConstructL(const CPackedFolder& aPackedFolder)
 
             case EFolderTokenItemEnd:
                 isMiniItem = EFalse;         
+                if(miniItem)         
                 miniItem->SetFeedInterface (iFeedInterface);       
             //    folderItem->AddMiniItem(miniItem);
                 User::LeaveIfError (currentFolder->iChildren.Append (miniItem));

@@ -15,13 +15,12 @@
 *
 */
 
-
-#include <s32mem.h>
+#include <S32Mem.h>
 
 #include "ImportFeedsTask.h"
 #include "FeedsDatabase.h"
 #include "FeedsServer.h"
-#include "FeedsServerMsg.h"
+#include <feedsservermsg.h>
 
 // Root folder related.
 const TInt  KRootFolderId = 0;

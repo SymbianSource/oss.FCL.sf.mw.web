@@ -205,7 +205,7 @@ JSObject* FunctionObjectImp::construct(ExecState* exec, const List& args, const 
     // send empty sourceURL to indicate constructed code
     bool cont = dbg->sourceParsed(exec, sid, UString(), body, lineNumber, errLine, errMsg);
     if (!cont) {
-    //  dbg->imp()->abort();
+      dbg->imp()->abort();
       return new JSObject();
     }
   }

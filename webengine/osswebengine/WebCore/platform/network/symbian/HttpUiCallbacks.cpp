@@ -19,7 +19,7 @@
 #include "Page.h"
 #include <../bidi.h>
 #include <StringLoader.h>
-#include <uri16.h>
+#include <Uri16.h>
 #include <es_enum.h>
 #include <Webkit.rsg>
 #include "WebFrame.h"
@@ -27,12 +27,12 @@
 #include "WebView.h"
 #include "BrCtl.h"
 #include "SettingsContainer.h"
-#include "BrCtlSpecialLoadObserver.h"
+#include <brctlspecialloadobserver.h>
 #include "StaticObjectsContainer.h"
 #include "ResourceLoaderDelegate.h"
 #include "HttpDefs.h"
 #include "HttpConnection.h"
-#include "cdbcols.h"
+#include "CDBCols.h"
 
 using namespace WebCore;
 
@@ -181,7 +181,7 @@ int HttpUiCallbacks::aboutToLoadPageL(CBrCtl* brctl, int stateType)
             }
         case ESomeItemsNotSecure:
             {
-                resId = R_HTTPSEC_SOME_ITEMS_NOT_SECURE;
+                resId = 0;
                 event = TBrCtlDefs::EEventSomeItemsNotSecure;
                 break;
             }
@@ -245,7 +245,9 @@ int HttpUiCallbacks::aboutToLoadPageL(CBrCtl* brctl, int stateType)
         }
         // If the user selected "No" or "Cancel", we are cancelling the load
         if ( !result )
-        {
+        {   //Update history view Index also here...
+            if( brctl->historyHandler()->historyController()->historyViewEnabled() )
+                brctl->historyHandler()->historyController()->rollBackIndex();
             brctl->HandleBrowserLoadEventL(TBrCtlDefs::EEventContentFinished,0,0);
             return KErrCancel;
         }

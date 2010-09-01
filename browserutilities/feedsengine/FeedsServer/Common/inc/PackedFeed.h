@@ -24,7 +24,7 @@
 // INCLUDES
 #include <e32base.h>
 
-#include "LeakTracker.h"
+#include <leaktracker.h>
 #include "Packed.h"
 
 // CONSTANTS

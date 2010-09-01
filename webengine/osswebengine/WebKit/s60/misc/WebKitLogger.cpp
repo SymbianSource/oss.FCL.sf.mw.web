@@ -20,7 +20,7 @@
 #include "config.h"
 #include "WebKitLogger.h"
 #include <string.h>
-#include <e32hal.h>
+#include <E32HAL.H>
 
 // EXTERNAL DATA STRUCTURES
 

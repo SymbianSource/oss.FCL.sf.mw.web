@@ -16,12 +16,17 @@
 */
 
 
-#include <ApUtils.h> 
-#include <InternetConnectionManager.h>
+#include "browser_platform_variant.hrh"
+#include <aputils.h> 
+#include <internetconnectionmanager.h>
 
 #include "ServerHttpConnection.h"
 #include "Logger.h"
-
+#ifdef BRDO_OCC_ENABLED_FF
+#include <FeatMgr.h>
+#include <CentralRepository.h>
+#include <CoreApplicationUIsSDKCRKeys.h>
+#endif
 
 // -----------------------------------------------------------------------------
 // CServerHttpConnection::NewL
@@ -98,9 +103,19 @@ TInt CServerHttpConnection::CreateConnection(TInt* aConnectionPtr, TInt* aSockSv
     // If need be establish the connection.
     if(!IsConnected())
         {
+#ifdef BRDO_OCC_ENABLED_FF
+        TUint32 snapId = 0; //Defaults connects to Internet snap
+        iConMgr->SetConnectionType(CMManager::EDestination);
+        iConMgr->SetRequestedSnap(snapId);
+       if ( !IsPhoneOfflineL() )
+           {
+           // For only feeds, this silent is required
+           iConMgr->SetOccPreferences(ESilient);
+           }
+#else
         // Set the default access point.
         iConMgr->SetRequestedAP( iDefaultAccessPoint );
-            
+#endif
         // Open a connection.
         TRAP(err, err = iConMgr->StartConnectionL(ETrue));                
         if (err != KErrNone)
@@ -185,3 +200,34 @@ void CServerHttpConnection::SetAccessPointL( TUint32 aAccessPoint )
     {
     iDefaultAccessPoint = aAccessPoint;
     }
+
+#ifdef BRDO_OCC_ENABLED_FF
+// ---------------------------------------------------------
+// CServerHttpConnection::IsPhoneOfflineL
+//
+// Checks if phone is in offline mode or not.
+// Return ETrue if phone is in offline mode.
+// Return EFalse if phone is not in offline mode.
+// ---------------------------------------------------------
+//
+TBool CServerHttpConnection::IsPhoneOfflineL() 
+     {
+     FeatureManager::InitializeLibL();
+     TBool onLineMode = FeatureManager::FeatureSupported( KFeatureIdOfflineMode );
+     FeatureManager::UnInitializeLib();
+     if ( onLineMode )
+         {
+         CRepository* repository = CRepository::NewLC( KCRUidCoreApplicationUIs );
+         TInt connAllowed = 1;
+         repository->Get( KCoreAppUIsNetworkConnectionAllowed, connAllowed );
+         CleanupStack::PopAndDestroy(); //repository  
+         if ( !connAllowed )
+             {
+             //Yes, Phone is in Offline mode
+             return ETrue;
+             }
+         }
+     //Phone is in Online mode
+     return EFalse;
+     }
+#endif

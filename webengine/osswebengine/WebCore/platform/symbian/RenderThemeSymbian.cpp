@@ -16,7 +16,7 @@
 */
 
 #include "RenderThemeSymbian.h"
-#include "StaticObjectsContainer.h"
+#include "staticobjectscontainer.h"
 // implement Symbian theme here
 
 
@@ -480,48 +480,17 @@ void RenderThemeSymbian::scaleImageL(int type, int scalingFactor)
         image = m_selectArrow;
         break;
     }
-    CMaskedBitmap* maskedBitmap = image->getMaskedBitmap();
+    CMaskedBitmap* maskedBitmap = NULL;
+    if(image)
+      maskedBitmap  = image->getMaskedBitmap();
     if (!maskedBitmap) User::Leave(KErrGeneral); // should not really happen
     TSize size = maskedBitmap->SizeInPixels();
     size.iWidth = (size.iWidth * scalingFactor) / 100;
     size.iHeight = (size.iHeight * scalingFactor) / 100;
-    SyncScaler syncScaler;
-    TRequestStatus* status = &(syncScaler.iStatus);
+    
+    CMaskedBitmap* resultBitmap = maskedBitmap->ScaleImageToSize(size, false);
+    BitmapImage* bi = new (ELeave) BitmapImage(resultBitmap);
 
-    m_bitmapScaler = CBitmapScaler::NewL();
-    m_bitmapScaler->SetQualityAlgorithm(CBitmapScaler::EMaximumQuality);
-    // bitmap;
-    CFbsBitmap* bitmap = const_cast<CFbsBitmap*>(&(maskedBitmap->Bitmap()));
-    CFbsBitmap* resultBitmap = NULL;
-    resultBitmap = new (ELeave) CFbsBitmap;
-    CleanupStack::PushL(resultBitmap);
-    resultBitmap->Create(size, EColor16M);
-    syncScaler.init();
-    m_bitmapScaler->Scale(status, *bitmap, *resultBitmap, ETrue);
-    if (!m_asw) m_asw = new (ELeave) CActiveSchedulerWait();
-    m_asw->Start();
-    // If an error occured during scaling, stop!
-    User::LeaveIfError(syncScaler.m_error);
-
-    // mask
-    CFbsBitmap* mask = const_cast<CFbsBitmap*>(&(maskedBitmap->Mask()));
-    CFbsBitmap* resultMask = NULL;
-    resultMask = new (ELeave) CFbsBitmap;
-    CleanupStack::PushL(resultMask);
-    resultMask->Create(size, EGray256);
-    syncScaler.init();
-    m_bitmapScaler->Scale(status, (*mask), *resultMask, ETrue);
-    if (!m_asw) m_asw = new (ELeave) CActiveSchedulerWait();
-    m_asw->Start();
-    // If an error occured during scaling, stop!
-    User::LeaveIfError(syncScaler.m_error);
-
-    CMaskedBitmap* mb = NULL;
-    mb = new(ELeave) CMaskedBitmap(resultBitmap, resultMask);
-    CleanupStack::Pop(2); // resultBitmap, resultMask
-    CleanupStack::PushL(mb);
-    BitmapImage* bi = new (ELeave) BitmapImage(mb);
-    CleanupStack::Pop(); // mb
     switch (type) {
     case ECheckBoxOn:
         delete m_scaledCheckBoxOn;
@@ -549,10 +518,6 @@ void RenderThemeSymbian::scaleImageL(int type, int scalingFactor)
         m_scalingForSelectArrow = scalingFactor;
         break;
     }
-    delete m_bitmapScaler;
-    m_bitmapScaler = NULL;
-    delete m_asw;
-    m_asw = NULL;
 }
 
 void RenderThemeSymbian::run()

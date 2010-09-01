@@ -115,6 +115,8 @@ class WebChromeClient : public WebCore::ChromeClient {
 		
         virtual void focusedElementChanged(WebCore::Element*);
         
+        void wait(double t); 
+        
 protected: // new functions
         void addMessageToConsoleL(const WebCore::String& aMessage, WebCore::MessageLevel aMessageLevel, unsigned int aLine, const WebCore::String& aSourceURL);
         
@@ -124,6 +126,8 @@ private:
     bool m_visibility;
     bool m_visibilityByMouse;
     bool m_visibilityByKey;
+    
+ 
 };
 
 

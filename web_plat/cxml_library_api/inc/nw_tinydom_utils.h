@@ -15,7 +15,6 @@
 *
 */
 
-
 /** ----------------------------------------------------------------------- **
     @package:     NW_TinyDom
 
@@ -28,10 +27,10 @@
 #ifndef TINY_DOM_UTILS_H
 #define TINY_DOM_UTILS_H
 
-#include "nw_wbxml_parse.h"
-#include "nw_tinydom.h" 
-#include "nw_encoder_wbxmlwriter.h"
-#include "nw_dom_document.h"
+#include <nw_wbxml_parse.h>
+#include <nw_tinydom.h> 
+#include <nw_encoder_wbxmlwriter.h>
+#include <nw_dom_document.h>
 
 #ifdef __cplusplus
 extern "C"

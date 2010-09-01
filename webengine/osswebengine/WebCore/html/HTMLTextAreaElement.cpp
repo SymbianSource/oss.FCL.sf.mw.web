@@ -95,28 +95,34 @@ int HTMLTextAreaElement::selectionEnd()
     return 0;
 }
 
+static RenderTextControl* rendererAfterUpdateLayout(HTMLTextAreaElement* element) 
+{ 
+    element->document()->updateLayoutIgnorePendingStylesheets(); 
+    return static_cast<RenderTextControl*>(element->renderer());
+} 
+
 void HTMLTextAreaElement::setSelectionStart(int start)
 {
-    if (renderer())
-        static_cast<RenderTextControl*>(renderer())->setSelectionStart(start);
+    if (RenderTextControl* renderer = rendererAfterUpdateLayout(this)) 
+ 	    renderer->setSelectionStart(start); 
 }
 
 void HTMLTextAreaElement::setSelectionEnd(int end)
 {
-    if (renderer())
-        static_cast<RenderTextControl*>(renderer())->setSelectionEnd(end);
+    if (RenderTextControl* renderer = rendererAfterUpdateLayout(this)) 
+ 	    renderer->setSelectionEnd(end);
 }
 
 void HTMLTextAreaElement::select()
 {
-    if (renderer())
-        static_cast<RenderTextControl *>(renderer())->select();
+    if (RenderTextControl* renderer = rendererAfterUpdateLayout(this)) 
+ 	    renderer->select(); 
 }
 
 void HTMLTextAreaElement::setSelectionRange(int start, int end)
 {
-    if (renderer())
-        static_cast<RenderTextControl*>(renderer())->setSelectionRange(start, end);
+    if (RenderTextControl* renderer = rendererAfterUpdateLayout(this)) 
+ 	   renderer->setSelectionRange(start, end); 
 }
 
 void HTMLTextAreaElement::childrenChanged()

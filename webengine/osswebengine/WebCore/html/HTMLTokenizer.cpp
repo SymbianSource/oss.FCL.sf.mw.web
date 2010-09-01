@@ -29,7 +29,7 @@
 #include "config.h"
 #include "HTMLTokenizer.h"
 
-#include "csshelper.h"
+#include "CSSHelper.h"
 #include "Cache.h"
 #include "CachedScript.h"
 #include "DocLoader.h"
@@ -1425,7 +1425,7 @@ bool HTMLTokenizer::write(const SegmentedString& str, bool appendData)
     if (m_parserStopped)
         return false;
 #if PLATFORM(SYMBIAN)    
-    OOM_PRE_CHECK((src.length() + str.length()) * 16, 0, "HTMLTokenizer::write")
+    OOM_PRE_CHECK((src.length() + str.length()) * 4, 0, "HTMLTokenizer::write")
 #endif    
     SegmentedString source(str);
     if (m_executingScript)

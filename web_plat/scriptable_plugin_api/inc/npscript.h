@@ -68,8 +68,6 @@
 #ifndef _NP_SCRIPT_H_
 #define _NP_SCRIPT_H_
 
-#warning This version of the Netscape Plugin API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 #ifdef __cplusplus
 extern "C" {
 #endif

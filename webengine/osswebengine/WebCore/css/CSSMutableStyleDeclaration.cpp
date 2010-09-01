@@ -24,7 +24,7 @@
 #include "CSSMutableStyleDeclaration.h"
 
 #include "CSSImageValue.h"
-#include "cssparser.h"
+#include "CSSParser.h"
 #include "CSSProperty.h"
 #include "CSSPropertyNames.h"
 #include "CSSStyleSheet.h"

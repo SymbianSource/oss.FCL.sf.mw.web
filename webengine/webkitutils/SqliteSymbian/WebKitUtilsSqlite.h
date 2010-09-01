@@ -24,8 +24,8 @@
 class RFs;
 
 TInt sqlite3SymbianLastOsError(void);
-IMPORT TInt sqlite3SymbianLibInit(void);
-IMPORT void sqlite3SymbianLibFinalize(void);
+TInt sqlite3SymbianLibInit(void);
+void sqlite3SymbianLibFinalize(void);
 RFs& sqlite3SymbianFs(void);
 
 

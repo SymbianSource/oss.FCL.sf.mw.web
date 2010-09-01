@@ -49,12 +49,12 @@
 #include "MaskedBitmap.h"
 #include "ImageObserver.h"
 #include "SyncDecodeThread.h"
-#include "Oma2Agent.h"
+#include <Oma2Agent.h>
+#include <Browser_Platform_Variant.hrh>
+#include "SharedBuffer.h"
+
 using namespace ContentAccess;
 
-namespace TBidirectionalState {
-    class TRunInfo;
-};
 
 #include <eikenv.h>
 
@@ -68,7 +68,15 @@ namespace
   }
 
 using namespace WebCore;
+const TInt KDownScaleFactor = 2; // scaling is done by a factor of 2.For ex.2,4,8...( similar to ImageViewer )
+const TInt KMaxDownScaleFactor = 8; // limit scaling to 8
+
 CSynDecodeThread *CAnimationDecoderWrapped::iSyncDecodeThread  = NULL;
+void CAnimationDecoderWrapped::closeSyncDecodeThread()
+    {
+    delete iSyncDecodeThread;
+    iSyncDecodeThread = NULL; // it shoudn't be dandling in case of DLL load/unload at runtime 
+    }
 
 // ============================ MEMBER FUNCTIONS ===============================
 // -----------------------------------------------------------------------------
@@ -81,8 +89,8 @@ CAnimationDecoderWrapped::CAnimationDecoderWrapped( ImageObserver* aObs )
     , iObserver(aObs)
     , iLoopCount( -1 )
     , iCurLoopCount( -1 )
-    , iSyncBitmapHandle(-1)
-    , iSyncMaskHandle(-1)
+    , iSyncBitmapHandle(0)
+    , iSyncMaskHandle(0)
     , iDecodeInProgress(ETrue)
     , iIsInvalid(EFalse)
     , iCanBeDeleted(ETrue)
@@ -173,17 +181,25 @@ CMaskedBitmap* CAnimationDecoderWrapped::Destination()
         return iDestination; 
     }
         
-    if (iSyncBitmapHandle != -1 && iSyncMaskHandle != -1) {
+    if (iSyncBitmapHandle || iSyncMaskHandle) {       
         CFbsBitmap* bitmap = new CFbsBitmap();
-        bitmap->Duplicate(iSyncBitmapHandle);
-        CFbsBitmap* mask = new CFbsBitmap();
-        mask->Duplicate(iSyncMaskHandle);
+        TInt errBmp = bitmap->Duplicate(iSyncBitmapHandle);
+        
+        CFbsBitmap* mask = NULL;
+        TInt errMask = KErrNone;
+        if(iSyncMaskHandle) {
+            CFbsBitmap* mask = new CFbsBitmap();
+            errMask = mask->Duplicate(iSyncMaskHandle);
+        }
+        
+        if(errBmp==KErrNone && errMask==KErrNone) {
+            iDestination = new CMaskedBitmap(bitmap, mask);
+            iDestination->SetFrameIndex(0);
+            iDestination->SetFrameDelay(0);
+        }
 
-        iDestination = new CMaskedBitmap(bitmap, mask);
-        iDestination->SetFrameIndex(0);
-        iDestination->SetFrameDelay(0);
-        iSyncBitmapHandle = -1;
-        iSyncMaskHandle = -1;
+        iSyncBitmapHandle = 0;
+        iSyncMaskHandle = 0;
     }
     
     return iDestination;
@@ -231,24 +247,25 @@ HBufC8* CAnimationDecoderWrapped::DecodeDRMImageContentL(const TDesC8& aData)
 // -----------------------------------------------------------------------------
 // OpenL
 // -----------------------------------------------------------------------------
-void CAnimationDecoderWrapped::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBool aIsComplete )
+void CAnimationDecoderWrapped::OpenL( SharedBuffer* aData, TDesC* aMIMEType, TBool aIsComplete )
 {
     iCanBeDeleted = EFalse;
     if(!iObserver) {
-        OpenAndDecodeSyncL(aData);
+        TPtrC8 ptr( (const TUint8*)aData->data(), aData->size() );
+        OpenAndDecodeSyncL(ptr);
         iCanBeDeleted = ETrue;
         if (iIsInvalid)
             delete this;
         return;
     }
-        
+    m_data = aData;
+    m_dataptr.Set((const TUint8*)aData->data(), aData->size());   
     
     delete iDestination;
     iDestination = NULL;
     iDestination = CMaskedBitmap::NewL();
 
     HBufC8* mime = 0;
-    TPtrC8 buffer(aData.Ptr(),aData.Length());
     if (aMIMEType) {
         // it is safer to ignore the server supplied mime type and just recognize
         // the image type from the data headers. this does not work for all formats though
@@ -259,31 +276,23 @@ void CAnimationDecoderWrapped::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBo
         }
         if( *aMIMEType==KMimeDRM )
         {
-        iDrmContent = DecodeDRMImageContentL(aData);
+        iDrmContent = DecodeDRMImageContentL(m_dataptr);
         
         TInt drmContentLength = iDrmContent->Des().Length();
-        buffer.Set( (const TUint8*)iDrmContent->Des().Ptr(), drmContentLength);
+        m_dataptr.Set( (const TUint8*)iDrmContent->Des().Ptr(), drmContentLength);
         }
     }
-         
-    if( !iDecoder )
-        iDecoder = CBufferedImageDecoder::NewL(CEikonEnv::Static()->FsSession());
-
-    if (mime){
-        if (iDecoder) {
-            iDecoder->OpenL(buffer,*mime,CImageDecoder::EOptionNone);
-            CleanupStack::PopAndDestroy(); // mime
-        }
-    }
-    else {
-        if (iDecoder) {
-            iDecoder->OpenL(buffer,CImageDecoder::EOptionNone);
-        }
-    }
+    delete iDecoder;
+    iDecoder = NULL;
+    
+    if(mime) 
+       iDecoder = CImageDecoder::DataNewL(CEikonEnv::Static()->FsSession(), m_dataptr, *mime);
+    else 
+       iDecoder = CImageDecoder::DataNewL(CEikonEnv::Static()->FsSession(), m_dataptr);
 
     iRawDataComplete = aIsComplete;
 
-    if(iDecoder && iDecoder->ValidDecoder()  && iDecoder->IsImageHeaderProcessingComplete()) {
+    if(iDecoder && iDecoder->IsImageHeaderProcessingComplete()) {
         StartDecodingL();
     }
     else {
@@ -299,7 +308,7 @@ void CAnimationDecoderWrapped::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBo
         // first see if have a netscape 2.0 extension header 
         const TUint8 extString[] = { 'N', 'E', 'T', 'S', 'C', 'A', 'P','E','2','.','0','\3','\1' };
         const TInt sizeofextString = sizeof(extString);
-        TPtrC8 rawDataPtr((TUint8*)aData.Ptr(), aData.Length());
+        TPtrC8 rawDataPtr((TUint8*)m_dataptr.Ptr(), m_dataptr.Length());
         TInt offset = rawDataPtr.Find(extString, sizeofextString);
         if(offset != KErrNotFound) {
             // found a header, get the loop count -
@@ -320,41 +329,13 @@ void CAnimationDecoderWrapped::OpenL( const TDesC8& aData, TDesC* aMIMEType, TBo
         }
         iCurLoopCount = iLoopCount;
     }
+    if(mime)
+        {
+        CleanupStack::PopAndDestroy(mime);
+        }
     iCanBeDeleted = ETrue;
     if (iIsInvalid)
         delete this;
-}
-
-// -----------------------------------------------------------------------------
-// CAnimationDecoderWrapped::AddDataL
-// New chunk of raw data
-//
-// -----------------------------------------------------------------------------
-//
-void CAnimationDecoderWrapped::AddDataL(
-    const TDesC8& aNextChunk,
-    TBool aIsComplete )
-{
-    iRawDataComplete = aIsComplete;
-
-    if( iDecoder ) {
-        iDecoder->AppendDataL(aNextChunk);
-        if( iDecoder->ValidDecoder() ) {
-            //  if the image conversion is busy , then just appending the
-            // data should be sufficient
-            if(iStatus == KRequestPending) {
-                // more image data
-                iDecoder->ContinueConvert( &iStatus );
-                SetActive();
-            }
-        }
-        else {
-            iDecoder->ContinueOpenL() ;
-            if(iDecoder->ValidDecoder()  && iDecoder->IsImageHeaderProcessingComplete()){
-                StartDecodingL();
-            }
-        }
-    }
 }
 
 // -----------------------------------------------------------------------------
@@ -369,23 +350,25 @@ void CAnimationDecoderWrapped::StartDecodingL()
     iAnimation = iAnimationFrameCount > 1;
     iFrameInfo = iDecoder->FrameInfo( 0 );
     iSizeAvailable = ETrue;
-
     if (iFrameInfo.iFlags & TFrameInfo::ETransparencyPossible){
         // we only support gray2 and gray256 tiling
         TDisplayMode maskmode = ( (iFrameInfo.iFlags & TFrameInfo::EAlphaChannel) && (iFrameInfo.iFlags & TFrameInfo::ECanDither)) ? EGray256 : EGray2;
         TInt error = iDestination->Create( iFrameInfo.iOverallSizeInPixels, DisplayMode(), maskmode );
-
         if (!error)
             LoadFrame(0);
         else
             RunError(KErrNoMemory);
     }
     else {
-        TInt error = iDestination->Create( iFrameInfo.iOverallSizeInPixels, DisplayMode() );
-        if (!error)
-            LoadFrame(0);
-        else
-            RunError(KErrNoMemory);
+         TInt error = ScaleImageIfRequired();
+         if (!error)
+             {
+             LoadFrame(0);
+             }
+         else
+             {
+             RunError(error);	
+             }
     }
 }
 
@@ -564,17 +547,17 @@ void CAnimationDecoderWrapped::StartLoadAnimationBitmapL( TInt aFrameIndex )
     CFbsBitmap& animMask = iAnimationBitmap->MaskModifyable();
 
     TFrameInfo frameInfo( iDecoder->FrameInfo( aFrameIndex ) );
-    User::LeaveIfError( animBitmap.Create(
-    frameInfo.iOverallSizeInPixels, EColor16M ) );
+    User::LeaveIfError(animBitmap.Create(frameInfo.iOverallSizeInPixels, DisplayMode()));
 
     TDisplayMode maskDisplayMode( ENone );
 
     if( frameInfo.iFlags & TFrameInfo::ETransparencyPossible ) {
         if( frameInfo.iFlags & TFrameInfo::EAlphaChannel && (frameInfo.iFlags & TFrameInfo::ECanDither)) 
             maskDisplayMode = EGray256;
-        maskDisplayMode = EGray2;
+        else
+           maskDisplayMode = EGray2;
 
-        User::LeaveIfError( animMask.Create( frameInfo.iOverallSizeInPixels, maskDisplayMode ) );
+        User::LeaveIfError(animMask.Create(frameInfo.iOverallSizeInPixels, maskDisplayMode));
         iDecoder->Convert( &iStatus, animBitmap, animMask, aFrameIndex );
     }
     else
@@ -614,13 +597,19 @@ void CAnimationDecoderWrapped::CompleteLoadL()
         iDestination->SetFrameIndex( iFrameIndex );
         iDestination->SetFrameDelay( 0 );
         //Compress non-animated images via FBServ (losslessly, idle priority) 
-        iDestination->CompressInBackground();     
-
+        //the 1x1 image is directly fetched before decompressing it which results in a crash in fbsserv and therefore a white background is displayed.
+        //If the Image is of pixel (1,1) do not compress.
+#ifndef BRDO_PERF_IMPROVEMENTS_ENABLED_FF        
+        if( frameSize != TSize(1,1) )
+           iDestination->CompressInBackground();
+#endif
         // Normal image ready
         //iDestination = NULL;
         iImageState = EInactive;
+        iDestination->SetInitialisationCompletionStatus(ETrue);
         iObserver->imageReady(sizeinBytes);
         delete iDecoder, iDecoder = NULL;
+        m_data = NULL;
     }
 }
 
@@ -759,6 +748,42 @@ void CAnimationDecoderWrapped::SelfComplete( TInt aError )
     User::RequestComplete( status, aError );
 }
 
-
+// -----------------------------------------------------------------------------
+// CAnimationDecoderWrapped::ScaleImageIfRequired
+// Images that are too large to be displayed are scaled down 
+// @return error code
+// -----------------------------------------------------------------------------
+TInt CAnimationDecoderWrapped::ScaleImageIfRequired()
+    {
+    TInt error = iDestination->Create( iFrameInfo.iOverallSizeInPixels, DisplayMode() );
+    // if the image is too large try scaling it down
+    if ( error == KErrNoMemory )
+        {
+        TBool fullyScalable(iFrameInfo.iFlags & TFrameInfo::EFullyScaleable);
+        // check if scaling is possible
+        if ( !fullyScalable )
+            {
+            TInt scalingLevel(KDownScaleFactor);
+            do 
+                {
+                TSize scaledSize( iFrameInfo.iOverallSizeInPixels.iWidth / scalingLevel + ( iFrameInfo.iOverallSizeInPixels.iWidth % scalingLevel ? 1 : 0 ),
+                                  iFrameInfo.iOverallSizeInPixels.iHeight / scalingLevel + ( iFrameInfo.iOverallSizeInPixels.iHeight % scalingLevel ? 1 : 0 ) );
+                error = iDestination->Create( scaledSize, DisplayMode() );
+                // retry only for KErrNoMemory condition
+                if (error == KErrNoMemory)
+                    {
+                    // increase to next down scaling level
+                    scalingLevel *= KDownScaleFactor ;
+                    }
+                else
+                    {
+                    // image scaled to appropriate level
+                    iFrameInfo.iOverallSizeInPixels = scaledSize;
+                    }
+                }while (error == KErrNoMemory &&  scalingLevel <= KMaxDownScaleFactor);// loop until we can scale the image without any error
+            }
+        }
+    return error;
+    }
 
 //  End of File

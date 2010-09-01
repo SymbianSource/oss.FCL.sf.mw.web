@@ -17,18 +17,20 @@
 *
 */
 
-
 TARGET          WidgetRegistry.exe
 TARGETTYPE      EXE
 UID             0x1000008d 0x10282F06
 
 EPOCSTACKSIZE   0x5000
+
+#ifndef WINS
 EPOCHEAPSIZE    0x5000 0x1000000
+#endif
 
 #include <bldvariant.hrh>
 #include <data_caging_paths.hrh>
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 VENDORID        VID_DEFAULT
 CAPABILITY      CAP_SERVER AllFiles
@@ -41,12 +43,14 @@ SOURCE WidgetRegistry.cpp
 SOURCE WidgetRegistrySession.cpp
 SOURCE WidgetRegistryServer.cpp
 SOURCE UidAllocator.cpp
+SOURCE WidgetMMCHandler.cpp
 
 USERINCLUDE       ../Server/inc
-USERINCLUDE       ../common/inc
+USERINCLUDE       ../Common/inc
 USERINCLUDE       ../../../inc
+
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 LIBRARY         euser.lib
 LIBRARY         efsrv.lib

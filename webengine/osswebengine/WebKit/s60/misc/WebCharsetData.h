@@ -18,7 +18,7 @@
 #ifndef __CHARSETDATA_H
 #define __CHARSETDATA_H
 
-#include <charconv.h>
+#include <CHARCONV.H>
 struct TCharsetEntry
 {
   TUint32 uid;

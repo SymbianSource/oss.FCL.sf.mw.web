@@ -20,13 +20,13 @@
 #include <e32std.h> 
 #include "SyncDecodeThread.h"
 #include "MaskedBitmap.h"
-#include <imageconversion.h>
+#include <ImageConversion.h>
 
 namespace TBidirectionalState {
     class TRunInfo;
 };
 
-#include <eikenv.h> 
+#include <EIKENV.H> 
 
 #define KMaxHeapSize 0x1000000
 
@@ -40,7 +40,7 @@ class BmElem
         TInt iMaskHandle;
 };
 
-enum DecoderState {ENewDecodeRequest, EDecodeInProgress, EDecoderIdle};
+enum DecoderState {ENewDecodeRequest, EDecodeInProgress, EDecoderIdle, EDecoderTerminate};
 class CSynDecoder : public CActive
     {
     public:  // Constructors and destructor
@@ -51,6 +51,7 @@ class CSynDecoder : public CActive
         void Open(const TDesC8& aData, TRequestStatus *status);
         void Lock() { iDecoderLock.Wait(); }
         void Release() { iDecoderLock.Signal(); }
+        void Terminate() { iDecodeState = EDecoderTerminate; }
 
     private: // From base class CActive
         void DoCancel();
@@ -70,7 +71,6 @@ class CSynDecoder : public CActive
         CMaskedBitmap* iBitmap;
         RFastLock iDecoderLock;
         DecoderState iDecodeState;
-        RThread syncThread;
 
 friend class CSynDecodeThread;        
     };
@@ -119,6 +119,10 @@ CSynDecoder::~CSynDecoder()
 // -----------------------------------------------------------------------------
 void CSynDecoder::Open(const TDesC8& aData, TRequestStatus *status)
 {
+    // FbsSession is needed for parent thread if it doesn't have already
+    if(!RFbsSession::GetSession())
+        RFbsSession::Connect();
+
     iElem.iRequestStatus = status;
     iElem.iData.Set(aData); 
     iElem.iParentThreadId = RThread().Id();
@@ -130,6 +134,7 @@ void CSynDecoder::Open(const TDesC8& aData, TRequestStatus *status)
 void CSynDecoder::SetIdle()
 {
     iDecodeState = EDecoderIdle;
+    iElem.iParentThreadId = 0;
     if(!IsActive()) {
         iStatus = KRequestPending;
         SetActive();
@@ -203,6 +208,12 @@ void CSynDecoder::RunL()
         SignalParent(iStatus.Int());
         SetIdle();
         break;
+    case EDecoderTerminate:
+        // if any thread is waiting for decode, signal it
+        if( iElem.iParentThreadId )
+            SignalParent(KErrCompletion);
+        CActiveScheduler::Stop();
+        break;
     default:
         SetIdle();
     }        
@@ -245,15 +256,32 @@ CSynDecodeThread::CSynDecodeThread()
 
 CSynDecodeThread::~CSynDecodeThread()
 {
-    CActiveScheduler::Stop(); 
-	iDecoderThread.Close();
+    // signal the thread to do cleanup and stop
+    iSyncDecoder->Terminate();
+    TRequestStatus *ps = &(iSyncDecoder->iStatus);
+    iDecoderThread.RequestComplete(ps, KErrNone);
+    
+	iDecoderThread.Close();    
 }
 
 void CSynDecodeThread::ConstructL()
 {   
-    _LIT(KThreadName, "ImgDecoder");
+    _LIT(KThreadName, "iconDecoder");
     RAllocator &allocator = User::Allocator();
-    User::LeaveIfError(iDecoderThread.Create(KThreadName, CSynDecodeThread::ScaleInThread, KDefaultStackSize, &allocator, NULL));
+    TInt err = iDecoderThread.Create(KThreadName, CSynDecodeThread::ScaleInThread, KDefaultStackSize, &allocator, NULL);
+    if(err == KErrAlreadyExists) {
+        // It may happen only in rare cases, if container browserengine..dll was unloaded and loaded again before
+        // syncDecodeThread could close itself (scheduled). In that case, we kill that thread since we can't reuse that
+        // and create a new one with same name.
+        RThread th;
+        th.Open(KThreadName);
+        th.Kill(KErrNone);
+        th.Close();
+
+        // Leave this time if problem still exists
+        User::LeaveIfError(iDecoderThread.Create(KThreadName, CSynDecodeThread::ScaleInThread, KDefaultStackSize, &allocator, NULL));
+    }
+
     iDecoderThread.SetPriority(EPriorityMore);
     TRequestStatus status = KRequestPending;
     iDecoderThread.Rendezvous(status);

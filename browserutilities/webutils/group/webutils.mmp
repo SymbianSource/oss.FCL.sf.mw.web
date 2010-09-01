@@ -15,10 +15,9 @@
 *
 */
 
-
 #include <platform_paths.hrh>
 #include <data_caging_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 // Build target
 TARGET		webutils.dll
@@ -33,13 +32,11 @@ SOURCEPATH		../src
 // Source files 
 SOURCE			CUserAgent.cpp
 
-
 // Include paths
-USERINCLUDE     . ../inc 
+USERINCLUDE     . ../INC 
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
-
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 // Dependencies
 LIBRARY			euser.lib
@@ -53,13 +50,11 @@ LIBRARY         cone.lib
 //MACRO _WEBUTILS_LOG_
 //#define _WEBUTILS_LOG_
 
-
 #ifdef _WEBUTILS_LOG_
 LIBRARY flogger.lib
 #else
 DEBUGLIBRARY flogger.lib
 #endif
-
 
 #if defined(ARMCC)
         DEFFILE ../EABI/WebUtils_EKA2.DEF 
@@ -70,5 +65,3 @@ DEBUGLIBRARY flogger.lib
 #else
         DEFFILE ../BMARM/WEBUTILS_EKA2.DEF 
 #endif
-
-

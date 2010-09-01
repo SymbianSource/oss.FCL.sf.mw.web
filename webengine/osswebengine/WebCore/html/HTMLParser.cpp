@@ -380,7 +380,7 @@ bool HTMLParser::handleError(Node* n, bool flat, const AtomicString& localName, 
             }
         } else if (h->hasLocalName(htmlTag)) {
             if (!current->isDocumentNode() ) {
-                if (document->documentElement()->hasTagName(htmlTag)) {
+                if (document->documentElement()->hasTagName(htmlTag) && !m_isParsingFragment) {
                     reportError(RedundantHTMLBodyError, &localName);
                     // we have another <HTML> element.... apply attributes to existing one
                     // make sure we don't overwrite already existing attributes
@@ -422,7 +422,7 @@ bool HTMLParser::handleError(Node* n, bool flat, const AtomicString& localName, 
                 return false;
             }
         } else if (h->hasLocalName(bodyTag)) {
-            if (inBody && document->body()) {
+            if (inBody && document->body() && !m_isParsingFragment) {
                 // we have another <BODY> element.... apply attributes to existing one
                 // make sure we don't overwrite already existing attributes
                 // some sites use <body bgcolor=rightcolor>...<body bgcolor=wrongcolor>
@@ -677,7 +677,7 @@ bool HTMLParser::framesetCreateErrorCheck(Token* t, RefPtr<Node>& result)
         // we can't implement that behaviour now because it could cause too many
         // regressions and the headaches are not worth the work as long as there is
         // no site actually relying on that detail (Dirk)
-        if (document->body())
+        if (document->body() && !m_isParsingFragment)
             document->body()->setAttribute(styleAttr, "display:none");
         inBody = false;
     }
@@ -815,6 +815,7 @@ PassRefPtr<Node> HTMLParser::getNode(Token* t)
         gFunctionMap.set(buttonTag.localName().impl(), &HTMLParser::nestedCreateErrorCheck);
         gFunctionMap.set(commentAtom.impl(), &HTMLParser::commentCreateErrorCheck);
         gFunctionMap.set(ddTag.localName().impl(), &HTMLParser::ddCreateErrorCheck);
+        gFunctionMap.set(divTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
         gFunctionMap.set(dtTag.localName().impl(), &HTMLParser::dtCreateErrorCheck);
         gFunctionMap.set(formTag.localName().impl(), &HTMLParser::formCreateErrorCheck);
         gFunctionMap.set(framesetTag.localName().impl(), &HTMLParser::framesetCreateErrorCheck);
@@ -828,6 +829,7 @@ PassRefPtr<Node> HTMLParser::getNode(Token* t)
         gFunctionMap.set(noembedTag.localName().impl(), &HTMLParser::noembedCreateErrorCheck);
         gFunctionMap.set(noframesTag.localName().impl(), &HTMLParser::noframesCreateErrorCheck);
         gFunctionMap.set(noscriptTag.localName().impl(), &HTMLParser::noscriptCreateErrorCheck);
+        gFunctionMap.set(qTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
         gFunctionMap.set(sTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
         gFunctionMap.set(selectTag.localName().impl(), &HTMLParser::selectCreateErrorCheck);
         gFunctionMap.set(smallTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
@@ -841,6 +843,7 @@ PassRefPtr<Node> HTMLParser::getNode(Token* t)
         gFunctionMap.set(trTag.localName().impl(), &HTMLParser::nestedCreateErrorCheck);
         gFunctionMap.set(ttTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
         gFunctionMap.set(uTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
+        gFunctionMap.set(ulTag.localName().impl(), &HTMLParser::nestedStyleCreateErrorCheck);
     }
 
     bool proceed = true;
@@ -858,9 +861,10 @@ bool HTMLParser::allowNestedRedundantTag(const AtomicString& tagName)
     // about 1500 tags, all from a bunch of <b>s.  We will only allow at most 20
     // nested tags of the same type before just ignoring them all together.
     unsigned i = 0;
-    for (HTMLStackElem* curr = blockStack;
-         i < cMaxRedundantTagDepth && curr && curr->tagName == tagName;
-         curr = curr->next, i++);
+    for (HTMLStackElem* curr = blockStack; i < cMaxRedundantTagDepth && curr; curr = curr->next) {
+        if (curr->tagName == tagName)
+            i++;
+    }
     return i != cMaxRedundantTagDepth;
 }
 
@@ -1158,7 +1162,8 @@ void HTMLParser::handleResidualStyleCloseTagAcrossBlocks(HTMLStackElem* elem)
             prevMaxElem->next = elem;
             ASSERT(newNodePtr);
             prevMaxElem->node = newNodePtr;
-            prevMaxElem->didRefNode = false;
+            newNodePtr->ref(); 
+            prevMaxElem->didRefNode = true;
         } else
             delete elem;
     }
@@ -1388,6 +1393,10 @@ void HTMLParser::createHead()
         return;
 
     head = new HTMLHeadElement(document);
+    
+	if (m_isParsingFragment)
+        return;
+
     HTMLElement* body = document->body();
     ExceptionCode ec = 0;
     document->documentElement()->insertBefore(head, body, ec);

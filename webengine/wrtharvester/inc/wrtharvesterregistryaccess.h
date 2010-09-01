@@ -20,13 +20,14 @@
 #define WRHARVESTERREGISTRYACCESS_H 
 
 // INCLUDES
-#include <WidgetRegistryClient.h>
+#include <widgetregistryclient.h>
 #include <badesca.h>
 
 // FORWARD DECLARATIONS
 class CWidgetInfo;
 
 // CONSTANTS
+const TInt32 KS60Widget = 1;
 template < class T > class RWrtArray : public RPointerArray< T >
     {
     public:
@@ -72,6 +73,7 @@ class CWrtInfo : public CBase
             iUid = TUid::Uid(0);
             iDisplayName = NULL;
             iBundleId = NULL;
+            iType = KErrNotFound;
             }
 
         /**
@@ -87,6 +89,7 @@ class CWrtInfo : public CBase
         TUid        iUid;
         HBufC*      iDisplayName;// widget display name
         HBufC*      iBundleId; //  widget bundle identifier
+        TInt      iType; // widget type
     };
 
 // CLASS DECLARATION
@@ -131,6 +134,15 @@ class WrtHarvesterRegistryAccess
         * @return Yes or no.
         */
         TBool SupportsMiniviewL( RWidgetRegistryClientSession& aSession, const TUid& aUid );
+                
+        /**
+        * Check if the widget is wgz.
+        * 
+        * @param aSession Widget registry session
+        * @param aUid UID of widget.
+        * @return Yes or no.
+        */
+        TBool IsNokiaWidget( RWidgetRegistryClientSession& aSession, const TUid& aUid );
         
         /**
         * Returns the property value for the widget as a string. Ownership transferred.

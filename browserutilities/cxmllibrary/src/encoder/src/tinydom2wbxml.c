@@ -15,9 +15,6 @@
 *
 */
 
-
-
-
 /*****************************************************************
 **  File: tinydom2wbxml.c
 **
@@ -26,7 +23,7 @@
 
 #include "cxml_internal.h"
 #include "nw_encoder_tinydom2wbxml.h"
-#include "nw_dom_text.h"
+#include <nw_dom_text.h>
 
 /*
 Writes an AttrVal

@@ -15,15 +15,14 @@
 *
 */
 
-
 #include <badesca.h>
 #include <e32math.h>
 
-#include "FeedAttributes.h"
+#include <feedattributes.h>
 #include "FeedsDatabase.h"
-#include "FolderAttributes.h"
+#include <folderattributes.h>
 #include "PackedAttributes.h"
-#include "LeakTracker.h"
+#include <leaktracker.h>
 #include "Logger.h"
 #include "PackedFeed.h"
 #include "PackedFolder.h"

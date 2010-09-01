@@ -16,7 +16,7 @@
 */
 // INCLUDES
 #include <e32std.h>
-#include <implementationproxy.h>
+#include <ecom/implementationproxy.h>
 #include "AiwBrowserProviderOpenUrl.h"
 #include "AiwBrowserProviderSaveUrl.h"
 #include "logger.h"

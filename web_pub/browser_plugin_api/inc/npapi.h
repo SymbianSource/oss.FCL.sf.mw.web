@@ -48,8 +48,6 @@
 #ifndef _NPAPI_H_
 #define _NPAPI_H_
 
-#warning This NP API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 #define GENERIC_CONTEXTS
 
 #ifdef INCLUDE_JAVA
@@ -368,6 +366,7 @@ typedef enum {
     NPPVPluginDeactivate = 101,
     NPPVPluginZoom = 102,
     NPPVPluginPointerEvent = 103,
+    NPPVPluginBitmap = 104, 
     NPPVpluginInteractiveBool = 1000,
 #endif
 

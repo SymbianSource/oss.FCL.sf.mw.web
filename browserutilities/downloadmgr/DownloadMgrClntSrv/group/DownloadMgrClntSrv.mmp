@@ -17,7 +17,7 @@
 */
 
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET      DownloadMgr.dll
 TARGETTYPE  DLL
@@ -33,7 +33,6 @@ UID         0x1000008d 0x10008D5F
   DEFFILE ../BWinsCw/DOWNLOADMGRU_EKA2.def
 #endif
 
-
 SOURCEPATH ../src
 SOURCE  DownloadMgrClntSession.cpp
 SOURCE  DownloadMgrClntSubSession.cpp
@@ -47,13 +46,12 @@ SOURCE  DownloadMgrTransObserver.cpp
 SOURCE  DownloadMgrCod.cpp
 SOURCE  DownloadMgrLogger.cpp
 SOURCE  DownloadMgrClientApiExt.cpp
-SOURCE  ../../DownloadMgrServEng/Src/DownloadDataServ.cpp
+SOURCE  ../../DownloadMgrServEng/src/DownloadDataServ.cpp
 
 USERINCLUDE	    ../inc
+USERINCLUDE	    ../../DownloadMgrServEng/Inc
 
 MW_LAYER_SYSTEMINCLUDE
-
-SYSTEMINCLUDE	../../DownloadMgrServEng/Inc
 
 LIBRARY euser.lib
 LIBRARY HttpDMServEng.lib

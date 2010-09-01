@@ -28,14 +28,12 @@
 #ifndef NW_TINYTREE_TREEVECTOR_H
 #define NW_TINYTREE_TREEVECTOR_H
 
-#include "cxml_proj.h"
-
+#include <cxml_proj.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */
   
-
 typedef struct NW_TinyTree_TinyTree_s NW_TinyTree_t;
 
 /** ----------------------------------------------------------------------- **

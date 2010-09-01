@@ -57,8 +57,6 @@
 #ifndef prtypes_h___
 #define prtypes_h___
 
-#warning This NP API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 #ifdef MDCPUCFG
 #include MDCPUCFG
 #else

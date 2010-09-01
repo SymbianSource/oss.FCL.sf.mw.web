@@ -20,7 +20,7 @@
 
 
 // INCLUDE FILES
-#include "HistoryEntry.h"
+#include "historyentry.h"
 #include <fbs.h>
 #include <s32mem.h>
 #include <uri8.h>

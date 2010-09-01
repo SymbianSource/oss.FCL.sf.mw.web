@@ -25,8 +25,8 @@
 #include "WidgetUiWindowView.h"
 
 // System includes
-#include <BrowserDialogsProviderObserver.h>
-#include <BrowserDialogsProvider.h>
+#include <browserdialogsproviderobserver.h>
+#include <browserdialogsprovider.h>
 
 // CONSTANTS
 

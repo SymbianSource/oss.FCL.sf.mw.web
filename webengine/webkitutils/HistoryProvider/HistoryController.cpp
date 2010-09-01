@@ -18,11 +18,12 @@
 
 // INCLUDE FILES
 #include <../bidi.h>
+#include <brctldialogsprovider.h>
+
 #include "HistoryController.h"
-#include "BrCtlDefs.h"
+#include <brctldefs.h>
 #include "HistoryView.h"
 #include "HistoryEntry.h"
-#include "BrCtlDialogsProvider.h"
 
 // EXTERNAL DATA STRUCTURES
 
@@ -151,7 +152,10 @@ HBufC* HistoryController::pageInfoLC( TBrCtlDefs::TBrCtlPageInfo brCtlPageInfo )
     CleanupStack::PushL( pageInfo );
     return pageInfo;
 }
-
+void HistoryController::rollBackIndex()
+    {
+    m_currentIndex = m_tempCurrentIndex;
+    }
 /**
 */
 void HistoryController::handleHistoryCommandL(int command)
@@ -168,7 +172,7 @@ void HistoryController::handleHistoryCommandL(int command)
     case TBrCtlDefs::ECommandBack:
         {
         if (m_historyViewEnabled && m_backListAllowed) {
-            showHistoryViewL(true);
+            showHistoryViewL(false);
         }
         else {
             loadHistoryUrl( EHistoryStackDirectionPrevious, TBrCtlDefs::ECacheModeHistory, -1);
@@ -254,6 +258,9 @@ void HistoryController::updateHistoryEntryThumbnailL(const CFbsBitmap* bitmap)
         HistoryEntry* entry = entryByIndex(m_currentIndex);
         if (entry) {
             TSize bmsize = bitmap->SizeInPixels();
+#ifdef BRDO_MULTITOUCH_ENABLED_FF            
+            entry->storeThumbnail(bitmap, TRect(0,0,bmsize.iWidth, bmsize.iHeight));
+#else
             TRect parentControlRect = m_historyCallback->parent()->Rect();
             int historyViewWidth = parentControlRect.Width();
             int historyViewHeight( parentControlRect.Height());
@@ -261,7 +268,8 @@ void HistoryController::updateHistoryEntryThumbnailL(const CFbsBitmap* bitmap)
             int maxDimension = (historyViewWidth > historyViewHeight)? historyViewWidth:historyViewHeight;
             int thumbnailHeight = Min(bmsize.iHeight, maxDimension*KCenterThumbnailHeightPercent/100);
             int thumbnailWidth = Min(bmsize.iWidth, maxDimension*KCenterThumbnailWidthPercent/100);
-            entry->storeThumbnail(bitmap, TRect(0,0,thumbnailWidth, thumbnailHeight));
+            entry->storeThumbnail(bitmap, TRect(0,0,thumbnailWidth, thumbnailHeight));            
+#endif
         }
     }
 }
@@ -517,8 +525,11 @@ void HistoryController::showHistoryListL()
     SelectArray* historyList = new( ELeave ) CArrayFixFlat<TBrCtlSelectOptionData>(10);
     CleanupStack::PushL( historyList );
     for( int i = m_historyStack.Count() - 1; i >= 0; i-- ) {
-        TBrCtlSelectOptionData t( TBrCtlSelectOptionData(entryByIndex(i)->pageTitle(), i == m_currentIndex, false, false) );
-        historyList->AppendL(t);
+    if(entryByIndex(i))
+    {
+      TBrCtlSelectOptionData t( TBrCtlSelectOptionData(entryByIndex(i)->pageTitle(), i == m_currentIndex, false, false) );
+      historyList->AppendL(t);
+     }
     }
     // Display history dialog
     bool ret = m_historyCallback->dialogSelectOption(historyList);

@@ -17,7 +17,6 @@
 *
 */
 
-
 #ifndef COD_PANIC_H
 #define COD_PANIC_H
 

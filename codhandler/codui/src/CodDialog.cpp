@@ -17,14 +17,14 @@
 
 
 #include <coemain.h>
-#include <aknnotewrappers.h>
+#include <AknNoteWrappers.h>
 #include <AknQueryDialog.h>
 #include <CAknMemorySelectionDialog.h>
 #include <CodUi.rsg>
 #include "CodDialog.h"
 #include "CodLogger.h"
 #include <pathinfo.h>
-#include <sysutil.h>
+#include <SysUtil.h>
 
 #ifndef RD_MULTIPLE_DRIVE
 _LIT(KBackSlash,"\\");

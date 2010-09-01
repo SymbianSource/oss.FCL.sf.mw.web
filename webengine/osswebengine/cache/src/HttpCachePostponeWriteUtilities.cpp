@@ -99,8 +99,8 @@ void CHttpCacheEntryAsyncWriteHelper::WriteNextBodyBlock()
     HttpCacheUtil::WriteFormatLog(0, _L("CACHEPOSTPONE: CHttpCacheEntryAsyncWriteHelper::WriteNextBodyBlock called on object %08x for block %d"), this, iBodyPart );
 #endif
 
-    TPtrC8 bufferPtr( iSource->BodyData().GetSegmentData(iBodyPart) );
-    iSource->BodyFile().Write(bufferPtr, iStatus);
+    iCurrentBuf.Set( iSource->BodyData().GetSegmentData(iBodyPart) );    
+    iSource->BodyFile().Write(iCurrentBuf, iStatus);
     }
 
 // -----------------------------------------------------------------------------

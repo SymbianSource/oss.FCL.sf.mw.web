@@ -20,7 +20,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include "brctlinterface.h"
+#include <brctlinterface.h>
 
 // CONSTANTS
 

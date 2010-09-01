@@ -31,9 +31,9 @@
 #include <f32file.h>
 #include <AknProgressDialog.h>
 #include <AknWaitDialog.h>
-#include <ConnectionObservers.h>
+#include <connectionobservers.h>
 #include <ApEngineConsts.h>
-#include <ErrorUI.h> 
+#include <errorui.h> 
 #include <bldvariant.hrh>
 #include <ConeResLoader.h>
 
@@ -42,8 +42,8 @@
 #include <AiwServiceHandler.h>
 
 
-#include <aiwdialdata.h>
-#include <aiwdialdataext.h>
+#include <AiwDialData.h>
+#include <AiwDialDataExt.h>
 
 
 #endif // __BROWSER_TEL_SERVICES_CALLUI__

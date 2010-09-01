@@ -28,7 +28,7 @@
 #include "config.h"
 #include "CanvasStyle.h"
 
-#include "cssparser.h"
+#include "CSSParser.h"
 #include "CanvasGradient.h"
 #include "CanvasPattern.h"
 #include "GraphicsContext.h"

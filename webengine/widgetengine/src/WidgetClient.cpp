@@ -20,7 +20,7 @@
 #include <eikenv.h>
 #include <apgcli.h>
 #include <apgtask.h>
-#include <BrowserLauncher.h>
+#include <browserlauncher.h>
 #include <widgetmenu.rsg>
 #include <avkon.hrh>
 

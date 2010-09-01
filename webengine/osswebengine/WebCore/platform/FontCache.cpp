@@ -33,7 +33,7 @@
 #include "FontFallbackList.h"
 #include "FontPlatformData.h"
 #include "StringHash.h"
-#include "StaticObjectsContainer.h"
+#include "staticobjectscontainer.h"
 #include <wtf/HashMap.h>
 
 namespace WebCore {

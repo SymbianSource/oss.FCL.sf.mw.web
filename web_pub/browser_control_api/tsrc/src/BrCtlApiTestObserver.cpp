@@ -21,7 +21,7 @@
 #include <eikappui.h>
 #include <eikenv.h>
 #include <eikbtgpc.h>
-#include "BrCtlApiTestObserver.h"
+#include "brctlapitestobserver.h"
 #include <avkon.hrh>
 #include <aknmessagequerydialog.h>
 

@@ -45,9 +45,8 @@
 #define BRCTL_H
 
 //  INCLUDES
-#include <BrCtlInterface.h>
+#include <brctlinterface.h>
 
-#include "BrCtlDefs.h"
 #include "HistoryInterface.h"
 
 #include "WmlInterface.h"

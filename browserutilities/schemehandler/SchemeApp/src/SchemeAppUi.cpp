@@ -20,7 +20,7 @@
 #include "SchemeDocument.h"
 #include "SchemeAppLogger.h"
 #include "SchemeDialog.h" 
-#include <SchemeHandler.h>
+#include <schemehandler.h>
 #include "SchemeAppUi.h"
 #include "Scheme.hrh"
 #include <schemeapp.rsg>

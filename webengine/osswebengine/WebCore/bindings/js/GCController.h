@@ -36,12 +36,14 @@ namespace WebCore {
 
     public:
         void garbageCollectSoon();
-        
+        void startedExit(TBool aExitStatus); 
+        TBool isExitInProgress() {return m_exitInProgress;} 
     private:
         GCController(); // Use gcController() instead
         void gcTimerFired(Timer<GCController>*);
         
         Timer<GCController> m_GCTimer;
+        TBool m_exitInProgress; 
     };
 
     // Function to obtain the global GC controller.

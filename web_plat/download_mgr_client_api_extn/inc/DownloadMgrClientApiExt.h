@@ -15,15 +15,10 @@
 *
 */
 
-
-
 #ifndef __RHTTPDOWNLOADMGRAPIEXT_H__
 #define __RHTTPDOWNLOADMGRAPIEXT_H__
 
-#warning The Download Manager API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
-#include "DownloadMgrClient.h"
-
+#include <downloadmgrclient.h>
 
 /**
  *  API Extensions for RHttpDownloadMgr

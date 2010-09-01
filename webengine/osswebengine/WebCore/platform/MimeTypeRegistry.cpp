@@ -24,7 +24,7 @@
  */
 
 #include "config.h"
-#include "MimeTypeRegistry.h"
+#include "MIMETypeRegistry.h"
 
 #include "StringHash.h"
 #include <wtf/HashMap.h>

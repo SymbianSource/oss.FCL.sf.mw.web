@@ -19,8 +19,6 @@
 #ifndef AIWBROWSERPROVIDER_HRH
 #define AIWBROWSERPROVIDER_HRH
 
-#warning The AIW Browser API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 // DATA TYPES
 enum TAiwTestMenuSaveCommands
     {

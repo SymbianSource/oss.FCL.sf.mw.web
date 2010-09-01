@@ -24,16 +24,16 @@
 #include "widgetappdefs.rh"
 #include <WidgetUi.rsg>
 #include "WidgetUi.hrh"
-#include <s32mem.h>
+#include <S32MEM.H>
 #include <avkon.hrh>
 #include <e32std.h>
 #include <bautils.h>
 #include <oommonitorplugin.h>
-#include <BrowserDialogsProvider.h>
+#include <browserdialogsprovider.h>
 #include <e32property.h>
 
 #ifdef BRDO_WRT_HS_FF
-#include <akntoolbar.h>
+#include <AknToolbar.h>
 #endif
 
 // EXTERNAL DATA STRUCTURES
@@ -288,7 +288,7 @@ void CWidgetUiAppUi::HandleResourceChangeL( TInt aType )
     CAknViewAppUi::HandleResourceChangeL( aType );
     if ( aType == KEikDynamicLayoutVariantSwitch && iWindowManager && iWindowManager->ActiveWindow())
         {
-        iWindowManager->ActiveWindow()->Relayout();
+        iWindowManager->ActiveWindow()->RelayoutL( aType );
         }
     }
 
@@ -304,6 +304,16 @@ void CWidgetUiAppUi::HandleWsEventL(
 
     if ( aEvent.Type() == KAknUidValueEndKeyCloseEvent )
         {
+        	
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+        if( IsDisplayingDialog() ) 
+        	   {
+             //Get the top dialog
+             CCoeControl* control = TopFocusedControl();
+             delete control;
+             control = NULL;
+             }
+#endif
         // Close the current active widget
         iWindowManager->CloseWindowsAsync(EFalse);
         return;
@@ -378,7 +388,7 @@ void CWidgetUiAppUi::HandleApplicationSpecificEventL(TInt aEventType, const TWsE
             {            
 #ifdef OOM_WIDGET_CLOSEALL            
             CloseAllWidgetsAndExit();
-#else if    // OOM_WIDGET_CLOSEALL        
+#else //if    OOM_WIDGET_CLOSEALL        
             iWindowManager->HandleOOMEventL(iIsForeground);
             CloseAndExitIfNoneLeft();
 #endif            
@@ -400,7 +410,22 @@ void CWidgetUiAppUi::SendAppToBackground()
     TApaTask task = taskList.FindApp( wapUid );
     task.SendToBackground();
     }
-    
+   
+   
+// -----------------------------------------------------------------------------
+// CWidgetUiAppUi::SendAppToForeground
+// force the application to the foreground
+//
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiAppUi::SendAppToForeground()
+    {
+    TApaTaskList taskList( CEikonEnv::Static()->WsSession() );
+    TUid wapUid( TUid::Uid( KWidgetAppUid ) );
+    TApaTask task = taskList.FindApp( wapUid );
+    task.BringToForeground();
+    }
+        
 // -----------------------------------------------------------------------------
 // CWidgetUiAppUi::SetRotationSupport()
 // check to see if screen oriantation can be changed
@@ -543,7 +568,7 @@ void CWidgetUiAppUi::ProcessMessageArgumentsL(
     TUint32& aOperation )
     {
     __UHEAP_MARK;
-    TUint32 version( -1 );
+    TUint32 version( 0 );
     TPtrC ptr( NULL, 0 );
     
     RDesReadStream stream( aLine );

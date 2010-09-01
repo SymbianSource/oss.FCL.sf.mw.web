@@ -23,7 +23,7 @@
 #include <e32base.h>
 #include <coedef.h>
 #include <w32std.h>
-#include <rt_gestureobserver.h>
+#include <stmgesturelistener.h>
 
 // MACROS
 
@@ -60,7 +60,7 @@ class WebScrollingDeceleratorGH: public CBase
 
     public: // Main functions
         
-        void startDecel(RT_GestureHelper::TRealPoint& speed, WebScrollbarDrawer* scrollbarDrawer);
+        bool startDecel(TRealPoint& speed, WebScrollbarDrawer* scrollbarDrawer);
         
         void cancelDecel();
         
@@ -85,7 +85,7 @@ class WebScrollingDeceleratorGH: public CBase
         //normalized current position to minimize rounding error
         TPoint m_normalizedCurrentPosition;
         
-        RT_GestureHelper::TRealPoint m_initSpeed;
+        TRealPoint m_initSpeed;
         
         CPeriodic*  m_decelTimer;
         
@@ -94,6 +94,8 @@ class WebScrollingDeceleratorGH: public CBase
         TPoint m_startPos;
         
         WebScrollbarDrawer* m_scrollbarDrawer;
+        
+        TReal32 m_deceleration;
     };
 
 

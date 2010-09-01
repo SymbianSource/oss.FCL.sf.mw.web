@@ -20,7 +20,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <BrCtlDefs.h>
+#include <brctldefs.h>
 #include "HttpDefs.h"
 
 // CONSTANTS

@@ -21,7 +21,7 @@
 
 //User Includes
 #include <e32std.h>
-#include "IdPair.h"
+#include "idpair.h"
 //TIdPair
 EXPORT_C TIdPair::TIdPair( TUint32 aFirstPreference, TUint32 aSecondPreference ): 
 	iFirstPreference( aFirstPreference), iSecondPreference( aSecondPreference )

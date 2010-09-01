@@ -23,11 +23,10 @@
 // INCLUDES
 #include <e32hashtab.h>
 #include <apgcli.h>
-#include <Browser_platform_variant.hrh>
-#include <apgnotif.h>
-#include "WidgetRegistryData.h"
-#include "WidgetRegistryConstants.h"
-#include "WidgetPropertyValue.h"
+#include <browser_platform_variant.hrh>
+#include <widgetregistrydata.h>
+#include <widgetregistryconstants.h>
+#include <widgetpropertyvalue.h>
 #include "WidgetRegistryLog.h"
 
 // CONSTANTS
@@ -37,6 +36,7 @@
 
 // FORWARD DECLARATIONS
 class RFs;
+class CWidgetMMCHandler;
 class CWidgetEntry;
 class CWidgetInstaller;
 class CWidgetRegistryXml;
@@ -58,7 +58,7 @@ typedef RPointerArray<CWidgetEntry> RWidgetArray;
 *  @since 3.1
 */
 
-class CWidgetRegistry : public CBase, public MApaAppListServObserver
+class CWidgetRegistry : public CBase
     {
 public:
     /**
@@ -214,10 +214,9 @@ public:
      * Returns security policyId.
      */
      TInt SecurityPolicyId() { return FetchSecurityPolicyIdL(); }
-
-		//from MApaAppListServObserver
-		void HandleAppListEvent(TInt aEvent);
-
+     
+     static void NotifyWidgetAltered();
+     
 private:
 
     /**
@@ -234,6 +233,11 @@ private:
      * Get widget entry with a particular UId
      */
     TInt GetWidgetEntry( const TUid& aUid, CWidgetEntry*& aEntry ) const;
+    
+    /**
+     * Get widget entry with a particular UId
+     */
+    TInt GetWidgetOldEntry( const TUid& aUid, CWidgetEntry*& aEntry ) const;
 
     /**
      * Get widget entry with a particular bundle Id
@@ -355,6 +359,7 @@ private:
     RWidgetArray                iEntries;
     RUidArray                   iUsedUids;
     RFs                         iFs; // not owned
+    RPointerArray<CWidgetEntry>        iOldEntries; // Hold the earlier entries from iEntries
 
     // added for validation purpose
     RApaLsSession               iAppArch;
@@ -362,14 +367,15 @@ private:
     TBuf<KWidgetRegistryMaxPathName> iWidgetInstallPath;
     TBuf<KWidgetRegistryMaxPathName> iRegistryBinaryFileName;
     TBuf<KWidgetRegistryMaxPathName> iRegistryXmlFileName;
+    TBuf<KWidgetRegistryMaxPathName> iRegistryCWRTXmlFileName;
     TBuf<KWidgetRegistryMaxPathName> iRegistryXmlTempFileName;
     TBuf<KWidgetRegistryMaxPathName> iLprojName;
 
     // map of language code to lproj dir
     RPtrHashMap<TInt,HBufC8>    iLangDirList;
+    CWidgetMMCHandler*          iMMCHandler;
     TInt                        iPolicyId;
     CWidgetRegistryXml*         iXmlProcessor;
-    CApaAppListNotifier* iApaAppListNotifier;
 public:
     LOG_MEMBER_VARS
     };

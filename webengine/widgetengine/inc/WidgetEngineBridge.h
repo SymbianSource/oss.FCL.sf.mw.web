@@ -15,8 +15,6 @@
 *
 */
 
-
-
 #ifndef __WIDGETENGINEINTERFACE
 #define __WIDGETENGINEINTERFACE
 
@@ -24,10 +22,10 @@
 #include "config.h"
 #include <e32base.h>
 #include <eikenv.h>
-#include "BrCtlDefs.h"
+#include <brctldefs.h>
 #include "WidgetEngineCallbacks.h"
 #include "WidgetJSObjectProtector.h"
-#include "wtf/HashSet.h"
+#include "wtf/HashCountedSet.h"
 
 // CONSTANTS
 
@@ -104,7 +102,7 @@ private:
     CMenuClient*			m_menuclient;
     CWidgetClient*			m_widgetclient;                
     WidgetPreferences*		m_preferences;
-	WTF::HashSet<KJS::JSValue*>	m_protectedObjects;
+	WTF::HashCountedSet<KJS::JSValue*>	m_protectedObjects;
  };
 
 

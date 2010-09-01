@@ -15,15 +15,11 @@
 *
 */
 
-
-
 // INCLUDE FILES
 #include <s32mem.h>
 #include "DownloadDataServ.h"
 
-
 // CONSTANTS
-
 
 // ---------------------------------------------------------
 // CMediaDataServ::NewL()
@@ -256,10 +252,10 @@ TBool CMediaDataServ::SetDownloadedSize( TInt aDownloadedSize )
 // CMediaDataServ::SetDesRemovable()
 // ---------------------------------------------------------
 //
-void CMediaDataServ::SetDesRemovable( TBool aDesRemovable )
-	{
-	iDesRemovable = aDesRemovable;
-	}
+void CMediaDataServ::SetDesRemovable( TInt32 aDesRemovable )
+    {
+    iDesRemovableStatus = aDesRemovable;
+    }
 
 // ---------------------------------------------------------
 // CMediaDataServ::SetLastErrorId()
@@ -380,7 +376,7 @@ void CMediaDataServ::InternalizeL(RReadStream& aStream)
     iRedirected = aStream.ReadInt32L();
     iDestFilename = HBufC::NewL(aStream, KMaxFileName);
     iDownloadedSize = aStream.ReadInt32L();
-    iDesRemovable = aStream.ReadInt32L();
+    iDesRemovableStatus = aStream.ReadInt32L();
     iLastErrorId = aStream.ReadInt32L();
     iGlobalErrorId = aStream.ReadInt32L();
     iPausable = aStream.ReadInt32L();

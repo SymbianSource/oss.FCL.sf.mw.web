@@ -19,10 +19,9 @@
 TARGET          WebKit.lib
 TARGETTYPE      lib
 
-
 VENDORID        VID_DEFAULT
 
-SOURCEPATH      ../../webview
+SOURCEPATH      ../../WebView
 SOURCE          WebFrame.cpp
 SOURCE          WebFrameView.cpp
 SOURCE          WebView.cpp
@@ -42,6 +41,8 @@ SOURCE          WmlResourceLoaderClient.cpp
 SOURCE          BrCtlDialogsProviderUtils.cpp
 SOURCE          WebToolBarInterface.cpp
 SOURCE          WebDataLoadConsumer.cpp
+SOURCE          WebGestureInterface.cpp
+SOURCE          WebPagePinchZoomHandler.cpp
 
 SOURCE          WebPageFullScreenHandler.cpp
 SOURCE          WebPageScrollHandler.cpp
@@ -52,13 +53,16 @@ SOURCE          WebScrollingDecelerator.cpp
 SOURCE          WebScrollingDeceleratorGH.cpp
 SOURCE          WebScrollbarDrawer.cpp
 SOURCE          WebSprite.cpp
+SOURCE          ThumbnailGenerator.cpp
+SOURCE          BrCtlLayoutObserverImpl.cpp
 
-SOURCEPATH      ../../formcontrols
+
+SOURCEPATH      ../../FormControls
 SOURCE          WebFormFill.cpp
 SOURCE          WebFormFillPopup.cpp
 SOURCE          PopupSelectListBox.cpp
 
-SOURCEPATH      ../../webcoresupport
+SOURCEPATH      ../../WebCoreSupport
 SOURCE          WebChromeClient.cpp
 SOURCE          WebContextMenuClient.cpp
 SOURCE          WebDragClient.cpp
@@ -67,7 +71,7 @@ SOURCE          WebFrameLoaderClient.cpp
 SOURCE          WebFrameBridge.cpp
 SOURCE          WebInspectorClient.cpp
 
-SOURCEPATH      ../../misc
+SOURCEPATH      ../../Misc
 SOURCE          WebIconDatabase.cpp
 SOURCE          WebKitLogger.cpp
 SOURCE          WebUtil.cpp

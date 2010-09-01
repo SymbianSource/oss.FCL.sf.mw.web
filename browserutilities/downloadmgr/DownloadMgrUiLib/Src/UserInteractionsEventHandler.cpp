@@ -15,17 +15,14 @@
 *
 */
 
-
-
 // INCLUDE FILES
-//#include <platform/mw/Browser_platform_variant.hrh>
-#include    <Browser_platform_variant.hrh>
+#include    <browser_platform_variant.hrh>
 #include    "UserInteractionsEventHandler.h"
 #include    "CUserInteractionsUtils.h"
 #include    "ProgressInfoCreator.h"
-#include    "CDownloadMgrUiLibRegistry.h"
-#include    "CDownloadMgrUiDownloadsList.h"
-#include    "CDownloadMgrUiUserInteractions.h"
+#include    <cdownloadmgruilibregistry.h>
+#include    <cdownloadmgruidownloadslist.h>
+#include    <cdownloadmgruiuserinteractions.h>
 #include    "UiLibLogger.h"
 #include    "DMgrUiLibPanic.h"
 #include    <bldvariant.hrh>
@@ -35,15 +32,11 @@
 #include    <StringLoader.h>
 #include    <apgcli.h>
 #include    <eikbtgpc.h>
-#include    <sysutil.h>
+#include    <SysUtil.h>
 #include    <exterror.h>
 #include    <etelpckt.h>
-#include    <aknnotedialog.h>
-#include    <uriutils.h>
-
-
-// following line is temporary: AVKON dependency removal
-#undef BRDO_APP_GALLERY_SUPPORTED_FF
+#include    <AknNoteDialog.h>
+#include    <UriUtils.h>
 
 #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
 #include    <MGXFileManagerFactory.h>
@@ -65,7 +58,7 @@
 // LOCAL CONSTANTS AND MACROS
 _LIT( KListBoxSeparator, "\t" );
 _LIT( KDownloadPath,"download");
-
+const TInt KMyFavApplicationUid   = 0x200110D5;
 
 const TInt KDownloadConfSizeLimit = 100000;
 
@@ -76,8 +69,8 @@ const TInt KDownloadConfSizeLimit = 100000;
 // -----------------------------------------------------------------------------
 //
 CUserInteractionsEventHandler::CUserInteractionsEventHandler
-    ( RHttpDownload& aDownload, THttpDownloadEvent aEvent,
-      MDownloadMgrUiLibRegModel& aRegistryModel,
+    ( RHttpDownload& aDownload, THttpDownloadEvent aEvent, 
+      MDownloadMgrUiLibRegModel& aRegistryModel, 
       CAsyncEventHandlerArray& aOwner,
       CUserInteractionsUtils& aUiUtils )
 :   CAsyncEventHandlerBase( aDownload, aEvent, aRegistryModel, aOwner ),
@@ -128,7 +121,7 @@ TBool CUserInteractionsEventHandler::DiskSpaceBelowCriticalLevelL( TInt aSize ) 
     RFs fs;
     User::LeaveIfError( fs.Connect() );
     CleanupClosePushL( fs );
-
+    
     TInt bytesToWrite = aSize;
     if (bytesToWrite < 0)
         bytesToWrite = 0;
@@ -170,13 +163,13 @@ TBool CUserInteractionsEventHandler::DiskSpaceBelowCriticalLevelL( TInt aSize ) 
                                             bytesToWrite,
                                             selectedDrive ) );
 
-    // If there is error, then isSpaceBelowCL is untouched and
-    // contains the right value. Otherwise it also contains
+    // If there is error, then isSpaceBelowCL is untouched and 
+    // contains the right value. Otherwise it also contains 
     // the right value.
     CLOG_WRITE_FORMAT(" DiskSpace: isSpaceBelowCL: %d",isSpaceBelowCL);
 
 #else
-	isSpaceBelowCL = SysUtil::DiskSpaceBelowCriticalLevelL( &fs,
+	isSpaceBelowCL = SysUtil::DiskSpaceBelowCriticalLevelL( &fs, 
 			                                bytesToWrite,
                                             EDriveC );
     CLOG_WRITE_FORMAT(" C: isSpaceBelowCL: %d",isSpaceBelowCL);
@@ -184,10 +177,10 @@ TBool CUserInteractionsEventHandler::DiskSpaceBelowCriticalLevelL( TInt aSize ) 
     if ( isSpaceBelowCL )
         {
         // Check MMC
-        TRAP_IGNORE( isSpaceBelowCL =
+        TRAP_IGNORE( isSpaceBelowCL = 
                      SysUtil::MMCSpaceBelowCriticalLevelL( &fs, bytesToWrite ) );
-        // If there is error, then isSpaceBelowCL is untouched and
-        // contains the right value. Otherwise it also contains
+        // If there is error, then isSpaceBelowCL is untouched and 
+        // contains the right value. Otherwise it also contains 
         // the right value.
         CLOG_WRITE_FORMAT(" MMC: isSpaceBelowCL: %d",isSpaceBelowCL);
         }
@@ -229,7 +222,7 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
         User::LeaveIfError( aDownload.GetIntAttribute
                           ( EDlAttrMultipleMOLength, totalLength ) );
         CLOG_WRITE_FORMAT(" EDlAttrMultipleMOLength: %d",totalLength);
-
+        
         User::LeaveIfError( aDownload.GetIntAttribute
                           ( EDlAttrMultipleMODownloadedSize, downloadedSize ) );
         CLOG_WRITE_FORMAT(" EDlAttrMultipleMODownloadedSizes: %d",downloadedSize);
@@ -237,7 +230,7 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
         HBufC8* contentType = iUiUtils.ContentTypeL( aDownload, ETrue );
         CleanupStack::PushL( contentType );
 
-        // Don't show the confirmation query if the downloading
+        // Don't show the confirmation query if the downloading 
         // already finished
         if ( downloadedSize == totalLength )
             {
@@ -247,16 +240,29 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
             {
             ret = ETrue;
             }
-        // GGUO-775RXR for widgets we don't need to have download confirmation either
-        else if ( contentType->Compare( KWidgetMimeType) == 0 )
+        // GGUO-775RXR for widgets we don't need to have download confirmation either             
+        else if ( contentType->Compare( KWidgetMimeType) == 0 ) 
             {
-            ret = ETrue;
-            }
+            ret = ETrue;                                
+            }                                            
         else
             {
-            ret = ShowDownloadConfirmationL( aDownload, aCbaResource );
+            // For mimetype that download confirmation dialog should not be shown
+            TUid pdPlayerUid = { 0 };
+            TDataType dataType ( *contentType );
+            CDocumentHandler* docHandler = CDocumentHandler::NewLC();
+            TBool pdSupported = docHandler->CanHandleProgressivelyL( dataType , pdPlayerUid );
+            CleanupStack::PopAndDestroy ( docHandler );
+            if ( pdPlayerUid == KMyFavApplicationUid)
+                {
+                ret = ETrue;
+                }
+            else 
+                {
+                ret = ShowDownloadConfirmationL( aDownload, aCbaResource );
+                }
             }
-        CleanupStack::PopAndDestroy( contentType );
+        CleanupStack::PopAndDestroy( contentType );            
         }
 
     CLOG_LEAVEFN("CUserInteractionsEventHandler::ShowDownloadConfirmationL aForce");
@@ -267,7 +273,7 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
 // -----------------------------------------------------------------------------
 //
 // Cod we used the following order
-// 		name/size/type/price(optional)/description(no)/vendor(no)
+// 		name/size/type/price(optional)/description(no)/vendor(no) 
 
 TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
     ( RHttpDownload& aDownload, TInt aCbaResource )
@@ -293,7 +299,7 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
 
     MDesCArray* itemList = listBox->Model()->ItemTextArray();
     CDesCArray* itemArray = (CDesCArray*)itemList;
-
+    
     //-------------------------------------------
     // Header
     //
@@ -322,8 +328,8 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
 #endif
         {
         // Not enough free disk space!
-        HBufC* notEnoughSpace =
-            StringLoader::LoadLC( R_DMUL_DOWNLOADCONF_NOT_ENOUGH_MEM );
+        HBufC* notEnoughSpace = 
+            StringLoader::LoadLC( R_DMUL_DOWNLOADCONF_NOT_ENOUGH_MEM );        
         itemArray->AppendL( *notEnoughSpace );
         CleanupStack::PopAndDestroy( notEnoughSpace );  // notEnoughSpace
         // and disable OK button
@@ -335,17 +341,17 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
     //
 
     //-------------------------------------------
-    // Add name here
-    // name/size/type/price(optional)/description(no)/vendor(no)
+    // Add name here 
+    // name/size/type/price(optional)/description(no)/vendor(no) 
    HBufC* nameHeader = StringLoader::LoadLC( R_DMUL_DOWNLOADCONF_NAME );
-   HBufC* dlName = HBufC::NewLC( KMaxPath );
+   HBufC* dlName = HBufC::NewLC( KMaxPath );            
    TPtr dlNamePtr = dlName->Des();
    User::LeaveIfError( aDownload.GetStringAttribute( EDlAttrName, dlNamePtr ) );
 
    itemText = FormatListBoxItemLC( *nameHeader, *dlName );
    itemArray->AppendL( *itemText );
    CleanupStack::PopAndDestroy( 3, nameHeader ); // itemText, sizeHeader
-   dlName = NULL;
+   dlName = NULL; 
    itemText = NULL;
    nameHeader = NULL;
 
@@ -375,7 +381,7 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
 
     //-------------------------------------------
     // Application Name - only show if Supported
-    //
+    //  
     HBufC* handlerHeader = StringLoader::LoadLC( R_DMUL_DOWNLOADCONF_OPENWITH );
 
     RApaLsSession apaLs;
@@ -384,7 +390,7 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
     TUid appUid;
     HBufC8* contentType = iUiUtils.ContentTypeL( aDownload, ETrue );
     CleanupStack::PushL( contentType );
-
+    
     #ifdef _DEBUG
     HBufC* contType = HBufC::NewL( contentType->Length() );
     TPtr ptr = contType->Des();
@@ -393,13 +399,13 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
     delete contType;
     contType = NULL;
     #endif // _DEBUG
-
+    
     User::LeaveIfError( apaLs.AppForDataType( TDataType(*contentType), appUid ) );
     HBufC* handlerName = ConstructHandlerAppNameLC( appUid, apaLs );
 
     itemText = FormatListBoxItemLC( *handlerHeader, *handlerName );
     CleanupStack::PopAndDestroy( itemText );
-
+    
     CleanupStack::PopAndDestroy( handlerName );
     CleanupStack::Pop( contentType ); // Still needed - push later again
     CleanupStack::PopAndDestroy( &apaLs );
@@ -408,8 +414,8 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
     handlerName = NULL;
     handlerHeader = NULL;
     CleanupStack::PushL( contentType );
-
-
+    
+    
     //-------------------------------------------
     // MIME Content Type
     //
@@ -423,7 +429,7 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
         typeString->Des().Copy( *contentType );
         }
     else
-        {
+        {       
         typeString = StringLoader::LoadLC( R_DMUL_DOWNLOADCONF_UNKNOWN );
         }
 
@@ -437,25 +443,25 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
     contentType = NULL;
 
     //-------------------------------------------
-    // Price: since dm has no info, we don't need this at all here
+    // Price: since dm has no info, we don't need this at all here 
     //
 
     //-------------------------------------------
-    // Description: since dm has no info, we don't need this at all here
+    // Description: since dm has no info, we don't need this at all here 
     //
 
     //-------------------------------------------
-    // Vendor: since dm has no info, we don't need this at all here
+    // Vendor: since dm has no info, we don't need this at all here 
     //
 
-    // Show popup list - it calls CActiveScheduler::Start(), so be careful
+    // Show popup list - it calls CActiveScheduler::Start(), so be careful 
     // when using data members after ExecuteLD!
     iDownloadConfirmationShown = ETrue;
     iPopupList = popupList;
     TBool deleted( EFalse );
     iDownloadConfirmationDeletedPtr = &deleted;
     TInt pressedOk = popupList->ExecuteLD();
-    CleanupStack::Pop( popupList );    // popupList
+    CleanupStack::Pop( popupList );    // popupList 
     if ( !deleted )
         {
         // We can use members only in this case!
@@ -470,7 +476,7 @@ TBool CUserInteractionsEventHandler::ShowDownloadConfirmationL
     CLOG_LEAVEFN("CUserInteractionsEventHandler::ShowDownloadConfirmationL");
     return (TBool)pressedOk;
     }
-
+    
 // -----------------------------------------------------------------------------
 // CUserInteractionsEventHandler::ConstructHandlerAppNameLC
 // -----------------------------------------------------------------------------
@@ -479,7 +485,7 @@ HBufC* CUserInteractionsEventHandler::ConstructHandlerAppNameLC
     ( const TUid& aAppUid, RApaLsSession& aApaLs )
     {
     CLOG_ENTERFN("CUserInteractionsEventHandler::ConstructHandlerAppNameLC");
-
+    
     HBufC* handlerName = NULL;
     if ( aAppUid == TUid::Null() )
         {
@@ -493,10 +499,10 @@ HBufC* CUserInteractionsEventHandler::ConstructHandlerAppNameLC
         CLOG_WRITE_FORMAT(" appInfo.iFullName: %S",&appInfo.iFullName);
         CLOG_WRITE_FORMAT(" appInfo.iCaption: %S",&appInfo.iCaption);
         CLOG_WRITE_FORMAT(" appInfo.iShortCaption: %S",&appInfo.iShortCaption);
-        // In many cases there is long caption. We should use short caption only
-        // if it is empty. They say that sometimes the long caption is not empty,
+        // In many cases there is long caption. We should use short caption only 
+        // if it is empty. They say that sometimes the long caption is not empty, 
         // but it contains only a space (0x20). In this case we must use the short.
-        // For safety reasons, we will check the whole long caption, if it
+        // For safety reasons, we will check the whole long caption, if it 
         // contains only space characters.
         const TDesC& longCap = appInfo.iCaption;
         TBool longCapIsEmpty = (longCap.Length() == 0);
@@ -529,7 +535,7 @@ HBufC* CUserInteractionsEventHandler::ConstructHandlerAppNameLC
             handlerName = appInfo.iCaption.AllocLC();
             }
         }
-
+        
     CLOG_LEAVEFN("CUserInteractionsEventHandler::ConstructHandlerAppNameLC");
     return handlerName;
     }
@@ -541,8 +547,8 @@ HBufC* CUserInteractionsEventHandler::ConstructHandlerAppNameLC
 HBufC* CUserInteractionsEventHandler::FormatListBoxItemLC
     ( const TDesC& aFirst, const TDesC& aSecond )
     {
-    HBufC* res = HBufC::NewLC( aFirst.Length() +
-                               aSecond.Length() +
+    HBufC* res = HBufC::NewLC( aFirst.Length() + 
+                               aSecond.Length() + 
                                KListBoxSeparator().Length() );
     res->Des().Copy( aFirst );
     res->Des().Append( KListBoxSeparator );
@@ -561,7 +567,7 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
     // GET - download is in progress - user can cancel
     if( iEvent.iProgressState == EHttpProgCodDownloadStarted && iEvent.iDownloadState == EHttpDlInprogress )
         {
-        iRegistryModel.DownloadsList().CancelDisplayingDownloadsList();
+        iRegistryModel.DownloadsList().CancelDisplayingDownloadsList();                                          
         }
     if ( iEvent.iProgressState == EHttpContTypeRecognitionAvail )
         {
@@ -583,7 +589,7 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
                 ( iDownload.GetStringAttribute( EDlAttrContentType, contentTypePtr ) );
             if( 0 == contentType->Compare( KMultiPartMimeType ) )
                 {
-                // Don't show confirmation query yet, but
+                // Don't show confirmation query yet, but 
                 // observe EHttpProgSupportedMultiPart.
                 }
             else
@@ -591,9 +597,9 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
                 iUiUtils.IsContentTypeSupportedL( iDownload );
                 TBool suppressDownloadConfirmation( EFalse );
                 iRegistryModel.UserInteractions().GetBoolAttributeL
-                    ( CDownloadMgrUiUserInteractions::EAttrSuppressDownloadConfirmation,
+                    ( CDownloadMgrUiUserInteractions::EAttrSuppressDownloadConfirmation, 
                       suppressDownloadConfirmation );
-                CLOG_WRITE_FORMAT(" suppressDownloadConfirmation: %d",
+                CLOG_WRITE_FORMAT(" suppressDownloadConfirmation: %d", 
                                     suppressDownloadConfirmation);
 
                 if ( suppressDownloadConfirmation )
@@ -621,15 +627,16 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
                         {
                         userConfirms = ShowDownloadConfirmationL
                             ( iDownload, R_AVKON_SOFTKEYS_OK_CANCEL__OK, EFalse );
-
+                                             
                         // executes a wait dialog! Check if this is deleted meanwhile
                         if ( aThisDeleted )
                             {
                             CLOG_WRITE_FORMAT(" this deleted: %x", this);
                             CLOG_LEAVEFN("CUserInteractionsEventHandler::HandleInProgressStateL");
+                            CleanupStack::PopAndDestroy( contentType );
                             return;
                             }
-
+                            
                         if ( userConfirms )
                             {
                             TBool isLaunchType( EFalse );
@@ -652,16 +659,16 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
                             else
                                 {
                                 //part of error PNIO-73GEM3.Sis file progress should be visible to user
-                                if( (KSisxApplication().Find( contentTypePtr)!= KErrNotFound) ||
+                                if( (KSisxApplication().Find( contentTypePtr)!= KErrNotFound) || 
                                     (KPipApplication().Find( contentTypePtr)!= KErrNotFound) ||
                                     (KWidgetMimeType().Find( contentTypePtr)!= KErrNotFound) ||
                                     (KSharingConfig().Find( contentTypePtr)!= KErrNotFound) )
                                     {
                                     isLaunchType = ETrue;
                                     User::LeaveIfError( iDownload.SetIntAttribute(
-                                        EDlAttrAction, ELaunch ) );
+                                        EDlAttrAction, ELaunch ) );                                    
                                     }
-                                // Open the download list if there is no more
+                                // Open the download list if there is no more 
                                 // download confirmation shown:
                                 if ( iRegistryModel.UserInteractions().
                                     DownloadConfirmationsShown() == 0 )
@@ -684,23 +691,23 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
                      }
                     if (userConfirms)
 					{
-
+                   
 	#ifdef __DMGR_PD_TESTHARNESS
                         iUiUtils.TestLaunchPdAppL(iDownload);
-	#else
- 		//#ifdef RD_BROWSER_PROGRESSIVE_DOWNLOAD
+	#else	           
+ 		//#ifdef RD_BROWSER_PROGRESSIVE_DOWNLOAD	               
 
-                        // check if it's PdLaunch action
+                        // check if it's PdLaunch action 
 		                TInt32 action(0);
-                        User::LeaveIfError( iDownload.GetIntAttribute( EDlAttrAction, action ) );
-                        if( (action & EPdLaunch) &&
+                        User::LeaveIfError( iDownload.GetIntAttribute( EDlAttrAction, action ) );                    
+                        if( (action & EPdLaunch) && 
                             iUiUtils.CanLaunchAsProgDownload( iDownload, iRegistryModel.DownloadsList(),EFalse ))
                             {
       						CLOG_WRITE( " launchPdAppL(iDownload)" );
 						    iUiUtils.LaunchPdAppL(iDownload, ETrue);
 						    }
 		//#endif	//RD_BROWSER_PROGRESSIVE_DOWNLOAD
-	#endif	//__DMGR_PD_TESTHARNESS
+	#endif	//__DMGR_PD_TESTHARNESS	
 					}
                 }
             CleanupStack::PopAndDestroy( contentType ); // contentType
@@ -713,30 +720,30 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
                           ( EDlAttrCodPdAvailable, isCodPdAvailable ) );
         if ( isCodPdAvailable )
             {
-
+			
 			#ifdef __DMGR_PD_TESTHARNESS
 				iUiUtils.TestLaunchPdAppL(iDownload);
 			#else
-	            // check if it's PdLaunch action
+	            // check if it's PdLaunch action 
 	            TInt32 action(0);
-                User::LeaveIfError( iDownload.GetIntAttribute( EDlAttrAction, action ) );
-				if ( (action & EPdLaunch) &&
+                User::LeaveIfError( iDownload.GetIntAttribute( EDlAttrAction, action ) );                    
+				if ( (action & EPdLaunch) && 
                     iUiUtils.CanLaunchAsProgDownload( iDownload, iRegistryModel.DownloadsList(),ETrue ))
 					{
 					iUiUtils.LaunchPdAppL(iDownload, ETrue);
 					}
 			#endif	//__DMGR_PD_TESTHARNESS
 			}
-        }
+        }        
     else if ( iEvent.iProgressState == EHttpProgCodDescriptorAccepted )
         {
-        // COD load accepted. Download is turned to visible, and
+        // COD load accepted. Download is turned to visible, and 
         // downloads list is shown.
         User::LeaveIfError( iDownload.SetBoolAttribute
                           ( EDlAttrHidden, EFalse ) );
         CLOG_WRITE(" SetBoolAttribute EDlAttrHidden OK");
-        // If this download's ServiceFlow was running, it's not more
-        // a ServiceFlow, thus the next postponed download can be
+        // If this download's ServiceFlow was running, it's not more 
+        // a ServiceFlow, thus the next postponed download can be 
         // scheduled.
         if ( iRegistryModel.UserInteractions().IsCodServiceFlowRunning( iDownload ) )
             {
@@ -753,7 +760,7 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
         {
         // UI state must be checked before we set download to hidden!
         TBool isUiBusyNow = iRegistryModel.UserInteractions().IsUiBusy();
-        // COD load has ended. Download is turned to hidden, removed from
+        // COD load has ended. Download is turned to hidden, removed from 
         // downloads list, and restarted (ServiceFlow).
         CLOG_WRITE(" SetBoolAttribute EDlAttrHidden OK");
 
@@ -761,7 +768,7 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
         // (UserInteractions must be installed...)
         if ( isUiBusyNow )
             {
-            // Not possible to do it. Postpone the Service Flow and
+            // Not possible to do it. Postpone the Service Flow and 
             // invoke when no more handler is running.
             // The download is already hidden!
             iRegistryModel.UserInteractions().PostponeCodHandlingL( iDownload );
@@ -789,9 +796,9 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
             {
             TBool suppressDownloadConfirmation( EFalse );
             iRegistryModel.UserInteractions().GetBoolAttributeL
-                ( CDownloadMgrUiUserInteractions::EAttrSuppressDownloadConfirmation,
+                ( CDownloadMgrUiUserInteractions::EAttrSuppressDownloadConfirmation, 
                   suppressDownloadConfirmation );
-            CLOG_WRITE_FORMAT(" suppressDownloadConfirmation: %d",
+            CLOG_WRITE_FORMAT(" suppressDownloadConfirmation: %d", 
                                 suppressDownloadConfirmation);
 
             if ( suppressDownloadConfirmation )
@@ -802,7 +809,7 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
                 {
                 TBool userConfirms = ShowDownloadConfirmationL
                     ( iDownload, R_AVKON_SOFTKEYS_OK_CANCEL__OK, EFalse );
-
+                                     
                 // executes a wait dialog! Check if this is deleted meanwhile
                 if ( aThisDeleted )
                     {
@@ -810,10 +817,10 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
                     CLOG_LEAVEFN("CUserInteractionsEventHandler::HandleInProgressStateL");
                     return;
                     }
-
+                    
                 if ( userConfirms )
                     {
-                    // Open the download list if there is no more
+                    // Open the download list if there is no more 
                     // download confirmation shown:
                     if ( iRegistryModel.UserInteractions().
                                         DownloadConfirmationsShown() == 0 )
@@ -838,7 +845,7 @@ void CUserInteractionsEventHandler::HandleInProgressStateL( TBool& aThisDeleted 
     CLOG_LEAVEFN("CUserInteractionsEventHandler::HandleInProgressStateL");
     }
 
-
+    
 // -----------------------------------------------------------------------------
 // CUserInteractionsEventHandler::HandlePausedStateL
 // -----------------------------------------------------------------------------
@@ -862,9 +869,9 @@ void CUserInteractionsEventHandler::HandlePausedStateL( TBool& aThisDeleted )
             {
             TBool suppressDownloadConfirmation( EFalse );
             iRegistryModel.UserInteractions().GetBoolAttributeL
-                ( CDownloadMgrUiUserInteractions::EAttrSuppressDownloadConfirmation,
+                ( CDownloadMgrUiUserInteractions::EAttrSuppressDownloadConfirmation, 
                   suppressDownloadConfirmation );
-            CLOG_WRITE_FORMAT(" suppressDownloadConfirmation: %d",
+            CLOG_WRITE_FORMAT(" suppressDownloadConfirmation: %d", 
                                 suppressDownloadConfirmation);
 
             if ( suppressDownloadConfirmation )
@@ -886,13 +893,13 @@ void CUserInteractionsEventHandler::HandlePausedStateL( TBool& aThisDeleted )
                     CLOG_LEAVEFN("CUserInteractionsEventHandler::HandlePausedStateL");
                     return;
                     }
-
+                    
                 // Open Downloads List if user confirms:
                 if ( userConfirms )
                     {
                     // Resume the download:
                     User::LeaveIfError( iDownload.Start() );
-                    // and open the download list if there is no more
+                    // and open the download list if there is no more 
                     // download confirmation shown:
                     if ( iRegistryModel.UserInteractions().
                                         DownloadConfirmationsShown() == 0 )
@@ -933,7 +940,7 @@ void CUserInteractionsEventHandler::HandleCompletedStateL()
     else if ( iEvent.iProgressState == EHttpProgContentFileMoved || iEvent.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )
         {
         // An asynchronous move has ended.
-
+        
         CLOG_WRITE(" Move has ended");
         // After successful moving, display updated download list
         iRegistryModel.DownloadsList().DisplayDownloadsListL( iDownload );
@@ -941,11 +948,11 @@ void CUserInteractionsEventHandler::HandleCompletedStateL()
         // first get path to gallery where file was moved
         HBufC* fileName = HBufC::NewLC( KMaxPath );
         TPtr fileNamePtr = fileName->Des();
-        TInt attErr = iDownload.GetStringAttribute(
+        TInt attErr = iDownload.GetStringAttribute( 
             EDlAttrDestFilename, fileNamePtr );
         CLOG_WRITE_FORMAT(" EDlAttrDestFilename: %S",&fileNamePtr);
         TBool havePath = (attErr == KErrNone) && (fileNamePtr.Length() > 0);
-
+        
         #ifdef BRDO_APP_GALLERY_SUPPORTED_FF
         //
         CMGXFileManager* mgFileManager = MGXFileManagerFactory::NewFileManagerL(
@@ -959,19 +966,19 @@ void CUserInteractionsEventHandler::HandleCompletedStateL()
             {
             TRAP_IGNORE( mgFileManager->UpdateL() );
             }
-
+        
         delete mgFileManager;
         mgFileManager = NULL;
-
+        
         #else
          if( havePath )
             {
             TRAP_IGNORE( iUiUtils.UpdateDCFRepositoryL( fileNamePtr ) );
             }
-        #endif
-
+        #endif    
+        
         CleanupStack::PopAndDestroy( fileName );
-
+        
         }
     else
         {
@@ -998,32 +1005,32 @@ void CUserInteractionsEventHandler::HandleCompletedStateL()
             CLOG_WRITE_FORMAT(" EDlAttrProgressive err: %d",err);
             // 'err' is ignored.
             CLOG_WRITE_FORMAT(" EDlAttrProgressive: %d", isProgressive);
-
+            
             // check if move is already issued
             TBool isMoveIssued = EFalse;
             TInt32 progState(0);
             User::LeaveIfError( iDownload.GetIntAttribute
                             ( EDlAttrProgressState, progState ) );
-
-            if(progState == EHttpProgMovingContentFile) isMoveIssued = ETrue;
+            
+            if(progState == EHttpProgMovingContentFile) isMoveIssued = ETrue;    
 
             if( isCodDownload )
                 {
                 HBufC8* contentType = HBufC8::NewLC( KMaxContentTypeLength );
                 TPtr8 contentTypePtr = contentType->Des();
                 User::LeaveIfError
-                    ( iDownload.GetStringAttribute( EDlAttrContentType, contentTypePtr ) );
+                    ( iDownload.GetStringAttribute( EDlAttrContentType, contentTypePtr ) ); 
                 if( !contentType->Compare(KRoapMimeType))
                     {
                     User::LeaveIfError
                     ( iDownload.Delete());
                     }
-                CleanupStack::PopAndDestroy( contentType );
+                CleanupStack::PopAndDestroy( contentType );    
                 }
              else if( isProgressive || isMoveIssued )
                 {
                 //do not move
-
+                
                 }
              else
                 {
@@ -1056,19 +1063,19 @@ void CUserInteractionsEventHandler::HandleCompletedStateL()
                         fileNamePtr.Delete( 0, lastSlashPos );
                         }
                     }
-
+            
                 // Setting RootPath for new Destination file
                 fileNamePtr.Insert( 0, rootPath );
                 // Setting KDownloadPath
                 fileNamePtr.Insert( rootPath.Length(), KDownloadPath );
 #else
-
+                
                 TParse p;
                 p.SetNoWild(fileNamePtr, NULL, NULL);
                 TDriveUnit currentDrive(fileNamePtr);
                 TFileName rootPath;
                 User::LeaveIfError( PathInfo::GetRootPath( rootPath, currentDrive ) );
-
+                
                 TPtrC namePtr = p.NameAndExt();
                 fileNamePtr.Format( _L("%S%S\\%S"), &rootPath,
                                                     &KDownloadPath,
@@ -1095,17 +1102,23 @@ void CUserInteractionsEventHandler::HandleCompletedStateL()
                     }
 
 
-                // update EDlAttrDestFilename with new path
-                User::LeaveIfError
-		                ( iDownload.SetStringAttribute( EDlAttrDestFilename, *fileName ) );
-                // move file
-                User::LeaveIfError( iDownload.Move() );
+                TBool isProg(EFalse);
+                User::LeaveIfError( iDownload.GetBoolAttribute( EDlAttrProgressive, isProg ) );
+
+                // Move operation should be invoked by DL Manger if its not a progressive download. 
+                if( !isProg )
+                    {
+                    // update EDlAttrDestFilename with new path
+                    User::LeaveIfError
+                            ( iDownload.SetStringAttribute( EDlAttrDestFilename, *fileName ) );
+                    User::LeaveIfError( iDownload.Move() );
+                    }
           	    CleanupStack::PopAndDestroy( fileName ); // fileName
                 }
             }
         else if ( action & EPdLaunch )
         {
-        	// do nothing since PdLaunch was already launched during the progress
+        	// do nothing since PdLaunch was already launched during the progress 
         }
         else
             {
@@ -1133,8 +1146,8 @@ void CUserInteractionsEventHandler::HandleFailedStateL()
     CLOG_WRITE_FORMAT("EDlAttrCodDownload: %d",isCodDownload);
     if ( isCodDownload )
         {
-        // If the ServiceFlow of the download was running, but failed,
-        // schedule the next download for running.
+        // If the ServiceFlow of the download was running, but failed, 
+        // schedule the next download for running. 
         // UserInteractions is assumed to be installed.
         // Do not delete the download yet (because IsCodServiceFlowRunning needs it)!
         if ( iRegistryModel.UserInteractions().IsCodServiceFlowRunning( iDownload ) )
@@ -1174,11 +1187,11 @@ void CUserInteractionsEventHandler::HandleFailedStateL()
         else
             {
             TBool errorHandled( EFalse );
-
+            
             if ( !errorHandled )
                 {
                 iUiUtils.ShowErrorNoteL( iDownload, errorId );
-                // This component is responsible for deleting
+                // This component is responsible for deleting 
                 // not recoverable downloads
                 if ( iUiUtils.IsRecoverableFailL( iDownload, errorId ) )
                     {
@@ -1237,13 +1250,13 @@ void CUserInteractionsEventHandler::HandleUnrecoverableFailL()
         CleanupStack::PopAndDestroy( url );
         }
 
-    // iDownload can now been deleted
+    // iDownload can now been deleted        
     User::LeaveIfError( iDownload.Delete() );
     CLOG_WRITE(" Delete OK");
 
     HBufC* infoPrompt = StringLoader::LoadLC( R_DMUL_ERROR_CANCELLED, *dlName );
     CLOG_WRITE(" StringLoader OK");
-
+    
     CAknNoteDialog* dlg = new (ELeave) CAknNoteDialog();
     dlg->PrepareLC( R_DMUL_DOWNLOAD_OK_INFO );
     dlg->SetTextL( *infoPrompt );
@@ -1278,11 +1291,11 @@ void CUserInteractionsEventHandler::RunL()
     TBool deleted( EFalse );
     iDeletedPtr = &deleted;
 
-    // Incase of completed and moved downloads, subsession will be closed and whole download info will be cached client side.
-    // No need to check for subsession close
+    // Incase of completed and moved downloads, subsession will be closed and whole download info will be cached client side. 
+    // No need to check for subsession close    
     if(!(iEvent.iDownloadState == EHttpDlMultipleMOCompleted && (iEvent.iProgressState == EHttpProgContentFileMoved || iEvent.iProgressState == EHttpProgContentFileMovedAndDestFNChanged )))
         {
-        // Due to the postponed event handling, it may happen that somebody already
+        // Due to the postponed event handling, it may happen that somebody already 
         // closed the download meanwhile. Check if it is still alive:
         if ( iDownload.SubSessionHandle() == 0 )
             {
@@ -1294,7 +1307,7 @@ void CUserInteractionsEventHandler::RunL()
             return;
             }
         }
-
+    
     switch ( iEvent.iDownloadState )
         {
         //---------------------------------------------
@@ -1359,7 +1372,7 @@ void CUserInteractionsEventHandler::RunL()
         // Necessary task done in RunL. This object is no more necessary.
         delete this;
         }
-
+    
     CLOG_LEAVEFN("CUserInteractionsEventHandler::RunL");
     }
 

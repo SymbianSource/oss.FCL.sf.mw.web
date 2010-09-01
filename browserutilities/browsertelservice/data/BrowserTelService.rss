@@ -30,7 +30,7 @@ NAME BTEL
 #include <AiwCommon.hrh>
 #include <AiwCommon.rh>
 
-#include <BrowserTelService.loc>
+#include <browsertelservice.loc>
 #include "BrowserTelService.hrh"
 
 //***************************************************************************************

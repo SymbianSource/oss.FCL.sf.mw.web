@@ -45,7 +45,7 @@
 #define BRCTLWINDOWOBSERVERIMPL_H
 
 //  INCLUDES
-#include <BrCtlWindowObserver.h>
+#include <brctlwindowobserver.h>
 
 
 /**

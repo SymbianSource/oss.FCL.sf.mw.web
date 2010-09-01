@@ -1,0 +1,19 @@
+#----------------------------------------------------------------------------
+# 
+# Copyright (c) 2001,2002. Nokia Mobile Phones
+#
+#----------------------------------------------------------------------------
+
+MAKEFILE    = MakeSrc
+TARGET      = rbTempest_markup_src_lib.a
+
+SUBDIRS   = 
+
+SUBMAKES  = 
+
+SRCS      = ElementHandler.c Module.c WBXMLModule.c WmlValidator.c XMLModule.c NumberCollector.c 
+
+
+################################################################################
+
+include $(CORESW_MAKE_TEMPLATE)

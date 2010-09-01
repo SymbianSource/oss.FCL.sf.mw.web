@@ -28,8 +28,8 @@
 #ifndef NW_PARSER_WBXML_EVENT_H
 #define NW_PARSER_WBXML_EVENT_H
 
-#include "nw_wbxml_document.h"
-#include "cxml_proj.h"
+#include <cxml_proj.h>
+#include <nw_wbxml_document.h>
 
 #ifdef __cplusplus
 extern "C" {

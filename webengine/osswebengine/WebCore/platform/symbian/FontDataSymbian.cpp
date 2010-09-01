@@ -27,6 +27,7 @@
 #include <e32base.h>
 #include <e32std.h>
 #include <fbs.h>
+#include <e32const.h>
 
 // CONSTATNS
 _LIT(KX,"x");
@@ -40,8 +41,15 @@ namespace WebCore
 void FontData::platformInit()
 {
     const CFont& font( m_font );
-    m_ascent = font.AscentInPixels() + 2;
-    m_descent = font.DescentInPixels() - 2;
+    TLanguage language = User::Language();
+    if (language == ELangTaiwanChinese || language == ELangHongKongChinese || language == ELangPrcChinese || 
+        language == ELangEnglish_Taiwan || language == ELangEnglish_HongKong || language == ELangEnglish_Prc) {
+        m_ascent = font.AscentInPixels();
+        m_descent = font.DescentInPixels();
+    } else {
+        m_ascent = font.AscentInPixels() + 2;
+        m_descent = font.DescentInPixels() - 2;
+    }
     m_lineGap = font.FontLineGap();
     m_lineSpacing = m_ascent + m_descent + 1;
 

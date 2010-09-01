@@ -19,7 +19,7 @@
 #include "BackRestoreHandler.h"
 #include "FeedsServer.h"
 #include <e32property.h> 			// For RProperty Object;
-#include <sacls.h>  					// For KUidBackupRestoreKey global variable
+#include <SaCls.h>  					// For KUidBackupRestoreKey global variable
 #include <connect/sbdefs.h>						// for conn Namespace
 
 

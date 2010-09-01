@@ -21,27 +21,31 @@
 #include "WidgetUiWindowContainer.h"
 #include "WidgetUiWindowManager.h"
 #include "WidgetUiDialogsProviderProxy.h"
-#include "WidgetRegistryConstants.h"
-#include "Browser_platform_variant.hrh"
+#include <widgetregistryconstants.h>
+#include "browser_platform_variant.hrh"
 #ifdef BRDO_WRT_HS_FF
 #include "cpspublisher.h"
 #endif
 #include <AknUtils.h>
-#include <imageconversion.h>
+#include <ImageConversion.h>
 #include <WidgetUi.rsg>
-
-#include <SchemeHandler.h>
-#include <InternetConnectionManager.h>
+#include <browserdialogsprovider.h>
+#include <schemehandler.h>
+#include <internetconnectionmanager.h>
 #include "WidgetInstallerInternalCRKeys.h"
-#include <BrowserUiSDKCRKeys.h>
+#include <browseruisdkcrkeys.h>
 #include <StringLoader.h>
 #include <centralrepository.h>
 #include <ApUtils.h>
 #include <AiwGenericParam.h>
 #include <ActiveApDb.h>
-#include <AknsDrawUtils.h>
+#include <aknsdrawutils.h>
 #include "SWInstWidgetUid.h"
 
+#ifdef RD_SCALABLE_UI_V2
+#include <centralrepository.h>
+#include <SensorPluginDomainCrKeys.h>
+#endif //RD_SCALABLE_UI_V2
 
 // EXTERNAL DATA STRUCTURES
 
@@ -52,6 +56,7 @@ static const TUint32 KDummyCommand = 0;
 
 const TUint KWmlNoDefaultAccessPoint = KMaxTUint; // see cenrep setting default -1 as int, here as uint
 const TUint KWmlNoDefaultSnapId = KMaxTUint; // see cenrep setting default -1 as int, here as uint
+
 
 // MACROS
 
@@ -93,8 +98,9 @@ CWidgetUiWindow::CWidgetUiWindow( CWidgetUiWindowManager& aWindowManager, CCpsPu
     : iWindowManager( aWindowManager ), iCpsPublisher( aCpsPublisher ), iNetworkAccessGrant(EInvalid),
       iPreferredOrientation(TBrCtlDefs::EOrientationUndefined),
       iIsCurrent(EFalse), iShowSoftkeys(EFalse), iWidgetLoaded(EFalse),
-      iSchemeProcessing (EFalse),iClickCount(0), iWidgetLoadStarted(EFalse),
-      iNetworkState(ENetworkNotAllowed), iUserPermission(ETrue)
+      iSchemeProcessing (EFalse), iNetworkState(ENetworkNotAllowed), iUserPermission(ETrue), 
+      iClickCount(0), iWidgetLoadStarted(EFalse), iSapiPromptCleared(ETrue),iNeedToIgnoreSapiNtfn(0),
+      iNeedToIgnoreSapiClearNtfn(0)
     {
     }
 
@@ -107,7 +113,8 @@ CWidgetUiWindow::CWidgetUiWindow( CWidgetUiWindowManager& aWindowManager, CCpsPu
 void CWidgetUiWindow::ConstructL( const TUid& aUid )
     {
     iUid = aUid;
-
+    iDialogsProvider = CBrowserDialogsProvider::NewL( NULL );
+    
     iPenEnabled = AknLayoutUtils::PenEnabled();
     iShowSoftkeys = iPenEnabled;
 
@@ -120,7 +127,7 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
     iUrl = GetUlrL( clientSession, aUid );
     iWidgetUiObserver = CWidgetUiObserver::NewL( *this );
 
-    iWidgetUiDialogsProviderProxy = CWidgetUiDialogsProviderProxy::NewL(*(iWindowManager.DialogsProvider()), NULL, *this);
+    iWidgetUiDialogsProviderProxy = CWidgetUiDialogsProviderProxy::NewL(*iDialogsProvider, NULL, *this);
 
 #ifdef BRDO_WRT_HS_FF
     iNetworkModeWait = new(ELeave) CActiveSchedulerWait();
@@ -194,8 +201,10 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
 
     iDlId = 0;
 
+    iNeedToNotifyNetworkState = EFalse;
     // determine initial widget online/offline network state
     DetermineNetworkState();
+    iAsyncCallBack = new (ELeave) CAsyncCallBack(TCallBack(DeleteItself,this),CActive::EPriorityLow);
     }
 
 // -----------------------------------------------------------------------------
@@ -206,6 +215,10 @@ void CWidgetUiWindow::ConstructL( const TUid& aUid )
 //
 CWidgetUiWindow::~CWidgetUiWindow()
     {
+    if( iDialogsProvider)
+        {
+         iDialogsProvider->CancelAll();
+        }
     if (iEngine && iWidgetUiObserver)
         {
         iEngine->RemoveLoadEventObserver( iWidgetUiObserver );
@@ -220,10 +233,21 @@ CWidgetUiWindow::~CWidgetUiWindow()
     delete iLeftSoftKeyLabel;
     delete iWidgetUiDialogsProviderProxy;
     delete iSchemeHandler;
-    delete iMiniviewBitmap;
+    
+    iActiveMiniviewBitmap = 0;
+    iMiniviewBitmap1.Reset();
+    iMiniviewBitmap2.Reset();
+    
 #ifdef BRDO_WRT_HS_FF
     delete iNetworkModeWait;
 #endif
+    if(iAsyncCallBack)
+        {
+        iAsyncCallBack->Cancel();
+        }
+    delete iAsyncCallBack;
+    iAsyncCallBack=NULL;  
+    delete iDialogsProvider;
     }
 
 // -----------------------------------------------------------------------------
@@ -333,7 +357,7 @@ TBool CWidgetUiWindow::WidgetFullViewState() const
 TBool CWidgetUiWindow::DialogMimeFileSelectLC(HBufC*& aSelectedFileName,
                                  const TDesC& aMimeType)
     {
-    return iWindowManager.DialogsProvider()->DialogMimeFileSelectLC(aSelectedFileName, aMimeType);
+    return iDialogsProvider->DialogMimeFileSelectLC(aSelectedFileName, aMimeType);
     }
 
 // -----------------------------------------------------------------------------
@@ -486,15 +510,33 @@ void CWidgetUiWindow::SetSoftKeyImageL(const TInt aCommand, const TDesC& aFilena
     }
 
 // -----------------------------------------------------------------------------
-// CWidgetUiWindow::Relayout()
+// CWidgetUiWindow::RelayoutL( TInt aType )
 // switch the display orientation based on preferred setting
 //
 // -----------------------------------------------------------------------------
 //
-void CWidgetUiWindow::Relayout( )
+void CWidgetUiWindow::RelayoutL( TInt aType )
     {
     if (iIsCurrent)
         {
+#ifdef RD_SCALABLE_UI_V2
+        if(aType == KEikDynamicLayoutVariantSwitch)
+            {
+            CRepository* iSensor = CRepository::NewLC(KCRUidSensorSettings);
+            TInt sensorOn = 0;
+            //get sensor is on/off from general settings
+            iSensor->Get(KSenSettingsSensorsOn, sensorOn);
+            if(sensorOn == 0)
+                {    
+                TRect rec = iWindowManager.View()->Container()->Rect();
+                if( rec.Height() < rec.Width())
+                    iPreferredOrientation = TBrCtlDefs::EOrientationLandscape;
+                else
+                    iPreferredOrientation = TBrCtlDefs::EOrientationPortrait;
+                }
+            CleanupStack::PopAndDestroy();
+            }
+#endif // RD_SCALABLE_UI_V2
         SetDisplayMode(iPreferredOrientation);
         SetSoftkeysVisible(iShowSoftkeys);
         //iWindowManager.View()->Container()->SizeChanged();
@@ -520,7 +562,7 @@ void CWidgetUiWindow::SetCurrentWindow( TBool aCurrent )
             UpdateCba();
             Engine()->MakeVisible( iWidgetLoaded );
             // redraw incase the orientation changed while in the background
-            Relayout();
+            RelayoutL(KEikDynamicLayoutVariantSwitch);
             }
         else
             {
@@ -570,7 +612,17 @@ void CWidgetUiWindow::UpdateCba( )
             // reset the Right Softkey
             TRAP_IGNORE(iWidgetUiObserver->UpdateSoftkeyL(EKeyRight,KNullDesC,KDummyCommand,EChangeReasonLoad));
             }
-
+        if (iLeftSoftKeyLabel)
+            {
+            // restore the Left Softkey
+            TRAP_IGNORE(iWidgetUiObserver->UpdateSoftkeyL(EKeyLeft,*iLeftSoftKeyLabel,KDummyCommand,EChangeReasonLoad));
+            }
+        else
+            {
+            // reset the Left Softkey
+            TRAP_IGNORE(iWidgetUiObserver->UpdateSoftkeyL(EKeyLeft,KNullDesC,KDummyCommand,EChangeReasonLoad));
+            }
+        
         // restore state
         if ( !showSoftkeys )
             {
@@ -613,6 +665,9 @@ void CWidgetUiWindow::SetWidgetLoaded( TBool aWidgetLoaded )
         {
         Engine()->MakeVisible( ETrue );
         }
+    PublishSnapShot();
+    if(iWidgetLoaded && iNeedToNotifyNetworkState)
+        DetermineNetworkState();
     }
 
 // -----------------------------------------------------------------------------
@@ -627,16 +682,18 @@ void CWidgetUiWindow::PublishSnapShot()
         {
 #ifdef BRDO_WRT_HS_FF
 
-        if ( !iMiniviewBitmap )
+        if ( iCpsPublisher)
             {
-            iMiniviewBitmap = new CFbsBitmap();
-            }
-
-        if ( iMiniviewBitmap && iCpsPublisher)
-            {
+            // Swap bitmaps
+            if(iActiveMiniviewBitmap == &iMiniviewBitmap1)
+            	iActiveMiniviewBitmap = &iMiniviewBitmap2;
+            else
+            	iActiveMiniviewBitmap = &iMiniviewBitmap1;
+            
+            // Take snapshot and publish	
             TRAP_IGNORE(
-               (iEngine->TakeSnapshotL( *iMiniviewBitmap ));
-                iCpsPublisher->PublishBitmapL( *iMiniviewBitmap, *iWidgetBundleId );
+               (iEngine->TakeSnapshotL( *iActiveMiniviewBitmap ));
+                iCpsPublisher->PublishBitmapL( *iActiveMiniviewBitmap, *iWidgetBundleId );
                 );
             }
 #endif
@@ -694,6 +751,7 @@ TBool CWidgetUiWindow::CheckNetworkAccessL()
     CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL(iUid, EAllowNetworkAccess );
     TInt networkAccess = *propValue;
     delete propValue;
+
     propValue = widgetRegistry.GetWidgetPropertyValueL(iUid, EAllowFullAccess );
     TInt fullAccess = *propValue;
     delete propValue;
@@ -738,13 +796,11 @@ void CWidgetUiWindow::NetworkSecurityCheckL()
 
             if ( prompt )
                 {
-                CBrowserDialogsProvider* dialogProvider
-                            = iWindowManager.DialogsProvider();
                 TBool grant = EFalse;
                 HBufC* message = StringLoader::LoadLC( R_WIDGETUI_NETWORK_ACCESS );
                 HBufC* yes = StringLoader::LoadLC( R_WIDGETUI_SOFTKEY_YES );
                 HBufC* no = StringLoader::LoadLC( R_WIDGETUI_SOFTKEY_NO );
-                grant = dialogProvider->DialogConfirmL( _L(""), *message, *yes, *no );
+                grant = iDialogsProvider->DialogConfirmL( _L(""), *message, *yes, *no );
                 CleanupStack::PopAndDestroy( 3 );
                 // save prompt result for session
                 SetNetworkAccessGrant( grant? EAllow : EDeny );
@@ -782,6 +838,7 @@ void CWidgetUiWindow::ConnectionManagement()
         TInt ask( 1 );
         TInt wmlId( KWmlNoDefaultAccessPoint );
         TInt snapId( KWmlNoDefaultSnapId );
+#ifndef BRDO_OCC_ENABLED_FF
         CRepository* rep( NULL );
         TRAPD( cenrepError, rep = CRepository::NewL( KCRUidBrowser ) );
         if ( KErrNone == cenrepError )
@@ -791,6 +848,7 @@ void CWidgetUiWindow::ConnectionManagement()
             (void)rep->Get( KBrowserNGDefaultSnapId, snapId );
             }
         delete rep;
+#endif
         if ( ask == EBrowserCenRepApSelModeDestination &&
            ( snapId != KWmlNoDefaultSnapId) )
             {
@@ -810,6 +868,18 @@ void CWidgetUiWindow::ConnectionManagement()
                     iWindowManager.GetConnection()->SetRequestedAP( iap );
                 );
             }
+
+        if ( EBrowserCenRepApSelModeAlwaysAsk == ask )
+            {
+              //Always ask case
+              TUint32 ap( 0 );
+              iWindowManager.GetConnection()->SetRequestedAP( ap );
+#ifdef BRDO_OCC_ENABLED_FF
+              TUint32 snapId = 0; //Defaults connects to Internet snap
+              iWindowManager.GetConnection()->SetConnectionType(CMManager::EDestination);
+              iWindowManager.GetConnection()->SetRequestedSnap(snapId);
+#endif
+            }
         }
     }
 
@@ -825,11 +895,22 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
     if ( !iWindowManager.GetConnection()->Connected() )
         {
         // 2.2. make a connection
-        TInt connFailure = iWindowManager.GetConnection()->StartConnectionL( ETrue );
+        iConnecting=ETrue;
+        TInt connFailure = 0;
+        TRAPD(err, connFailure=iWindowManager.GetConnection()->StartConnectionL( ETrue ));
+        iConnecting=EFalse;
+        User::LeaveIfError(err);
+        if(iDeleteItself)
+            iAsyncCallBack->CallBack();
         if (KErrCancel == connFailure)
             {
 #ifdef BRDO_WRT_HS_FF
-            iCpsPublisher->NetworkConnectionCancelledL();
+            if(! (EMiniViewEnabled == WidgetMiniViewState() || 
+                  EMiniViewNotEnabled == WidgetMiniViewState()) )
+                {        
+                iCpsPublisher->NetworkConnectionCancelledL();
+                iNetworkModeWait->Start();
+                }
 #endif
             User::Leave( connFailure );
             }
@@ -843,7 +924,16 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
             User::Leave( connFailure );
             }
         *aNewConn = ETrue;
-
+        if(iWindowManager.GetNetworkMode() == EOfflineMode)
+        	{
+            iWindowManager.GetConnection()->CancelConnection();
+            iWindowManager.GetConnection()->StopConnectionL();
+            User::Leave( KErrAccessDenied );
+        	}      
+#ifdef BRDO_OCC_ENABLED_FF        
+		else
+        	TRAP_IGNORE(iWindowManager.ConnNeededStatusL(KErrNone)); 
+#endif        
         }
     }
 
@@ -858,6 +948,13 @@ void CWidgetUiWindow::NetworkConnectionNeededL( TInt* aConnectionPtr,
                                       TApBearerType* aBearerType )
 
     {
+#ifdef BRDO_OCC_ENABLED_FF
+    TBool retryFlag = iWindowManager.GetRetryFlag();
+    if( retryFlag )
+        {
+        return;
+        }
+#endif
     // default in case connection setup fails
     *aConnectionPtr = 0;
 
@@ -957,8 +1054,11 @@ TBool CWidgetUiWindow::HandleDownloadL(RArray<TUint>* aTypeArray, CDesCArrayFlat
                             aDesArray,
                             paramFound );
 
-    TLex lex(dlId);
-    User::LeaveIfError(lex.Val(iDlId));
+    if ( paramFound )
+        {
+        TLex lex(dlId);
+        User::LeaveIfError(lex.Val(iDlId));
+        }
 
     TDataType dataType( *contentType8 );
     CAiwGenericParamList* genericParamList =
@@ -1121,9 +1221,10 @@ void CWidgetUiWindow::DetermineNetworkState()
     {
     TNetworkState currNetState;
     RWidgetRegistryClientSession& widgetRegistry = iWindowManager.WidgetUIClientSession();
-    TInt inMiniView = widgetRegistry.IsWidgetInMiniView( iUid);
+    TInt inMiniView = !(WidgetMiniViewState()==EMiniViewEnabled || WidgetMiniViewState()==EMiniViewNotEnabled);//widgetRegistry.IsWidgetInMiniView( iUid);
     CWidgetPropertyValue* propValue = widgetRegistry.GetWidgetPropertyValueL( iUid, EAllowNetworkAccess );
-    TInt netAccessWdgtProp = *propValue;    // AllowNetworkAccess in the info.plist file
+    TInt netAccessWdgtProp = propValue && *propValue;    // AllowNetworkAccess in the info.plist file
+    delete propValue;
 
     if ( netAccessWdgtProp && ((inMiniView && (iWindowManager.GetNetworkMode() == (TInt)EOnlineMode))
                                     || (!inMiniView && iUserPermission)) )
@@ -1183,4 +1284,66 @@ void CWidgetUiWindow::MakeSoftkeysVisible(TBool aVisible, TBool aTextBoxUpdate)
             }
         }
     }
+
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::NeedToNotifyNetworkState()
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiWindow::NeedToNotifyNetworkState(TBool aNetworkState)
+    {
+    iNeedToNotifyNetworkState = aNetworkState;
+    }
+
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::CanBeDeleted()
+// -----------------------------------------------------------------------------
+//
+TBool CWidgetUiWindow::CanBeDeleted()
+    {
+    iDeleteItself = iConnecting;
+    return !iConnecting;
+    }
+    
+
+void CWidgetUiWindow::DeleteItself()    
+	{	
+	iAsyncCallBack->CallBack();    
+	}
+
+// -----------------------------------------------------------------------------
+// CWidgetUiWindow::DeleteItself()
+// -----------------------------------------------------------------------------
+//
+TInt CWidgetUiWindow::DeleteItself(TAny* aPtr)
+    {
+    CWidgetUiWindow* self = (CWidgetUiWindow*)aPtr;
+    CWidgetUiWindowManager* p = &self->iWindowManager;
+    //if sync request start another event loop
+    if(self->Engine()->IsSynchRequestPending())
+    	{
+    	self->DeleteItself();
+    	return KErrNone;
+    	}
+    delete self;
+    //The Correct fix is to call AppUI::Exit()
+    //But that is leaving
+    if(p->WindowListCount() == 0)
+        User::Exit(KErrNone);
+    return 0;
+    }
+    
+#ifdef BRDO_OCC_ENABLED_FF
+ void CWidgetUiWindow::CancelAllDialogs()
+     {
+     if( iDialogsProvider)
+         {
+          iDialogsProvider->CancelAll();
+         }
+     }
+ 
+ TBool CWidgetUiWindow::IsDialogsLaunched()
+     {
+     return (iDialogsProvider && iDialogsProvider->IsDialogLaunched() );
+     }
+#endif 
 // End of file

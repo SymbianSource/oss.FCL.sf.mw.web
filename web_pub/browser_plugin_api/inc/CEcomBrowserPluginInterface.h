@@ -18,15 +18,13 @@
 #ifndef CECOMBROWSERPLUGININTERFACE_H
 #define CECOMBROWSERPLUGININTERFACE_H
 
-#warning This NP API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 // System includes
 #include <e32base.h>
 #include <ecom/ecom.h>
 
 // User includes
-#include "npupp.h"
-#include "BrowserPluginInterface.h"
+#include <npupp.h>
+#include <browserplugininterface.h>
 
 typedef struct
     {

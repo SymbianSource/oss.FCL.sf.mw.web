@@ -18,9 +18,9 @@
 
 
 // INCLUDE FILES
-#include <sysutil.h>
+#include <SysUtil.h>
 #include "../../bidi.h"
-#include <aknappui.h>
+#include <AknAppUi.h>
 
 #include "Widget.h"
 #include "WidgetFuncs.h"

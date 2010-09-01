@@ -19,7 +19,7 @@
 // INCLUDE FILES
 #include <config.h>
 #include <lookup.h>
-#include <liwservicehandler.h>
+#include <LiwServiceHandler.h>
 #include "DeviceLiwIterable.h"
 #include "DeviceLiwBinding.h"
 

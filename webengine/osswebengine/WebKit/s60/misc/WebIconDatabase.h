@@ -33,6 +33,7 @@ public:
     CGulIcon* iconForPageURL(const TDesC8& url);
     void retainIconForURL(const TDesC8& url);
     void releaseIconForURL(const TDesC8& url);
+    void setEnabled(bool enabled);
 
 private:
 

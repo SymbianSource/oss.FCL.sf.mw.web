@@ -20,7 +20,7 @@
 // INCLUDE FILES
 #include "BrowserSelectElementItemDrawer.h"
 #include "BrowserSelectElementModel.h"
-#include "BrCtlDialogsProvider.h"
+#include <brctldialogsprovider.h>
 
 #include <gulicon.h>
 #include <AknIconArray.h>

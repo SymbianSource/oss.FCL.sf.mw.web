@@ -21,11 +21,11 @@
 
 // INCLUDES FILES
 
-#include <WidgetRegistryClient.h>
-#include <AknGlobalConfirmationQuery.h>
+#include <widgetregistryclient.h>
+#include <aknglobalconfirmationquery.h>
 #include <coecntrl.h>
 #include "WidgetUiObserver.h"
-#include "Browser_platform_variant.hrh"
+#include "browser_platform_variant.hrh"
 // CONSTANTS
 
 enum TNetworkMode
@@ -48,25 +48,59 @@ class CWidgetUiWindow;
 class CWidgetUiAppUi;
 class CWidgetUiCpsObserver;
 class CAknNoteDialog;
-class CBrowserDialogsProvider;
 class CBrCtlInterface;
 class CLiwServiceHandler;
 class MLiwInterface;
 class CInternetConnectionManager;
 class CSchemeHandler;
 class CWidgetUiNetworkListener;
+class CWidgetUiPSNotifier;
 
 #ifdef BRDO_WRT_HS_FF
 class CCpsPublisher;
 #endif
 // CLASS DECLARATION
+#ifdef BRDO_OCC_ENABLED_FF
+#include <connectionobservers.h>
+#endif
 
+class CRepository; 
+
+class MCenrepWatcher
+       {
+       public:
+               virtual void CenrepChanged(TInt aHSModeOnline) = 0;
+        };
+class CCenrepNotifyHandler : public CActive
+       {
+       public:
+                static CCenrepNotifyHandler* NewL( MCenrepWatcher& aObserver);
+                static CCenrepNotifyHandler* NewLC( MCenrepWatcher& aObserver);
+                void StartObservingL();
+                void StopObserving();
+                virtual ~CCenrepNotifyHandler();
+                void RunL();
+                void RunErrorL(TInt aError);
+                void DoCancel();
+       protected:
+                CCenrepNotifyHandler(MCenrepWatcher& aObserver);
+                void ConstructL();
+       private:
+              CRepository* iRepository;
+              TUint32 iKey;
+              TUid iUid;
+              MCenrepWatcher& iObserver; //class using the observer
+        };
 /**
 *  CWidgetUiWindowManager
 *  @lib WidgetUi.app
 *  @since 3.1
 */
-class CWidgetUiWindowManager : public CBase
+class CWidgetUiWindowManager : public CBase,
+	                           public MCenrepWatcher
+#ifdef BRDO_OCC_ENABLED_FF
+                              ,public MConnectionStageObserver
+#endif
     {
     public:  // constructors / destructor
 
@@ -87,6 +121,14 @@ class CWidgetUiWindowManager : public CBase
         * @return none
         */
         virtual ~CWidgetUiWindowManager();
+    public:  //MCenrepWatcher
+    	  
+    	/**
+        * CenrepChanged
+        * @since 7.x
+        * @param aHSModeOnline HS web status online/offline.
+        */
+        void CenrepChanged(TInt aHSModeOnline);
 
     public:  
 
@@ -236,7 +278,15 @@ class CWidgetUiWindowManager : public CBase
         void HandleOOMEventL( TBool aForeground );
 
 // Utility stuff.
-
+        /**
+        * ExitNow
+        * Exits the AppUi
+        * @since 5.0
+        * @param none
+        * @return none
+        */        
+        void ExitNow();
+        
         /**
         * WindowList
         * Gets the list of running windows
@@ -244,7 +294,7 @@ class CWidgetUiWindowManager : public CBase
         * @param none
         * @return CArrayPtrFlat<CWidgetUiWindow>*
         */
-        void WindowList( RPointerArray<CWidgetUiWindow>& )  { /*return iWindowList; */ User::Invariant(); }
+        void WindowList( RPointerArray<CWidgetUiWindow>&  aWindowList)  { aWindowList = iWindowList; }
 
         /**
         * WidgetUIClientSession
@@ -254,14 +304,7 @@ class CWidgetUiWindowManager : public CBase
         */
         RWidgetRegistryClientSession& WidgetUIClientSession() { return iClientSession; }
 
-        /**
-        * DialogsProvider
-        * @since 3.1
-        * @param none
-        * @return CBrowserDialogsProvider
-        */
-        CBrowserDialogsProvider* DialogsProvider() { return iDialogsProvider; }
-        
+              
         /**
          * HandleLSKCommandL
          * @since 5.0
@@ -400,7 +443,18 @@ class CWidgetUiWindowManager : public CBase
         * @return TBool
         */  		
 		TBool AnyWidgetPublishing();
-        
+		
+        /**
+        * Returns a reference to the Appui of WidgetUi
+        * @return reference to CWidgetUiAppUi 
+        */
+        CWidgetUiAppUi& AppUi(){ return iAppUi; }
+
+        /**
+        * Returns the count of the windows in the widget
+        * @return count of the windows
+        */
+        TInt WindowListCount(){ return iWindowList.Count(); }
         
 #ifdef  OOM_WIDGET_CLOSEALL
         /**
@@ -557,7 +611,27 @@ class CWidgetUiWindowManager : public CBase
         * @return none
         */
         void SendWidgetToBackground( const TUid& aUid );
-
+#ifdef BRDO_OCC_ENABLED_FF        
+   protected:  // from MConnectionStageObserver
+      
+       // Connection stage achieved. 
+        void ConnectionStageAchievedL();
+   public:
+    
+        //Retry flags
+        void SetRetryFlag(TBool flag);
+        TBool GetRetryFlag();
+        
+        //For Call back for reconnectivity
+        static TInt RetryConnectivity(TAny* aWindowManager);
+        TInt RetryInternetConnection(); 
+        
+        CPeriodic *iRetryConnectivity;
+        TBool reConnectivityFlag;
+        void ConnNeededStatusL( TInt aErr );
+        void StopConnectionObserving();
+#endif
+        
     private:
 
         CWidgetUiWindow*                    iActiveFsWindow;    // reference.
@@ -569,15 +643,17 @@ class CWidgetUiWindowManager : public CBase
         RWidgetRegistryClientSession        iClientSession;     // owned
         TBool                               iServerConnected;   // connected to Widget Registry server ?
         TBool                               iStrictMode;
-        CBrowserDialogsProvider*            iDialogsProvider;// owned, responsible for deleting
         CInternetConnectionManager*         iConnection;        // owned, responsible for deleting
         TNetworkMode                        iNetworkMode;       // unknown mode =  0, online mode = 1, offline mode = 2
         TBool                               iNetworkConnected;  // ETrue if there is an active network connection, else EFalse
         TBrCtlDefs::TCursorSettings                     iWidgetCursorMode;
         TBrCtlDefs::TEnterKeySettings       iWidgetEnterKeyMode;
-        
+        CWidgetUiPSNotifier*                iWidgetNotifier;
+        CWidgetUiPSNotifier*                iWidgetSapiNotifier;
+        CWidgetUiPSNotifier*                iWidgetSapiClearNotifier;
 #ifdef BRDO_WRT_HS_FF       
         CCpsPublisher*                      iCpsPublisher;      // Owned, interface to publish bitmap to CPS
+        CCenrepNotifyHandler*               iCenrepNotifyHandler;  
 #endif
         // TODO should this be created only when needed?
         CActiveApDb*                        iDb;                // owned, responsible for deleting        
@@ -585,7 +661,10 @@ class CWidgetUiWindowManager : public CBase
         CPeriodic*                          iNotifyHarvester;//Notify harvester to send next event
 #ifdef  OOM_WIDGET_CLOSEALL
         TTime                               iTimeLastWidgetOpen;
-#endif         
+#endif
+#ifdef BRDO_OCC_ENABLED_FF
+        CConnectionStageNotifierWCB*    iConnStageNotifier;                                
+#endif
     };
 
 #endif  // WIDGETUIWINDOWMANAGER_H_

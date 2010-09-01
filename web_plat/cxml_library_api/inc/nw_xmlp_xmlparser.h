@@ -28,7 +28,7 @@
 #ifndef NW_XMLPARSER_H
 #define NW_XMLPARSER_H
 
-#include "nw_xmlp_xmlreader.h"
+#include <nw_xmlp_xmlreader.h>
 
 #ifdef __cplusplus
 extern "C" {

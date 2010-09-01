@@ -160,16 +160,16 @@ struct TCMalloc_SpinLock {
   pthread_mutex_t private_lock_;
 
   inline void Init() {
-    if (pthread_mutex_init(&private_lock_, NULL) != 0) ; //abort();
+    if (pthread_mutex_init(&private_lock_, NULL) != 0) abort();
   }
   inline void Finalize() {
-    if (pthread_mutex_destroy(&private_lock_) != 0); // abort();
+    if (pthread_mutex_destroy(&private_lock_) != 0) abort();
   }
   inline void Lock() {
-    if (pthread_mutex_lock(&private_lock_) != 0);// abort();
+    if (pthread_mutex_lock(&private_lock_) != 0) abort();
   }
   inline void Unlock() {
-    if (pthread_mutex_unlock(&private_lock_) != 0); // abort();
+    if (pthread_mutex_unlock(&private_lock_) != 0) abort();
   }
 };
 

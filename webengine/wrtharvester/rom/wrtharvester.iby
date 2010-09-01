@@ -19,7 +19,11 @@
 #ifndef WRTHARVESTER_IBY
 #define WRTHARVESTER_IBY
 #include <bldvariant.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#ifdef __S60_32__
+#include <browser_platform_variant.hrh>
+#else
+#include <platform/mw/browser_platform_variant.hrh>
+#endif
 
 #ifdef BRDO_WRT_HS_FF
 ECOM_PLUGIN(wrtharvester.dll, wrtharvester.rsc)

@@ -17,7 +17,7 @@
 
 
 // INCLUDES
-#include <registryinfo.rh>
+#include <ecom/registryinfo.rh>
 #include <contentharvesterpluginuids.hrh>
 
 //  RESOURCE DEFINITIONS 

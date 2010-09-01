@@ -19,15 +19,13 @@
 #include "WidgetRegistrationManager.h"
 #include "WidgetInstaller.h"
 #include <apgcli.h>
-#include <apgicnfl.h>
-
+#include <APGICNFL.h>
 #ifdef SYMBIAN_ENABLE_SPLIT_HEADERS
 #include <apgicnflpartner.h>
-//#include <apgicnflinternal.h> // missing
+//#include <apgicnflinternal.h> // missing 
 #endif
-
-#include <s32mem.h>
-#include <WidgetRegistryData.h>
+#include <S32MEM.H>
+#include <widgetregistrydata.h>
 
 // CONSTANTS
 _LIT(KMBMExt, ".mbm");
@@ -100,11 +98,31 @@ void CWidgetRegistrationManager::DeregisterWidgetL( const TUid& aUid )
     User::LeaveIfError( apparcSession.Connect() );
 
     apparcSession.PrepareNonNativeApplicationsUpdatesL();
-    apparcSession.DeregisterNonNativeApplicationL( aUid );
-    apparcSession.DeregisterNonNativeApplicationTypeL( aUid );
+    apparcSession.DeregisterNonNativeApplicationL( aUid );    
     apparcSession.CommitNonNativeApplicationsUpdatesL();
     apparcSession.Close();
     }
+    
+// ============================================================================
+// CWidgetRegistrationManager::DeregisterWidgetL()
+// Deregister installed widgets as non native app
+//
+// @since 5.1
+// ============================================================================
+//    
+void CWidgetRegistrationManager::DeregisterWidgetsL( const RArray<TUid>& aUidList )
+	{	
+	RApaLsSession apparcSession;
+    User::LeaveIfError( apparcSession.Connect() );
+
+    apparcSession.PrepareNonNativeApplicationsUpdatesL();
+    for(TInt i = 0;i<aUidList.Count();i++)
+    	{
+    	apparcSession.DeregisterNonNativeApplicationL( aUidList[i] );    	
+    	}    
+    apparcSession.CommitNonNativeApplicationsUpdatesL();
+    apparcSession.Close();
+	}
 
 // ============================================================================
 // CWidgetRegistrationManager::RegisterWidgetL()
@@ -127,12 +145,6 @@ void CWidgetRegistrationManager::RegisterWidgetL(
     RApaLsSession apparcSession;
     CleanupClosePushL( apparcSession );
     User::LeaveIfError( apparcSession.Connect() );
-    // TODO move this where it is only done once
-    apparcSession.PrepareNonNativeApplicationsUpdatesL();
-    apparcSession.DeregisterNonNativeApplicationL( KUidWidgetLauncher );
-    apparcSession.DeregisterNonNativeApplicationTypeL( KUidWidgetLauncher );
-    apparcSession.CommitNonNativeApplicationsUpdatesL();
-    // TODO end
 
     // reasonably like an acceptable file name
     TBuf<KWidgetRegistryVal> appName;

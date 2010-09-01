@@ -21,7 +21,7 @@
 #include "NpnImplementation.h"
 #include "PluginWin.h"
 #include "PluginSkin.h"
-#include <CUserAgent.h>
+#include <cuseragent.h>
 #include <Element.h>
 #include <HTMLPlugInElement.h>
 #include <HTMLNames.h>
@@ -332,13 +332,13 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
         
         case NPNVPluginElementNPObject: {
 		PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
-        WebCore::Element* pluginElement;
+        WebCore::Element* pluginElement = NULL;
         if (pluginWin) {
         	pluginElement = pluginWin->pluginSkin()->getElement();
         }
             
         NPObject* pluginScriptObject = 0;
-        if (pluginElement->hasTagName(appletTag) || pluginElement->hasTagName(embedTag) || pluginElement->hasTagName(objectTag))
+        if (pluginElement && (pluginElement->hasTagName(appletTag) || pluginElement->hasTagName(embedTag) || pluginElement->hasTagName(objectTag)))
 			pluginScriptObject = static_cast<WebCore::HTMLPlugInElement*>(pluginElement)->getNPObject();
             
         if (pluginScriptObject)
@@ -369,13 +369,14 @@ NPError NpnGetValue(NPP aInstance, NPNVariable aVariable, void *aRetValue)
         case NPNVisOfflineBool:     // Tells whether offline mode is enabled;
                                     // true=offline mode enabled, false=not enabled
             
-        case NPNNetworkAccess:
+        case NPNNetworkAccess: {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             TInt apId = -1;
             if (pluginWin) {
                 apId = pluginWin->pluginSkin()->handleNetworkAccess();
             }
             *((TInt*) aRetValue) = apId;
+        }
             break;
             
        case NPNVGenericParameter: {   
@@ -477,12 +478,40 @@ NPError NpnSetValue(NPP aInstance, NPPVariable aVariable, void* aSetValue)
             }
             break;
             }
+        case NPPVPluginBitmap :
+            {
+            PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
+            if (pluginWin) {
+                TInt* bitMapHandle = (TInt*)aSetValue;
+                if (*bitMapHandle) {
+                    TInt handle = *bitMapHandle; 
+                    pluginWin->SetBitmapFromPlugin(handle);
+                }
+                else 
+                    { 
+                    pluginWin->SetBitmapFromPlugin(KErrNone);
+                    }
+               }
+            }
+            break; 
         case NPPVPluginDeactivate:
             {
             PluginWin* pluginWin = (PluginWin*)aInstance->ndata;
             if (pluginWin) {
-                TPoint* cursorPos = static_cast<TPoint*>(aSetValue);
-                pluginWin->pluginDeactivate(*cursorPos);
+            TPoint* cursorPos; 
+            
+            //EPMR-7XPHXV aSetValue is set as "(void*) 1" from
+            //"CBrowserPluginControl::GoNormalScreenL" from the flash plugin
+            //to avoid the Invalid pointer access, we are checking for 
+            //aSetValue and setting point as (0,0) and also for NULL Value 
+            if((aSetValue == (void*)1) || (!aSetValue)) {
+                TPoint position(0,0);
+                cursorPos = static_cast<TPoint*>(&position);
+                }
+                else {
+                cursorPos = static_cast<TPoint*>(aSetValue);
+                }
+            pluginWin->pluginDeactivate(*cursorPos);
             }
         }
         break;

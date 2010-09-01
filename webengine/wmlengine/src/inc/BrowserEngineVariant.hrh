@@ -1,0 +1,49 @@
+/*
+* Copyright (c) 2002 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description:  
+*      This file contains all the declarations to variate locally 
+*      whole Messaging subsystem
+*               
+*
+*/
+
+
+#ifndef BROWSERENGINEVARIANT_HRH
+#define BROWSERENGINEVARIANT_HRH
+
+
+/* 
+*  Comment the meaning of the each setting value here well !!
+*  What is the SD file and setting used for values, e.g.
+*/
+
+// BrowserEngine related values are in 0x101F861B.ini
+//setting "R-BrEng"
+
+//For furure usage. N.B we use the defines for masking out the setting
+//#define KBrowserAnotherFeat 0x01
+
+
+
+// If, for some good reason, you need compile time variation per
+// release use the release flags. This file is the only place to use the
+// release flags ! However, think hard why you can not use SD setting !!!
+//
+#if defined (__SERIES60_20__)
+//const TInt KSomeCompileTimeConstantValue = 1;
+#elif defined (____SERIES60_21__)
+//const TInt KSomeCompileTimeConstantValue = 2;
+#endif
+
+#endif // BROWSERENGINEVARIANT_HRH

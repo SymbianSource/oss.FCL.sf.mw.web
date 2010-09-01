@@ -15,9 +15,8 @@
 *
 */
 
-
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET          MultipartParser.dll
 TARGETTYPE      DLL
@@ -37,11 +36,10 @@ deffile Bwins/MULTIPARTPARSER.DEF
 deffile Bmarm/MULTIPARTPARSER.DEF
 #endif
 
-
 USERINCLUDE     ../inc
 
 MW_LAYER_SYSTEMINCLUDE
-MW_LAYER_LIBC_SYSTEMINCLUDE
+OS_LAYER_ESTLIB_SYSTEMINCLUDE
 
 SOURCEPATH      ../src
 
@@ -50,17 +48,9 @@ SOURCE	BodyPart.cpp
 SOURCE  GZipBufMgr.cpp
 
 LIBRARY  euser.lib
-LIBRARY  estlib.lib
+LIBRARY  libc.lib
+LIBRARY  libm.lib
 LIBRARY  InetProtUtil.lib
 LIBRARY  estor.lib
 LIBRARY	 ezlib.lib
 LIBRARY	 imut.lib
-
-
-
-
-
-  
- 
-
-

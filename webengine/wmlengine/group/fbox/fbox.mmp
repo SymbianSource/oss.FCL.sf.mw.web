@@ -1,0 +1,78 @@
+/*
+* Copyright (c) 1997-2004 Nokia Corporation and/or its subsidiary(-ies).
+* All rights reserved.
+* This component and the accompanying materials are made available
+* under the terms of the License "Eclipse Public License v1.0"
+* which accompanies this distribution, and is available
+* at the URL "http://www.eclipse.org/legal/epl-v10.html".
+*
+* Initial Contributors:
+* Nokia Corporation - initial contribution.
+*
+* Contributors:
+*
+* Description: 
+*
+*/
+
+#include  "../webkitcommon.mmpi"
+
+TARGET          fbox.lib
+TARGETTYPE      lib
+
+CAPABILITY CAP_GENERAL_DLL
+VENDORID        VID_DEFAULT
+
+MACRO NOKIA_MOBILE_BROWSER
+#define NOKIA_MOBILE_BROWSER 1
+
+SOURCEPATH      ../../src/fbox/src/
+
+#ifdef __S60_32__
+LANG sc 
+#else
+LANGUAGE_IDS 
+#endif
+
+SOURCE	FBOXButtonBox.cpp
+SOURCE	FBOXButtonBoxSkin.cpp
+SOURCE	FBOXCheckBox.cpp
+SOURCE	FBOXCheckBoxSkin.cpp
+SOURCE	FBOXFileSelectionBox.cpp
+SOURCE	FBOXFileSelectionBoxSkin.cpp
+SOURCE	FBOXFormBox.cpp
+SOURCE	FBOXFormBoxUtils.cpp
+SOURCE	FBOXFormLiaison.cpp
+SOURCE	FBOXImageButtonBox.cpp
+SOURCE	FBOXImageButtonBoxSkin.cpp
+SOURCE	FBOXInputBox.cpp
+SOURCE	FBOXInputInteractor.cpp
+SOURCE	FBOXInputSkin.cpp
+SOURCE	FBOXInteractor.cpp
+SOURCE	KeyBoardEvent.c
+SOURCE	FBOXOptgrpBox.cpp
+SOURCE	FBOXOptGrpSkin.cpp
+SOURCE	FBOXOptionBox.cpp
+SOURCE	FBOXOptionBoxSkin.cpp
+SOURCE	FBOXPasswordBox.cpp
+SOURCE	FBOXRadioBox.cpp
+SOURCE	FBOXHiddenBox.cpp
+SOURCE	FBOXSelectBox.cpp
+SOURCE	FBOXSelectSkin.cpp
+SOURCE	FBOXSkin.cpp
+SOURCE  FBOXValidator.cpp
+
+SOURCE  Epoc32ButtonBoxSkin.cpp
+SOURCE  Epoc32ImageButtonBoxSkin.cpp
+SOURCE  Epoc32InlineFormImages.cpp
+SOURCE  Epoc32InputInteractor.cpp
+SOURCE  Epoc32FormImages.cpp
+SOURCE  Epoc32InputSkin.cpp
+SOURCE	Epoc32TextAreaBox.cpp
+SOURCE  FBOXWmlFormattedEditor.cpp
+SOURCE  FBOXWmlFormatHandler.cpp
+SOURCE  FBOXEpoc32OptGrpSkin.cpp
+SOURCE  FBOXEpoc32OptionSkin.cpp
+SOURCE  Epoc32SelectSkin.cpp
+SOURCE  FBOXCEpoc32InputBox.cpp
+SOURCE	FBOXEpoc32InlineCheckBoxSkin.cpp

@@ -21,7 +21,7 @@
 
 //  INCLUDES
 #include <e32base.h>
-#include <BrCtlDefs.h>
+#include <brctldefs.h>
 
 // CONSTANTS
 
@@ -242,6 +242,7 @@ class HistoryControllerInterface {
         virtual TBool possibleWmlOEB() = 0;
         
 		virtual void performTransition(int direction) = 0;
+	    virtual void rollBackIndex() = 0;
 
 };
 

@@ -41,8 +41,8 @@
 #include "GraphicsContext.h"
 #include "HTMLFormElement.h"
 #include "ResourceRequest.h"
-#include "WebKitLogger.h"
-#include "WebUtil.h"
+#include "webkitlogger.h"
+#include "webutil.h"
 #include "PluginSkin.h"
 #include "PluginHandler.h"
 #include "kjs_proxy.h"
@@ -280,30 +280,29 @@ DocumentLoader* WebFrame::documentLoader()
     return frameLoader()->documentLoader();
 }
 
-void WebFrame::notifyPluginsOfScrolling()
-{
-    setpluginToScroll(true);
-    Frame* coreFrame = core(this);
-    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) {
-        PassRefPtr<HTMLCollection> objects = frame->document()->objects();       
-        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) 
-            notifyPluginOfScrolling(n->renderer());             
+void WebFrame::notifyPluginsOfPositionChange()
+{    
+    PluginHandler* plghandler = StaticObjectsContainer::instance()->pluginHandler();
+    WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
+    for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it ) {
+        PluginSkin* plg = static_cast<PluginSkin*> (*it);
+        WebFrame* plgWebFrame = plg->getWebFrame();
+        CBrCtl*   plbrCtl = control(plg->frame());
+        CBrCtl*   pgbrCtl = control(this);
 
-        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();       
-        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) 
-            notifyPluginOfScrolling(n->renderer()); 
-
-        }
-    setpluginToScroll(false);
+        if(plbrCtl == pgbrCtl)
+            {
+            notifyPluginOfPositionChange(static_cast<PluginSkin*> (*it));   
+            }
+    }
 }
 
-void WebFrame::notifyPluginOfScrolling(RenderObject* renderer)
+void WebFrame::notifyPluginOfPositionChange(PluginSkin* plg)
 {        
-    MWebCoreObjectWidget* view = widget(renderer);
     //Don't repaint the plugin objects if Browser is in PageView mode
-    if (view) {
-        view->positionChanged();
-        TRect r = m_view->toDocCoords(static_cast<PluginSkin*>(view)->getPluginWinRect());
+    if (plg) {
+        plg->positionChanged();
+        TRect r = m_view->toDocCoords(plg->getPluginWinRect());
         m_view->topView()->scheduleRepaint(r);
     }
 }
@@ -445,7 +444,9 @@ Frame* core(const WebFrame* frame)
 
 WebFrame* kit(Frame* frame)
 {
-    return frame ? ((WebFrameBridge *)frame->bridge())->webFrame(): NULL;
+    if( frame && frame->bridge() )    
+    	return  ((WebFrameBridge *)frame->bridge())->webFrame();
+    return NULL;	
 }
 
 WebView *kit(Page* page)
@@ -516,28 +517,27 @@ bool WebFrame::executeScript(const WebCore::String& script)
 }
 
 void WebFrame::makeVisiblePlugins(TBool visible)
-{
-    MWebCoreObjectWidget* view = NULL;
-    int pluginCount = 0;
-    Frame* coreFrame = core(this);
-    PluginSkin* ptr = 0;
-    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) {
-
-        PassRefPtr<HTMLCollection> objects = frame->document()->objects();     
-        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) {
+{    
+    MWebCoreObjectWidget* view = NULL;  
+    Frame* coreFrame = core(this); 
+    PluginSkin* plg = 0; 
+    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) { 
+    
+        PassRefPtr<HTMLCollection> objects = frame->document()->objects();      
+        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) { 
+            view = widget(n);  
+            if (view) { 
+                plg = static_cast<PluginSkin*>(view); 
+                plg->makeVisible(visible);
+            } 
+        } 
+        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();        
+        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) { 
             view = widget(n); 
-            if (view) {
-                ptr = static_cast<PluginSkin*>(view);
-                ptr->makeVisible(visible);
-            }
-        }
-        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();       
-        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) {
-            view = widget(n);
-            if (view) {
-                ptr = static_cast<PluginSkin*>(view);
-                ptr->makeVisible(visible);
-            }
+            if (view) { 
+                plg = static_cast<PluginSkin*>(view); 
+                plg->makeVisible(visible);
+            } 
         }
     }
 }
@@ -559,7 +559,7 @@ Node* WebFrame::getClosestAnchorElement(const TPoint& viewPt, TPoint& newPos)
     
     Frame* coreFrame = core(this);
 
-	int dist = 99999999;
+	unsigned int dist = 0xFFFFFFFF;
 	Node* result = 0;
 	//for (Node* n=links->firstItem(); n; n=links->nextItem()) {
 	for(Node* n = coreFrame->document(); n != 0; n = n->traverseNextNode()) {
@@ -573,7 +573,7 @@ Node* WebFrame::getClosestAnchorElement(const TPoint& viewPt, TPoint& newPos)
 			
 			int x = xInRect(r, pt.x());
 			int y = yInRect(r, pt.y());
-			int d = (pt.x() - x) * (pt.x() - x) + (pt.y() - y) * (pt.y() - y);
+			unsigned int d = (pt.x() - x) * (pt.x() - x) + (pt.y() - y) * (pt.y() - y);
 			if (dist > d) {
 				dist = d;
 				result = n;
@@ -582,7 +582,7 @@ Node* WebFrame::getClosestAnchorElement(const TPoint& viewPt, TPoint& newPos)
 	}
 	
     // check if we are close enough and calcualte with zoom factor. 
-    if (dist< (400/m_view->topView()->scalingFactor() * 100)) {
+    if (result && dist< (400/m_view->topView()->scalingFactor() * 100)) {
         IntRect r = result->getRect();
         r.inflate(-2);
         TPoint docPos(xInRect(r, pt.x()), yInRect(r, pt.y()));
@@ -591,6 +591,84 @@ Node* WebFrame::getClosestAnchorElement(const TPoint& viewPt, TPoint& newPos)
     }
     
     return 0;
+}
+
+void WebFrame::ScrollOrPinchStatus(bool status)
+{
+    PluginHandler* plghandler = StaticObjectsContainer::instance()->pluginHandler();
+       WTF::HashSet<PluginSkin*> pluginObjs = plghandler->pluginObjects();
+       for(WTF::HashSet<PluginSkin*>::iterator it = pluginObjs.begin() ;  it != pluginObjs.end() ; ++it )
+           {
+           PluginSkin* plg = static_cast<PluginSkin*> (*it);
+           WebFrame* plgWebFrame = plg->getWebFrame();
+           CBrCtl*   plbrCtl = control(plg->frame());
+           CBrCtl*   pgbrCtl = control(this);
+
+           if(plbrCtl == pgbrCtl)
+               {
+               plg->NotifyPluginsForScrollOrPinch(status);
+               }
+       }
+
+
+}
+
+void WebFrame::notifyPluginFocusChangeEvent(TBool visible)
+{
+    MWebCoreObjectWidget* view = NULL;  
+    Frame* coreFrame = core(this); 
+    
+    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) { 
+   
+        PassRefPtr<HTMLCollection> objects = frame->document()->objects();      
+        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) { 
+            view = widget(n);  
+            if (view && static_cast<PluginSkin*>(view)->isFlashPlugin()) { 
+                if(visible)
+                    static_cast<PluginSkin*>(view)->HandleGainingForeground();
+                else
+                    static_cast<PluginSkin*>(view)->HandleLosingForeground();
+            } 
+        } 
+        
+        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();        
+        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) { 
+            view = widget(n); 
+            if (view && static_cast<PluginSkin*>(view)->isFlashPlugin()) { 
+                if(visible)
+                    static_cast<PluginSkin*>(view)->HandleGainingForeground();
+                else
+                    static_cast<PluginSkin*>(view)->HandleLosingForeground();
+            } 
+        }
+    }
+        
+}
+
+void WebFrame::reCreatePlugins()
+{
+    MWebCoreObjectWidget* view = NULL;  
+    Frame* coreFrame = core(this); 
+    PluginSkin* plg = 0; 
+    for (Frame* frame = coreFrame; frame; frame = frame->tree()->traverseNext(coreFrame)) { 
+   
+        PassRefPtr<HTMLCollection> objects = frame->document()->objects();      
+        for (Node* n = objects->firstItem(); n; n = objects->nextItem()) { 
+            view = widget(n);  
+            if (view) { 
+                plg = static_cast<PluginSkin*>(view); 
+                plg->reCreatePlugin(); 
+            } 
+        } 
+        PassRefPtr<HTMLCollection> embeds = frame->document()->embeds();        
+        for (Node* n = embeds->firstItem(); n; n = embeds->nextItem()) { 
+            view = widget(n); 
+            if (view) { 
+                plg = static_cast<PluginSkin*>(view); 
+                plg->reCreatePlugin(); 
+            } 
+        }
+    }
 }
 
 // END OF FILE

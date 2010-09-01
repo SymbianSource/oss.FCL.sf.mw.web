@@ -17,7 +17,7 @@
 */
 
 #include "FastAllocator.h"
-#include "MemoryManager.h"
+#include <MemoryManager.h>
 #include "MemoryPool.h"
 #include <e32std.h>
 #include <e32debug.h>
@@ -32,7 +32,7 @@ RSymbianDlAllocatorWrapper::RSymbianDlAllocatorWrapper(CNewSymbianHeapPool* aPoo
 RSymbianDlAllocatorWrapper::~RSymbianDlAllocatorWrapper()
 {
 #ifdef OOM_LOGGING
-    iPool->DumpHeapLogs();
+    iPool->DumpHeapLogs(0);
 #endif
 }
 
