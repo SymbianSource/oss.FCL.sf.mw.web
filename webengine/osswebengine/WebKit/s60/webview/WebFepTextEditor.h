@@ -27,10 +27,15 @@
 #include <AknExtendedInputCapabilities.h> 
 #include <eikccpu.h>
 #include <baclipb.h>
+#include <e32cmn.h>
 
 #include "PlatformString.h"
 #include "Node.h"
 #include "Frame.h"
+#include "Element.h"
+#include "VisiblePosition.h"
+#include "Range.h"
+#include "TextIterator.h"
 
 #ifndef WEBFEPTEXTEDITOR_H
 #define WEBFEPTEXTEDITOR_H
@@ -133,6 +138,11 @@ public:
     bool IsWapMaskedModeInput(WebCore::Frame* frame);
     void EnableCcpuL();
     TBool IsInputElementFocused() const;
+    TBool IsDivElementFocused() const;
+    TInt indexForVisiblePosition(const WebCore::VisiblePosition& pos,WebCore::Element* node) const;
+    WebCore::VisiblePosition visiblePositionForIndex(TInt index,WebCore::Element* node);
+    void setSelectionRange(TInt start, TInt end, WebCore::Element* node);    
+    
     void ReportEventL();
     
     TBool inlineTextEditingStarted();

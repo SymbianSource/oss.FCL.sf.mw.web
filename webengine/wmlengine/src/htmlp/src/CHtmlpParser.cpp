@@ -2192,19 +2192,23 @@ finish_handleMeta:
     TBrowserStatusCode status = KBrsrSuccess;
     NW_Int32 numUnconvertible, indexFirstUnconvertible;
     NW_Buffer_t* outBuf = NULL;
-    NW_Uint32 i;
+    NW_Uint32 i=0,offset =0;
     static const NW_Ucs2 encodingStr[] = {'e','n','c','o','d','i','n','g','=','\0'};
     NW_Uint32 encodingLen = NW_Str_Strlen(encodingStr)*sizeof(NW_Ucs2);
-    
-    if (NW_Byte_Strnicmp((const NW_Byte*)(iLexer->pBuf + iLexer->readPosition), (const NW_Byte*)encodingStr, encodingLen) == 0 && 
+    for(i = iLexer->readPosition + encodingLen - sizeof(NW_Ucs2);(iLexer->pBuf[i] != '"' && iLexer->pBuf[i] != '\'' && iLexer->pBuf[i] != '?' && i < iLexer->byteCount ) ;i+=sizeof(NW_Ucs2))
+        {
+       if(iLexer->pBuf[i] == ' ')
+           offset+= sizeof(NW_Ucs2);
+        }
+    if (NW_Byte_Strnicmp((const NW_Byte*)(iLexer->pBuf + iLexer->readPosition), (const NW_Byte*)encodingStr, encodingLen - sizeof(NW_Ucs2 )) == 0 && 
       (iLexer->pBuf[iLexer->readPosition + encodingLen] == '"' || 
-      iLexer->pBuf[iLexer->readPosition + encodingLen] == '\''))
+      iLexer->pBuf[iLexer->readPosition + encodingLen] == '\'' || offset))
       {
       NW_Buffer_t body;
       NW_Uint32 selectedCharset;
       NW_ASSERT(iCBs->charsetConvertCallback != NULL);
       NW_ASSERT(iCBs->charsetContext != NULL);
-      for (i = iLexer->readPosition + encodingLen + sizeof(NW_Ucs2); 
+      for (i = iLexer->readPosition + encodingLen + sizeof(NW_Ucs2) + offset;  
       i < iLexer->byteCount && iLexer->pBuf[i] != '"' && iLexer->byteCount && iLexer->pBuf[i] != '\'' && iLexer->pBuf[i] != '?'; 
       i += sizeof(NW_Ucs2))
         ;
@@ -2222,7 +2226,7 @@ finish_handleMeta:
           status = KBrsrSuccess;
           goto finish_xml_charset;
           }
-        status = iCBs->charsetConvertCallback(iCBs->charsetContext, i - iLexer->readPosition - encodingLen, iLexer->readPosition + encodingLen, &body, 
+        status = iCBs->charsetConvertCallback(iCBs->charsetContext, i - iLexer->readPosition - encodingLen - offset, iLexer->readPosition + encodingLen + offset, &body,
           &numUnconvertible, &indexFirstUnconvertible, &outBuf, &selectedCharset);
         if (status != KBrsrSuccess)
           {

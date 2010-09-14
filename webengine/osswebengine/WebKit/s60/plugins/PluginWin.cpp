@@ -592,6 +592,9 @@ void PluginWin::forceRedraw(bool drawNow)
 //
 void PluginWin::moveWindow(const TPoint& aOffset)
     {
+    WebView *view = control(m_pluginskin->frame())->webView();
+    if(!view || view->isClosing())
+        return;
     // set force scroll to true, when plugin gives move command, 
     // browser needs to move window according to offset value
     m_forceScroll = ETrue;
@@ -602,8 +605,7 @@ void PluginWin::moveWindow(const TPoint& aOffset)
     WebCursor* c = StaticObjectsContainer::instance()->webCursor();
     if (c && mf && mf->frameView() && !m_pluginskin->pluginPlayer())
         {
-            // Offset sent by plugins doesn't take care of zoom level. Calculate currect offset value
-            WebView *view = control(m_pluginskin->frame())->webView();
+            // Offset sent by plugins doesn't take care of zoom level. Calculate currect offset value            
             TInt zoomlevel = view->zoomLevel();
 		    TPoint oldPos(mf->frameView()->contentPos());
 		    TPoint newPos ((aOffset.iX  * 100)/zoomlevel, (aOffset.iY  * 100)/zoomlevel);

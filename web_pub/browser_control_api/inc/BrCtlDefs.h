@@ -664,7 +664,8 @@ class TBrCtlDefs
             EElementSmartLinkEmail, ///< an email address in the page.
             EElementBrokenImage, ///< A missing image
             EElementSmartLinkVoip, ///< A voip smartlink
-            EElementSelectMultiBox ///< A select box with multiple select
+            EElementSelectMultiBox, ///< A select box with multiple select
+            EElementdivTag ///< An editable div tag
         };
 
         /**

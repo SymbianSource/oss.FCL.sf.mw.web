@@ -1456,9 +1456,11 @@ int RenderBox::calcReplacedHeightUsing(Length height) const
             if (!style()->htmlHacks() && cb->style()->height().isAuto() && !isPositioned() && !cb->isRenderView() && !cb->isTableCell()) {
                 IntSize size = intrinsicSize();
                 // Try to keep aspect ratio.
-                int h = size.width() ? calcReplacedWidth() * size.height() / size.width() : size.height();
+                int h = size.height();
+                if (size.width() && (style()->width().isFixed() || style()->width().isPercent()))
+                    h = calcReplacedWidth() * size.height() / size.width();
                 if (h > 0)
-                    return calcContentBoxHeight(h);
+                return calcContentBoxHeight(h);
             }
 
             int availableHeight = isPositioned() ? containingBlockHeightForPositioned(cb) : cb->availableHeight();

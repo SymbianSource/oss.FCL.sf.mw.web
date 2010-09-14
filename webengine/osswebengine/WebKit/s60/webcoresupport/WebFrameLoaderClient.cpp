@@ -1273,7 +1273,10 @@ void WebFrameLoaderClient::setTitle(const String& title, const KURL&)
     NSString *titleNSString = title;
     [[[WebHistory optionalSharedHistory] itemForURL:nsURL] setTitle:titleNSString];
     */
-    brctl(m_webFrame)->historyHandler()->setCurrentEntryTitle(title.des());    
+    HBufC* buf = core((brctl(m_webFrame)->webView()->mainFrame()))->loader()->documentLoader()->title().des().AllocL();
+    if(buf->Length())
+        brctl(m_webFrame)->historyHandler()->setCurrentEntryTitle(buf->Des());
+    delete buf;
 }
 
 String WebFrameLoaderClient::userAgent(const KURL&) 

@@ -43,7 +43,7 @@ class CBuffStorage;
 */
 
 
-NONSHARABLE_CLASS( CBuffStorage ) : public CActive
+NONSHARABLE_CLASS( CBuffStorage ) : public CBase
     {
     public:  // Constructors and destructor
     
@@ -102,26 +102,6 @@ NONSHARABLE_CLASS( CBuffStorage ) : public CActive
     
     private: // From CActive
 
-    /**
-    * Cancels the timer.
-    * @param 
-    * @return
-    */
-    void DoCancel();
-    
-    /**
-    * Handles an active object’s request completion event.
-    * @param 
-    * @return
-    */
-    void RunL();
-    
-    /**
-    * Persist received chunk
-    * @since Series 60 v2.8
-    * @param aBuf new chunk to be added
-    * @return EFalse if content-length had to be updated.
-    */
     void DoBufferingWriteL(const TDesC8& aBuf);
     void DoNonbufferingWriteL(const TDesC8& aBuf);
     
@@ -154,7 +134,6 @@ NONSHARABLE_CLASS( CBuffStorage ) : public CActive
     
     // For stalling condition handling
     TInt iLastWriteErrorCode;
-    CActiveSchedulerWait* iWait;
     
     // References to CHttpStorage data
     RFile*& iFile;

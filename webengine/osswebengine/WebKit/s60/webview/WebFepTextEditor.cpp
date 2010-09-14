@@ -47,7 +47,13 @@
 #include "PlatformKeyboardEvent.h"
 #include "CSSPropertyNames.h"
 #include "CSSValueKeywords.h"
-
+#include "RenderStyle.h"
+#include "htmlediting.h"
+#include "HtmlDivElement.h"
+#include "CSSStyleDeclaration.h"
+#include "CSSMutableStyleDeclaration.h"
+#include "SelectionController.h"
+#include "Selection.h"
 #include <coemain.h>
 #include <eikpanic.h>
 #include <aknedsts.h>
@@ -359,7 +365,7 @@ void CWebFepTextEditor::SetInlineEditingCursorVisibilityL(TBool /*aCursorVisibil
 // -----------------------------------------------------------------------------
 void CWebFepTextEditor::CancelFepInlineEdit()
 {
-    if (IsTextAreaFocused()||IsInputElementFocused()) {
+    if (IsTextAreaFocused()||IsInputElementFocused() || IsDivElementFocused()) {
         if (m_inlineEditText && DocumentLengthForFep() < DocumentMaximumLengthForFep()) {
             HBufC* tempBuf = HBufC::NewLC(DocumentLengthForFep());
             TPtr ptr(tempBuf->Des());
@@ -398,6 +404,11 @@ TInt CWebFepTextEditor::DocumentLengthForFep() const
             HTMLTextAreaElement* ie = static_cast<HTMLTextAreaElement*>(frame->document()->focusedNode());
             length = ie->value().length();
         }
+        else if (frame->document()->focusedNode()->hasTagName(HTMLNames::divTag)) {
+            HTMLDivElement* ie = static_cast<HTMLDivElement*>(frame->document()->focusedNode());
+            length = ie->innerText().length();
+        }
+        
     }
 
     return length;
@@ -432,6 +443,83 @@ TInt CWebFepTextEditor::DocumentMaximumLengthForFep() const
 }
 
 // -----------------------------------------------------------------------------
+// indexForVisiblePosition
+//
+//
+// -----------------------------------------------------------------------------
+TInt CWebFepTextEditor::indexForVisiblePosition(const WebCore::VisiblePosition& pos,WebCore::Element* node) const
+{
+    Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();    
+    Position indexPosition = pos.deepEquivalent();
+    if (!indexPosition.node() || indexPosition.node()->rootEditableElement() != node)
+        return 0;    
+    ExceptionCode ec = 0;
+    
+    RefPtr<Range> range = frame->document()->createRange(); 
+    range->setStart(node, 0, ec);
+    ASSERT(!ec);
+    range->setEnd(indexPosition.node(), indexPosition.offset(), ec);
+    
+    ASSERT(!ec);
+    return TextIterator::rangeLength(range.get());
+}
+
+// -----------------------------------------------------------------------------
+// visiblePositionForIndex
+//
+//
+// -----------------------------------------------------------------------------
+VisiblePosition CWebFepTextEditor::visiblePositionForIndex(TInt index,WebCore::Element* node)
+{
+    Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();    
+    if (index <= 0)
+        return VisiblePosition(node, 0, DOWNSTREAM);
+    ExceptionCode ec = 0;
+    
+    RefPtr<Range> range = frame->document()->createRange(); 
+    range->selectNodeContents(node, ec);
+    ASSERT(!ec);
+    CharacterIterator it(range.get());
+    it.advance(index - 1);
+    Node* endContainer = it.range()->endContainer(ec);
+    ASSERT(!ec);
+    int endOffset = it.range()->endOffset(ec);
+    ASSERT(!ec);
+    return VisiblePosition(endContainer, endOffset, UPSTREAM);
+}
+
+// -----------------------------------------------------------------------------
+// setSelectionRange
+//
+//
+// -----------------------------------------------------------------------------
+void CWebFepTextEditor::setSelectionRange(TInt start, TInt end, WebCore::Element* node)
+{
+    Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();    
+    end = Max(end, 0);
+    start = Min(Max(start, 0), end);
+
+    VisiblePosition startPosition = visiblePositionForIndex(start,node);
+    VisiblePosition endPosition;
+    if (start == end)
+        endPosition = startPosition;
+    else
+        endPosition = visiblePositionForIndex(end,node);
+
+    // startPosition and endPosition can be null position for example when
+    // "-webkit-user-select: none" style attribute is specified.
+    if (startPosition.isNotNull() && endPosition.isNotNull()) {
+        ASSERT(startPosition.deepEquivalent().node()->shadowAncestorNode() == node() && endPosition.deepEquivalent().node()->shadowAncestorNode() == node());
+    }
+    
+
+   if (frame)
+       { 
+        Selection newSelection = Selection(startPosition, endPosition);
+        frame->selectionController()->setSelection(newSelection);
+       } 
+}
+// -----------------------------------------------------------------------------
 // SetCursorSelectionForFepL
 //
 //
@@ -454,6 +542,11 @@ void CWebFepTextEditor::SetCursorSelectionForFepL(const TCursorSelection& aCurso
 		    inputElement->setSelectionStart(lowPos);
 		    inputElement->setSelectionEnd(highPos);
 		}
+        else if (focusedNode->hasTagName(HTMLNames::divTag)) {
+            HTMLDivElement* inputElement = static_cast<HTMLDivElement*>(focusedNode);
+            setSelectionRange(lowPos,highPos,inputElement);
+        }
+        
 		HandleUpdateCursor();
     }
 }
@@ -482,6 +575,13 @@ void CWebFepTextEditor::GetCursorSelectionForFep(TCursorSelection& aCursorSelect
             TInt cursorPos = inputElement->selectionEnd();
             aCursorSelection.SetSelection(cursorPos, anchorPos);
         }
+        else if (focusedNode->hasTagName(HTMLNames::divTag)) {
+            HTMLDivElement* inputElement = static_cast<HTMLDivElement*>(focusedNode);
+            TInt anchorPos = indexForVisiblePosition(frame->selectionController()->start(),inputElement);
+            TInt cursorPos = indexForVisiblePosition(frame->selectionController()->end(),inputElement);
+            aCursorSelection.SetSelection(cursorPos, anchorPos);
+        }
+        
     }
 }
 
@@ -517,6 +617,12 @@ void CWebFepTextEditor::GetEditorContentForFep( TDes& aEditorContent,
             str.replace(EKeyLineFeed, CEditableText::EParagraphDelimiter);
             aEditorContent = str;
         }
+        else if (frame->document()->focusedNode()->hasTagName(HTMLNames::divTag)) {
+            HTMLDivElement* ie = static_cast<HTMLDivElement*>(frame->document()->focusedNode());
+            String str(ie->innerText().substring(aDocumentPosition, aLengthToRetrieve));
+            str.replace(EKeyLineFeed, CEditableText::EParagraphDelimiter);
+            aEditorContent = str;
+        }
     }
 }
 
@@ -544,7 +650,8 @@ if (frame &&
     frame->document() &&
     frame->document()->focusedNode()){
     if ( frame->document()->focusedNode()->hasTagName(HTMLNames::inputTag) ||
-		 frame->document()->focusedNode()->hasTagName(HTMLNames::textareaTag)){
+		 frame->document()->focusedNode()->hasTagName(HTMLNames::textareaTag) ||
+		 frame->document()->focusedNode()->hasTagName(HTMLNames::divTag)) {
 		HTMLGenericFormElement*  ie = static_cast<HTMLGenericFormElement*>(frame->document()->focusedNode());
 		SelectionController* sc = frame->selectionController();
 		int xPos(0);
@@ -1514,6 +1621,13 @@ TBool CWebFepTextEditor::IsInputElementFocused() const
     Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
     return ( frame && frame->document()->focusedNode() &&
              frame->document()->focusedNode()->hasTagName(HTMLNames::inputTag));
+    }
+
+TBool CWebFepTextEditor::IsDivElementFocused() const
+    {
+    Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
+    return ( frame && frame->document()->focusedNode() &&
+             frame->document()->focusedNode()->hasTagName(HTMLNames::divTag));
     }
 
 void CWebFepTextEditor::ReportEventL()

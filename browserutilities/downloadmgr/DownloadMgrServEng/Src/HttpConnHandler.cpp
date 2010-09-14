@@ -52,7 +52,7 @@
 
 // CONSTANTS
 const TInt KShutDownTimer = 60*1000000;  //60 sec - Updated to 60 secs as part of error fix JSIN-7JSE6H
-
+const TInt KCommBufferSize = 48 * 1024;
 // MACROS
 //#define ?macro ?macro_def
 
@@ -945,7 +945,10 @@ void CHttpConnHandler::SetConnectionInfoL()
     connInfo.SetPropertyL ( strPool.StringF(HTTP::EHttpSocketServ, 
                                     RHTTPSession::GetTable()), 
                             THTTPHdrVal (iClientApp->Engine()->SocketServ().Handle()) );
-    
+    // Set receive buffer size to 48 KB
+    connInfo.SetPropertyL(strPool.StringF(HTTP::ERecvBufferSize,
+             RHTTPSession::GetTable()), THTTPHdrVal(KCommBufferSize));
+
     TInt connPtr1 = REINTERPRET_CAST(TInt, &iConnection);
     connInfo.SetPropertyL ( strPool.StringF(HTTP::EHttpSocketConnection, 
                             RHTTPSession::GetTable() ), THTTPHdrVal (connPtr1) );    

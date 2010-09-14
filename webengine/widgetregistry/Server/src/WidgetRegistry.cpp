@@ -739,6 +739,23 @@ void CWidgetRegistry::InternalizeL( TBool doConsistency, // in param
         AppArchListConsistency( appArchList, appArchListFlags );
         }
 
+
+    //Do we need consistency check
+    //Quick hack to see if we need consistency check 
+    if(!doConsistency)
+        {
+        AppArchWidgets( appArchList, appArchListFlags );    
+        TInt wrtWidgetCount(0);
+        for(TInt i =0;i<iEntries.Count();i++)
+            {
+            CWidgetEntry* entry = iEntries[i];
+            if(!TUidAllocator::IsCWRTWidget(TUid::Uid((*entry)[EUid])))
+                wrtWidgetCount++;
+            }		   	
+        if(appArchList.Count()!=wrtWidgetCount)
+            aParseError = ETrue;//need consistency
+        }    
+    
     CleanupStack::PopAndDestroy( 2, &appArchList );//appArchListFlags, appArchList
 
     aDirtyFlag = dirtyFlag;

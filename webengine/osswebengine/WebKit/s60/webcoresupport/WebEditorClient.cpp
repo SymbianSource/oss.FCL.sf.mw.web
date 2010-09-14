@@ -95,15 +95,16 @@ int WebEditorClient::spellCheckerDocumentTag()
 //-----------------------------------------------------------------------------
 bool WebEditorClient::shouldBeginEditing(WebCore::Range*)
 {
-    notImplemented();
-    return false;
+    return true;
 }
 
 //-----------------------------------------------------------------------------
 // WebEditorClient::shouldEndEditing
 //-----------------------------------------------------------------------------
-bool WebEditorClient::shouldEndEditing(WebCore::Range*)
+bool WebEditorClient::shouldEndEditing(WebCore::Range* range)
 {
+    if(range)
+        return true;
     return m_shouldEndEditing;
 }
 
@@ -382,7 +383,9 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                 m_webView->fepTextEditor()->HandleUpdateCursor();
                 if (frame->selectionController()->start() == startPos &&
                     frame->selectionController()->end() == endPos && !select) {
-                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
+                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() 
+                            || m_webView->fepTextEditor()->IsInputElementFocused()
+                            || m_webView->fepTextEditor()->IsDivElementFocused() );
                 }
                 else {
                     event->setDefaultHandled();
@@ -405,7 +408,9 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                 m_webView->fepTextEditor()->HandleUpdateCursor();
                 if (frame->selectionController()->start() == startPos &&
                     frame->selectionController()->end() == endPos && !select) {
-                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsInputElementFocused());
+                    m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() 
+                            || m_webView->fepTextEditor()->IsInputElementFocused()
+                            || m_webView->fepTextEditor()->IsDivElementFocused());
                 }
                 else {
                     event->setDefaultHandled();
@@ -453,7 +458,7 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
             case EKeyEnter:
             case EKeyDevice3:    
             	// If we are in a textarea, add a newline
-                if (m_webView->fepTextEditor()->IsTextAreaFocused()) {
+                if (m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsDivElementFocused()) {
                     if (m_webView->fepTextEditor()->DocumentLengthForFep() <
                         m_webView->fepTextEditor()->DocumentMaximumLengthForFep()) {
                         frame->editor()->insertLineBreak();

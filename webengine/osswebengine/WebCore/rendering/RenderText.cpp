@@ -932,8 +932,15 @@ void RenderText::setTextInternal(PassRefPtr<StringImpl> text, bool backspace)
                 	m_text = m_text->secure(bullet);
                 }
                 else{
-                    
-                    if(oldlength <= m_text->length())
+                    //Following condition takes care of the case where text control gets entire text in one
+                    //shot, not one character at a time. 
+                    //If control get entire input at a time then we will treat this as a auto fill up of password and will 
+                    // show all characters in bullet.
+                    if( oldlength != 0 && (oldlength - m_text->length()) == 0 ) 
+                    		{
+                            m_text = m_text->secure(bullet);
+                        }
+                    else if(oldlength <= m_text->length())
                         {
                         m_offset =  m_text->length() - 1 ;
                         m_text = m_text->secureShowOffset(bullet, m_offset);

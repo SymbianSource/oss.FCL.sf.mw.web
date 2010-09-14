@@ -57,7 +57,11 @@ EXPORT_C HistoryControllerInterface* HistoryController::initWithCallback( Histor
 
 HistoryController::~HistoryController()
 {
-	m_historyStack.ResetAndDestroy();
+    m_historyStack.ResetAndDestroy();
+    if(m_historyView) { 
+        delete m_historyView;
+        m_historyView = NULL; 
+    }
 }
 
 /**
@@ -496,6 +500,9 @@ HistoryController::HistoryController(HistoryCallback* historyCallback, bool hist
 */
 void HistoryController::showHistoryViewL(bool previous)
 {
+    if(m_historyView)
+        return; 
+    
     HistoryEntry* entry = entryByIndex(m_currentIndex);
     if (entry && ! entry->thumbnail()) {
         // get scaled page from PageScaler;
@@ -505,7 +512,7 @@ void HistoryController::showHistoryViewL(bool previous)
             // Get the browser control rect
             updateHistoryEntryThumbnailL(scaledPage);
         }
-            // ignore err since we will use the default image
+        // ignore err since we will use the default image
     }
     //Defer refresh timers on showing history view
     m_historyCallback->deferTimers(true);
@@ -578,7 +585,9 @@ void HistoryController::loadHistoryUrl(THistoryStackDirection direction, TBrCtlD
 
 void HistoryController::performTransition(int direction)
 {
-	m_historyView->performTransition(direction);	
+    if(m_historyView) { 
+        m_historyView->performTransition(direction);
+    } 
 }
 
 /**

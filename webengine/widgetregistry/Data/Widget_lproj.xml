@@ -194,4 +194,16 @@
 
 <LangID>327</LangID>
 <LangDir>id-APAC</LangDir>
+
+<LangID>14346</LangID>
+<LangDir>en-US</LangDir>
+
+<LangID>14387</LangID>
+<LangDir>fr-CA</LangDir>
+
+<LangID>14412</LangID>
+<LangDir>pt-BR</LangDir>
+
+<LangID>14419</LangID>
+<LangDir>es-419</LangDir>
 </LPROJ>

@@ -86,6 +86,8 @@
 #include "RenderWidget.h"
 #include "HTMLNames.h"
 #include "HTMLInputElement.h"
+#include "HTMLDivElement.h"
+#include "HtmlTextAreaElement.h"
 
 using namespace HTMLNames;
 
@@ -1214,17 +1216,38 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
     else {  
           //Check is editable node and couples of NULL checking  
          if( m_isEditable && frame && frame->document() && frame->document()->focusedNode() ) {
-             //Is inputTag
-             TBool isInputTag = frame->document()->focusedNode()->hasTagName(inputTag); 
-             HTMLInputElement* ie = static_cast<HTMLInputElement*>(frame->document()->focusedNode());
              TInt length  = 0;
-             //Null checking etc.
-             if( ie && isInputTag ) {
-                 //Get length of inputelement string
-                 length = ie->value().length();
+             //Is inputTag
+             TBool isInputTag = frame->document()->focusedNode()->hasTagName(inputTag);
+             TBool isdivTag = frame->document()->focusedNode()->hasTagName(divTag); 
+             TBool isTextAreaTag = frame->document()->focusedNode()->hasTagName(textareaTag); 
+                                       
+             if(isInputTag) {
+                 HTMLInputElement* ie = static_cast<HTMLInputElement*>(frame->document()->focusedNode());
+                 //Null checking etc.
+                 if( ie ) {
+                     //Get length of inputelement string
+                     length = ie->value().length();
+                 }
              }
+             else if(isdivTag) {
+                 HTMLDivElement* ie = static_cast<HTMLDivElement*>(frame->document()->focusedNode());
+                 if( ie ) {
+                     //Get length of inputelement string
+                     length = ie->innerText().length();
+                 }
+             }
+             else if (isTextAreaTag)
+                 { 
+                 HTMLTextAreaElement* ie = static_cast<HTMLTextAreaElement*>(frame->document()->focusedNode());
+                 if( ie ) {
+                     //Get length of inputelement string
+                     length = ie->value().length();
+                 	}
+                 }
+             
              //Check is there data in input field
-             if( length > 0 || !ie ) {
+             if( length > 0) {
                  //If there is data, do the old thing 
                  consumed = ( !m_isEditable &&  //avoid showing the cursor when we are in the input box 
                          handleKeyNavigation(keyevent, eventcode, frame)) ||

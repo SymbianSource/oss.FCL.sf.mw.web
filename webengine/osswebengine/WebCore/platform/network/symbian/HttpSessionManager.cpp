@@ -120,16 +120,20 @@ void HttpSessionManager::openHttpSessionIfNeededL()
             //Property exists
             THTTPHdrVal setValue(SOCKET_LINGERING_TIMEOUT);
             connInfo.SetPropertyL ( strP.StringF( HTTP::EHttpEnableOptimalPipelining + 3, stringTable ), setValue );
+            RStringF maxConnection = strP.StringF( HTTP::EMaxNumTransportHandlers , stringTable );
+            connInfo.SetPropertyL( maxConnection, THTTPHdrVal( KHttpSushiMaxConnectionNum ) );
             }
         else 
             {
             // set shutdown
             THTTPHdrVal immediateShutdown = strP.StringF( HTTP::ESocketShutdownImmediate, stringTable );
             connInfo.SetPropertyL ( strP.StringF( HTTP::ESocketShutdownMode, stringTable ), immediateShutdown );
+            RStringF maxConnection = strP.StringF( HTTP::EMaxNumTransportHandlers , stringTable );
+            connInfo.SetPropertyL( maxConnection, THTTPHdrVal( KHttpMaxConnectionNum ) );
             }
         // set pipelining
-        RStringF maxConnection = strP.StringF( HTTP::EMaxNumTransportHandlers , stringTable );
-        connInfo.SetPropertyL( maxConnection, THTTPHdrVal( KHttpMaxConnectionNum ) );
+        //RStringF maxConnection = strP.StringF( HTTP::EMaxNumTransportHandlers , stringTable );
+        //connInfo.SetPropertyL( maxConnection, THTTPHdrVal( KHttpMaxConnectionNum ) );
 
         RStringF maxToPipeline = strP.StringF(HTTP::EMaxNumTransactionsToPipeline, stringTable );
         connInfo.SetPropertyL( maxToPipeline, THTTPHdrVal( KHttpMaxTransactionNumPerConnection ) );

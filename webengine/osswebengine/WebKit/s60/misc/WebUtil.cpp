@@ -149,12 +149,15 @@ TBrCtlDefs::TBrCtlElementType nodeTypeB(Node* node, Frame* frame)
         else
             elType = TBrCtlDefs::EElementNone;
     }
+    else if( e->hasLocalName(divTag)) {
+        elType = TBrCtlDefs::EElementdivTag;
+    }
 
     // change to activated input box
     WebView* v = control(frame)->webView();
     if ((elType == TBrCtlDefs::EElementInputBox) && v && v->isEditable())
-        elType = TBrCtlDefs::EElementActivatedInputBox;
-
+         elType = TBrCtlDefs::EElementActivatedInputBox;
+   
     return elType;
 }
 

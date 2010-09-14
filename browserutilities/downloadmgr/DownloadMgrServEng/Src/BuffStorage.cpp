@@ -56,8 +56,7 @@
 // ---------------------------------------------------------
 //
 CBuffStorage::CBuffStorage( CHttpStorage* aHttpStorage )
-:CActive( EPriorityHigh ), 
- iFile(aHttpStorage->iFile),
+:iFile(aHttpStorage->iFile),
  iDownloadedSize(aHttpStorage->iDownloadedSize), 
  iBufferedSize(aHttpStorage->iBufferedSize),
  iHttpStorageBufferSize(aHttpStorage->iBufferSize),
@@ -77,9 +76,6 @@ CBuffStorage::CBuffStorage( CHttpStorage* aHttpStorage )
 //
 void CBuffStorage::ConstructL()
     {
-    LOGGER_ENTERFN( "ConstructL" );
-    CActiveScheduler::Add( this );
-    iWait = new (ELeave) CActiveSchedulerWait;
     }
 
 // -----------------------------------------------------------------------------
@@ -104,56 +100,13 @@ CBuffStorage* CBuffStorage::NewL( CHttpStorage* aHttpStorage )
 //
 CBuffStorage::~CBuffStorage()
     {
-    Cancel();
-
 	ResetBuffers();
 	
 	delete iWritePtr; iWritePtr = 0;
-	if(iWait)
-	    {
-	     delete iWait;
-	     iWait = NULL;
-	    }
     }
 
 
 
-// ---------------------------------------------------------
-// CBuffStorage::RunL
-// ---------------------------------------------------------
-//
-void CBuffStorage::RunL()
-    {
-    LOGGER_ENTERFN( "RunL" );
-    // Save the error code
-    iLastWriteErrorCode = iStatus.Int();
-   	
-    if(iLastWriteErrorCode==KErrNone && iWritePtr)
-    	{
-    	// Update how much was written on the file
-    	iDownloadedSize += iWritePtr->Length();
-    	
-    	CLOG_WRITE_2( "(%08X) CBuffStorage::RunL: Async write finished, downloaded now: %d", this, iDownloadedSize);
-    	}
-    else
-    	{
-    	CLOG_WRITE_2( "(%08X) CBuffStorage::RunL DH-iStat: %d, ", this, iStatus.Int() );
-    	}
-    	
-    if(iWait && iWait->IsStarted())
-		{
-		CLOG_WRITE_1 ( "(%08X) CBuffStorage::RunL() Stopping iWait", this );
-		iWait->AsyncStop();
-		}
-    }
-
-void CBuffStorage::DoCancel()
-	{
-	CLOG_WRITE_1("(%08X) CBuffStorage::DoCancel", this);
-	
-	// This is ok, CActive::Cancel always waits for the async operation to finish in this case
-	iLastWriteErrorCode = KErrCancel;
-	}
 
 // ---------------------------------------------------------
 // CBuffStorage::ResetBuffer
@@ -162,13 +115,6 @@ void CBuffStorage::DoCancel()
 void CBuffStorage::ResetBuffers()
 	{	
 	CLOG_WRITE_1("(%08X) CBuffStorage::ResetBuffers >>", this);
-	
-	if(IsActive()&& iWait && !iWait->IsStarted())
-		{
-		// Make sure async writes are finished
-		iWait->Start();
-		}
-	
 	// Cleanup
     delete iBuff1; iBuff1 = NULL;
     delete iBuff2; iBuff2 = NULL;
@@ -231,12 +177,6 @@ void CBuffStorage::FlushBuffersL()
 	CLOG_WRITE_1("(%08X) CBuffStorage::FlushBuffersL >>", this);
 	
 	// Make sure async writes are finished before doing anything
-	if(IsActive() && iWait && !iWait->IsStarted())
-		{
-		CLOG_WRITE_1("(%08X) CBuffStorage::FlushBuffersL: stalling >>", this);
-	 	iWait->Start();
-	 	CLOG_WRITE_1("(%08X) CBuffStorage::FlushBuffersL: stalling <<", this);
-		}
 	
 	if(iLastWriteErrorCode != KErrNone)
 		{
@@ -338,15 +278,6 @@ void CBuffStorage::DoBufferingWriteL(const TDesC8& aBuf)
 		src+=toFillUp;
 	    
 	    // Now we have a full client buffer, better do something with it
-	    
-	    // Check if previous async write is still ongoing
-	    // Done here so if somebody switched on progressive download midway through we don't mix buffers
-		if(IsActive()&& iWait && !iWait->IsStarted())
-			{
-			CLOG_WRITE_1("(%08X) CBuffStorage::DoBufferingWriteL: stalling >>", this);
-		 	iWait->Start();
-		 	CLOG_WRITE_1("(%08X) CBuffStorage::DoBufferingWriteL: stalling <<", this);
-			}
 		
 		// In case of async writes we have to check if there was error previously
 		if(iLastWriteErrorCode != KErrNone)
@@ -393,10 +324,9 @@ void CBuffStorage::DoBufferingWriteL(const TDesC8& aBuf)
 #endif
 
 		// Start the async write and set AO active
-	 	iFile->Write( *iWritePtr, iStatus ) ;
-	 	SetActive();
-	 	
-	 	// Swap buffer pointers (we can't use the same buffer here 
+        iFile->Write( *iWritePtr ) ;
+        iDownloadedSize += iWritePtr->Length();
+        // Swap buffer pointers (we can't use the same buffer here 
 	 	// since it is not known when the buffer can be used again)
 	 	if(iClientBuffer == iBuff1)
 	 		{
@@ -420,13 +350,6 @@ void CBuffStorage::DoBufferingWriteL(const TDesC8& aBuf)
 void CBuffStorage::DoNonbufferingWriteL(const TDesC8& aBuf)
 	{
 	CLOG_WRITE_2("(%08X) CBuffStorage::DoNonbufferingWriteL: %d bytes", this, aBuf.Length());
-	
-	if(IsActive() && iWait && !iWait->IsStarted())
-		{
-		CLOG_WRITE_1("(%08X) CBuffStorage::DoNonbufferingWriteL: stalling >>", this);
-		iWait->Start();
-		CLOG_WRITE_1("(%08X) CBuffStorage::DoNonbufferingWriteL: stalling <<", this);
-		}
 		
 	TInt len = aBuf.Length();
 	if(len)
