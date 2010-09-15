@@ -220,10 +220,12 @@ class TBrCtlDefs
              ECommandResumeScriptTimers,
 			 ECommandCancelQueuedTransactions,
 			 ECommandOOMExit,
-			       /**
-			       * Notify Flash Plugin FocusChangeEvent 
-			       */
-			       ECommandNotifyPluginFocusChangeEvent
+	         /**
+	         * Notify Flash Plugin FocusChangeEvent 
+	         */
+	         ECommandNotifyPluginFocusChangeEvent,
+	         ECommandBackLightOn,
+	         ECommandBackLightOff
             };
         /**
         * The load event that occurred.

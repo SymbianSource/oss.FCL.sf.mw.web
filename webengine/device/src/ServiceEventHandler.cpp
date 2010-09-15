@@ -41,6 +41,7 @@ ServiceEventHandler::ServiceEventHandler(
     {
     iInterfaceFunc = (JSObject*)aInterfaceFunc;
     iCallbackFunc = (JSObject*)aCallbackFunc;
+    KJS::Collector::protect(iCallbackFunc);
     iTransId = aTransId;
     }
 
@@ -54,6 +55,7 @@ ServiceEventHandler::ServiceEventHandler(
 //
 ServiceEventHandler::~ServiceEventHandler()
     {
+    KJS::Collector::unprotect(iCallbackFunc);
     }
 
 // ----------------------------------------------------------------------------

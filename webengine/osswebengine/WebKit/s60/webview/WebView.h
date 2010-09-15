@@ -28,6 +28,7 @@
 #include "Timer.h"
 #include <MemoryManager.h>
 #include <stmgesturelistener.h>
+#include <kjs_window.h>
 
 namespace WebCore
 {
@@ -39,10 +40,6 @@ namespace WebCore
     class Frame;
 }
 
-namespace KJS
-{
-    class PausedTimeouts;
-}
 
 class CPluginHandler;
 class WebPreferences;
@@ -540,8 +537,8 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         // JavaScript timers - pause and resume
         void pauseJsTimers();
         void resumeJsTimers();
-        bool jsTimersPaused() { return (m_jsTimeouts) ? true : false; }
-        void resetJsTimers() { m_jsTimeouts = 0; }
+        bool jsTimersPaused() { return m_jsPaused; }
+        void resetJsTimers();
 
         WebCoreGraphicsContext* getGraphicsContext() {return m_webcorecontext; }
     private:
@@ -645,7 +642,8 @@ class WebView : public CEikBorderedControl, public WebCore::Shared<WebView>, pri
         TBool                    m_isPinchZoomOut;
 		
    	    // JavaScript (DOMWindowTimer) timers
-        KJS::PausedTimeouts*     m_jsTimeouts;
+   	    Vector<std::pair<RefPtr<WebCore::Frame>, KJS::PausedTimeouts*>, 16> *m_pausedTimeouts;
+        TBool                   m_jsPaused;
         
         TBool                    m_scrollingstatus;
     };

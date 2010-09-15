@@ -45,6 +45,7 @@ public:
     void HandlePointerEventL(const TPointerEvent& aPointerEvent);
     void HandleHighlightChange(const TPoint &aPoint);
     void HandleGestureEventL(const TStmGestureEvent& aGesture);
+    void setIgnoreTap(TBool aIgnoretap) { m_ignoreTap = aIgnoretap; }
     
 private:    
     bool canDehighlight(const TPoint &aPoint);

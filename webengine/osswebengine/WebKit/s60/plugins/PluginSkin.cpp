@@ -168,7 +168,8 @@ PluginSkin::PluginSkin( WebFrame& frame )
       m_handle(-1),
       m_instance(0),    
       m_pluginfuncs(0),
-      m_resized(false)
+      m_resized(false),
+      m_OccReLoad(EFalse)
   {
   }
 
@@ -776,8 +777,13 @@ void PluginSkin::loadPluginL( const TDesC8& mimetype )
             }
         }
         
-        if (m_pluginwin)
+        if (m_pluginwin) {
             m_pluginwin->SetExtent( TPoint(0,0), TSize(0,0) );
+            if (m_OccReLoad) {
+                setPluginWinClipedRect();
+                m_OccReLoad = EFalse;
+            }
+        }
     }
 }
 
@@ -1288,6 +1294,10 @@ TWindowType PluginSkin::GetWindowType(const TDesC* aWindowType)
 
 void PluginSkin::reCreatePlugin()
 {
+    TBool visible = EFalse;
+    if (m_pluginwin && m_pluginwin->IsVisible())
+        visible = ETrue;
+
     TBuf16<4> apId;
     apId.Format( _L("%d"), m_frame->frameView()->topView()->accessPointId() );
     
@@ -1308,7 +1318,7 @@ void PluginSkin::reCreatePlugin()
         }
         m_streams.clear();
     
-        if (m_instance && m_pluginfuncs && m_pluginfuncs->destroy) {        
+        if (m_instance && m_pluginfuncs && m_pluginfuncs->destroy) {
             m_pluginfuncs->destroy(m_instance, NULL);
         }
         User::Free(m_instance); m_instance = 0;
@@ -1325,8 +1335,11 @@ void PluginSkin::reCreatePlugin()
                     
         NetscapePlugInStreamLoaderClient* pluginloader = NetscapePlugInStreamLoaderClient::NewL(m_url->Des(), this, core(m_frame));
         if (pluginloader) {
+            if (visible) {
+                m_OccReLoad = ETrue;
+            }
             pluginloader->start();                            
-        }                                                
+        }
     }
 }
 

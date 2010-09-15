@@ -341,8 +341,9 @@ void WebPointerEventHandler::HandlePointerEventL(const TPointerEvent& aPointerEv
     //if scrolling is going on, it need to be stopped immediately when user touches down    
     if (aPointerEvent.iType == TPointerEvent::EButton1Down && m_webview->viewIsScrolling()) {
         WebScrollingDeceleratorGH* scrollDecelGH = m_webview->pageScrollHandler()->ScrollingDeceleratorGH();
-        if(scrollDecelGH) {
-            scrollDecelGH->cancelDecel();            
+        if (scrollDecelGH) {
+            scrollDecelGH->cancelDecel();  
+            setIgnoreTap(ETrue);
         }
     }
     

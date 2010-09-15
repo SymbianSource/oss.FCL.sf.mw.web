@@ -822,6 +822,18 @@ EXPORT_C void CBrCtl::HandleCommandL(TInt aCommand)
                 WebCore::gcController().garbageCollectSoon();                
                 break;
             }
+        case TBrCtlDefs::ECommandBackLightOff:
+            {                
+                setDeferringTimers(true);
+                break;
+            }
+            
+        case TBrCtlDefs::ECommandBackLightOn:
+            {
+                if (isDeferringTimers())
+                    setDeferringTimers(false);
+                break;
+            }
         case TBrCtlDefs::ECommandClearAutoFormFillData:
             {
                 StaticObjectsContainer::instance()->formFillController()->clearFormData();

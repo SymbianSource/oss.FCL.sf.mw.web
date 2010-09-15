@@ -102,7 +102,6 @@ using namespace HTMLNames;
 #include "EventNames.h"
 #include "Editor.h"
 #include "ThumbnailGenerator.h"
-#include <kjs_window.h>
 #include "PluginHandler.h"
 
 using namespace WebCore;
@@ -220,7 +219,7 @@ m_brctl(brctl)
 , m_checkerBoardGc(NULL)
 , m_checkerBoardDestroyTimer(NULL)
 , m_isPinchZoomOut(false)
-, m_jsTimeouts(0)
+, m_jsPaused(0)
 {
 }
 
@@ -281,6 +280,8 @@ WebView::~WebView()
     
     if (StaticObjectsContainer::instance()->webSurface()->topView() == this) 
         StaticObjectsContainer::instance()->webSurface()->setView( NULL ); 
+    
+    delete m_pausedTimeouts;
     
 }
 
@@ -409,6 +410,8 @@ void WebView::ConstructL( CCoeControl& parent )
     m_waiter = new(ELeave) CActiveSchedulerWait();
     
     m_checkerBoardDestroyTimer = CPeriodic::NewL(CActive::EPriorityIdle);
+    
+    m_pausedTimeouts = new(ELeave) Vector<std::pair<RefPtr<WebCore::Frame>, KJS::PausedTimeouts*>, 16>();
     
 }
 
@@ -3336,28 +3339,40 @@ void WebView::calculateZoomRect(TRect &aOldRect, TRect &aNewRect, TInt aOldZoom,
 
 void WebView::pauseJsTimers()
 {
-    if(m_jsTimeouts==0) {        
-        WebCore::Frame *frame = core(mainFrame());
-        KJS::Window* window = KJS::Window::retrieveWindow(frame);
-        if(window) {
-            m_jsTimeouts = window->pauseTimeouts();
+    if(!m_jsPaused) {
+        for (Frame* frame = core(mainFrame()); frame; frame = frame->tree()->traverseNext()) {
+            if (KJS::Window* window = KJS::Window::retrieveWindow(frame)) {
+                KJS::PausedTimeouts* timeouts = window->pauseTimeouts();
+                if(timeouts)
+                    m_pausedTimeouts->append(std::make_pair(frame, timeouts));
+                }
         }
+        m_jsPaused = (m_pausedTimeouts->size()) ? ETrue : EFalse;
     }
 }
 
 void WebView::resumeJsTimers()
 {
-    if(m_jsTimeouts) {
-        WebCore::Frame *frame = core(mainFrame());
-        KJS::Window* window = KJS::Window::retrieveWindow(frame);
-        if(window) {
-            window->resumeTimeouts(m_jsTimeouts);
-            delete m_jsTimeouts;
-            m_jsTimeouts = 0;
+    if(m_jsPaused) {
+        TInt count = m_pausedTimeouts->size();
+        for (size_t i = 0; i < count; i++) {
+            KJS::Window* window = KJS::Window::retrieveWindow(m_pausedTimeouts->at(i).first.get());
+            if (window) {
+                window->resumeTimeouts(m_pausedTimeouts->at(i).second);
+            }
+            delete m_pausedTimeouts->at(i).second;
         }
+        m_pausedTimeouts->clear();
+        m_jsPaused = EFalse;  
     }
 }
-// END OF FILE
+
+void WebView::resetJsTimers()
+{
+    m_jsPaused=0;
+    m_pausedTimeouts->clear();
+}
+
 void WebView::scrollStatus(bool status)
     {
     if(m_scrollingstatus != status)
@@ -3378,3 +3393,4 @@ void WebView::setViewIsScrolling(bool scrolling)
         scrollStatus(scrolling);
         }
     };
+// END OF FILE

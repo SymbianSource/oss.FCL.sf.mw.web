@@ -114,6 +114,7 @@ LIBRARY ImageConversion.lib
 LIBRARY ecom.lib  // for schemeHandler
 LIBRARY MemMan.lib
 LIBRARY centralrepository.lib
+LIBRARY hwrmlightclient.lib
 
 #ifdef BRDO_MULTITOUCH_ENABLED_FF
 LIBRARY gfxtrans.lib

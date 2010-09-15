@@ -280,6 +280,10 @@ TBool CWidgetUiDialogsProviderProxy::DialogPromptLC( const TDesC& aTitle,
 	    retVal = iDialogsProvider.DialogPromptLC( aTitle, aMessage,
                                             aDefaultInput, aReturnedInput );
 	    }
+	else
+	    {
+	    aReturnedInput = KNullDesC().AllocLC();	    
+	    }
 
     return retVal;
 	}

@@ -206,6 +206,7 @@ void CWidgetUiWindowManager::ConstructL()
     iWidgetSapiNotifier = CWidgetUiPSNotifier::NewL(*this, ESapiPrompt);
     iWidgetSapiClearNotifier = CWidgetUiPSNotifier::NewL(*this, ESapiPromptCleared);
 #endif
+    iLightObserver = CHWRMLight::NewL( this );
     }
 
 // -----------------------------------------------------------------------------
@@ -281,6 +282,7 @@ CWidgetUiWindowManager::~CWidgetUiWindowManager()
     delete iWidgetSapiNotifier;
     delete iWidgetSapiClearNotifier;
 #endif
+    delete iLightObserver;
     }
 
 // -----------------------------------------------------------------------------
@@ -1160,6 +1162,7 @@ void CWidgetUiWindowManager::ResumeWidgetL( const TUid& aUid )
             iActiveFsWindow->Engine()->MakeVisible( EFalse );
             iActiveFsWindow->SetIsCurrentWindow( EFalse );
             iActiveFsWindow->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase);
+            iActiveFsWindow->WidgetExtension()->HandleCommandL( (TInt)TBrCtlDefs::ECommandAppBackground + (TInt)TBrCtlDefs::ECommandIdBase);
             }
         iActiveFsWindow = NULL;
         // Publish should start only after widget is resumed.
@@ -1653,6 +1656,35 @@ TInt CWidgetUiWindowManager::RetryInternetConnection()
       return reConnectivityFlag;
       } 
 #endif // BRDO_OCC_ENABLED_FF
+
+// -----------------------------------------------------------------------------
+// CWidgetUiWindowManager::LightStatusChanged
+// -----------------------------------------------------------------------------
+//
+void CWidgetUiWindowManager::LightStatusChanged( TInt aTarget, CHWRMLight::TLightStatus aStatus )
+    {   
+    if ( aTarget == CHWRMLight::EPrimaryDisplay )
+        {
+        if ( ( aStatus == CHWRMLight::ELightOn || aStatus == CHWRMLight::ELightOff ) && aStatus != iLightStatus )
+            {   
+            iLightStatus = aStatus;
+            if(iActiveFsWindow)                
+                if(aStatus == CHWRMLight::ELightOn )
+                    {
+                    TRAP_IGNORE( iActiveFsWindow->Engine()->HandleCommandL( 
+                               (TInt)TBrCtlDefs::ECommandIdBase +
+                               (TInt)TBrCtlDefs::ECommandBackLightOn ) );
+                    }
+                else if(aStatus == CHWRMLight::ELightOff )
+                    {
+                    TRAP_IGNORE( iActiveFsWindow->Engine()->HandleCommandL( 
+                               (TInt)TBrCtlDefs::ECommandIdBase +
+                               (TInt)TBrCtlDefs::ECommandBackLightOff) );
+                    }
+            }
+    }
+}
+    
 
 CRequestRAM::CRequestRAM(CWidgetUiWindowManager* aWidgetUiWindowManager, const TUid& aUid, TUint32 aOperation):
     CActive( EPriorityStandard ),

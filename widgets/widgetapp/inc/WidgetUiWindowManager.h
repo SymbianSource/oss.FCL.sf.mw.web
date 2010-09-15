@@ -26,6 +26,7 @@
 #include <coecntrl.h>
 #include "WidgetUiObserver.h"
 #include "browser_platform_variant.hrh"
+#include <HWRMLight.h>
 // CONSTANTS
 
 enum TNetworkMode
@@ -101,6 +102,7 @@ class CWidgetUiWindowManager : public CBase,
 #ifdef BRDO_OCC_ENABLED_FF
                               ,public MConnectionStageObserver
 #endif
+                              ,public MHWRMLightObserver
     {
     public:  // constructors / destructor
 
@@ -130,6 +132,10 @@ class CWidgetUiWindowManager : public CBase,
         */
         void CenrepChanged(TInt aHSModeOnline);
 
+    public:
+        //MHWRMLightObserver
+        void LightStatusChanged( TInt aTarget, CHWRMLight::TLightStatus aStatus );
+    
     public:  
 
 // Create window
@@ -663,8 +669,10 @@ class CWidgetUiWindowManager : public CBase,
         TTime                               iTimeLastWidgetOpen;
 #endif
 #ifdef BRDO_OCC_ENABLED_FF
-        CConnectionStageNotifierWCB*    iConnStageNotifier;                                
+        CConnectionStageNotifierWCB*         iConnStageNotifier;                                
 #endif
+        CHWRMLight*                          iLightObserver; 
+        CHWRMLight::TLightStatus             iLightStatus;
     };
 
 #endif  // WIDGETUIWINDOWMANAGER_H_

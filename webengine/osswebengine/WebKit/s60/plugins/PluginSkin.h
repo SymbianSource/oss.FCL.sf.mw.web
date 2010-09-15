@@ -498,6 +498,7 @@ class PluginSkin : public CBase,
         TRect   m_oldRect;
         TRect    m_oldViewport;
         NPObject* m_NPObject;
+        TBool    m_OccReLoad;
         
 public:
         TInt m_handle;
