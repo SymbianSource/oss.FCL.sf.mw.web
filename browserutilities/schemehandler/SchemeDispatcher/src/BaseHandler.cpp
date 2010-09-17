@@ -21,14 +21,14 @@
 // INCLUDE FILES
 
 #include "BaseHandler.h"
-#include "BrowserTelService.h"
+//#include "BrowserTelService.h"
 #include "SchemeDispLogger.h"
 #include <e32base.h>
 #include <AknQueryDialog.h>
 #include <StringLoader.h>
 #include <bautils.h>
 #include <escapeutils.h>
-#include <BrowserUiSDKCRKeys.h>
+//#include <BrowserUiSDKCRKeys.h>
 #include <centralrepository.h>
 
 #include <apgcli.h>
@@ -122,7 +122,7 @@ void CBaseHandler::ErrorHandlerL( TInt aErrorCode )
          /* There was no error */
         case KErrNone:
             return;
-        /* to be shown note */
+        /* to be shown note 
         case KErrInvocationError:
         case KErrNoCallActive:
         case KErrUserNoAnswer:
@@ -138,6 +138,7 @@ void CBaseHandler::ErrorHandlerL( TInt aErrorCode )
             errCode = KErrCancel;
             }
             break;
+            */
         default:
             break;
         }
@@ -150,10 +151,10 @@ void CBaseHandler::ErrorHandlerL( TInt aErrorCode )
 //
 TBool CBaseHandler::ReadSdConfirmDtmfValueL()
     {
-    CRepository* repository = CRepository::NewL( KCRUidBrowser );
+//    CRepository* repository = CRepository::NewL( KCRUidBrowser );
     TInt retVal = 0;  
-    repository->Get( KBrowserConfirmDTMFSending, retVal );    
-    delete repository;
+//    repository->Get( KBrowserConfirmDTMFSending, retVal );    
+//    delete repository;
     return retVal;
     }
 

@@ -22,12 +22,12 @@
 #include "../web_plat/group/bld.inf"
 #include "../web_pub/group/bld.inf"
 #include "../browserutilities/group/bld.inf"
-#include "../webengine/group/bld.inf"
-#include "../codhandler/group/bld.inf"
+//#include "../webengine/group/bld.inf"
+//#include "../codhandler/group/bld.inf"
 
-#ifdef RD_BROWSER_WIDGETS
-#include "../widgets/group/bld.inf"
-#endif
+//#ifdef RD_BROWSER_WIDGETS
+//#include "../widgets/group/bld.inf"
+//#endif
 
 PRJ_PLATFORMS
 DEFAULT

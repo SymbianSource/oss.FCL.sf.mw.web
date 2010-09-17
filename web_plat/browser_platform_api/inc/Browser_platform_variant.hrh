@@ -26,8 +26,6 @@
 #ifndef BROWSER_PLATFORM_VARIANT_HRH
 #define BROWSER_PLATFORM_VARIANT_HRH
 
-#warning The Browser Platfrom API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
-
 /*
 * Establish which platform we are building on.
 * If required, un-comment correct platform macro as

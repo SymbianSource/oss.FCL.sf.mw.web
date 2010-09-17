@@ -18,13 +18,13 @@
 */
 
 
-#include "FileHandler.h"
-#include "HttpHandler.h"
+//#include "FileHandler.h"
+//#include "HttpHandler.h"
 #include "RtspHandler.h"
-#include "MailToHandler.h"
-#include "WtaiHandler.h"
-#include "TelHandler.h"
-#include "CtiHandler.h"
+//#include "MailToHandler.h"
+//#include "WtaiHandler.h"
+//#include "TelHandler.h"
+//#include "CtiHandler.h"
 #include "MmsHandler.h"
 #include <e32std.h>
 #include <SchemeDefs.hrh>
@@ -34,14 +34,14 @@
 // Define the interface UIDs
 const TImplementationProxy ImplementationTable[] = 
 	{
-		IMPLEMENTATION_PROXY_ENTRY( SCHEME_FILE_IMP,	CFileHandler::NewL ),
-		IMPLEMENTATION_PROXY_ENTRY( SCHEME_HTTP_IMP,	CHttpHandler::NewL ),
-		IMPLEMENTATION_PROXY_ENTRY( SCHEME_HTTPS_IMP,   CHttpHandler::NewL ),
+//		IMPLEMENTATION_PROXY_ENTRY( SCHEME_FILE_IMP,	CFileHandler::NewL ),
+//		IMPLEMENTATION_PROXY_ENTRY( SCHEME_HTTP_IMP,	CHttpHandler::NewL ),
+//		IMPLEMENTATION_PROXY_ENTRY( SCHEME_HTTPS_IMP,   CHttpHandler::NewL ),
 		IMPLEMENTATION_PROXY_ENTRY( SCHEME_RTSP_IMP,	CRtspHandler::NewL ),
-		IMPLEMENTATION_PROXY_ENTRY( SCHEME_MAIL_TO_IMP,	CMailToHandler::NewL ),
-		IMPLEMENTATION_PROXY_ENTRY( SCHEME_WTAI_IMP,	CWtaiHandler::NewL ),
-		IMPLEMENTATION_PROXY_ENTRY( SCHEME_TEL_IMP,	CTelHandler::NewL ),
-		IMPLEMENTATION_PROXY_ENTRY( SCHEME_CTI_IMP,	CCtiHandler::NewL ),
+//		IMPLEMENTATION_PROXY_ENTRY( SCHEME_MAIL_TO_IMP,	CMailToHandler::NewL ),
+//		IMPLEMENTATION_PROXY_ENTRY( SCHEME_WTAI_IMP,	CWtaiHandler::NewL ),
+//		IMPLEMENTATION_PROXY_ENTRY( SCHEME_TEL_IMP,	CTelHandler::NewL ),
+//		IMPLEMENTATION_PROXY_ENTRY( SCHEME_CTI_IMP,	CCtiHandler::NewL ),
 		IMPLEMENTATION_PROXY_ENTRY( SCHEME_MMS_IMP,		CMmsHandler::NewL )
 	};
 
