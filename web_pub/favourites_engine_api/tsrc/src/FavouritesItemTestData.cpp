@@ -19,7 +19,7 @@
 // INCLUDE FILES
 
 #include <s32strm.h>
-#include "FavouritesItemTestData.h"
+#include "favouritesitemtestdata.h"
 
 // ================= MEMBER FUNCTIONS =======================
 

@@ -24,7 +24,7 @@
 //  INCLUDES
 
 #include <e32base.h>
-#include <FavouritesSession.h>
+#include <favouritessession.h>
 
 // CLASS DECLARATION
 
@@ -128,7 +128,7 @@ class RFavouritesHandle
 
     };
 
-#include <FavouritesHandle.inl>
+#include <favouriteshandle.inl>
 
 #endif
             

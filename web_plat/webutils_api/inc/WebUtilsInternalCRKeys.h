@@ -20,7 +20,7 @@
 
 #warning The Web Utils API will be removed wk25. Please see http://wikis.in.nokia.com/Browser/APIMigration for more information
 
-#include <WebUtilsSDKCRKeys.h>
+#include <webutilssdkcrkeys.h>
 
 // AppName fragment of useragent string
 const TUint32 KWebUtilsUsrAg1 =	0x00000000;

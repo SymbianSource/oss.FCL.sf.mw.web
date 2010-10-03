@@ -16,7 +16,7 @@
 */
 
 #include <platform_paths.hrh>
-#include <platform/mw/Browser_platform_variant.hrh>
+#include <platform/mw/browser_platform_variant.hrh>
 
 TARGET          FavouritesEngineTest.dll
 TARGETTYPE      dll
@@ -31,17 +31,17 @@ VENDORID        0
 DEFFILE         FavouritesEngineTest.def
 
 SOURCEPATH      ../src
-SOURCE          FavouritesEngineTest.cpp
-SOURCE          FavouritesItemTestCases.cpp
-SOURCE          FavouritesItemListTestCases.cpp
-SOURCE          FavouritesDbTestCases.cpp
-SOURCE          FavouritesWapApTestCases.cpp
-SOURCE          FavouritesDbIncrementalTestCases.cpp
-SOURCE          FavouritesFileTestCases.cpp
-SOURCE          FavouritesSessionTestCases.cpp
-SOURCE          FavouritesNotifierTestCases.cpp
-SOURCE          FavouritesItemTestData.cpp
-SOURCE          FavouritesDbTestObserver.cpp
+SOURCE          favouritesenginetest.cpp
+SOURCE          favouritesitemtestcases.cpp
+SOURCE          favouritesitemlisttestcases.cpp
+SOURCE          favouritesdbtestcases.cpp
+SOURCE          favouriteswapaptestcases.cpp
+SOURCE          favouritesdbincrementaltestcases.cpp
+SOURCE          favouritesfiletestcases.cpp
+SOURCE          favouritessessiontestcases.cpp
+SOURCE          favouritesnotifiertestcases.cpp
+SOURCE          favouritesitemtestdata.cpp
+SOURCE          favouritesdbtestobserver.cpp
 
 USERINCLUDE     ../inc 
 SYSTEMINCLUDE   ../../inc

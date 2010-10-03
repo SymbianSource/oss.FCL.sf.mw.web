@@ -24,7 +24,7 @@
 
 //  INCLUDES
 
-#include <FavouritesHandle.h>
+#include <favouriteshandle.h>
 
 // FORWARD DECLARATIONS
 

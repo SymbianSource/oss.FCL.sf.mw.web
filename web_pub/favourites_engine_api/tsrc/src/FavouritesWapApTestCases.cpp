@@ -1,6 +1,6 @@
 /*
 * ============================================================================
-*  Name:      FavouritesWapApTestCases.cpp
+*  Name:      favouriteswapaptestcases.cpp
 *  Part of:   FavouritesEngineTest class member functions   
 *
 *  Description:
@@ -23,7 +23,7 @@
 
 // INCLUDE FILES
 #include <e32math.h>
-#include "FavouritesEngineTest.h"
+#include "favouritesenginetest.h"
 
 // EXTERNAL DATA STRUCTURES
 // None

@@ -1,6 +1,6 @@
 /*
 * ==============================================================================
-*  Name        : FavouritesEngineTest.h
+*  Name        : favouritesenginetest.h
 *  Part of     : ?Subsystem_name / FavouritesEngineTest
 *
 *  Description : FavouritesEngineTest test module.
@@ -27,16 +27,16 @@
 #include "StifTestModule.h"
 #include <StifLogger.h>
 #include <f32file.h>
-#include <FavouritesSession.h>
-#include <FavouritesItem.h>
-#include <FavouritesItemList.h>
-#include <FavouritesDb.h>
-#include <FavouritesFile.h>
+#include <favouritessession.h>
+#include <favouritesitem.h>
+#include <favouritesitemlist.h>
+#include <favouritesdb.h>
+#include <favouritesfile.h>
 //#include <RfsApMapper.h>
-#include <FavouritesDbIncremental.h>
-#include <FavouritesDbObserver.h>
-#include <ActiveFavouritesDbNotifier.h>
-#include "FavouritesItemTestData.h"
+#include <favouritesdbIncremental.h>
+#include <favouritesdbobserver.h>
+#include <activefavouritesdbnotifier.h >
+#include "favouritesitemtestdata.h"
 
 // CONSTANTS
 _LIT( KTestDbName, "Test" );

@@ -1,6 +1,6 @@
 /*
 * ==============================================================================
-*  Name        : FavouritesEngineTest.cpp
+*  Name        : favouritesenginetest.cpp
 *  Part of     : ?Subsystem_name / FavouritesEngineTest
 *
 *  Description : FavouritesBCTest class member functions
@@ -22,7 +22,7 @@
 
 // INCLUDE FILES
 #include <Stiftestinterface.h>
-#include "FavouritesEngineTest.h"
+#include "favouritesenginetest.h"
 
 // EXTERNAL DATA STRUCTURES
 
