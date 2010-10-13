@@ -375,7 +375,8 @@ TBool CDownloadSubSession::EventL( TInt32 aDownloadState, TInt32 aProgressState,
 
         TPckgBuf<TInt32> pckgDownloadState( aDownloadState );
         TPckgBuf<TInt32> pckgProgressState( aProgressState );
-        
+        if(iMessage.IsNull())
+            return EFalse;
         TInt ret = iMessage.Write( 0, pckgDownloadState );
 	    if( ret != KErrNone )
             {

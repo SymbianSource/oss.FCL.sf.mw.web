@@ -90,7 +90,7 @@ const TInt KStringAttribMaxLengths[][2] = {
     {EDlAttrCurrentUrl, KMaxUrlLength},
     {EDlAttrName, KMaxPath},
     {EDlAttrRealm,KMaxRealmLength},
-    {EDlAttrUsername, KMaxDefAttrLength},
+    {EDlAttrUsername, KMaxRealmLength},
     {EDlAttrPassword, KMaxDefAttrLength},
     {EDlAttrProxyRealm, KMaxRealmLength},
     {EDlAttrProxyUsername, KMaxDefAttrLength},

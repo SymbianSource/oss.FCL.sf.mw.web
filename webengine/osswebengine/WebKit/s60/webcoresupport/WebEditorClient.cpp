@@ -45,6 +45,7 @@ using namespace HTMLNames;
 //-----------------------------------------------------------------------------
 WebEditorClient::WebEditorClient(WebView* webview) : m_webView(webview)
 {
+	m_shouldEndEditing = ETrue;
 }
 
 //-----------------------------------------------------------------------------

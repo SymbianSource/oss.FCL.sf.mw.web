@@ -222,7 +222,7 @@ void HttpSessionManager::closeHttpSession()
 		}
         m_httpSession.Close();
         m_sessionRunning = false;
-
+        m_cookieFilterLoaded = false;
         delete m_ReqHdrManager;
         m_ReqHdrManager = NULL;
     }

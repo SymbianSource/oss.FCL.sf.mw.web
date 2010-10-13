@@ -770,6 +770,7 @@ void CFavouritesSession::ServiceError( const RMessage2& aMessage, TInt aError )
     if ( aError == KErrBadDescriptor || aError == KErrBadHandle )
         {
         Server().PanicClient( aError );
+		return;
         }
     CSession2::ServiceError( aMessage, aError );
     }

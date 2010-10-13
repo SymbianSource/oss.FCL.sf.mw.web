@@ -597,9 +597,14 @@ void HttpRequestHeaderManager::AddXMLHttpHeadersL(RHTTPHeaders& aHeaders,
             { 
             TPtrC8 strval(*strValueBuf);
             TInternetDate date;
-            date.SetDateL(strval);
-            TDateTime modifyTime(date.DateTime());
-            aHeaders.SetFieldL(strName, modifyTime);
+
+            TRAPD(err,date.SetDateL(strval));
+            
+            if(err == KErrNone)
+                {
+                TDateTime modifyTime(date.DateTime());
+                aHeaders.SetFieldL(strName, modifyTime);
+                }            
             }
         else
             {

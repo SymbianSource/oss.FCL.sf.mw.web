@@ -110,6 +110,8 @@ void InsertTextCommand::input(const String& originalText, bool selectInsertedTex
         startPosition = positionBeforeStartNode;
     if (!startPosition.isCandidate())
         startPosition = startPosition.downstream();
+    if(!startPosition.node())
+        return;
     
     // FIXME: This typing around anchor behavior doesn't exactly match TextEdit.  In TextEdit,
     // you won't be placed inside a link when typing after it if you've just placed the caret

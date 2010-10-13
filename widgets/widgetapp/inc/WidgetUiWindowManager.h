@@ -636,6 +636,10 @@ class CWidgetUiWindowManager : public CBase,
         TBool reConnectivityFlag;
         void ConnNeededStatusL( TInt aErr );
         void StopConnectionObserving();
+        void SetNewConnFlag(TBool flag);
+        TBool GetNewConnFlag();
+        //Required for setting new conn flag in Widget App UI when ap roaming happens
+        TBool iNewConnFlag;
 #endif
         
     private:

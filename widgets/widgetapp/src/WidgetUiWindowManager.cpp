@@ -135,6 +135,10 @@ CWidgetUiWindowManager::CWidgetUiWindowManager(CWidgetUiAppUi& aAppUi):
     iNetworkMode(EUnknownMode),
     iNetworkConnected(EFalse),
     iWidgetCursorMode(TBrCtlDefs::EDefaultCursor)
+#ifdef BRDO_OCC_ENABLED_FF  
+        ,
+        iNewConnFlag( EFalse )
+#endif
     {
     }
 
@@ -1637,6 +1641,7 @@ TInt CWidgetUiWindowManager::RetryInternetConnection()
        
        TRAP_IGNORE(ConnNeededStatusL(err)); //Start the observer again
        TRAP_IGNORE( window->Engine()->HandleCommandL( (TInt)TBrCtlDefs::ECommandRetryTransactions + (TInt)TBrCtlDefs::ECommandIdBase ) );
+       SetNewConnFlag(ETrue);
        }
     else
         {
@@ -1655,6 +1660,25 @@ TInt CWidgetUiWindowManager::RetryInternetConnection()
       {
       return reConnectivityFlag;
       } 
+ 
+ // -----------------------------------------------------------------------------
+ // CWidgetUiWindowManager::SetNewConnFlag
+ // -----------------------------------------------------------------------------
+ //
+ void CWidgetUiWindowManager::SetNewConnFlag(TBool flag)
+     {
+     iNewConnFlag = flag;
+     }
+
+ // -----------------------------------------------------------------------------
+ // CWidgetUiWindowManager::GetNewConnFlag
+ // -----------------------------------------------------------------------------
+ //
+ TBool CWidgetUiWindowManager::GetNewConnFlag()
+     {
+     return iNewConnFlag;
+     }
+	 
 #endif // BRDO_OCC_ENABLED_FF
 
 // -----------------------------------------------------------------------------
@@ -1668,16 +1692,16 @@ void CWidgetUiWindowManager::LightStatusChanged( TInt aTarget, CHWRMLight::TLigh
         if ( ( aStatus == CHWRMLight::ELightOn || aStatus == CHWRMLight::ELightOff ) && aStatus != iLightStatus )
             {   
             iLightStatus = aStatus;
-            if(iActiveFsWindow)                
+            if( AnyWidgetOnHs() )                
                 if(aStatus == CHWRMLight::ELightOn )
-                    {
-                    TRAP_IGNORE( iActiveFsWindow->Engine()->HandleCommandL( 
+                    {                    
+                    TRAP_IGNORE( iWindowList[0]->Engine()->HandleCommandL( 
                                (TInt)TBrCtlDefs::ECommandIdBase +
                                (TInt)TBrCtlDefs::ECommandBackLightOn ) );
                     }
                 else if(aStatus == CHWRMLight::ELightOff )
-                    {
-                    TRAP_IGNORE( iActiveFsWindow->Engine()->HandleCommandL( 
+                    {                    
+                    TRAP_IGNORE( iWindowList[0]->Engine()->HandleCommandL( 
                                (TInt)TBrCtlDefs::ECommandIdBase +
                                (TInt)TBrCtlDefs::ECommandBackLightOff) );
                     }

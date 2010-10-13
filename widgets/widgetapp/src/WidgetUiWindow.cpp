@@ -924,7 +924,8 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
             User::Leave( connFailure );
             }
         *aNewConn = ETrue;
-        if(iWindowManager.GetNetworkMode() == EOfflineMode)
+        if( !(EMiniViewEnabled == WidgetMiniViewState() || 
+                EMiniViewNotEnabled == WidgetMiniViewState()) && iWindowManager.GetNetworkMode() == EOfflineMode )       
         	{
             iWindowManager.GetConnection()->CancelConnection();
             iWindowManager.GetConnection()->StopConnectionL();
@@ -935,6 +936,17 @@ void CWidgetUiWindow::StartNetworkConnectionL(TBool* aNewConn)
         	TRAP_IGNORE(iWindowManager.ConnNeededStatusL(KErrNone)); 
 #endif        
         }
+#ifdef BRDO_OCC_ENABLED_FF
+    else
+        {
+            TBool newConnFlag = iWindowManager.GetRetryFlag();
+            if( newConnFlag )
+                {
+                *aNewConn = ETrue;
+                iWindowManager.SetNewConnFlag(EFalse);
+                }
+        }
+#endif
     }
 
 // -----------------------------------------------------------------------------

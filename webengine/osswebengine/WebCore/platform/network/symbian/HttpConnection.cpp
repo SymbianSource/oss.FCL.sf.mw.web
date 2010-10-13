@@ -426,16 +426,6 @@ void HttpConnection::MHFRunL(const THTTPEvent &aEvent)
                 complete(KBrowserHTTPStatusCodes - m_transaction->Response().StatusCode());
                 return;
                 }
-            else if(httpStatus == EHttpForbidden)
-                {
-                complete(KBrowserHTTPStatusCodes - m_transaction->Response().StatusCode());
-                return; 
-                }
-            else if(httpStatus == EHttpInternalServerError)
-                {
-                complete(KBrowserHTTPStatusCodes - m_transaction->Response().StatusCode());
-                return; 
-                }
             if ( !handled )
                 {
                 // url

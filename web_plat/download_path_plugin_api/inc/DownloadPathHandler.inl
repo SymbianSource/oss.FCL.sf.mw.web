@@ -2,7 +2,7 @@
   File        : DownloadPathHandler.inl
   Part of     : web_plat / download_path_plugin_api
   Description : Music path plugin interface inline implementation file
-  Version     : %version: 3 % << Don't touch! Updated by Synergy at check-out.
+  Version     : %version: 3.1.1 % << Don't touch! Updated by Synergy at check-out.
 
   Copyright (c) 2010 Nokia Corporation.
   This material, including documentation and any related
