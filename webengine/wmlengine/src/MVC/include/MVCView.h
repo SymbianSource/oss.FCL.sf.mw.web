@@ -46,8 +46,10 @@
 #include <MemoryManager.h>
 #include "pagescaler.h"
 
-
 #include "wmlcontrol.h"
+
+#include "WMLWebGestureInterface.h"
+
 template <class T> class CArrayPtrFlat;
 
 // CONSTANTS
@@ -85,7 +87,6 @@ class MViewFocusObserver;
 
 // CLASS DECLARATIONS
 class MBrCtlStateChangeObserver;
-
 
 /**
 *  CView
@@ -186,7 +187,19 @@ public:
 
 public: // from MBrowserSettingsObserver
     void BrowserSettingChanged( enum TBrowserSetting aBrowserSetting );
-
+#ifdef BRDO_USE_GESTURE_HELPER 
+public://For understanding gesture event
+    void HandleGestureEventL(const TStmGestureEvent& aGesture);
+#endif// BRDO_USE_GESTURE_HELPER
+private:
+    void ProcessPointerEvents(const TPointerEvent& aPointerEvent);
+#ifdef BRDO_USE_GESTURE_HELPER 
+    void HandleDoubleTapL(const TStmGestureEvent& aGesture);
+    void HandleDragL(const TStmGestureEvent& aGesture);
+    void HandleTapL(const TPoint& aPoint, TBool aProcessEvent=ETrue);
+    void HandleTouchL(const TStmGestureEvent& aGesture);
+    void HandleRelease(const TStmGestureEvent& aGesture);
+#endif // BRDO_USE_GESTURE_HELPER 
 protected: // From CCoeControl
     void HandlePointerEventL(const TPointerEvent& aPointerEvent);
 
@@ -442,8 +455,10 @@ private:
     TBrowserStatusCode UpdateScrollBars () const;
 
 	void GetParentBox(NW_LMgr_Box_t* parentBox, NW_LMgr_Box_t** pReturnedParentBox);
+#ifndef BRDO_USE_GESTURE_HELPER
     void CancelPeriodicTimer();
     static TInt PeriodicTimerCallBack(TAny* aAny);
+#endif// BRDO_USE_GESTURE_HELPER
 private:
     CBitmapContext* iBitmapContext;
     CBitmapDevice* iBitmapDevice;
@@ -507,8 +522,14 @@ private:
   CActive::TPriority iFormatPriority;
   CWmlControl*           iWmlControl;
   TBool iShouldActivate;
+#ifdef BRDO_USE_GESTURE_HELPER
+  WMLWebGestureInterface*  m_gestureInterface; 
+#endif // BRDO_USE_GESTURE_HELPER
+
+#ifndef BRDO_USE_GESTURE_HELPER
   TBool iDrag;
   CPeriodic* iPeriodicTimer;
+#endif // BRDO_USE_GESTURE_HELPER
 };
 
 #endif  // EPOC32VIEW_H

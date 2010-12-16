@@ -144,6 +144,8 @@ bool DeprecatedPtrListImpl::insert(unsigned n, const void *item)
     }
 
     DeprecatedListNode *node = new DeprecatedListNode((void *)item);
+    if (!node)
+        return false;
 
     if (n == 0) {
         // inserting at head

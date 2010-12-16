@@ -2193,6 +2193,8 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
         }
 
         TInt currentItemIndex = aDialog.CurrentItemIndex();
+		 if( (currentItemIndex >= 0) && (currentItemIndex < iListModel->DownloadArray().Count()))
+            {
         __ASSERT_DEBUG( 0 <= currentItemIndex, Panic( EUiLibPanDLNegItemIndex ) );
         RHttpDownload& currDownload = iListModel->Download( currentItemIndex );
         CLOG_WRITE_FORMAT(" currDownload: 0x%x",&currDownload);
@@ -2450,6 +2452,11 @@ void CDownloadMgrUiDownloadsList::DynInitMenuPaneL( CDownloadsListDlg& aDialog,
     if ( wasCompleted && !isThemeType ) 
         {
         InitializeAIWPlugInMenusL( aResourceId, aMenuPane, currDownload );		
+        }
+	 }
+    else
+        {
+        User::LeaveIfError(KErrArgument);
         }
     CLOG_LEAVEFN("CDownloadMgrUiDownloadsList::DynInitMenuPaneL");
     }

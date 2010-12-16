@@ -338,7 +338,8 @@ void TimerBase::fireTimers(double fireTime, const Vector<TimerBase*>& firingTime
     int size = firingTimers.size();
     for (int i = 0; i != size; ++i) {
         TimerBase* timer = firingTimers[i];
-
+        if(!timer)
+           continue;
         // If not in the set, this timer has been deleted or re-scheduled in another timer's fired function.
         // So either we don't want to fire it at all or we will fire it next time the shared timer goes off.
         // It might even have been deleted; that's OK because we won't do anything else with the pointer.

@@ -395,8 +395,26 @@ TPoint WebFrameView::nearestPointInFrame(const TPoint &aPoint)
     TPoint p(aPoint);
     p.iX = Min(contentSize().iWidth - frameSize.iWidth, p.iX);
     p.iY = Min(contentSize().iHeight - frameSize.iHeight, p.iY);
-    p.iX = Max(0, p.iX);
-    p.iY = Max(0, p.iY);
+    if(topView()->mainFrame()->bridge()->m_rtl && p.iX<0 && m_frame->isFrameSet())
+        {
+        WTF::Vector<WebFrame*> ch;
+        ch = m_frame->childFrames();
+        Vector<WebFrame*>::iterator end = ch.end();
+        TInt x (m_contentSize.iWidth);
+        //Traverse all child nodes to get max width in all child frames for a view
+        for(Vector<WebFrame*>::iterator itr = ch.begin(); itr!= end; itr++)
+            {        	
+            WebFrameView* frameView = (*itr)->frameView();
+            x = Max(x,frameView->contentSize().iWidth);
+            }
+        p.iX = Max(m_contentSize.iWidth - x, p.iX);    
+        p.iY = Max(0, p.iY);
+        }
+    else
+        {
+        p.iX = Max(0, p.iX);
+        p.iY = Max(0, p.iY);
+        }
 
     return p;
 }

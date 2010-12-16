@@ -667,7 +667,8 @@ class TBrCtlDefs
             EElementBrokenImage, ///< A missing image
             EElementSmartLinkVoip, ///< A voip smartlink
             EElementSelectMultiBox, ///< A select box with multiple select
-            EElementdivTag ///< An editable div tag
+            EElementdivTag, ///< An editable div tag
+            EElementbodyTag ///< An editable body tag
         };
 
         /**

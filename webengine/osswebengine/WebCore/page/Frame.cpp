@@ -1760,8 +1760,8 @@ EventHandler* Frame::eventHandler() const
     return &d->m_eventHandler;
 }
 
-void Frame::pageDestroyed()
-{
+void Frame::pageDestroyed(bool bAtExit)
+{    
     if (Frame* parent = tree()->parent())
         parent->loader()->checkLoadComplete();
 
@@ -1774,14 +1774,16 @@ void Frame::pageDestroyed()
             w->disconnectFrame();
 
     d->m_page = 0;
-    if(d->m_lifeSupportTimer.isActive()){
-        //m_lifeSupportTimer is still active. It is not going to get triggered. So the frame needs to be dereferenced   
+#if PLATFORM(SYMBIAN)    
+    if(bAtExit && d->m_lifeSupportTimer.isActive()){
+        //m_lifeSupportTimer is still active. It is not going to get triggered. So the frame needs to be dereferenced         
         deref();   
         d->m_lifeSupportTimer.stop();
 #ifndef NDEBUG
         keepAliveSet().remove(this);
 #endif  
     }
+#endif    
 }
 
 void Frame::disconnectOwnerElement()

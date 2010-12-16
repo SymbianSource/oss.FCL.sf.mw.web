@@ -386,7 +386,8 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     frame->selectionController()->end() == endPos && !select) {
                     m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() 
                             || m_webView->fepTextEditor()->IsInputElementFocused()
-                            || m_webView->fepTextEditor()->IsDivElementFocused() );
+                            || m_webView->fepTextEditor()->IsDivElementFocused()
+                            || m_webView->fepTextEditor()->IsBodyElementFocused());
                 }
                 else {
                     event->setDefaultHandled();
@@ -411,7 +412,8 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
                     frame->selectionController()->end() == endPos && !select) {
                     m_shouldEndEditing = !(m_webView->fepTextEditor()->IsTextAreaFocused() 
                             || m_webView->fepTextEditor()->IsInputElementFocused()
-                            || m_webView->fepTextEditor()->IsDivElementFocused());
+                            || m_webView->fepTextEditor()->IsDivElementFocused()
+                            || m_webView->fepTextEditor()->IsBodyElementFocused());
                 }
                 else {
                     event->setDefaultHandled();
@@ -459,7 +461,7 @@ void WebEditorClient::handleKeypress(KeyboardEvent* event)
             case EKeyEnter:
             case EKeyDevice3:    
             	// If we are in a textarea, add a newline
-                if (m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsDivElementFocused()) {
+                if (m_webView->fepTextEditor()->IsTextAreaFocused() || m_webView->fepTextEditor()->IsDivElementFocused() || m_webView->fepTextEditor()->IsBodyElementFocused()) {
                     if (m_webView->fepTextEditor()->DocumentLengthForFep() <
                         m_webView->fepTextEditor()->DocumentMaximumLengthForFep()) {
                         frame->editor()->insertLineBreak();
@@ -696,6 +698,13 @@ void WebEditorClient::handleDeleteText(Frame* frame)
     }
 }
 
+void WebEditorClient::preFocusChange(Node* oldNode, Node* newNode)
+{      
+    TBool contentEditable = m_webView->page()->focusController()->focusedOrMainFrame()->selectionController()->isContentEditable();    
+    if ( oldNode && newNode && contentEditable ) {       
+         m_webView->fepTextEditor()->FocusChanging();
+       }
+    }
 
 
 

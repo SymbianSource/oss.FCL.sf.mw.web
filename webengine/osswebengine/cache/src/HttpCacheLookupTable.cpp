@@ -111,7 +111,7 @@ CHttpCacheLookupTable::~CHttpCacheLookupTable()
           if( Valid( i ) )
               {
               CHttpCacheEntry* entry = iEntries->At( i );
-              delete entry;
+              entry->destroy();
               }
           }
       iEntries->Reset();
@@ -733,7 +733,7 @@ void CHttpCacheLookupTable::Erase( TInt aPos )
 #endif
         iStreamHandler->Erase( *entry );
         SetDeleted( aPos );
-        delete entry;
+        entry->destroy();
         iCount--;
         }
     }
@@ -834,7 +834,7 @@ void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable
                 if (aHttpCacheLookupTable->Valid(pos))
                     {
                     aHttpCacheLookupTable->SetDeleted(pos);
-                    delete newEntry;
+                    newEntry->destroy();
                     aHttpCacheLookupTable->iCount--;
                     }
                 }
@@ -870,7 +870,7 @@ void CHttpCacheLookupTable::MergeL( CHttpCacheLookupTable* aHttpCacheLookupTable
                 myEntry->Accessed(newEntry->LastAccessed(), newEntry->Ref());
                 }
             aHttpCacheLookupTable->SetDeleted(pos);
-            delete newEntry;
+            newEntry->destroy();
             aHttpCacheLookupTable->iCount--;
             }
         }

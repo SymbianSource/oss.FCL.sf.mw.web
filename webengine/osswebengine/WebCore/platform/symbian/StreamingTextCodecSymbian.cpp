@@ -157,7 +157,7 @@ String TextCodecSymbian::decode(const char* chs, size_t length, bool flush)
         int retValue = m_converter->ConvertToUnicode( outBuf, inBuf, m_state, rep, rIndx );
 
         if( retValue == CCnvCharacterSetConverter::EErrorIllFormedInput ) {
-            if (inBuf.Length() < strlen((char*) m_bufferedBytes))
+            if (inBuf.Length() < KMaxBufferedBytes)
             {
             memcpy( m_bufferedBytes, inBuf.Ptr(), inBuf.Length() );
             m_numBufferedBytes = inBuf.Length();

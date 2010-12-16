@@ -122,41 +122,42 @@ JSValue* JSElementConstructor::getValueProperty(ExecState*, int token) const
 
 static const HashEntry JSElementPrototypeTableEntries[] =
 {
-    { "removeAttributeNode", JSElement::RemoveAttributeNodeFuncNum, DontDelete|Function, 1, 0 },
     { 0, 0, 0, 0, 0 },
-    { "removeAttribute", JSElement::RemoveAttributeFuncNum, DontDelete|Function, 1, 0 },
+    { "hasAttributeNS", JSElement::HasAttributeNSFuncNum, DontDelete|Function, 2, 0 },
+    { "getElementsByTagNameNS", JSElement::GetElementsByTagNameNSFuncNum, DontDelete|Function, 2, 0 },
+    { "blur", JSElement::BlurFuncNum, DontDelete|Function, 0, 0 },
+    { "getElementsByClassName", JSElement::GetElementsByClassNameFuncNum, DontDelete|Function, 1, 0 },
+    { "removeAttributeNS", JSElement::RemoveAttributeNSFuncNum, DontDelete|Function, 2, 0 },
     { 0, 0, 0, 0, 0 },
-    { "getAttributeNode", JSElement::GetAttributeNodeFuncNum, DontDelete|Function, 1, &JSElementPrototypeTableEntries[27] },
-    { "getAttributeNodeNS", JSElement::GetAttributeNodeNSFuncNum, DontDelete|Function, 2, 0 },
-    { 0, 0, 0, 0, 0 },
-    { "getElementsByTagName", JSElement::GetElementsByTagNameFuncNum, DontDelete|Function, 1, 0 },
-    { "getElementsByTagNameNS", JSElement::GetElementsByTagNameNSFuncNum, DontDelete|Function, 2, &JSElementPrototypeTableEntries[24] },
-    { "getAttributeNS", JSElement::GetAttributeNSFuncNum, DontDelete|Function, 2, &JSElementPrototypeTableEntries[25] },
-    { "setAttributeNode", JSElement::SetAttributeNodeFuncNum, DontDelete|Function, 1, &JSElementPrototypeTableEntries[26] },
+    { "setAttributeNS", JSElement::SetAttributeNSFuncNum, DontDelete|Function, 3, 0 },
     { "scrollByLines", JSElement::ScrollByLinesFuncNum, DontDelete|Function, 1, 0 },
     { 0, 0, 0, 0, 0 },
     { 0, 0, 0, 0, 0 },
-    { "setAttribute", JSElement::SetAttributeFuncNum, DontDelete|Function, 2, 0 },
-    { 0, 0, 0, 0, 0 },
+    { "scrollIntoViewIfNeeded", JSElement::ScrollIntoViewIfNeededFuncNum, DontDelete|Function, 1, 0 },
+    { "removeAttribute", JSElement::RemoveAttributeFuncNum, DontDelete|Function, 1, &JSElementPrototypeTableEntries[24] },
     { "scrollByPages", JSElement::ScrollByPagesFuncNum, DontDelete|Function, 1, 0 },
-    { "removeAttributeNS", JSElement::RemoveAttributeNSFuncNum, DontDelete|Function, 2, 0 },
-    { "setAttributeNS", JSElement::SetAttributeNSFuncNum, DontDelete|Function, 3, 0 },
+    { "setAttributeNode", JSElement::SetAttributeNodeFuncNum, DontDelete|Function, 1, &JSElementPrototypeTableEntries[25] },
     { 0, 0, 0, 0, 0 },
-    { "setAttributeNodeNS", JSElement::SetAttributeNodeNSFuncNum, DontDelete|Function, 1, &JSElementPrototypeTableEntries[29] },
-    { "getAttribute", JSElement::GetAttributeFuncNum, DontDelete|Function, 1, &JSElementPrototypeTableEntries[23] },
-    { "scrollIntoView", JSElement::ScrollIntoViewFuncNum, DontDelete|Function, 1, 0 },
-    { "hasAttribute", JSElement::HasAttributeFuncNum, DontDelete|Function, 1, 0 },
-    { "hasAttributeNS", JSElement::HasAttributeNSFuncNum, DontDelete|Function, 2, 0 },
-    { "focus", JSElement::FocusFuncNum, DontDelete|Function, 0, &JSElementPrototypeTableEntries[28] },
-    { "blur", JSElement::BlurFuncNum, DontDelete|Function, 0, 0 },
-    { "insertAdjacentElement", JSElement::InsertAdjacentElementFuncNum, DontDelete|Function, 2, 0 },
     { "contains", JSElement::ContainsFuncNum, DontDelete|Function, 1, 0 },
-    { "scrollIntoViewIfNeeded", JSElement::ScrollIntoViewIfNeededFuncNum, DontDelete|Function, 1, 0 }
+    { "getAttributeNS", JSElement::GetAttributeNSFuncNum, DontDelete|Function, 2, &JSElementPrototypeTableEntries[30] },
+    { 0, 0, 0, 0, 0 },
+    { "getElementsByTagName", JSElement::GetElementsByTagNameFuncNum, DontDelete|Function, 1, 0 },
+    { "setAttribute", JSElement::SetAttributeFuncNum, DontDelete|Function, 2, &JSElementPrototypeTableEntries[26] },
+    { 0, 0, 0, 0, 0 },
+    { "setAttributeNodeNS", JSElement::SetAttributeNodeNSFuncNum, DontDelete|Function, 1, &JSElementPrototypeTableEntries[28] },
+    { "getAttribute", JSElement::GetAttributeFuncNum, DontDelete|Function, 1, 0 },
+    { "getAttributeNode", JSElement::GetAttributeNodeFuncNum, DontDelete|Function, 1, 0 },
+    { "removeAttributeNode", JSElement::RemoveAttributeNodeFuncNum, DontDelete|Function, 1, 0 },
+    { "getAttributeNodeNS", JSElement::GetAttributeNodeNSFuncNum, DontDelete|Function, 2, &JSElementPrototypeTableEntries[27] },
+    { "hasAttribute", JSElement::HasAttributeFuncNum, DontDelete|Function, 1, &JSElementPrototypeTableEntries[29] },
+    { "focus", JSElement::FocusFuncNum, DontDelete|Function, 0, 0 },
+    { "scrollIntoView", JSElement::ScrollIntoViewFuncNum, DontDelete|Function, 1, 0 },
+    { "insertAdjacentElement", JSElement::InsertAdjacentElementFuncNum, DontDelete|Function, 2, 0 }
 };
 
 static const HashTable JSElementPrototypeTable = 
 {
-    2, 30, JSElementPrototypeTableEntries, 23
+    2, 31, JSElementPrototypeTableEntries, 24
 };
 
 const ClassInfo JSElementPrototype::info = { "ElementPrototype", 0, &JSElementPrototypeTable, 0 };
@@ -480,6 +481,13 @@ JSValue* JSElementPrototypeFunction::callAsFunction(ExecState* exec, JSObject* t
 
         imp->scrollByPages(pages);
         return jsUndefined();
+    }
+    case JSElement::GetElementsByClassNameFuncNum: {
+        String name = args[0]->toString(exec);
+
+
+        KJS::JSValue* result = toJS(exec, WTF::getPtr(imp->getElementsByClassName(name)));
+        return result;
     }
     }
     return 0;

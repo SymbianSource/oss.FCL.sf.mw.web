@@ -77,6 +77,7 @@ void CWidgetMMCHandler::ConstructL()
         }
     iDeltaDriveFlags = 0;
     iApaAppListNotifier = CApaAppListNotifier::NewL(this,CActive::EPriorityStandard);
+    iNeedToNotify = ETrue;
     }
 
 // ============================================================================
@@ -215,10 +216,11 @@ TInt CWidgetMMCHandler::ScanDrives( TInt& aDriveFlags )
 
 void CWidgetMMCHandler::HandleAppListEvent(TInt aEvent)
     {
+    LOG_OPEN;
     TBool dirtyFlag = EFalse;
     TInt parseError = KErrNone;
-    
-    if ( iDeltaDriveFlags )
+    LOG1("HandleAppListEvent   %d",iDeltaDriveFlags);
+    if ( iDeltaDriveFlags && iNeedToNotify )
         {
         // Assume usual case and things are consistent
         // and the registry entry file can be parsed and used.
@@ -238,4 +240,18 @@ void CWidgetMMCHandler::HandleAppListEvent(TInt aEvent)
         
         CWidgetRegistry::NotifyWidgetAltered();
         }
+    iNeedToNotify = ETrue;
+    LOG_CLOSE;
+        
+    }
+
+
+void CWidgetMMCHandler::NeedToNotify(TBool aVal)
+    {
+    LOG_OPEN;
+    LOG("CWidgetMMCHandler::NeedToNotify");
+    if(iDeltaDriveFlags)
+        iNeedToNotify = aVal;
+    
+    LOG_CLOSE;
     }

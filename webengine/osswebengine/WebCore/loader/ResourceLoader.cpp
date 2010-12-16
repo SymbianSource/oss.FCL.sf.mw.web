@@ -91,7 +91,7 @@ void ResourceLoader::releaseResources()
 
     if (m_frame) {
 #if PLATFORM(SYMBIAN)
-        if (control(m_frame.get())->webView()->isSynchRequestPending()) {                      
+        if (control(m_frame.get()) && control(m_frame.get())->webView()->isSynchRequestPending()) {                      
             if (!cancelled()) {
                 // Cancel pending synchronous request
                 cancel();

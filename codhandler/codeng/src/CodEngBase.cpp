@@ -103,6 +103,11 @@ EXPORT_C CCodEngBase::~CCodEngBase()
     delete iCodBuf;
     delete iData;
     iFs.Close();
+	if (iProgress)
+	{
+		delete iProgress;
+		iProgress = NULL;
+	}
     CLOG(( ECodEng, 2, _L("CCodEngBase::~CCodEngBase") ));
     CLOG(( ECodEng, 2, _L("*****************") ));
     }

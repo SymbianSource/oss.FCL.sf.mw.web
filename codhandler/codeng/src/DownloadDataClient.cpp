@@ -61,6 +61,8 @@ CMediaDataClient::~CMediaDataClient()
     {
     delete iName;
     delete iUrl;
+    delete iTypes;
+	iTypes = NULL;	
     delete iIcon;
     delete iSourceUri;
     delete iRedirUrl;

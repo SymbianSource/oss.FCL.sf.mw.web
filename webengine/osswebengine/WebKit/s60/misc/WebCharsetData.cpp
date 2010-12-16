@@ -50,7 +50,7 @@ const TCharsetEntry supportedCharsetTable[] =
     {0x101F8548,                        _S("windows-1256")}, // no header file is provided with the converter windows-1256
     {0x100059DA,                        _S("windows-1257")}, // no header file is provided with the converter windows-1257
     {0x102073B8,                        _S("windows-1258")}, // no header file is provided with the converter windows-1258
-    {0x101F8549,                        _S("tis-620")}, // no header file is provided with the converter tis-620
+    //{0x101F8549,                        _S("tis-620")}, // no header file is provided with the converter tis-620
     {KCharacterSetIdentifierShiftJis,   _S("shift_jis")},
     {KCharacterSetIdentifierShiftJis,   _S("shift-jis")},
     {KCharacterSetIdentifierShiftJis,   _S("x-sjis")},

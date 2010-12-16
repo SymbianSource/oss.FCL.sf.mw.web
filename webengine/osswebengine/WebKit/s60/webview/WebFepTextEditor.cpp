@@ -50,6 +50,7 @@
 #include "RenderStyle.h"
 #include "htmlediting.h"
 #include "HtmlDivElement.h"
+#include "HTMLBodyElement.h"
 #include "CSSStyleDeclaration.h"
 #include "CSSMutableStyleDeclaration.h"
 #include "SelectionController.h"
@@ -75,6 +76,10 @@ GLDEF_C void Panic(TEikPanic aPanic)
     User::Panic(KPanicCat,aPanic);
     }
 
+#ifdef BRDO_TOUCH_ENABLED_FF 
+// LOCAL FUNCTION PROTOTYPES
+TInt doDeactivateVKB( TAny* ptr );
+#endif
 // -----------------------------------------------------------------------------
 // CWebFepTextEditor
 //
@@ -85,7 +90,8 @@ CWebFepTextEditor::CWebFepTextEditor(WebView* aView)
       m_textFormatMask(NULL),
       m_inlineEditText(NULL),
       m_longKeyPress(EFalse),
-      m_inlineTextEditingStarted(EFalse)
+      m_inlineTextEditingStarted(EFalse),
+      m_VKBActive(EFalse)
 {
     // Set up the extended capabilities
     TRAP_IGNORE(
@@ -98,6 +104,10 @@ CWebFepTextEditor::CWebFepTextEditor(WebView* aView)
     SetAlignment( CAknExtendedInputCapabilities::EInputEditorAlignBidi );
 #endif
     TRAP_IGNORE( EnableCcpuL() );
+#ifdef BRDO_TOUCH_ENABLED_FF 
+    TRAP_IGNORE( User::LeaveIfError( iPeninputServer.Connect() );
+    iPeninputServer.AddPenUiActivationHandler( this, EPluginInputModeAll ););
+#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -107,6 +117,18 @@ CWebFepTextEditor::CWebFepTextEditor(WebView* aView)
 // -----------------------------------------------------------------------------
 CWebFepTextEditor::~CWebFepTextEditor()
     {
+    CAknEdwinState* edwinState = static_cast<CAknEdwinState*>(this->State(KNullUid));
+    if (edwinState && edwinState->MenuBar())
+        edwinState->MenuBar()->RemoveEditMenuObserver( m_CcpuSupport );
+#ifdef BRDO_TOUCH_ENABLED_FF 
+    iPeninputServer.RemovePenUiActivationHandler(this); 
+    iPeninputServer.Close();
+    if(iDeactivateVKB)
+        {
+    	    iDeactivateVKB->Cancel();
+    		delete   iDeactivateVKB;
+    	}
+#endif    
     delete m_state;
     delete m_inlineEditText;
     delete m_textFormatMask;
@@ -230,8 +252,14 @@ void CWebFepTextEditor::CancelEditingMode()
 // -----------------------------------------------------------------------------
 void CWebFepTextEditor::ActivatePenInputRequest()
 {
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+	TUint cap = m_ExtendedInputCapabilities->Capabilities();
+    cap &= ~CAknExtendedInputCapabilities::EInputEditorDisableVKB;
+    m_ExtendedInputCapabilities->SetCapabilities( cap );
+#endif
     CAknEdwinState* state = static_cast<CAknEdwinState*>(State(KNullUid));
     if ( state ) {
+        m_VKBActive = ETrue;
         TRAP_IGNORE( state->ReportAknEdStateEventL(MAknEdStateObserver::EAknActivatePenInputRequest ) );
     }
 }
@@ -243,6 +271,20 @@ void CWebFepTextEditor::ActivatePenInputRequest()
 // -----------------------------------------------------------------------------
 void CWebFepTextEditor::DeactivatePenInputRequest()
     {
+     if ( !m_VKBActive)
+           return;
+     m_VKBActive  = EFalse;
+
+#ifdef BRDO_MULTITOUCH_ENABLED_FF
+    TUint cap = m_ExtendedInputCapabilities->Capabilities();
+    cap |= CAknExtendedInputCapabilities::EInputEditorDisableVKB;
+    m_ExtendedInputCapabilities->SetCapabilities( cap );
+
+    CAknEdwinState* state = static_cast<CAknEdwinState*>(State(KNullUid));
+    if ( state ) {
+        TRAP_IGNORE( state->ReportAknEdStateEventL(MAknEdStateObserver::EAknClosePenInputRequest ) );
+        }
+#endif
     }
 
 // -----------------------------------------------------------------------------
@@ -365,7 +407,7 @@ void CWebFepTextEditor::SetInlineEditingCursorVisibilityL(TBool /*aCursorVisibil
 // -----------------------------------------------------------------------------
 void CWebFepTextEditor::CancelFepInlineEdit()
 {
-    if (IsTextAreaFocused()||IsInputElementFocused() || IsDivElementFocused()) {
+    if (IsTextAreaFocused()||IsInputElementFocused() || IsDivElementFocused() || IsBodyElementFocused()) {
         if (m_inlineEditText && DocumentLengthForFep() < DocumentMaximumLengthForFep()) {
             HBufC* tempBuf = HBufC::NewLC(DocumentLengthForFep());
             TPtr ptr(tempBuf->Des());
@@ -406,6 +448,10 @@ TInt CWebFepTextEditor::DocumentLengthForFep() const
         }
         else if (frame->document()->focusedNode()->hasTagName(HTMLNames::divTag)) {
             HTMLDivElement* ie = static_cast<HTMLDivElement*>(frame->document()->focusedNode());
+            length = ie->innerText().length();
+        }
+        else if (frame->document()->focusedNode()->hasTagName(HTMLNames::bodyTag)) {
+            HTMLBodyElement* ie = static_cast<HTMLBodyElement*>(frame->document()->focusedNode());
             length = ie->innerText().length();
         }
         
@@ -546,6 +592,10 @@ void CWebFepTextEditor::SetCursorSelectionForFepL(const TCursorSelection& aCurso
             HTMLDivElement* inputElement = static_cast<HTMLDivElement*>(focusedNode);
             setSelectionRange(lowPos,highPos,inputElement);
         }
+        else if (focusedNode->hasTagName(HTMLNames::bodyTag)) {
+            HTMLBodyElement* inputElement = static_cast<HTMLBodyElement*>(focusedNode);
+            setSelectionRange(lowPos,highPos,inputElement);
+        }
         
 		HandleUpdateCursor();
     }
@@ -577,6 +627,12 @@ void CWebFepTextEditor::GetCursorSelectionForFep(TCursorSelection& aCursorSelect
         }
         else if (focusedNode->hasTagName(HTMLNames::divTag)) {
             HTMLDivElement* inputElement = static_cast<HTMLDivElement*>(focusedNode);
+            TInt anchorPos = indexForVisiblePosition(frame->selectionController()->start(),inputElement);
+            TInt cursorPos = indexForVisiblePosition(frame->selectionController()->end(),inputElement);
+            aCursorSelection.SetSelection(cursorPos, anchorPos);
+        }
+        else if (focusedNode->hasTagName(HTMLNames::bodyTag)) {
+            HTMLBodyElement* inputElement = static_cast<HTMLBodyElement*>(focusedNode);
             TInt anchorPos = indexForVisiblePosition(frame->selectionController()->start(),inputElement);
             TInt cursorPos = indexForVisiblePosition(frame->selectionController()->end(),inputElement);
             aCursorSelection.SetSelection(cursorPos, anchorPos);
@@ -623,6 +679,12 @@ void CWebFepTextEditor::GetEditorContentForFep( TDes& aEditorContent,
             str.replace(EKeyLineFeed, CEditableText::EParagraphDelimiter);
             aEditorContent = str;
         }
+        else if (frame->document()->focusedNode()->hasTagName(HTMLNames::bodyTag)) {
+            HTMLBodyElement* ie = static_cast<HTMLBodyElement*>(frame->document()->focusedNode());
+            String str(ie->innerText().substring(aDocumentPosition, aLengthToRetrieve));
+            str.replace(EKeyLineFeed, CEditableText::EParagraphDelimiter);
+            aEditorContent = str;
+        }
     }
 }
 
@@ -649,9 +711,12 @@ Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
 if (frame &&
     frame->document() &&
     frame->document()->focusedNode()){
+	aAscent = 0;
+	aHeight = 0;
     if ( frame->document()->focusedNode()->hasTagName(HTMLNames::inputTag) ||
 		 frame->document()->focusedNode()->hasTagName(HTMLNames::textareaTag) ||
-		 frame->document()->focusedNode()->hasTagName(HTMLNames::divTag)) {
+		 frame->document()->focusedNode()->hasTagName(HTMLNames::divTag) ||
+		 frame->document()->focusedNode()->hasTagName(HTMLNames::bodyTag)) {
 		HTMLGenericFormElement*  ie = static_cast<HTMLGenericFormElement*>(frame->document()->focusedNode());
 		SelectionController* sc = frame->selectionController();
 		int xPos(0);
@@ -659,11 +724,11 @@ if (frame &&
 		if ( sc ){
 			IntRect rect = sc->caretRect();
 			Node* editNode = sc->focusNode();
-			if ( editNode && editNode->isTextNode() ) {
-                TPoint viewPoint = kit(frame)->frameView()->frameCoordsInViewCoords(editNode->getRect().Rect().iBr);
-	            xPos = viewPoint.iX;
-	            yPos = frame->document()->focusedNode()->getRect().bottomLeft().y() + rect.height();
+			TPoint viewPoint = kit(frame)->frameView()->frameCoordsInViewCoords(rect.Rect().iBr);
+			xPos = viewPoint.iX;
+			yPos = viewPoint.iY;
 	            
+			if ( editNode && editNode->isTextNode() ) {
 	            String str;				
 	            WebCore::Text* aText = (WebCore::Text*)editNode;
 				str = aText->data();
@@ -678,13 +743,15 @@ if (frame &&
 				CFont* sFont =  cache->zoomedFont( s->fontDescription(), cache->fontZoomFactor());
 				TInt sizePix =	sFont->MeasureText( word.des() );
 				xPos -= sizePix;
+				aHeight = sFont->HeightInPixels();
+				aAscent = sFont->AscentInPixels();
 				}
 			}
 		aLeftSideOfBaseLine.SetXY( xPos,yPos );
+		// make position "absolute" (i.e. not relative to the window that editor is using)
+		aLeftSideOfBaseLine += m_webView->GetContainerWindow().InquireOffset(m_webView->ControlEnv()->RootWin());
 		}
 	}
-	aAscent = 0;
-	aHeight = 0;
 }
 
 // -----------------------------------------------------------------------------
@@ -704,6 +771,7 @@ void CWebFepTextEditor::DoCommitFepInlineEditL()
             }
             else {
                 frame->editor()->insertTextWithoutSendingTextEvent(String(*m_inlineEditText), false);  
+                m_spcaeconsumed = ETrue;   
             }
         }
     }
@@ -1630,14 +1698,59 @@ TBool CWebFepTextEditor::IsDivElementFocused() const
              frame->document()->focusedNode()->hasTagName(HTMLNames::divTag));
     }
 
-void CWebFepTextEditor::ReportEventL()
+TBool CWebFepTextEditor::IsBodyElementFocused() const
     {
-    m_ExtendedInputCapabilities->ReportEventL(CAknExtendedInputCapabilities::
-                        MAknEventObserver::EPointerEventReceived, NULL );
+    Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
+    return ( frame && frame->document()->focusedNode() &&
+             frame->document()->focusedNode()->hasTagName(HTMLNames::bodyTag));
+    }
+
+void CWebFepTextEditor::ReportEventL(CAknExtendedInputCapabilities::MAknEventObserver::TInputCapabilitiesEvent aEvent)
+    {
+    m_ExtendedInputCapabilities->ReportEventL(aEvent, NULL );
     }
 
 TBool CWebFepTextEditor::inlineTextEditingStarted()
     {
     return m_inlineTextEditingStarted; 
     }
+
+void CWebFepTextEditor::FocusChanging()
+    {
+    ReportEventL(CAknExtendedInputCapabilities::MAknEventObserver::EPointerEventReceived);        
+    } 
+#ifdef BRDO_TOUCH_ENABLED_FF 
+// ---------------------------------------------------------
+ // CWebFepTextEditor::OnPeninputUiActivated
+ // ---------------------------------------------------------
+void CWebFepTextEditor::OnPeninputUiActivated()
+     {
+           
+       Frame* frame = m_webView->page()->focusController()->focusedOrMainFrame();
+       Node*  focusedNode = frame->document()->focusedNode();
+       SelectionController* sc = frame->selectionController();
+       if(sc && m_webView->widgetExtension() && focusedNode &&!sc->isContentEditable() && focusedNode->hasTagName(HTMLNames::textareaTag) ) {
+  	       if(!iDeactivateVKB)
+  		         iDeactivateVKB = CIdle::NewL(CActive::EPriorityLow);
+  	        iDeactivateVKB->Cancel();
+            iDeactivateVKB->Start(TCallBack(&doDeactivateVKB,this));
+        
+      }
+     }
+ 
+ // ---------------------------------------------------------
+ // CWebFepTextEditor::OnPeninputUiDeactivated
+ // ---------------------------------------------------------
+ //
+ void CWebFepTextEditor::OnPeninputUiDeactivated()
+     {
+     }
+
+TInt doDeactivateVKB( TAny* ptr )
+   {
+
+    static_cast<CWebFepTextEditor*>(ptr)->DeactivatePenInputRequest(); 
+    return EFalse;
+    }
+#endif
 

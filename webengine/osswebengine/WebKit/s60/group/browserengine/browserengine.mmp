@@ -131,6 +131,7 @@ LIBRARY         WidgetRegistryClient.lib
 
 #ifdef BRDO_TOUCH_ENABLED_FF 
 LIBRARY         touchfeedback.lib
+LIBRARY         peninputclient.lib
 #endif // BRDO_TOUCH_ENABLED_FF 
 
 #ifdef BRDO_USE_GESTURE_HELPER    

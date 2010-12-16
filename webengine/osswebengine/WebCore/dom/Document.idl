@@ -181,6 +181,8 @@ module core {
                                                   in DOMString pseudoElement,
                                                   in [Optional] boolean authorOnly);
 #endif
+        // HTML 5
+        NodeList getElementsByClassName(in DOMString tagname);
 
     };
 

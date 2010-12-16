@@ -25,3 +25,8 @@ SOURCE  MVCView.cpp
 SOURCE  MVCScroll.cpp
 SOURCE  MVCViewAsyncInit.cpp
 SOURCE  CEmbeddedDocExitObserver.cpp
+
+#ifdef BRDO_USE_GESTURE_HELPER
+SOURCE  WMLWebGestureInterface.cpp
+#endif // BRDO_USE_GESTURE_HELPER
+

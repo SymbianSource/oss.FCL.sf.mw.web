@@ -35,7 +35,7 @@ namespace WebCore {
  */
 class NameNodeList : public NodeList {
 public:
-    NameNodeList(Node* doc, const String& name);
+    NameNodeList(Node* root, const String& name);
 
     // DOM methods overridden from  parent classes
 
@@ -49,7 +49,7 @@ public:
 protected:
     virtual bool nodeMatches(Node* testNode) const;
 
-    String nodeName;
+    String m_nodeName;
 };
 
 } // namespace WebCore

@@ -53,7 +53,8 @@ const TInt KBufferGranularity4k = 4096;
 //
 CHttpCacheEntry::CHttpCacheEntry( CHttpCacheEvictionHandler& aEvictionHandler )
     : iState( ECacheUninitialized ),
-      iEvictionHandler( &aEvictionHandler )
+      iEvictionHandler( &aEvictionHandler ),
+      iRefCount(0)
     {
     }
 

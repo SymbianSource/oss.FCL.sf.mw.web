@@ -224,7 +224,10 @@ class CMaskedBitmap : public CBase
 
         CMaskedBitmap();
     void ConstructL();
-
+    /**
+     * Converts bitmap to EColor64K
+     */
+    TInt ConvertTo64KL();
     private: // Data
 
     // Own: Bitmap pointers

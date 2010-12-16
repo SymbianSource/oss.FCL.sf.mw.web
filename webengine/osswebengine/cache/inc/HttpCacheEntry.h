@@ -86,10 +86,12 @@ class CHttpCacheEntry : public CBase, public MHttpCacheWriteSource
         static CHttpCacheEntry* NewLC( const TDesC8& aUrl,
             CHttpCacheEvictionHandler& aEvictionHandler );
 
+    private: //  this ref counted
         /**
         * Destructor.
         */
         virtual ~CHttpCacheEntry();
+        
 
     public: // new functions
 
@@ -318,6 +320,30 @@ class CHttpCacheEntry : public CBase, public MHttpCacheWriteSource
 
         // support linked list
         static const TInt iOffset;
+        
+        // Lifetime counting
+        void Use()
+        {
+            ++iRefCount;
+        }
+        
+        TInt UseCount() const
+        {
+            return iRefCount;
+        }
+
+		void CHttpCacheEntry::Unuse()
+    	{
+		    if(iRefCount > 0)
+    			iRefCount--;
+    	}
+	
+		void CHttpCacheEntry::destroy()
+		{
+			if(iRefCount == 0)
+    			delete this;
+		}
+
 
     private:
 
@@ -414,6 +440,8 @@ class CHttpCacheEntry : public CBase, public MHttpCacheWriteSource
         CHttpCacheEntryAsyncWriteHelper* iWriteHelper;      //owned
         //
         MHttpCacheEntryDeleteObserver* iDeleteObserver;    // NOT owned
+        
+        TInt iRefCount;
        
     };
 

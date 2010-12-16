@@ -29,7 +29,7 @@
 #include <SWInstLogTaskParam.h>
 #include <apacmdln.h>
 #include <s32mem.h>
-#include <e32property.h>
+
 
 #include <widgetappdefs.rh>
 #include "WidgetUIOperationsWatcher.h"
@@ -980,6 +980,16 @@ void CWidgetUIOperationsWatcher::UninstallL(
     TBool widgetinHomeScreen(EFalse);
     widgetinHomeScreen = iRegistry.IsWidgetInMiniView( aUid );
 
+    //Preinstalled widgets cannot be uninstalled 
+    CWidgetPropertyValue* property = iRegistry.GetWidgetPropertyValueL( aUid, EPreInstalled );
+    TBool preInstalled = property && *(property);
+    delete property;    
+    if(preInstalled)
+        {
+        iUIHandler->DisplayCancelL();
+        User::RequestComplete( iRequestStatus, KErrCancel );
+        return;
+        }
     TBool uninstall( ETrue );
     if ( !iSilent )
         {

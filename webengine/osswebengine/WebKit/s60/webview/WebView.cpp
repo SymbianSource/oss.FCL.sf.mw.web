@@ -88,6 +88,7 @@
 #include "HTMLInputElement.h"
 #include "HTMLDivElement.h"
 #include "HtmlTextAreaElement.h"
+#include "HTMLBodyElement.h"
 
 using namespace HTMLNames;
 
@@ -103,6 +104,7 @@ using namespace HTMLNames;
 #include "Editor.h"
 #include "ThumbnailGenerator.h"
 #include "PluginHandler.h"
+#include "Selection.h"
 
 using namespace WebCore;
 using namespace EventNames;
@@ -329,19 +331,23 @@ void WebView::ConstructL( CCoeControl& parent )
     m_fastScrollTimer = CPeriodic::NewL(CActive::EPriorityHigh);
 
     m_dirtyZoomMode = false;
-    m_currentZoomLevel = StaticObjectsContainer::instance()->fontCache()->fontZoomFactor();
+#ifndef BRDO_HIGH_DPI_DEVICES_FF
+	m_currentZoomLevel = StaticObjectsContainer::instance()->fontCache()->fontZoomFactor();
+#else 
+    m_currentZoomLevel = m_defaultZoomLevel;
+#endif 
     m_startZoomLevel = m_currentZoomLevel;
 
     m_pageZoomHandler = WebPageZoomHandler::NewL( *this );
     if ( brCtl()->capabilities()&TBrCtlDefs::ECapabilityFitToScreen ) {
-        m_minZoomLevel = (KZoomLevelDefaultValue / m_pageZoomHandler->stepSize())*m_pageZoomHandler->stepSize();
+        m_minZoomLevel = (m_defaultZoomLevel / m_pageZoomHandler->stepSize())*m_pageZoomHandler->stepSize();
         //could happen only if m_minZoomLevel < stepSize
         if (!m_minZoomLevel) m_minZoomLevel = m_pageZoomHandler->stepSize();
     }
 
     // construct the zoom array from the default level
-    m_zoomLevelArray.Append(KZoomLevelDefaultValue);
-    TInt toAddZoomLevel = KZoomLevelDefaultValue + KZoomLevelDefaultValue*KZoomLevelDelta/100;
+    m_zoomLevelArray.Append(m_defaultZoomLevel);
+    TInt toAddZoomLevel = m_defaultZoomLevel + m_defaultZoomLevel*KZoomLevelDelta/100;
     while (toAddZoomLevel <= m_maxZoomLevel)
         {
         // add the zoom level after default one
@@ -350,7 +356,7 @@ void WebView::ConstructL( CCoeControl& parent )
         }
 
     // now go the minimum one
-    toAddZoomLevel = KZoomLevelDefaultValue - KZoomLevelDefaultValue*KZoomLevelDelta/100;
+    toAddZoomLevel = m_defaultZoomLevel - m_defaultZoomLevel*KZoomLevelDelta/100;
     while (toAddZoomLevel >= m_minZoomLevel)
         {
         //add the zoom level after default one
@@ -581,7 +587,6 @@ void WebView::MakeViewVisible(TBool visible)
           m_tabbedNavigation->initializeForPage();
       }
       syncRepaint( mainFrame()->frameView()->visibleRect() );
-      TRAP_IGNORE( m_webfeptexteditor->EnableCcpuL() ); 
     }
 }
 
@@ -592,20 +597,20 @@ void WebView::doLayout()
 
     int zoomLevel = m_currentZoomLevel;
     if(m_widgetextension && !(m_widgetextension->IsWidgetPublising())) {
-        zoomLevelChanged( KZoomLevelDefaultValue );
+        zoomLevelChanged( m_defaultZoomLevel );
     }
     else {
         //Layout the content based on Default zoom level (100) and zoom it back to existing zoom
         //level after the layout is complete
         WebFrameView* view = mainFrame()->frameView();
         if(view) { 
-            m_startZoomLevel = KZoomLevelDefaultValue;
-            mainFrame()->scalingFactorChanged(KZoomLevelDefaultValue);
+            m_startZoomLevel = m_defaultZoomLevel;
+            mainFrame()->scalingFactorChanged(m_defaultZoomLevel);
             TRect currentZoomedRect = view->rect();
             TRect rectWithDefaultZoom; 
-            calculateZoomRect(currentZoomedRect, rectWithDefaultZoom, m_currentZoomLevel, KZoomLevelDefaultValue); 
+            calculateZoomRect(currentZoomedRect, rectWithDefaultZoom, m_currentZoomLevel, m_defaultZoomLevel); 
             view->setRect(rectWithDefaultZoom);
-            m_currentZoomLevel = KZoomLevelDefaultValue;
+			m_currentZoomLevel = m_defaultZoomLevel;
         } 
     }
     
@@ -644,6 +649,15 @@ void WebView::doLayout()
             }
 #endif         
     }
+    if( m_widgetextension && m_webfeptexteditor )
+    	{
+        Frame* frame = page()->focusController()->focusedOrMainFrame();
+        SelectionController* sc = frame->selectionController();
+        Node*  focusedNode = frame->document()->focusedNode();
+      	if(sc && !sc->isContentEditable() && focusedNode && focusedNode->hasTagName(HTMLNames::textareaTag))
+            m_webfeptexteditor->DeactivatePenInputRequest();
+    
+   }
 }
 //-------------------------------------------------------------------------------
 // WebView::syncRepaint
@@ -965,7 +979,7 @@ bool WebView::isNaviKey(const TKeyEvent& keyevent)
              || keyevent.iCode == EKeyLeftArrow       // West
              || keyevent.iCode == EStdKeyLeftArrow    //   :
              || keyevent.iCode == EKeyLeftUpArrow     // Northwest
-             || keyevent.iCode == EStdKeyDevice10 );  //   :
+          	);
 }
 
 bool WebView::handleEditable(const TKeyEvent& keyevent, TEventCode eventcode, Frame* frame )
@@ -1078,6 +1092,8 @@ bool WebView::deactivateEditable()
     setFocusNone();
     m_prevEditMode = true;
     setEditable( EFalse );
+    if (!AknLayoutUtils::PenEnabled() )
+        notifyFullscreenModeChangeL(ETrue);
     return true;
 }
 
@@ -1193,7 +1209,9 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
      * For keypress event we need a char code and since we don't 
      * have it at the time of EEventKeyDown we pospond it until EEventKey 
      * and send it here.
-     */
+     */    
+    // Get the cursor selection before sending the event to the engine  
+    WebCore::Position prevPos = frame->selectionController()->start();        
     if (eventcode == EEventKeyDown){
         downEventConsumed = sendKeyEventToEngine(keyevent, EEventKeyDown, frame);
     }
@@ -1224,6 +1242,7 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
              TBool isInputTag = frame->document()->focusedNode()->hasTagName(inputTag);
              TBool isdivTag = frame->document()->focusedNode()->hasTagName(divTag); 
              TBool isTextAreaTag = frame->document()->focusedNode()->hasTagName(textareaTag); 
+             TBool isBodyTag = frame->document()->focusedNode()->hasTagName(bodyTag);
                                        
              if(isInputTag) {
                  HTMLInputElement* ie = static_cast<HTMLInputElement*>(frame->document()->focusedNode());
@@ -1248,10 +1267,25 @@ bool WebView::handleNaviKeyEvent(const TKeyEvent& keyevent, TEventCode eventcode
                      length = ie->value().length();
                  	}
                  }
+             else if (isBodyTag)
+                 { 
+                 HTMLBodyElement* ie = static_cast<HTMLBodyElement*>(frame->document()->focusedNode());
+                 if( ie ) {
+                     //Get length of inputelement string
+                     length = ie->innerText().length();
+                    }
+                 }
              
              //Check is there data in input field
              if( length > 0) {
-                 //If there is data, do the old thing 
+                 WebCore::Position sel = frame->selectionController()->start();
+                 if ((sel.offset() == prevPos.offset()) && 
+                         ( ((sel.offset() == 0) && IS_LEFT_KEY(keyevent)) ||                   
+                 (m_webfeptexteditor->DocumentLengthForFep() == sel.offset() && IS_RIGHT_KEY(keyevent) ) )) 
+				 {
+                     deactivateEditable(); 
+				 }
+			     //If there is data, do the old thing                 
                  consumed = ( !m_isEditable &&  //avoid showing the cursor when we are in the input box 
                          handleKeyNavigation(keyevent, eventcode, frame)) ||
                          downEventConsumed;
@@ -1551,13 +1585,14 @@ bool WebView::handleEventKeyUp(const TKeyEvent& keyevent, TEventCode eventcode, 
     }
 
     if (!consumed) {
-        if (m_currentEventCode == EEventKeyDown) {
+        if (m_currentEventCode == EEventKeyDown && !m_webfeptexteditor->GetSpaceConsumed()) { 
             sendKeyEventToEngine(correctedKeyEvent, eventCodeDown, frame);
         }
         sendKeyEventToEngine(correctedKeyEvent, eventCodeUp, frame);
     }
     m_currentEventKey = KNullKeyEvent;
     m_currentEventCode = EEventNull;
+    m_webfeptexteditor->setSpaceConsumed(false);
     return consumed;
 }
 
@@ -1903,8 +1938,6 @@ void WebView::setEditable(TBool editable)
         focusedNode = focusedFrame->document()->focusedNode();
     }
     else {
-        if (!AknLayoutUtils::PenEnabled())
-            notifyFullscreenModeChangeL(ETrue);
         m_webfeptexteditor->CancelEditingMode();
     }
 
@@ -2406,13 +2439,13 @@ void WebView::resetZoomLevel(void)
         }
     if (m_historyLoad) {
         int zoomLevel = m_brctl->historyHandler()->historyController()->currentEntryZoomLevel();
-        if (!zoomLevel) zoomLevel = KZoomLevelDefaultValue;
+        if (!zoomLevel) zoomLevel = m_defaultZoomLevel;
         if (m_currentZoomLevel != zoomLevel) {
             m_currentZoomLevel = zoomLevel;
         }
         int minZoomLevel = m_brctl->historyHandler()->historyController()->currentEntryMinZoomLevel();
         if (!minZoomLevel)
-            minZoomLevel = (KZoomLevelDefaultValue/ m_pageZoomHandler->stepSize())*m_pageZoomHandler->stepSize();
+            minZoomLevel = (m_defaultZoomLevel/ m_pageZoomHandler->stepSize())*m_pageZoomHandler->stepSize();
         else
             minZoomLevel = (minZoomLevel / m_pageZoomHandler->stepSize())*m_pageZoomHandler->stepSize();
         //could happen only if m_minZoomLevel < stepSize
@@ -2426,10 +2459,10 @@ void WebView::resetZoomLevel(void)
     m_brctl->settings()->setBrctlSetting(TBrCtlDefs::ESettingsCurrentZoomLevelIndex, m_currentZoomLevel);
     }
     else {
-    if (m_currentZoomLevel != KZoomLevelDefaultValue)
+    if (m_currentZoomLevel != m_defaultZoomLevel)
     //set default current zoom index
     {
-          m_currentZoomLevel = KZoomLevelDefaultValue;
+          m_currentZoomLevel = m_defaultZoomLevel;
       //set to settings
           m_brctl->settings()->setBrctlSetting(TBrCtlDefs::ESettingsCurrentZoomLevelIndex, m_currentZoomLevel);
     }
@@ -2456,11 +2489,11 @@ void WebView::updateMinZoomLevel(TSize size)
         newMinZoomLevel = ( minWidth > minHeight )?minWidth:minHeight;
 
         if ( newMinZoomLevel < KZoomLevelMinValue ) newMinZoomLevel = KZoomLevelMinValue;
-        if ( newMinZoomLevel > KZoomLevelDefaultValue ) newMinZoomLevel = KZoomLevelDefaultValue;
+        if ( newMinZoomLevel > m_defaultZoomLevel ) newMinZoomLevel = m_defaultZoomLevel;
         if ( newMinZoomLevel > m_currentZoomLevel ) newMinZoomLevel = m_currentZoomLevel;
     }
     else {
-        newMinZoomLevel = KZoomLevelDefaultValue;
+        newMinZoomLevel = m_defaultZoomLevel;
     }
 #ifndef  BRDO_MULTITOUCH_ENABLED_FF
     //if the min zoom is in fraction (like 86.33) this will give us 6 pixel white patch 
@@ -2512,10 +2545,10 @@ void WebView::UpdateZoomArray()
     m_minZoomLevel = TInt(m_minZoomLevel/10) * 10;
 #endif 
     
-    m_zoomLevelArray.Append(KZoomLevelDefaultValue);
+    m_zoomLevelArray.Append(m_defaultZoomLevel);
 
     //construct the zoom array from the default level
-    TInt toAddZoomLevel = KZoomLevelDefaultValue + KZoomLevelDefaultValue*KZoomLevelDelta/100;
+    TInt toAddZoomLevel = m_defaultZoomLevel + m_defaultZoomLevel*KZoomLevelDelta/100;
     while (toAddZoomLevel <= m_maxZoomLevel)
     {
         //add the zoom level after default one
@@ -2524,7 +2557,7 @@ void WebView::UpdateZoomArray()
     }
 
     //now goes the minimum one
-    toAddZoomLevel = KZoomLevelDefaultValue - KZoomLevelDefaultValue*KZoomLevelDelta/100;
+    toAddZoomLevel = m_defaultZoomLevel - m_defaultZoomLevel*KZoomLevelDelta/100;
     while (toAddZoomLevel >= m_minZoomLevel)
     {
         //add the zoom level after default one
@@ -2622,7 +2655,7 @@ void WebView::resetLastZoomLevelIfNeeded()
 //-----------------------------------------------------------------------------
 void WebView::setZoomLevelAdaptively()
 {
-    int zoomLevel = KZoomLevelDefaultValue;
+    int zoomLevel = m_defaultZoomLevel;
 
   // Double Tap Zooming: it toggles between default, maxiZoomLevel.
   // Depending on the current zoom level:
@@ -2637,13 +2670,13 @@ void WebView::setZoomLevelAdaptively()
   // experiences
 
     if (m_currentZoomLevel == m_maxZoomLevel ) {
-        zoomLevel = KZoomLevelDefaultValue;
+        zoomLevel = m_defaultZoomLevel;
     }
-    else if (m_currentZoomLevel >= KZoomLevelDefaultValue ) {
+    else if (m_currentZoomLevel >= m_defaultZoomLevel ) {
         zoomLevel = m_maxZoomLevel;
     }
     else {
-        zoomLevel = KZoomLevelDefaultValue;
+        zoomLevel = m_defaultZoomLevel;
     }
 
     // move the content
@@ -2666,7 +2699,7 @@ void WebView::setZoomLevelAdaptively()
     setZoomLevel(zoomLevel);
     mainFrame()->notifyPluginsOfPositionChange();
     
-    if (zoomLevel == KZoomLevelDefaultValue)
+    if (zoomLevel == m_defaultZoomLevel)
         {
         // for pages based on tables this is required
         doLayout();
@@ -2825,22 +2858,26 @@ int WebView::minZoomLevel()
 void WebView::updateZoomLevel( TBrCtlDefs::TBrCtlSettings setting, unsigned int value)
 {
    switch( setting ) {
-       case TBrCtlDefs::ESettingsZoomLevelMax:
-       {
-        if (value != m_maxZoomLevel)
-          {
-      //maxzoomlevel is different, needs to reset the zoom
-          m_maxZoomLevel = value;
-          UpdateZoomArray();
-          }
+       case TBrCtlDefs::ESettingsZoomLevelMax: {       
+           if (value != m_maxZoomLevel) {
+               //maxzoomlevel is different, needs to reset the zoom
+               m_maxZoomLevel = value;               
+               UpdateZoomArray();
+                }
+           }
+        break;
+       case TBrCtlDefs::ESettingsZoomLevelDefault: {
+           m_scrollingSpeed = KNormalScrollRange*100/scalingFactor();
+#ifdef BRDO_HIGH_DPI_DEVICES_FF
+           if(  !(m_widgetextension && m_widgetextension->IsWidgetPublising()) && value != m_defaultZoomLevel) {
+               m_currentZoomLevel = value; 
+			   m_defaultZoomLevel = value; 
+               UpdateZoomArray(); 
+               }
+#endif 
        }
-
-            break;
-       case TBrCtlDefs::ESettingsZoomLevelDefault:
-            m_scrollingSpeed = KNormalScrollRange*100/scalingFactor();
-            break;
-
-        default:
+           break; 
+       default:
             break;   // should not occur
     }
 }
@@ -2888,7 +2925,7 @@ void WebView::checkForZoomChange()
 void WebView::activateVirtualKeyboard()
 {
     if (isEditable() && iCoeEnv->Fep()) {
-        fepTextEditor()->ReportEventL();
+        fepTextEditor()->ReportEventL(CAknExtendedInputCapabilities::MAknEventObserver::EPointerEventReceived);
         fepTextEditor()->CancelEditingMode();
         fepTextEditor()->UpdateEditingMode();
         iCoeEnv->Fep()->HandleChangeInFocus();

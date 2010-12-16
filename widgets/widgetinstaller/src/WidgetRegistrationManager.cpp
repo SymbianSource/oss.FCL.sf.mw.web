@@ -34,6 +34,9 @@ _LIT(KMBMExt, ".mbm");
 
 using namespace SwiUI;
 
+const TUid KWidgetProperty = { 0x10282F06 };
+enum TMyPropertyKeys { EWidgetInstallUninstallStart = 113 };  
+
 // MEMBER FUNCTION DECLARATIONS
 
 // ============================================================================
@@ -97,6 +100,8 @@ void CWidgetRegistrationManager::ConstructL()
 //
 void CWidgetRegistrationManager::DeregisterWidgetL( const TUid& aUid )
     {
+    TInt altered( 1 );
+    RProperty::Set( KWidgetProperty, EWidgetInstallUninstallStart , altered );
     RApaLsSession apparcSession;
     User::LeaveIfError( apparcSession.Connect() );
 
@@ -125,6 +130,8 @@ void CWidgetRegistrationManager::RegisterWidgetL(
     const TDesC& aDriveName,
     const TUid& aUid )
     {
+    TInt altered( 1 );
+    RProperty::Set( KWidgetProperty, EWidgetInstallUninstallStart , altered );
     RApaLsSession apparcSession;
     CleanupClosePushL( apparcSession );
     User::LeaveIfError( apparcSession.Connect() );

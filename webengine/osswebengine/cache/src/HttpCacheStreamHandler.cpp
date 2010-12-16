@@ -101,7 +101,11 @@ CHttpCacheStreamHandler::~CHttpCacheStreamHandler()
     {
     if ( iActiveEntries )
         {
-        iActiveEntries->ResetAndDestroy();
+        //iActiveEntries->ResetAndDestroy();
+        for (TInt i=0;i<iActiveEntries->Count();++i)
+            iActiveEntries->At(i)->destroy();
+        iActiveEntries->Reset();
+
         }
     delete iActiveEntries;
     }

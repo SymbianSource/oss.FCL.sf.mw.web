@@ -454,14 +454,7 @@ void CWidgetUiAppUi::SetDisplayLandscapeL( )
         }
     else if (Orientation() == EAppUiOrientationUnspecified)
         {
-        TRect rect = ApplicationRect();
-        TInt width = rect.Width();
-        TInt height = rect.Height();
-
-        if (width < height)
-            {
-            SetOrientationL(EAppUiOrientationLandscape);
-            }
+        SetOrientationL(EAppUiOrientationLandscape);
         }
     }
 
@@ -480,15 +473,8 @@ void CWidgetUiAppUi::SetDisplayPortraitL( )
         SetOrientationL(EAppUiOrientationPortrait);
         }
     else if (Orientation() == EAppUiOrientationUnspecified)
-        {
-        TRect rect = ApplicationRect();
-        TInt width = rect.Width();
-        TInt height = rect.Height();
-
-        if (width > height)
-            {
-            SetOrientationL(EAppUiOrientationPortrait);
-            }
+        {            
+        SetOrientationL(EAppUiOrientationPortrait);
         }
     }
 

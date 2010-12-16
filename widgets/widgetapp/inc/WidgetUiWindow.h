@@ -529,7 +529,7 @@ class CWidgetUiWindow :  public CBase,
         void  setNeedToIgnoreSapiNtfn ( TInt aVal){ iNeedToIgnoreSapiNtfn = iNeedToIgnoreSapiNtfn + aVal;}
         TInt  getNeedToIgnoreSapiClearNtfn(){ return iNeedToIgnoreSapiClearNtfn;}
         void  setNeedToIgnoreSapiClearNtfn ( TInt aVal) { iNeedToIgnoreSapiClearNtfn = iNeedToIgnoreSapiClearNtfn + aVal;}
-
+        TBool IsSoftKeyVisible() { return iShowSoftkeys; } 
         
     protected:
 

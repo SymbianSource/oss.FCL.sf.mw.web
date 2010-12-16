@@ -32,6 +32,7 @@
 #include "WidgetMMCHandler.h"
 #include <xmlengxestd.h>
 #include "UidAllocator.h"
+#include "WidgetInstallerUiObserver.h"
 #if defined( BRDO_WRT_SECURITY_MGR_FF )
 #include <RTSecManager.h>
 #endif
@@ -194,6 +195,7 @@ CWidgetRegistry::~CWidgetRegistry()
     delete iInstaller;
     iLangDirList.ResetAndDestroy();
     delete iMMCHandler;
+    delete iInstallerObserver;
     delete iXmlProcessor;
     iFs.Close();
     LOG_DESTRUCT;
@@ -257,6 +259,7 @@ void CWidgetRegistry::ConstructL()
     LOG_CLOSE;
     iMMCHandler = CWidgetMMCHandler::NewL( *this, iFs );
     iMMCHandler->Start();
+    iInstallerObserver = CWidgetInstallerUiObserver::NewL( this );
     }
 
 // ============================================================================

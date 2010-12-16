@@ -47,7 +47,9 @@ public:
     
     //from MApaAppListServObserver
     void HandleAppListEvent(TInt aEvent);
-
+    
+    void NeedToNotify(TBool aVal);
+    
 protected:
 
     void RunL();
@@ -77,6 +79,8 @@ private:
     TInt iDeltaDriveFlags;
     
     CApaAppListNotifier* iApaAppListNotifier;
+    
+    TBool   iNeedToNotify;
 
 public:
 

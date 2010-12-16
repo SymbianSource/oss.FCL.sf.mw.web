@@ -76,6 +76,18 @@ void CDownloadSubSession::ConstructL( CDownloadMgrSession *aSession,
     CLOG_NAME_2( _L("Download_%d_%d"), aSession->SessionId(), dlId );
 #endif
 	}
+// ---------------------------------------------------------
+// CDownloadSubSession::PanicClient :panic only the iMessage
+// of Download manger subsession
+// ---------------------------------------------------------
+//
+void CDownloadSubSession::PanicClient(TInt aPanic) const
+    {
+        _LIT( KTxtDownloadSubSession,"CDownloadSubSession");
+
+        //panicing the iMessage associated with the download manager subsession.
+        iMessage.Panic( KTxtDownloadSubSession, aPanic );
+    }
 
 // ---------------------------------------------------------
 // CDownloadSubSession::~CDownloadSubSession
@@ -262,7 +274,7 @@ void CDownloadSubSession::DispatchMessageL( const RMessage2& aMessage )
 
     	default:
             {
-	    	iSession->PanicClient( EBadRequest );
+	    	PanicClient( EBadRequest );
             return;
             }
         }
@@ -339,7 +351,7 @@ void CDownloadSubSession::MoveL()
 void CDownloadSubSession::InitDownloadEvent( const RMessage2& aMessage )
     {
     CLOG_ENTERFN( "CDownloadSubSession::InitDownloadEvent" )
-    __ASSERT_DEBUG( iEvent == EFalse, iSession->PanicClient( EMultipleInitDownloadEvent ) );
+    __ASSERT_DEBUG( iEvent == EFalse, PanicClient( EMultipleInitDownloadEvent ) );
     iMessage = aMessage;
     iEvent = ETrue;
     }
@@ -381,7 +393,8 @@ TBool CDownloadSubSession::EventL( TInt32 aDownloadState, TInt32 aProgressState,
 	    if( ret != KErrNone )
             {
             CLOG_WRITE_FORMAT( " iMessage.Write( 0, pckgDownloadState ) returned error code: %d", ret )
-		    iSession->PanicClient( EBadDescriptor );
+		    PanicClient( EBadDescriptor );
+            return EFalse;
             }
         else
             {
@@ -389,7 +402,8 @@ TBool CDownloadSubSession::EventL( TInt32 aDownloadState, TInt32 aProgressState,
 	        if( ret != KErrNone )
                 {
                 CLOG_WRITE_FORMAT( " iMessage.Write( 1, pckgProgressState ) returned error code: %d", ret )
-		        iSession->PanicClient( EBadDescriptor );
+		        PanicClient( EBadDescriptor );
+                return EFalse;
                 }
 	     	else
 	            {
@@ -424,7 +438,8 @@ TBool CDownloadSubSession::EventL( TInt32 aDownloadState, TInt32 aProgressState,
 	    	        if( ret != KErrNone )
 	                    {
 	                    CLOG_WRITE_FORMAT( " iMessage.Write( 2, ptr ) returned error code: %d", ret )
-	    		        iSession->PanicClient( EBadDescriptor );
+	    		        PanicClient( EBadDescriptor );
+	                    return EFalse;
 	                    }
 	                }
 	            delete eventAttr;
@@ -861,7 +876,7 @@ void CDownloadSubSession::Write( TInt aParam, TDesC8& aDes )
     CLOG_WRITE_FORMAT( "CDownloadSubSession = %x", this );
 	if( ret != KErrNone )
         {
-		iSession->PanicClient( EBadDescriptor );
+		PanicClient( EBadDescriptor );
         }
 	}
 
@@ -877,7 +892,7 @@ void CDownloadSubSession::Write( TInt aParam, TDesC16& aDes )
 
 	if( ret != KErrNone )
         {
-		iSession->PanicClient( EBadDescriptor );
+		PanicClient( EBadDescriptor );
         }
 	}
 
@@ -893,7 +908,7 @@ void CDownloadSubSession::Read( TInt aParam, TDes8& aDes )
 
 	if( ret != KErrNone )
         {
-		iSession->PanicClient( EBadDescriptor );
+		PanicClient( EBadDescriptor );
         }
 	}
 
@@ -909,7 +924,7 @@ void CDownloadSubSession::Read( TInt aParam, TDes16& aDes )
 
 	if( ret != KErrNone )
         {
-		iSession->PanicClient( EBadDescriptor );
+		PanicClient( EBadDescriptor );
         }
 	}
 
@@ -920,7 +935,7 @@ void CDownloadSubSession::Read( TInt aParam, TDes16& aDes )
 TBool CDownloadSubSession::IsDownload( CHttpDownload* aDownload )
     {
     CLOG_WRITE( "CDownloadSubSession::IsDownload" );
-    __ASSERT_DEBUG( iDownload, iSession->PanicClient( EBadSubsessionHandle ) );
+    __ASSERT_DEBUG( iDownload, PanicClient( EBadSubsessionHandle ) );
     return (iDownload == aDownload) ? ETrue : EFalse;
     }
 

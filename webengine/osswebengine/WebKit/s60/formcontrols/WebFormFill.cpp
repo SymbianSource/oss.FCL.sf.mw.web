@@ -122,6 +122,8 @@ void WebFormFill::textChanged(Element* inputElement)
 {
     int formDataType = m_webView->brCtl()->settings()->brctlSetting(TBrCtlDefs::ESettingsAutoFormFillEnabled);
     if (formDataType != TBrCtlDefs::EFormDataOff) {
+        // No suggestions for password fields. 
+        if ( static_cast<HTMLInputElement*>(inputElement)->inputType() == HTMLInputElement::PASSWORD) return; 
         if (StaticObjectsContainer::instance()->formFillController()->inputElement() != inputElement) {
             StaticObjectsContainer::instance()->formFillController()->setInputElement(this, static_cast<HTMLInputElement*>(inputElement));
         }

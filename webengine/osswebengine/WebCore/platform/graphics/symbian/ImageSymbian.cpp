@@ -490,7 +490,7 @@ void BitmapImage::drawPattern(GraphicsContext* ctxt, const FloatRect& srcRect, c
         TWebCoreSavedContext savedContext = context->save();
         context->setClippingRect(bmpRect);
         if ( (bm->HasMask()) && (bm->SizeInPixels() == TSize(1,1)) && 
-                ((bm->Bitmap().DisplayMode() == EColor64K) || (bm->Bitmap().DisplayMode() == EColor16MU))) 
+                ((bm->Bitmap().DisplayMode() == EColor64K) || (bm->Bitmap().DisplayMode() == EColor16MU) || (bm->Bitmap().DisplayMode() == EColor16M))) 
             { 
             bmpRect.Move( orig );
             bmpRect.Intersection( TRect( TPoint(0,0), sz ) );

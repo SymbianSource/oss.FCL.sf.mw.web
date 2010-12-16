@@ -3,6 +3,7 @@
  *           (C) 1999 Antti Koivisto (koivisto@kde.org)
  *           (C) 2001 Peter Kelly (pmk@post.com)
  *           (C) 2001 Dirk Mueller (mueller@kde.org)
+ * (C) 2007 David Smith (catfish.man@gmail.com)
  * Copyright (C) 2004, 2005, 2006, 2007 Apple Inc. All rights reserved.
  *
  * This library is free software; you can redistribute it and/or
@@ -27,6 +28,8 @@
 #include "Chrome.h"
 #include "ChromeClient.h"
 #include "CSSStyleSelector.h"
+#include "ClassNames.h"
+#include "ClassNodeList.h" 
 #include "Document.h"
 #include "Editor.h"
 #include "ExceptionCode.h"
@@ -37,6 +40,7 @@
 #include "HTMLNames.h"
 #include "KURL.h"
 #include "NamedAttrMap.h"
+#include "NodeList.h"
 #include "Page.h"
 #include "RenderBlock.h"
 #include "SelectionController.h"
@@ -187,7 +191,7 @@ Node::NodeType Element::nodeType() const
     return ELEMENT_NODE;
 }
 
-const AtomicStringList* Element::getClassList() const
+const ClassNames* Element::getClassNames() const
 {
     return 0;
 }
@@ -1099,6 +1103,12 @@ RenderStyle* Element::computedStyle()
     return rd->m_computedStyle;
 }
 
+
+PassRefPtr<NodeList> Element::getElementsByClassName(const String& className)
+{
+    return new ClassNodeList(this, className);
+}
+ 
 void Element::cancelFocusAppearanceUpdate()
 {
     if (ElementRareData* rd = rareData())

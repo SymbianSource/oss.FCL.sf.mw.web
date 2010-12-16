@@ -22,6 +22,7 @@
 #include "TextDecoder.h"
 #include "CharsetDataSymbian.h"
 #include <wtf/OwnPtr.h>
+#define  KMaxBufferedBytes  16
 
 namespace WebCore {
 
@@ -47,7 +48,7 @@ namespace WebCore {
         TUint   m_encoding;
         TBool   m_firstChunkDecoded;
         unsigned m_numBufferedBytes;
-        unsigned char m_bufferedBytes[16]; // bigger than any single multi-byte character
+        unsigned char m_bufferedBytes[KMaxBufferedBytes]; // bigger than any single multi-byte character
         OwnPtr<TextCodec> m_fallbackCodec;
 
         // static data shared by all converters

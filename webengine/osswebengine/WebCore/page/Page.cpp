@@ -106,7 +106,11 @@ Page::~Page()
     allPages->remove(this);
     
     for (Frame* frame = mainFrame(); frame; frame = frame->tree()->traverseNext())
+#if PLATFORM(SYMBIAN)
+        frame->pageDestroyed(true);
+#else
         frame->pageDestroyed();
+#endif    
     m_editorClient->pageDestroyed();
     m_inspectorController->pageDestroyed();
 

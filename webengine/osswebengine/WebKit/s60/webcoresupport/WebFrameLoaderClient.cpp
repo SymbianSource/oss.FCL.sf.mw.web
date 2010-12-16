@@ -422,7 +422,7 @@ void WebFrameLoaderClient::dispatchDidFailLoading(DocumentLoader* loader, unsign
     static_cast<WebDocumentLoaderMac*>(loader)->decreaseLoadCount(identifier);
     */  
     //
-    if (brctl(m_webFrame)->wmlMode() && m_WmlContentListener) {
+    if (m_WmlContentListener && brctl(m_webFrame)->wmlMode()) {
         m_WmlContentListener->HandleError(identifier,error.errorCode());
     }
     //
@@ -617,7 +617,7 @@ void WebFrameLoaderClient::dispatchDidFailProvisionalLoad(const ResourceError& e
     [m_webFrame->_private->internalLoadDelegate webFrame:m_webFrame.get() didFinishLoadWithError:error];
     */
     //
-    if (brctl(m_webFrame)->wmlMode() && m_WmlContentListener) {
+    if (m_WmlContentListener && brctl(m_webFrame)->wmlMode()) {
         m_WmlContentListener->HandleError(0,error.errorCode());
     }
     //
@@ -642,7 +642,7 @@ void WebFrameLoaderClient::dispatchDidFailLoad(const ResourceError& error)
     [m_webFrame->_private->internalLoadDelegate webFrame:m_webFrame.get() didFinishLoadWithError:error];
     */
     //
-    if (brctl(m_webFrame)->wmlMode() && m_WmlContentListener) {
+    if (m_WmlContentListener && brctl(m_webFrame)->wmlMode()) {
         m_WmlContentListener->HandleError(0,error.errorCode());
     }
     //
@@ -734,7 +734,7 @@ void WebFrameLoaderClient::dispatchDecidePolicyForMIMEType(FramePolicyFunction f
                                decisionListener:setUpPolicyListener(function).get()];
 
     */
-    if (!function) 
+    if (!function || MIMEType.length()==0) 
         return;
     m_webPolicyManager->dispatchDecidePolicyForMIMEType(function, MIMEType, request);
 }
@@ -1260,7 +1260,6 @@ PassRefPtr<DocumentLoader> WebFrameLoaderClient::createDocumentLoader(const Reso
 //    dataSource->release();
 //    return loader.release();
     RefPtr<DocumentLoader> loader = new WebDocumentLoader(request, substituteData);
-
     return loader.release();
 }
 

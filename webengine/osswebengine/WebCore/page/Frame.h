@@ -130,8 +130,7 @@ public:
 
     Page* page() const;
     HTMLFrameOwnerElement* ownerElement() const;
-
-    void pageDestroyed();
+    void pageDestroyed(bool bAtExit = false);
     void disconnectOwnerElement();
 
     Document* document() const;

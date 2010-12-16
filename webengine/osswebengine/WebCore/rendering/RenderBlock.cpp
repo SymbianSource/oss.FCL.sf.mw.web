@@ -1520,8 +1520,15 @@ void RenderBlock::paintChildren(PaintInfo& paintInfo, int tx, int ty)
             return;
         }
 
+#if PLATFORM(SYMBIAN)
+    if (  child->style()->direction() == RTL && !child->isFloating())
+        child->paint(info, tx, ty);
+    else if (!child->hasLayer() && !child->isFloating())
+        child->paint(info, tx, ty);
+#else
         if (!child->hasLayer() && !child->isFloating())
             child->paint(info, tx, ty);
+#endif
 
         // Check for page-break-after: always, and if it's set, break and bail.
         if (isPrinting && !childrenInline() && child->style()->pageBreakAfter() == PBALWAYS && 

@@ -777,7 +777,7 @@ void CHttpConnHandler::ConnectionStageChanged( TInt aStage )
         for( TInt i = 0; i < downloads->Count(); ++i )
             {            
             if(iRetryNeeded  && ((*downloads)[i]->State() == EHttpDlMultipleMOFailed || 
-               (*downloads)[i]->State() == EHttpDlInprogress ))
+               (*downloads)[i]->State() == EHttpDlInprogress || (*downloads)[i]->State() == EHttpDlPaused) )
                 {
                 (*downloads)[i]->SetRetryFlag(ETrue);                
                 }

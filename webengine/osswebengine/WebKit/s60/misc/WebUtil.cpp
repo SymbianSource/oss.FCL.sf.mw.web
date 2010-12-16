@@ -152,6 +152,9 @@ TBrCtlDefs::TBrCtlElementType nodeTypeB(Node* node, Frame* frame)
     else if( e->hasLocalName(divTag)) {
         elType = TBrCtlDefs::EElementdivTag;
     }
+    else if( e->hasLocalName(bodyTag)){
+        elType = TBrCtlDefs::EElementbodyTag;
+    }
 
     // change to activated input box
     WebView* v = control(frame)->webView();

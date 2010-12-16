@@ -507,6 +507,7 @@ void CWrtHarvester::RegisteredPublishersL( RPointerArray<HBufC>& publishers )
     // Get all publishers from CPS
     iCPSInterface->ExecuteCmdL( KGetList, *inParamList, *publisherList ); 
     CleanupStack::PopAndDestroy( filter );
+    inParamList->Reset();
     CleanupStack::PopAndDestroy( inParamList );
     
     TInt pos = 0;
@@ -567,6 +568,7 @@ void CWrtHarvester::RegisteredPublishersL( RPointerArray<HBufC>& publishers )
             
         variant.Reset();
         }
+    publisherList->Reset();	
     CleanupStack::PopAndDestroy( publisherList );
     }
 

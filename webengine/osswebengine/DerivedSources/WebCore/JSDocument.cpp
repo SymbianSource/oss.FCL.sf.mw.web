@@ -148,47 +148,49 @@ JSValue* JSDocumentConstructor::getValueProperty(ExecState*, int token) const
 
 static const HashEntry JSDocumentPrototypeTableEntries[] =
 {
+    { "getElementsByClassName", JSDocument::GetElementsByClassNameFuncNum, DontDelete|Function, 1, 0 },
     { 0, 0, 0, 0, 0 },
-    { "elementFromPoint", JSDocument::ElementFromPointFuncNum, DontDelete|Function, 2, 0 },
-    { "createRange", JSDocument::CreateRangeFuncNum, DontDelete|Function, 0, 0 },
-    { "createComment", JSDocument::CreateCommentFuncNum, DontDelete|Function, 1, 0 },
-    { "queryCommandIndeterm", JSDocument::QueryCommandIndetermFuncNum, DontDelete|Function, 1, 0 },
-    { "createTextNode", JSDocument::CreateTextNodeFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[29] },
+    { "createComment", JSDocument::CreateCommentFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[32] },
     { 0, 0, 0, 0, 0 },
-    { "queryCommandEnabled", JSDocument::QueryCommandEnabledFuncNum, DontDelete|Function, 1, 0 },
-    { "getElementById", JSDocument::GetElementByIdFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[33] },
-    { "createAttribute", JSDocument::CreateAttributeFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[35] },
-    { "createElementNS", JSDocument::CreateElementNSFuncNum, DontDelete|Function, 2, 0 },
-    { 0, 0, 0, 0, 0 },
-    { "createNodeIterator", JSDocument::CreateNodeIteratorFuncNum, DontDelete|Function, 4, 0 },
-    { "importNode", JSDocument::ImportNodeFuncNum, DontDelete|Function, 2, 0 },
-    { "createEntityReference", JSDocument::CreateEntityReferenceFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[31] },
-    { 0, 0, 0, 0, 0 },
-    { 0, 0, 0, 0, 0 },
-    { "createAttributeNS", JSDocument::CreateAttributeNSFuncNum, DontDelete|Function, 2, &JSDocumentPrototypeTableEntries[34] },
-    { "adoptNode", JSDocument::AdoptNodeFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[32] },
     { 0, 0, 0, 0, 0 },
     { "createDocumentFragment", JSDocument::CreateDocumentFragmentFuncNum, DontDelete|Function, 0, 0 },
+    { "createAttributeNS", JSDocument::CreateAttributeNSFuncNum, DontDelete|Function, 2, &JSDocumentPrototypeTableEntries[35] },
+    { "createTextNode", JSDocument::CreateTextNodeFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[36] },
+    { "createAttribute", JSDocument::CreateAttributeFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[30] },
+    { "createEvent", JSDocument::CreateEventFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[31] },
     { 0, 0, 0, 0, 0 },
-    { "getElementsByTagName", JSDocument::GetElementsByTagNameFuncNum, DontDelete|Function, 1, 0 },
-    { 0, 0, 0, 0, 0 },
+    { "createEntityReference", JSDocument::CreateEntityReferenceFuncNum, DontDelete|Function, 1, 0 },
+    { "createElement", JSDocument::CreateElementFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[28] },
     { "createTreeWalker", JSDocument::CreateTreeWalkerFuncNum, DontDelete|Function, 4, 0 },
     { 0, 0, 0, 0, 0 },
-    { "createElement", JSDocument::CreateElementFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[27] },
-    { "createCDATASection", JSDocument::CreateCDATASectionFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[28] },
     { "createProcessingInstruction", JSDocument::CreateProcessingInstructionFuncNum, DontDelete|Function, 2, 0 },
-    { "getElementsByTagNameNS", JSDocument::GetElementsByTagNameNSFuncNum, DontDelete|Function, 2, &JSDocumentPrototypeTableEntries[30] },
-    { "createEvent", JSDocument::CreateEventFuncNum, DontDelete|Function, 1, 0 },
+    { "importNode", JSDocument::ImportNodeFuncNum, DontDelete|Function, 2, 0 },
+    { "queryCommandIndeterm", JSDocument::QueryCommandIndetermFuncNum, DontDelete|Function, 1, 0 },
+    { "queryCommandSupported", JSDocument::QueryCommandSupportedFuncNum, DontDelete|Function, 1, 0 },
+    { 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0 },
+    { 0, 0, 0, 0, 0 },
+    { "getElementsByTagNameNS", JSDocument::GetElementsByTagNameNSFuncNum, DontDelete|Function, 2, 0 },
+    { "getElementsByTagName", JSDocument::GetElementsByTagNameFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[37] },
+    { 0, 0, 0, 0, 0 },
+    { "createCDATASection", JSDocument::CreateCDATASectionFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[29] },
+    { "createNodeIterator", JSDocument::CreateNodeIteratorFuncNum, DontDelete|Function, 4, 0 },
+    { 0, 0, 0, 0, 0 },
+    { "createElementNS", JSDocument::CreateElementNSFuncNum, DontDelete|Function, 2, 0 },
+    { "getElementById", JSDocument::GetElementByIdFuncNum, DontDelete|Function, 1, &JSDocumentPrototypeTableEntries[34] },
+    { "adoptNode", JSDocument::AdoptNodeFuncNum, DontDelete|Function, 1, 0 },
+    { "createRange", JSDocument::CreateRangeFuncNum, DontDelete|Function, 0, &JSDocumentPrototypeTableEntries[33] },
     { "getOverrideStyle", JSDocument::GetOverrideStyleFuncNum, DontDelete|Function, 2, 0 },
     { "execCommand", JSDocument::ExecCommandFuncNum, DontDelete|Function, 3, 0 },
+    { "queryCommandEnabled", JSDocument::QueryCommandEnabledFuncNum, DontDelete|Function, 1, 0 },
     { "queryCommandState", JSDocument::QueryCommandStateFuncNum, DontDelete|Function, 1, 0 },
-    { "queryCommandSupported", JSDocument::QueryCommandSupportedFuncNum, DontDelete|Function, 1, 0 },
-    { "queryCommandValue", JSDocument::QueryCommandValueFuncNum, DontDelete|Function, 1, 0 }
+    { "queryCommandValue", JSDocument::QueryCommandValueFuncNum, DontDelete|Function, 1, 0 },
+    { "elementFromPoint", JSDocument::ElementFromPointFuncNum, DontDelete|Function, 2, 0 }
 };
 
 static const HashTable JSDocumentPrototypeTable = 
 {
-    2, 36, JSDocumentPrototypeTableEntries, 27
+    2, 38, JSDocumentPrototypeTableEntries, 28
 };
 
 const ClassInfo JSDocumentPrototype::info = { "DocumentPrototype", 0, &JSDocumentPrototypeTable, 0 };
@@ -616,6 +618,13 @@ JSValue* JSDocumentPrototypeFunction::callAsFunction(ExecState* exec, JSObject* 
 
 
         KJS::JSValue* result = toJS(exec, WTF::getPtr(imp->elementFromPoint(x, y)));
+        return result;
+    }
+    case JSDocument::GetElementsByClassNameFuncNum: {
+        String tagname = args[0]->toString(exec);
+
+
+        KJS::JSValue* result = toJS(exec, WTF::getPtr(imp->getElementsByClassName(tagname)));
         return result;
     }
     }

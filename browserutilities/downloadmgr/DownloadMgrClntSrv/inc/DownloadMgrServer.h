@@ -675,6 +675,8 @@ NONSHARABLE_CLASS( CDownloadSubSession ) : public CObject
         */
         void ConstructL( CDownloadMgrSession *aSession,
                          CHttpDownload* aDownload );
+     
+        void PanicClient(TInt aPanic) const;
 
     public:    // New functions
 

@@ -193,6 +193,9 @@ Default is WML support enabled
 //To enable modified cache-control = max-age feature
 #define BRDO_CACHE_MAX_AGE
 
+// To enable default zoom setting for higher DPI devices 
+#undef BRDO_HIGH_DPI_DEVICES_FF 
+
 /*
 * ===================
 *        S60 3.23
@@ -294,6 +297,9 @@ Default is WML support enabled
 
 //To disable modified cache-control = max-age 
 #undef BRDO_CACHE_MAX_AGE
+
+// To enable default zoom setting for higher DPI devices 
+#define BRDO_HIGH_DPI_DEVICES_FF 
 
 /*
 * ===================

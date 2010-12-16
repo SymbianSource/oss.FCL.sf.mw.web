@@ -40,6 +40,7 @@ class CWidgetMMCHandler;
 class CWidgetEntry;
 class CWidgetInstaller;
 class CWidgetRegistryXml;
+class CWidgetInstallerUiObserver;
 
 #if defined( BRDO_WRT_SECURITY_MGR_FF )
 class CRTSecManager;
@@ -217,6 +218,8 @@ public:
      
      static void NotifyWidgetAltered();
      
+     CWidgetMMCHandler* MMCHandler() { return iMMCHandler;}
+     
 private:
 
     /**
@@ -376,6 +379,7 @@ private:
     CWidgetMMCHandler*          iMMCHandler;
     TInt                        iPolicyId;
     CWidgetRegistryXml*         iXmlProcessor;
+    CWidgetInstallerUiObserver*   iInstallerObserver;
 public:
     LOG_MEMBER_VARS
     };

@@ -175,6 +175,14 @@ void RenderPartObject::updateWidget(bool onlyCreateNonNetscapePlugins)
               if (!embed && !name.isEmpty()) {
                   uniqueParamNames.add(p->name().impl());
                   paramNames.append(p->name());
+                  QualifiedName id (idAttr);
+                  if(name.contains(id.localName().domString()))
+                      {
+                      if(o->getIDAttribute() != p->value())
+                          {
+                          o->setAttribute(id, p->value());
+                          }
+                      }
                   paramValues.append(p->value());
               }
           }
@@ -208,12 +216,6 @@ void RenderPartObject::updateWidget(bool onlyCreateNonNetscapePlugins)
       // If we still don't have a type, try to map from a specific CLASSID to a type.
       if (serviceType.isEmpty() && !o->m_classId.isEmpty())
           mapClassIdToServiceType(o->m_classId, serviceType);
-#if PLATFORM(SYMBIAN) 
-      //If there is no Type and Classid then return.
-      else if (serviceType.isEmpty() && o->m_classId.isEmpty() && !embed)
-          return;
-#endif
-      
       // If no URL and type, abort.
       if (url.isEmpty() && serviceType.isEmpty())
           return;

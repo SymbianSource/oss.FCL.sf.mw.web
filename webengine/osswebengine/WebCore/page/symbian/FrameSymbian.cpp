@@ -91,7 +91,9 @@ void Frame::setBridge(WebCoreFrameBridge* bridge)
 
 WebCoreFrameBridge* Frame::bridge() const
 {
-    return d->m_bridge;
+    if(d) 
+      return d->m_bridge;
+    return NULL;  
 }
 
 

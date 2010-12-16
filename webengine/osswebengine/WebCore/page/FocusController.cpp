@@ -268,6 +268,9 @@ bool FocusController::setFocusedNode(Node* node, PassRefPtr<Frame> newFocusedFra
     if (oldFocusedNode && oldFocusedNode->rootEditableElement() == oldFocusedNode && !relinquishesEditingFocus(oldFocusedNode))
         return false;
 
+#if PLATFORM(SYMBIAN)
+    m_page->editorClient()->preFocusChange(oldFocusedNode,node);
+#endif 
 
     clearSelectionIfNeeded(oldFocusedFrame.get(), newFocusedFrame.get(), node);
     

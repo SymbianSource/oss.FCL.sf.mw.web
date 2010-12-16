@@ -33,6 +33,7 @@
 #include "cuicanceltimer.h"
 #include "WidgetUIHandler.h"
 #include "IconConverter.h"
+#include <e32property.h>
 
 // FORWARD DECLARATIONS
 class CZipFile;

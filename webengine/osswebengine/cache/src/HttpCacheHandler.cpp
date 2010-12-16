@@ -284,6 +284,7 @@ TInt CHttpCacheHandler::RequestL(
             {
             // save handler and entry so that
             // on next call we don't have to start a lookup again
+            entry->Use();
             aCacheEntry.iCacheHandler = this;
             aCacheEntry.iCacheEntry = entry;
             }
@@ -388,6 +389,8 @@ void CHttpCacheHandler::RequestClosed(
 
     if ( entry )
         {
+        entry->Unuse(); // remove use reference
+        
         // normal close on a request - when the content is loaded from the cache
         if ( entry->State() == CHttpCacheEntry::ECacheRequesting )
             {
@@ -586,6 +589,7 @@ void CHttpCacheHandler::ReceivedResponseHeadersL(
                 {
                 // save handler and entry so that
                 // on next call we don't have to start a lookup again
+                entry->Use();
                 aCacheEntry.iCacheHandler = this;
                 aCacheEntry.iCacheEntry = entry;
                 }
@@ -634,6 +638,7 @@ void CHttpCacheHandler::ReceivedResponseBodyDataL(
             if ( !SaveBuffer( *entry, bodyStr->Des(), ETrue ) )
                 {
                 // erase it
+                entry->Unuse();
                 DeleteCacheEntry( *entry );
 #ifdef __CACHELOG__
                 HttpCacheUtil::WriteLog( 0, _L( "CHttpCacheHandler::ReceivedResponseBodyDataL - body cannot be saved" ) );
@@ -722,6 +727,7 @@ void CHttpCacheHandler::ResponseComplete(
                 if ( !iStreamHandler->Flush( *entry ) )
                     {
                     // remove entry
+                    entry->Unuse();
                     DeleteCacheEntry( *entry );
                     entry = NULL;
                     aCacheEntry.iCacheEntry = NULL;
@@ -735,6 +741,7 @@ void CHttpCacheHandler::ResponseComplete(
             }
         else if ( entry->State() == CHttpCacheEntry::ECacheDestroyed )
             {
+            entry->Unuse();
             DeleteCacheEntry( *entry, EFalse );
             entry = NULL;
             aCacheEntry.iCacheEntry = NULL;
@@ -1360,6 +1367,9 @@ void CHttpCacheHandler::DeleteCacheEntry(
     HttpCacheUtil::WriteLog( 0, _L( "delete this stray entry" ) );
 #endif
 
+    if(aStrayEntry.UseCount()) // being used out side, don't delete now
+        return;
+    
     // need to make sure this entry is removed from postpone handler, if it might be there.
     if ( iPostponeHandler )
         {

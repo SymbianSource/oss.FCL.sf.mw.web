@@ -745,7 +745,8 @@ TPoint CStateMachine::screenCoordinates(const TPoint& aPos, void* aGestureTarget
                 }
 
             }
-            else if (Rng(edge, wY, sz.iHeight - edge))
+            //else if (Rng(edge, wY, sz.iHeight - edge))
+		else
             {
 #ifdef GESTURE_LOGGING
                 int from = newPos.iY ;
@@ -755,18 +756,6 @@ TPoint CStateMachine::screenCoordinates(const TPoint& aPos, void* aGestureTarget
                 {
                     LOGARG("adjustment: %d to %d [3mm: %d  middle]", 
                             from, newPos.iY, m_3mminpixels) ;
-                }
-
-            }
-            else
-            {
-                // similarly at the bottom we adjust less the closer we get to the edge
-                int adjust = (sz.iHeight - wY) / 2 ;
-                newPos.iY -= adjust ;
-                if (m_loggingenabled)
-                {
-                    LOGARG("adjustment: nY %d tY %d  sH %d [3mm: %d  adj: %d]",
-                            newPos.iY, tp.iY, sz.iHeight, m_3mminpixels, adjust) ;
                 }
 
             }

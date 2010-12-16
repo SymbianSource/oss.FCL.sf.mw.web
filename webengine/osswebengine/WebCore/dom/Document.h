@@ -29,6 +29,7 @@
 #include "Color.h"
 #include "DeprecatedPtrList.h"
 #include "DeprecatedValueList.h"
+#include "RegisteredEventListener.h"
 #include "DocumentMarker.h"
 #include "HTMLCollection.h"
 #include "HTMLFormElement.h"
@@ -214,6 +215,7 @@ public:
     PassRefPtr<Node> adoptNode(PassRefPtr<Node> source, ExceptionCode&);
     
     PassRefPtr<NameNodeList> getElementsByName(const String& elementName);
+    PassRefPtr<NodeList> getElementsByClassName(const String& className);
 
     // Actually part of JSHTMLDocument, but used for giving XML documents a window title as well
     String title() const { return m_title; }

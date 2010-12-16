@@ -59,7 +59,7 @@ public:
         GetElementsByTagNameNSFuncNum, GetElementByIdFuncNum, AdoptNodeFuncNum, CreateEventFuncNum, 
         CreateRangeFuncNum, CreateNodeIteratorFuncNum, CreateTreeWalkerFuncNum, GetOverrideStyleFuncNum, 
         ExecCommandFuncNum, QueryCommandEnabledFuncNum, QueryCommandIndetermFuncNum, QueryCommandStateFuncNum, 
-        QueryCommandSupportedFuncNum, QueryCommandValueFuncNum, ElementFromPointFuncNum
+        QueryCommandSupportedFuncNum, QueryCommandValueFuncNum, ElementFromPointFuncNum, GetElementsByClassNameFuncNum
     };
 };
 

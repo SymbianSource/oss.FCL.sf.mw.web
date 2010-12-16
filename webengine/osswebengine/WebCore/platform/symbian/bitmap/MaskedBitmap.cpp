@@ -491,6 +491,10 @@ void CMaskedBitmap::TileInBitmapRect( CFbsBitGc& gc, const TRect& bmpRect, const
 
 void CMaskedBitmap::TileInBitmapRect( CFbsBitmap* trgBmp, const TRect& aTrgRect, const TPoint& aOffset )
     {
+    //If bitmap is in EColor16M, then convert it to EColor64k
+    TRAPD(bmperr, ConvertTo64KL(););
+    if(bmperr)
+       return; //Do not proceed as it may cause View server.
     trgBmp->LockHeap();
     
     if ( aTrgRect.Width() < 0 || aTrgRect.Height() < 0 )
@@ -696,5 +700,21 @@ TBool CMaskedBitmap::IsCompletlyInitialised()
     return i_DecodingCompleted;
 }
 
+TInt CMaskedBitmap::ConvertTo64KL()
+{
+    TInt aError = KErrNone;
+    TSize srcSize = iBitmap->SizeInPixels();
+    TDisplayMode dMode = iBitmap->DisplayMode();
+    CFbsBitmap* pBitmap = new (ELeave) CFbsBitmap();
+    aError = pBitmap->Create(srcSize, EColor64K);
 
+    if(!(dMode == EColor16M) || !(KErrNone == aError))
+        return aError; //Operation has been cancelled. Return from here
+    BitmapUtil::CopyBitmapData(*iBitmap, *pBitmap, srcSize, EColor64K);
+    pBitmap->SetDisplayMode(EColor64K);
+    //Now we dont need original bitmap, so delete it
+    delete iBitmap;
+    iBitmap = pBitmap;
+    return aError;
+}
 //  End of File

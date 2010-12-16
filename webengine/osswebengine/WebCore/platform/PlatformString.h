@@ -118,6 +118,8 @@ public:
     String lower() const;
     String upper() const;
 
+    bool isLower() const { return m_impl ? m_impl->isLower() : false; }
+        
     String stripWhiteSpace() const;
     String simplifyWhiteSpace() const;
     

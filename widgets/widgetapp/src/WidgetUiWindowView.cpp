@@ -351,7 +351,7 @@ void CWidgetUiWindowView::UpdateStatusPane( TBool aVisible )
         }
     
     // update softkeys display to match status pane visibility
-    if( iWindowManager.ActiveWindow() )
+    if( iWindowManager.ActiveWindow() && iWindowManager.ActiveWindow()->IsSoftKeyVisible())
         {
         iWindowManager.ActiveWindow()->MakeSoftkeysVisible(visible,ETrue);
         }

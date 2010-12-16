@@ -80,4 +80,6 @@ SOURCE TreeWalker.cpp
 SOURCE UIEvent.cpp
 SOURCE UIEventWithKeyState.cpp
 SOURCE WheelEvent.cpp
-SOURCE XMLTokenizer.cpp
+SOURCE XMLTokenizer.cpp  
+SOURCE ClassNames.cpp
+SOURCE ClassNodeList.cpp

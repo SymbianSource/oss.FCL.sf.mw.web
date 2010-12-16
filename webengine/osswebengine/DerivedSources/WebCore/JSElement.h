@@ -54,7 +54,7 @@ public:
         SetAttributeNSFuncNum, RemoveAttributeNSFuncNum, GetElementsByTagNameNSFuncNum, GetAttributeNodeNSFuncNum, 
         SetAttributeNodeNSFuncNum, HasAttributeFuncNum, HasAttributeNSFuncNum, FocusFuncNum, 
         BlurFuncNum, ScrollIntoViewFuncNum, InsertAdjacentElementFuncNum, ContainsFuncNum, 
-        ScrollIntoViewIfNeededFuncNum, ScrollByLinesFuncNum, ScrollByPagesFuncNum
+        ScrollIntoViewIfNeededFuncNum, ScrollByLinesFuncNum, ScrollByPagesFuncNum, GetElementsByClassNameFuncNum
     };
 
     // Custom functions

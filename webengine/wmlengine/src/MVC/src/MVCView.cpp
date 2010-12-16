@@ -979,7 +979,7 @@ CView::DisableAnimation()
       }
     }
   }
-
+ 
 // -----------------------------------------------------------------------------
 void
 CView::EnableAnimation()
@@ -1805,7 +1805,9 @@ CView::CView (CBrCtl* aBrCtl) :
   iVScrollPosition(0), iFormatPriority( ((CActive::TPriority)( CActive::EPriorityLow + 2 )) )
 {
     iBrCtl = aBrCtl;
+#ifndef BRDO_USE_GESTURE_HELPER
     iDrag = EFalse;
+#endif // BRDO_USE_GESTURE_HELPER
 }
 
 // -----------------------------------------------------------------------------
@@ -1907,9 +1909,13 @@ void CView::ConstructL (CCoeControl* aParent, TRect& aRect, CWmlControl* aWmlCon
     DrawableWindow()->SetPointerGrab(ETrue);
     EnableDragEvents();
     }
-  
+#ifdef BRDO_USE_GESTURE_HELPER
+  m_gestureInterface = WMLWebGestureInterface::NewL(this);
+#endif //BRDO_USE_GESTURE_HELPER
+
+#ifndef BRDO_USE_GESTURE_HELPER
   iPeriodicTimer = CPeriodic::NewL(CActive::EPriorityHigh);
-  
+#endif // BRDO_USE_GESTURE_HELPER
   ActivateL();
   }
 
@@ -1932,12 +1938,14 @@ CView* CView::NewL (CCoeControl* aParent,
 // Destructor
 CView::~CView()
 {
+#ifndef BRDO_USE_GESTURE_HELPER
     if(iPeriodicTimer)
     {
         // Calling Cancel without checking if the timer is active is safe
         iPeriodicTimer->Cancel();
         delete iPeriodicTimer;
     }
+#endif // BRDO_USE_GESTURE_HELPER
   // remove observer
   //CBrowserSettings::Instance()->RemoveObserver();
 
@@ -2000,6 +2008,9 @@ CView::~CView()
   NW_Cleanup();
 
 	CloseSTDLIB();
+#ifdef BRDO_USE_GESTURE_HELPER
+    delete m_gestureInterface;
+#endif// BRDO_USE_GESTURE_HELPER
 }
 
 /* ------------------------------------------------------------------------- *
@@ -4216,143 +4227,13 @@ CView::OfferKeyEventL(const TKeyEvent& aKeyEvent, TEventCode aType)
 //-----------------------------------------------------------------------------
 void CView::HandlePointerEventL(const TPointerEvent& aPointerEvent)
     {
-    switch (aPointerEvent.iType) {
-        case TPointerEvent::EButton1Down:
-        	iLastPosition = aPointerEvent.iPosition;
-            iDrag = EFalse;
-			break;
-		case TPointerEvent::EDrag:
-			TPoint  currPosition;
-			TPoint  nextPosition;
-			nextPosition = iLastPosition - aPointerEvent.iPosition;
-			iLastPosition = aPointerEvent.iPosition;
-			
-			if(nextPosition.iX || nextPosition.iY)
-			{
-				currPosition.iX = iDeviceContext->Origin()->x;
-				currPosition.iY = iDeviceContext->Origin()->y;
-				ScrollTo(currPosition+nextPosition);
-
-                //This is for Drag event
-                //Introducing 10 pixel offset. This is introduced to tackle problem that occurs if user clicks
-                //link but still causes a very small pixel move. This gives a small difference in previous
-                //and next position. As a side effect iDrag will be true and request will not be sent even if
-                //there is very small pixel difference.
-                //Following logic tries to handle such scenario.
-                TInt nOffset = 10;
-                TBool bXOffset = ((nextPosition.iX > nOffset) || (nextPosition.iX < -nOffset));
-                TBool bYOffset = ((nextPosition.iY > nOffset) || (nextPosition.iY < -nOffset));
-                if(bXOffset || bYOffset)
-                {
-                    iDrag = ETrue;
-                }
-            } 
-            break;
-    }
-    
-    NW_ADT_Vector_Metric_t i;
-    NW_ADT_Vector_Metric_t size = NW_ADT_Vector_GetSize( iTabList );
-    i = 0;
-    TBool activeInputBox = iCurrentBox && NW_Object_IsInstanceOf(iCurrentBox, &NW_FBox_InputBox_Class) && 
-        NW_FBox_InputBox_IsActive( iCurrentBox );
-    TBool found = EFalse;
-    TPoint point = aPointerEvent.iPosition + (TPoint(iDeviceContext->Origin()->x, iDeviceContext->Origin()->y));
-    for( i = 0; i < size; i++ )
-        {
-        NW_LMgr_Box_t* tempBox = (NW_LMgr_Box_t*)*NW_ADT_Vector_ElementAt( iTabList, (NW_ADT_Vector_Metric_t)i);
-        NW_GDI_Rectangle_t boxRect = GetBoxDisplayBounds(tempBox);
-        TRect rect(TPoint(boxRect.point.x, boxRect.point.y), TSize(boxRect.dimension.width, boxRect.dimension.height));
-        if (rect.Contains(point))
-            {
-            found = ETrue;
-            }
-        else
-            {
-            NW_LMgr_Property_t prop;
-            NW_LMgr_Box_t* box = tempBox;
-            TBool done = EFalse;
-            while(!done)
-                {
-                prop.value.object = NULL;
-                if (NW_LMgr_Box_GetProperty( box, NW_CSS_Prop_sibling, &prop ) == KBrsrSuccess)
-                    {
-                    if ( prop.value.object != NULL && prop.value.object != tempBox )
-                        {
-                        box = NW_LMgr_BoxOf( prop.value.object );
-                        boxRect = GetBoxDisplayBounds(box);
-                        rect.SetRect(TPoint(boxRect.point.x, boxRect.point.y), TSize(boxRect.dimension.width, boxRect.dimension.height));
-                        if (rect.Contains(point))
-                            {
-                            found = ETrue;
-                            break;
-                            }
-                        }
-                    else
-                        {
-                        done = ETrue;
-                        }
-                    }
-                else
-                    {
-                    done = ETrue;
-                    }
-                }
-            }
-
-        if (found)
-            {
-            if (tempBox != iCurrentBox)
-                {
-                iShouldActivate = EFalse;
-               }
-            if (aPointerEvent.iType == TPointerEvent::EButton1Down)
-                {
-                iShouldActivate = ETrue;
-                }
-            if (tempBox != iCurrentBox)
-                {
-                if (activeInputBox)
-                    {
-                    if (!InputElementEditComplete( NW_TRUE ))
-                        {
-                        iShouldActivate = EFalse;
-                        break;
-                        }
-                    }
-                NW_LMgr_Box_SetHasFocus (iCurrentBox, NW_FALSE);
-                NW_LMgr_Box_SetHasFocus (tempBox, NW_TRUE);
-                SetCurrentBox(tempBox);
-                NW_LMgr_RootBox_SetFocusBox(iRootBox, tempBox);
-                Draw (NW_TRUE /*DrawNow*/);
-                }
-            if ((aPointerEvent.iType == TPointerEvent::EButton1Up) && (iShouldActivate))
-                {
-                    if((!iDrag))
-                    {
-                        if(!iPeriodicTimer->IsActive() )
-                        {
-                            iPeriodicTimer->Start(KPeriodicTimerStartInterval2Sec, NULL, TCallBack(PeriodicTimerCallBack, this));
-                        }
-                        else
-                        {
-                            continue;
-                        }
-                        NW_Evt_ActivateEvent_t actEvent;
-                        NW_Evt_ActivateEvent_Initialize (&actEvent);
-                        ProcessEvent (NW_Evt_EventOf(&actEvent));
-                    }
-                }
-            break;
-            }
-        }
-    if (!found) // Clicked or dragged on an empty area
-        {
-        iShouldActivate = EFalse;
-        if (activeInputBox)
-            {
-            InputElementEditComplete( NW_TRUE );
-            }
-        }
+#ifdef BRDO_USE_GESTURE_HELPER
+    //First send to gesture to determine if its double tap
+    //If double tap just ignore
+    m_gestureInterface->HandlePointerEventL(aPointerEvent);
+#else
+    ProcessPointerEvents(aPointerEvent);
+#endif// BRDO_USE_GESTURE_HELPER
     }
 
 //-----------------------------------------------------------------------------
@@ -5597,16 +5478,335 @@ void CView::ScrollTo(TPoint aPoint)
     Draw(NW_TRUE);
     }
 
-void CView::CancelPeriodicTimer()
-    {
-    if(iPeriodicTimer) 
-        iPeriodicTimer->Cancel();
-    }
+void CView::ProcessPointerEvents(const TPointerEvent& aPointerEvent)
+{
+#ifdef BRDO_USE_GESTURE_HELPER
+    //Nothing should be processed here if gesture handler is enabled. 
+    //All processing has been moved to corresponding event
+    //handling functions - HandleTapL, HandleDoubleTap, HandleRelease, HandleTouch
+    //So, if gesture handler BRDO_USE_GESTURE_HELPER is defined we do not process here
+    //we just return from function
+    return;
+#else
+    switch (aPointerEvent.iType) {
+        case TPointerEvent::EButton1Down:
+            iLastPosition = aPointerEvent.iPosition;
+            iDrag = EFalse;
+            break;
+        case TPointerEvent::EDrag:
+            TPoint  currPosition;
+            TPoint  nextPosition;
+            nextPosition = iLastPosition - aPointerEvent.iPosition;
+            iLastPosition = aPointerEvent.iPosition;
+            
+            if(nextPosition.iX || nextPosition.iY)
+            {
+                currPosition.iX = iDeviceContext->Origin()->x;
+                currPosition.iY = iDeviceContext->Origin()->y;
+                ScrollTo(currPosition+nextPosition);
 
+                //This is for Drag event
+                //Introducing 10 pixel offset. This is introduced to tackle problem that occurs if user clicks
+                //link but still causes a very small pixel move. This gives a small difference in previous
+                //and next position. As a side effect iDrag will be true and request will not be sent even if
+                //there is very small pixel difference.
+                //Following logic tries to handle such scenario.
+                TInt nOffset = 10;
+                TBool bXOffset = ((nextPosition.iX > nOffset) || (nextPosition.iX < -nOffset));
+                TBool bYOffset = ((nextPosition.iY > nOffset) || (nextPosition.iY < -nOffset));
+                if(bXOffset || bYOffset)
+                {
+                    iDrag = ETrue;
+                }
+            } 
+            break;
+    }
+    
+    NW_ADT_Vector_Metric_t i;
+    NW_ADT_Vector_Metric_t size = NW_ADT_Vector_GetSize( iTabList );
+    i = 0;
+    TBool activeInputBox = iCurrentBox && NW_Object_IsInstanceOf(iCurrentBox, &NW_FBox_InputBox_Class) && 
+        NW_FBox_InputBox_IsActive( iCurrentBox );
+    TBool found = EFalse;
+    TPoint point = aPointerEvent.iPosition + (TPoint(iDeviceContext->Origin()->x, iDeviceContext->Origin()->y));
+    for( i = 0; i < size; i++ )
+        {
+        NW_LMgr_Box_t* tempBox = (NW_LMgr_Box_t*)*NW_ADT_Vector_ElementAt( iTabList, (NW_ADT_Vector_Metric_t)i);
+        NW_GDI_Rectangle_t boxRect = GetBoxDisplayBounds(tempBox);
+        TRect rect(TPoint(boxRect.point.x, boxRect.point.y), TSize(boxRect.dimension.width, boxRect.dimension.height));
+        if (rect.Contains(point))
+            {
+            found = ETrue;
+            }
+        else
+            {
+            NW_LMgr_Property_t prop;
+            NW_LMgr_Box_t* box = tempBox;
+            TBool done = EFalse;
+            while(!done)
+                {
+                prop.value.object = NULL;
+                if (NW_LMgr_Box_GetProperty( box, NW_CSS_Prop_sibling, &prop ) == KBrsrSuccess)
+                    {
+                    if ( prop.value.object != NULL && prop.value.object != tempBox )
+                        {
+                        box = NW_LMgr_BoxOf( prop.value.object );
+                        boxRect = GetBoxDisplayBounds(box);
+                        rect.SetRect(TPoint(boxRect.point.x, boxRect.point.y), TSize(boxRect.dimension.width, boxRect.dimension.height));
+                        if (rect.Contains(point))
+                            {
+                            found = ETrue;
+                            break;
+                            }
+                        }
+                    else
+                        {
+                        done = ETrue;
+                        }
+                    }
+                else
+                    {
+                    done = ETrue;
+                    }
+                }
+            }
+
+        if (found)
+            {
+            if (tempBox != iCurrentBox)
+                {
+                iShouldActivate = EFalse;
+               }
+            if (aPointerEvent.iType == TPointerEvent::EButton1Down)
+                {
+                iShouldActivate = ETrue;
+                }
+            if (tempBox != iCurrentBox)
+                {
+                if (activeInputBox)
+                    {
+                    if (!InputElementEditComplete( NW_TRUE ))
+                        {
+                        iShouldActivate = EFalse;
+                        break;
+                        }
+                    }
+                NW_LMgr_Box_SetHasFocus (iCurrentBox, NW_FALSE);
+                NW_LMgr_Box_SetHasFocus (tempBox, NW_TRUE);
+                SetCurrentBox(tempBox);
+                NW_LMgr_RootBox_SetFocusBox(iRootBox, tempBox);
+                Draw (NW_TRUE /*DrawNow*/);
+                }
+            if ((aPointerEvent.iType == TPointerEvent::EButton1Up) && (iShouldActivate))
+                {
+                    if((!iDrag))
+                    {
+                        if(!iPeriodicTimer->IsActive() )
+                        {
+                            iPeriodicTimer->Start(KPeriodicTimerStartInterval2Sec, NULL, TCallBack(PeriodicTimerCallBack, this));
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                        NW_Evt_ActivateEvent_t actEvent;
+                        NW_Evt_ActivateEvent_Initialize (&actEvent);
+                        ProcessEvent (NW_Evt_EventOf(&actEvent));
+                    }
+                }
+            break;
+            }
+        }
+    if (!found) // Clicked or dragged on an empty area
+        {
+        iShouldActivate = EFalse;
+        if (activeInputBox)
+            {
+            InputElementEditComplete( NW_TRUE );
+            }
+        }
+#endif // BRDO_USE_GESTURE_HELPER
+}
+
+#ifndef BRDO_USE_GESTURE_HELPER
+void CView::CancelPeriodicTimer()
+{
+    if(iPeriodicTimer)
+        iPeriodicTimer->Cancel();
+}
 TInt CView::PeriodicTimerCallBack(TAny* aAny)
-    {
+{
     CView* self = static_cast<CView*>( aAny );
     self->CancelPeriodicTimer();
     return KErrNone;
+}
+#endif // BRDO_USE_GESTURE_HELPER
+
+#ifdef BRDO_USE_GESTURE_HELPER
+void CView::HandleDragL(const TStmGestureEvent& aGesture)
+{
+    TPoint  currPosition =  aGesture.CurrentPos();
+    TPoint  nextPosition;
+    nextPosition = iLastPosition - currPosition;
+
+    if(nextPosition.iX || nextPosition.iY)
+    {
+        currPosition.iX = iDeviceContext->Origin()->x;
+        currPosition.iY = iDeviceContext->Origin()->y;
+        ScrollTo(currPosition+nextPosition);
     }
+    //Here we update position of point of drag
+    iLastPosition = aGesture.CurrentPos();
+}
+
+void CView::HandleDoubleTapL(const TStmGestureEvent& aGesture)
+{
+    // No processing for double tap
+    //Need to update current position of pointer
+    iLastPosition = aGesture.CurrentPos();
+}
+
+void CView::HandleTapL(const TPoint& aPoint, TBool aProcessEvent)
+{
+    TPoint currentPosition = aPoint;
+    NW_ADT_Vector_Metric_t i;
+    NW_ADT_Vector_Metric_t size = NW_ADT_Vector_GetSize( iTabList );
+    i = 0;
+    TBool activeInputBox = iCurrentBox && NW_Object_IsInstanceOf(iCurrentBox, &NW_FBox_InputBox_Class) && 
+        NW_FBox_InputBox_IsActive( iCurrentBox );
+    TBool found = EFalse;
+    TPoint point = currentPosition + (TPoint(iDeviceContext->Origin()->x, iDeviceContext->Origin()->y));
+    for( i = 0; i < size; i++ )
+        {
+        NW_LMgr_Box_t* tempBox = (NW_LMgr_Box_t*)*NW_ADT_Vector_ElementAt( iTabList, (NW_ADT_Vector_Metric_t)i);
+        NW_GDI_Rectangle_t boxRect = GetBoxDisplayBounds(tempBox);
+        TRect rect(TPoint(boxRect.point.x, boxRect.point.y), TSize(boxRect.dimension.width, boxRect.dimension.height));
+        if (rect.Contains(point))
+            {
+            found = ETrue;
+            }
+        else
+            {
+            NW_LMgr_Property_t prop;
+            NW_LMgr_Box_t* box = tempBox;
+            TBool done = EFalse;
+            while(!done)
+                {
+                prop.value.object = NULL;
+                if (NW_LMgr_Box_GetProperty( box, NW_CSS_Prop_sibling, &prop ) == KBrsrSuccess)
+                    {
+                    if ( prop.value.object != NULL && prop.value.object != tempBox )
+                        {
+                        box = NW_LMgr_BoxOf( prop.value.object );
+                        boxRect = GetBoxDisplayBounds(box);
+                        rect.SetRect(TPoint(boxRect.point.x, boxRect.point.y), TSize(boxRect.dimension.width, boxRect.dimension.height));
+                        if (rect.Contains(point))
+                            {
+                            found = ETrue;
+                            break;
+                            }
+                        }
+                    else
+                        {
+                        done = ETrue;
+                        }
+                    }
+                else
+                    {
+                    done = ETrue;
+                    }
+                }
+            }
+
+        if (found)
+            {
+            if (tempBox != iCurrentBox)
+                {
+                iShouldActivate = EFalse;
+               }
+
+            iShouldActivate = ETrue;
+
+            if (tempBox != iCurrentBox)
+                {
+                if (activeInputBox)
+                    {
+                    if (!InputElementEditComplete( NW_TRUE ))
+                        {
+                        iShouldActivate = EFalse;
+                        break;
+                        }
+                    }
+                NW_LMgr_Box_SetHasFocus (iCurrentBox, NW_FALSE);
+                NW_LMgr_Box_SetHasFocus (tempBox, NW_TRUE);
+                SetCurrentBox(tempBox);
+                NW_LMgr_RootBox_SetFocusBox(iRootBox, tempBox);
+                
+                Draw (NW_TRUE /*DrawNow*/);
+                }
+
+                if(aProcessEvent)
+                {
+                    NW_Evt_ActivateEvent_t actEvent;
+                    NW_Evt_ActivateEvent_Initialize (&actEvent);
+                    ProcessEvent (NW_Evt_EventOf(&actEvent));
+                }
+            break;
+            }
+        }
+    if (!found) // Clicked or dragged on an empty area
+        {
+        iShouldActivate = EFalse;
+        if (activeInputBox)
+            {
+            InputElementEditComplete( NW_TRUE );
+            }
+        }
+    //Here we update position of click
+    iLastPosition = aPoint;
+}
+
+void CView::HandleTouchL(const TStmGestureEvent& aGesture)
+{
+    //Here we update position of click
+    iLastPosition = aGesture.CurrentPos();
+}
+void CView::HandleRelease(const TStmGestureEvent& aGesture)
+{
+    //Here we update position of release similar to Button1Up
+    iLastPosition = aGesture.CurrentPos();
+}
+void CView::HandleGestureEventL(const TStmGestureEvent& aGesture)
+{
+    TStmGestureUid uid = aGesture.Code();
+    switch(uid)
+    {
+        case stmGesture::EGestureUidTouch:
+        {
+            HandleTouchL(aGesture);
+            break;
+        }
+        case stmGesture::EGestureUidTap:
+        {
+            if (aGesture.Type() == stmGesture::ETapTypeSingle) 
+            {
+                HandleTapL(aGesture.CurrentPos());
+            }
+            else
+                HandleDoubleTapL(aGesture);
+            break;
+        }
+        case stmGesture::EGestureUidPan:
+        {
+            HandleDragL(aGesture);
+            break;
+        }
+        case stmGesture::EGestureUidRelease:
+        {
+            HandleRelease(aGesture);
+            break;
+        }
+    }
+}
+#endif // BRDO_USE_GESTURE_HELPER
 // ============================ MEMBER FUNCTIONS ===============================

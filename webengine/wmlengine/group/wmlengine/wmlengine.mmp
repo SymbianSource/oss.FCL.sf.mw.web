@@ -161,7 +161,13 @@ LIBRARY         SysLangUtil.lib
 LIBRARY 	centralrepository.lib
 LIBRARY 	CenRepNotifHandler.lib
 LIBRARY 	featmgr.lib
+
+#ifdef BRDO_USE_GESTURE_HELPER
+LIBRARY     stmgesturefw.lib
+#endif// BRDO_USE_GESTURE_HELPER
 #ifdef __USE_CCC_AUTO_FORM_FILL_POPUP
 LIBRARY 	broaffpopup.lib
 #endif
 LIBRARY	   	aknicon.lib
+
+

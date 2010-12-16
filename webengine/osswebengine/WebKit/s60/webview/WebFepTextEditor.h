@@ -37,6 +37,11 @@
 #include "Range.h"
 #include "TextIterator.h"
 
+#ifdef BRDO_TOUCH_ENABLED_FF 
+#include <peninputclient.h>
+#include <peninputsrveventhandler.h>
+#endif
+
 #ifndef WEBFEPTEXTEDITOR_H
 #define WEBFEPTEXTEDITOR_H
 
@@ -51,6 +56,9 @@ class CWebFepTextEditor : public CBase,
                           public MCoeFepAwareTextEditor_Extension1,
                           public TCoeInputCapabilities::MCoeFepSpecificExtensions,
                           public MEikCcpuEditor
+#ifdef BRDO_TOUCH_ENABLED_FF 
+                          ,public MPenUiActivationHandler
+#endif
     {
 public:
     CWebFepTextEditor(WebView* aView);    
@@ -105,6 +113,20 @@ public:
 	virtual void CcpuPasteL();
 	virtual TBool CcpuCanUndo() const{return EFalse;}
 	virtual void CcpuUndoL(){	}
+	
+#ifdef BRDO_TOUCH_ENABLED_FF 
+
+public: // From MPenUiActivationHandler
+    /*
+      * From MPenUiActivationHandler
+      */
+     void OnPeninputUiDeactivated();
+ 
+     /*
+      * From MPenUiActivationHandler
+      */
+     void OnPeninputUiActivated();  
+#endif
 	   
 public:
 
@@ -136,16 +158,20 @@ public:
     void HandleMaskedInsertText(WebCore::Frame* frame, const String& text);
     void HandleMaskedDeleteText(WebCore::Frame* frame);
     bool IsWapMaskedModeInput(WebCore::Frame* frame);
+    void FocusChanging();
     void EnableCcpuL();
     TBool IsInputElementFocused() const;
     TBool IsDivElementFocused() const;
+    TBool IsBodyElementFocused() const;
     TInt indexForVisiblePosition(const WebCore::VisiblePosition& pos,WebCore::Element* node) const;
     WebCore::VisiblePosition visiblePositionForIndex(TInt index,WebCore::Element* node);
     void setSelectionRange(TInt start, TInt end, WebCore::Element* node);    
     
-    void ReportEventL();
+    void ReportEventL(CAknExtendedInputCapabilities::MAknEventObserver::TInputCapabilitiesEvent aEvent);
     
     TBool inlineTextEditingStarted();
+    TBool GetSpaceConsumed() { return m_spcaeconsumed; }
+    void setSpaceConsumed(bool aConsumed){ m_spcaeconsumed = aConsumed ; }    
 private:
     void  findPrevSiblingTextLen(Node*, TInt&) const;
     Node* findTextNodeForCurPos(Node* aNode, TInt& aPos) const;
@@ -161,6 +187,12 @@ private:
     CAknCcpuSupport* m_CcpuSupport;
     TBool m_longKeyPress;
     TBool m_inlineTextEditingStarted;
+    TBool m_spcaeconsumed; 
+    TBool m_VKBActive;
+#ifdef BRDO_TOUCH_ENABLED_FF 
+    RPeninputServer            iPeninputServer;
+    CIdle* iDeactivateVKB;  
+#endif 
     };
 
 #endif
